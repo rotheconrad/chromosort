@@ -59,8 +59,9 @@ The environment installs:
 Check the command:
 
 ```bash
-chromosort --help
-chromosort-fix-contigs --help
+chromo --help
+chromo sort --help
+chromo fix --help
 ```
 
 Run tests:
@@ -144,7 +145,7 @@ then recomputes merged coverage itself.
 ## Running ChromoSort
 
 ```bash
-chromosort \
+chromo sort \
   --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
@@ -165,7 +166,7 @@ This writes:
 Optional discarded FASTA:
 
 ```bash
-chromosort \
+chromo sort \
   --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
@@ -262,7 +263,7 @@ mkdir -p results
 
 for asm in assemblies/*.fa; do
   sample=$(basename "$asm" .fa)
-  chromosort \
+  chromo sort \
     --ref-fasta reference.fa \
     --assembly-fasta "$asm" \
     --coords "mummer/${sample}.coords" \
@@ -276,7 +277,7 @@ done
 ChromoSort also includes a focused contig-splitting command:
 
 ```bash
-chromosort-fix-contigs \
+chromo fix \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
   --contigs contig_04 contig_12 \
@@ -284,21 +285,24 @@ chromosort-fix-contigs \
   --report results/sample.fixed_contigs.tsv
 ```
 
-This command is intentionally user-directed. It does not scan the whole
-assembly and decide to cut contigs on its own. Instead, you provide the contig
-names you already suspect are chimeric, usually after inspecting dot plots,
-assignment reports, or other QC evidence.
+By default, this command is user-directed. It does not scan the whole assembly
+and decide to cut contigs on its own. Instead, you provide the contig names you
+already suspect are chimeric, usually after inspecting dot plots, assignment
+reports, or other QC evidence. Use `--auto` when you want ChromoSort to scan for
+passing alignment blocks that change reference sequence or orientation.
 
-For each requested contig, `chromosort-fix-contigs`:
+For each requested or auto-detected contig, `chromo fix`:
 
 1. Reads passing `show-coords` alignment segments for that contig.
 2. Sorts those segments by query-coordinate order along the assembly contig.
 3. Merges nearby neighboring rows that map to the same reference sequence and
    orientation.
 4. Looks for reference transitions along the contig.
-5. Places breakpoints halfway between neighboring reference blocks.
-6. Replaces the original contig with two or more pieces in the output FASTA.
-7. Writes a TSV report with slice coordinates, reference labels, orientation,
+5. Looks for orientation transitions along the contig, including same-reference
+   inversion blocks.
+6. Places breakpoints halfway between neighboring alignment blocks.
+7. Replaces the original contig with two or more pieces in the output FASTA.
+8. Writes a TSV report with slice coordinates, reference labels, orientation,
    identity, and split status.
 
 By default, unrequested contigs are copied unchanged, producing a full fixed
@@ -331,6 +335,17 @@ chrom05-contig_12-b
 chrom04-contig_12-c
 ```
 
+The same naming pattern is used for inversions. A contig with a large inverted
+block in the middle of a `chrom06` match might become:
+
+```text
+chrom06-contig_21-a
+chrom06-contig_21-b
+chrom06-contig_21-c
+```
+
+The report records each piece's orientation so the inverted block is explicit.
+
 The reference names and contig names are not hard-coded. Whatever identifiers
 appear in your FASTA and MUMmer output are used. Change the separator with
 `--name-separator`.
@@ -341,6 +356,7 @@ appear in your FASTA and MUMmer output are used. Change the separator with
 | --- | ---: | --- |
 | `--contigs` | none | Space-separated names of contigs to inspect and split. |
 | `--contigs-file` | none | Optional file with one contig name per line. |
+| `--auto` | off | Scan all contigs and split those with reference or orientation transitions. |
 | `--min-segment-bp` | `10000` | Minimum alignment segment length used to infer split blocks. |
 | `--min-segment-idy` | `0.0` | Minimum percent identity for split-informing alignment rows. |
 | `--max-merge-gap` | `1000` | Merge nearby same-reference rows separated by this many query bp or less. |
@@ -348,7 +364,7 @@ appear in your FASTA and MUMmer output are used. Change the separator with
 | `--orient-to-reference` | off | Reverse-complement split pieces from reverse-strand blocks. |
 | `--pieces-only` | off | Write only split pieces instead of a full fixed assembly FASTA. |
 
-### Why User-Nominated Splitting?
+### Why User-Nominated Splitting By Default?
 
 Cutting contigs is a stronger intervention than ordering contigs. A reference
 transition can reflect a real assembly chimera, but it can also reflect
@@ -357,10 +373,20 @@ or poor alignment around repeats. Requiring an explicit contig list keeps this
 step auditable: ChromoSort proposes breakpoints from MUMmer coordinates, but the
 user decides which contigs are appropriate to cut.
 
-The synthetic test data under `tests/data/chimeric` includes two chimeric
-contigs: one split roughly half-and-half between two reference chromosomes, and
-one with 25 percent of its sequence matching one chromosome and 75 percent
-matching another.
+`--auto` is useful after you have tuned `--min-segment-bp`,
+`--min-segment-idy`, and `--max-merge-gap` for the assembly. It scans for both
+chromosome transitions and orientation transitions, so it can detect classical
+interchromosomal chimeras as well as same-reference inversion blocks.
+
+The synthetic test data under `tests/data/chimeric` includes four fix cases:
+one contig split roughly half-and-half between two reference chromosomes, one
+with 25 percent of its sequence matching one chromosome and 75 percent matching
+another, one with a large inverted block in the middle, and one with an inverted
+block at the end.
+
+The legacy commands `chromosort` and `chromosort-fix-contigs` are retained as
+compatibility aliases, but new workflows should use `chromo sort` and
+`chromo fix`.
 
 ## Development
 

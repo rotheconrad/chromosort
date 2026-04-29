@@ -11,9 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data" / "chimeric"
 
 
-def run_fix_contigs(tmp_path, *extra_args):
+def run_fix_contigs(tmp_path, *extra_args, contigs=None):
     output_fasta = tmp_path / "fixed.fa"
     report = tmp_path / "fixed.tsv"
+    if contigs is None:
+        contigs = ["contig_04", "contig_12"]
     cmd = [
         sys.executable,
         "-m",
@@ -22,9 +24,6 @@ def run_fix_contigs(tmp_path, *extra_args):
         str(DATA / "assembly.fa"),
         "--coords",
         str(DATA / "sample.coords"),
-        "--contigs",
-        "contig_04",
-        "contig_12",
         "--output-fasta",
         str(output_fasta),
         "--report",
@@ -33,6 +32,8 @@ def run_fix_contigs(tmp_path, *extra_args):
         "5",
         *extra_args,
     ]
+    if contigs:
+        cmd[cmd.index("--output-fasta"):cmd.index("--output-fasta")] = ["--contigs", *contigs]
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "src")
     subprocess.run(cmd, cwd=ROOT, check=True, env=env)
@@ -78,6 +79,8 @@ class FixContigsTests(unittest.TestCase):
                     "chrom04-contig_12-a",
                     "chrom05-contig_12-b",
                     "chrom04-contig_12-c",
+                    "contig_inv_mid",
+                    "contig_inv_end",
                 ],
             )
             self.assertEqual(records["contig_01"], "NNNNNNNNNN")
@@ -109,7 +112,72 @@ class FixContigsTests(unittest.TestCase):
             self.assertNotIn("contig_01", records)
             self.assertEqual(len(records), 5)
 
+    def test_splits_middle_and_terminal_inversion_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_fasta, report = run_fix_contigs(
+                Path(tmp),
+                "--pieces-only",
+                "--simple-headers",
+                contigs=["contig_inv_mid", "contig_inv_end"],
+            )
+
+            records = read_fasta(output_fasta)
+            self.assertEqual(
+                list(records),
+                [
+                    "chrom06-contig_inv_mid-a",
+                    "chrom06-contig_inv_mid-b",
+                    "chrom06-contig_inv_mid-c",
+                    "chrom08-contig_inv_end-a",
+                    "chrom08-contig_inv_end-b",
+                ],
+            )
+            rows = read_report(report)
+            self.assertEqual(
+                [(row["new_contig"], row["orientation"]) for row in rows],
+                [
+                    ("chrom06-contig_inv_mid-a", "+"),
+                    ("chrom06-contig_inv_mid-b", "-"),
+                    ("chrom06-contig_inv_mid-c", "+"),
+                    ("chrom08-contig_inv_end-a", "+"),
+                    ("chrom08-contig_inv_end-b", "-"),
+                ],
+            )
+
+    def test_auto_detects_chromosome_and_orientation_transitions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_fasta, report = run_fix_contigs(
+                Path(tmp),
+                "--auto",
+                "--simple-headers",
+                contigs=[],
+            )
+
+            records = read_fasta(output_fasta)
+            self.assertEqual(
+                list(records),
+                [
+                    "contig_01",
+                    "chrom02-contig_04-a",
+                    "chrom07-contig_04-b",
+                    "chrom04-contig_12-a",
+                    "chrom05-contig_12-b",
+                    "chrom04-contig_12-c",
+                    "chrom06-contig_inv_mid-a",
+                    "chrom06-contig_inv_mid-b",
+                    "chrom06-contig_inv_mid-c",
+                    "chrom08-contig_inv_end-a",
+                    "chrom08-contig_inv_end-b",
+                ],
+            )
+            rows = read_report(report)
+            self.assertEqual({row["original_contig"] for row in rows}, {
+                "contig_04",
+                "contig_12",
+                "contig_inv_mid",
+                "contig_inv_end",
+            })
+
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -2,8 +2,9 @@
 """
 Split user-nominated chimeric contigs using MUMmer show-coords alignments.
 
-This module is intentionally conservative: it only edits contigs named by the
-user. Other assembly contigs are copied unchanged unless --pieces-only is used.
+This module is intentionally conservative by default: it only edits contigs
+named by the user. With --auto, it scans for contigs whose passing alignment
+blocks change reference sequence or orientation.
 """
 
 import argparse
@@ -65,8 +66,9 @@ class ContigPlan:
     reason: str
 
 
-def parse_args(argv: Optional[Sequence[str]] = None):
+def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     ap = argparse.ArgumentParser(
+        prog=prog,
         description=(
             "Split user-nominated chimeric contigs into reference-labeled pieces "
             "using MUMmer show-coords alignments."
@@ -95,6 +97,14 @@ def parse_args(argv: Optional[Sequence[str]] = None):
         "--contigs-file",
         default=None,
         help="Optional text file with one contig name per line.",
+    )
+    ap.add_argument(
+        "--auto",
+        action="store_true",
+        help=(
+            "Automatically split contigs with passing alignment blocks that "
+            "change reference sequence or orientation."
+        ),
     )
     ap.add_argument(
         "-o",
@@ -183,9 +193,9 @@ def query_interval(segment):
 
 def collect_blocks(coords_path, requested, min_segment_bp, min_segment_idy, max_merge_gap):
     raw_blocks = defaultdict(list)
-    requested_set = set(requested)
+    requested_set = set(requested) if requested is not None else None
     for segment in iter_coords(coords_path, min_segment_idy):
-        if segment.query not in requested_set:
+        if requested_set is not None and segment.query not in requested_set:
             continue
         if segment.len_query < min_segment_bp:
             continue
@@ -230,6 +240,28 @@ def merge_query_blocks(blocks, max_merge_gap):
     return merged
 
 
+def split_signature(block):
+    return block.ref, block.orientation
+
+
+def has_split_signal(blocks):
+    if len(blocks) < 2:
+        return False
+    return len({split_signature(block) for block in blocks}) > 1
+
+
+def auto_requested_contigs(fasta_path, blocks_by_contig, explicit_contigs):
+    explicit_set = set(explicit_contigs)
+    requested = list(explicit_contigs)
+    for name, _, _ in iter_fasta_records(fasta_path):
+        if name in explicit_set:
+            continue
+        blocks = blocks_by_contig.get(name, [])
+        if has_split_signal(blocks):
+            requested.append(name)
+    return requested
+
+
 def alpha_label(index):
     label = ""
     value = index
@@ -263,12 +295,12 @@ def build_split_plan(contig, seq_len, blocks, args):
             pieces=[],
             reason="Only one passing alignment block was found.",
         )
-    if len({block.ref for block in blocks}) == 1:
+    if not has_split_signal(blocks):
         return ContigPlan(
             contig=contig,
-            status="not_split_single_reference",
+            status="not_split_single_target",
             pieces=[],
-            reason="All passing alignment blocks map to the same reference sequence.",
+            reason="All passing alignment blocks map to the same reference sequence and orientation.",
         )
 
     boundaries = [boundary_between(left, right) for left, right in zip(blocks, blocks[1:])]
@@ -447,23 +479,29 @@ def write_report(path, requested, plans):
                 out.write("\t".join(str(item) for item in row) + "\n")
 
 
-def main(argv: Optional[Sequence[str]] = None):
-    args = parse_args(argv)
-    requested = read_requested_contigs(args.contigs, args.contigs_file)
-    if not requested:
-        sys.stderr.write("ERROR: provide at least one contig via --contigs or --contigs-file\n")
+def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
+    args = parse_args(argv, prog=prog)
+    explicit_requested = read_requested_contigs(args.contigs, args.contigs_file)
+    if not explicit_requested and not args.auto:
+        sys.stderr.write("ERROR: provide at least one contig via --contigs/--contigs-file or use --auto\n")
         sys.exit(2)
 
     for output_path in [Path(args.output_fasta), Path(args.report)]:
         if output_path.parent and str(output_path.parent) != ".":
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    collect_for = None if args.auto else explicit_requested
     blocks_by_contig = collect_blocks(
         args.coords,
-        requested,
+        collect_for,
         args.min_segment_bp,
         args.min_segment_idy,
         args.max_merge_gap,
+    )
+    requested = (
+        auto_requested_contigs(args.assembly_fasta, blocks_by_contig, explicit_requested)
+        if args.auto
+        else explicit_requested
     )
     plans = build_plans(args.assembly_fasta, requested, blocks_by_contig, args)
     write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args)

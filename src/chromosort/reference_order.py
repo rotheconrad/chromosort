@@ -100,8 +100,9 @@ RC_TABLE = str.maketrans(
 )
 
 
-def parse_args():
+def parse_args(argv=None, prog=None):
     ap = argparse.ArgumentParser(
+        prog=prog,
         description=(
             "Use MUMmer show-coords output to assign assembly contigs to their "
             "best reference chromosome and write a reference-ordered FASTA."
@@ -219,7 +220,7 @@ def parse_args():
         action="store_true",
         help="Write reports but skip ordered/discarded FASTA output.",
     )
-    return ap.parse_args()
+    return ap.parse_args(argv)
 
 
 def open_text(path):
@@ -984,8 +985,8 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
         )
 
 
-def main():
-    args = parse_args()
+def main(argv=None, prog=None):
+    args = parse_args(argv, prog=prog)
     prefix = Path(args.output_prefix)
     if prefix.parent and str(prefix.parent) != ".":
         prefix.parent.mkdir(parents=True, exist_ok=True)

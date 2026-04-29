@@ -38,6 +38,7 @@ Homepage = "https://github.com/rotheconrad/chromosort"
 Issues = "https://github.com/rotheconrad/chromosort/issues"
 
 [project.scripts]
+chromo = "chromosort.cli:main"
 chromosort = "chromosort.reference_order:main"
 chromosort-fix-contigs = "chromosort.fix_contigs:main"
 
