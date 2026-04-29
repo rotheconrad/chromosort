@@ -1,0 +1,11 @@
+name: chromosort
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.9
+  - pip
+  - mummer4
+  - pytest
+  - pip:
+      - -e .
