@@ -60,6 +60,7 @@ Check the command:
 
 ```bash
 chromosort --help
+chromosort-fix-contigs --help
 ```
 
 Run tests:
@@ -269,6 +270,97 @@ for asm in assemblies/*.fa; do
     --orient-to-reference
 done
 ```
+
+## Fixing User-Nominated Chimeric Contigs
+
+ChromoSort also includes a focused contig-splitting command:
+
+```bash
+chromosort-fix-contigs \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --contigs contig_04 contig_12 \
+  --output-fasta results/sample.fixed.fa \
+  --report results/sample.fixed_contigs.tsv
+```
+
+This command is intentionally user-directed. It does not scan the whole
+assembly and decide to cut contigs on its own. Instead, you provide the contig
+names you already suspect are chimeric, usually after inspecting dot plots,
+assignment reports, or other QC evidence.
+
+For each requested contig, `chromosort-fix-contigs`:
+
+1. Reads passing `show-coords` alignment segments for that contig.
+2. Sorts those segments by query-coordinate order along the assembly contig.
+3. Merges nearby neighboring rows that map to the same reference sequence and
+   orientation.
+4. Looks for reference transitions along the contig.
+5. Places breakpoints halfway between neighboring reference blocks.
+6. Replaces the original contig with two or more pieces in the output FASTA.
+7. Writes a TSV report with slice coordinates, reference labels, orientation,
+   identity, and split status.
+
+By default, unrequested contigs are copied unchanged, producing a full fixed
+assembly FASTA. Use `--pieces-only` to write only the split pieces.
+
+### Chimeric Contig Naming
+
+Split pieces are named:
+
+```text
+REFERENCE-CONTIG-PART
+```
+
+For example, a contig named `contig_04` with its first half matching `chrom02`
+and second half matching `chrom07` becomes:
+
+```text
+chrom02-contig_04-a
+chrom07-contig_04-b
+```
+
+If a contig has more than one breakpoint, ChromoSort emits as many pieces as
+the ordered reference blocks require. For example, if `contig_12` has a small
+`chrom04` block, a larger `chrom05` block, and another `chrom04` block, it
+becomes:
+
+```text
+chrom04-contig_12-a
+chrom05-contig_12-b
+chrom04-contig_12-c
+```
+
+The reference names and contig names are not hard-coded. Whatever identifiers
+appear in your FASTA and MUMmer output are used. Change the separator with
+`--name-separator`.
+
+### Chimeric Contig Parameters
+
+| Parameter | Default | Meaning |
+| --- | ---: | --- |
+| `--contigs` | none | Space-separated names of contigs to inspect and split. |
+| `--contigs-file` | none | Optional file with one contig name per line. |
+| `--min-segment-bp` | `10000` | Minimum alignment segment length used to infer split blocks. |
+| `--min-segment-idy` | `0.0` | Minimum percent identity for split-informing alignment rows. |
+| `--max-merge-gap` | `1000` | Merge nearby same-reference rows separated by this many query bp or less. |
+| `--min-piece-bp` | `1` | Do not emit split pieces shorter than this length. |
+| `--orient-to-reference` | off | Reverse-complement split pieces from reverse-strand blocks. |
+| `--pieces-only` | off | Write only split pieces instead of a full fixed assembly FASTA. |
+
+### Why User-Nominated Splitting?
+
+Cutting contigs is a stronger intervention than ordering contigs. A reference
+transition can reflect a real assembly chimera, but it can also reflect
+structural variation, assembly graph complexity, misassembly in the reference,
+or poor alignment around repeats. Requiring an explicit contig list keeps this
+step auditable: ChromoSort proposes breakpoints from MUMmer coordinates, but the
+user decides which contigs are appropriate to cut.
+
+The synthetic test data under `tests/data/chimeric` includes two chimeric
+contigs: one split roughly half-and-half between two reference chromosomes, and
+one with 25 percent of its sequence matching one chromosome and 75 percent
+matching another.
 
 ## Development
 
