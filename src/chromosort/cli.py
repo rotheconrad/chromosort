@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from . import fix_contigs, reference_order
+from . import fix_contigs, reference_order, scaffold
 
 
 def main(argv=None):
@@ -12,12 +12,12 @@ def main(argv=None):
 
     parser = argparse.ArgumentParser(
         prog="chromo",
-        description="Reference-order and fix genome assembly contigs.",
+        description="Reference-order, fix, and scaffold genome assembly contigs.",
     )
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["sort", "fix"],
+        choices=["sort", "fix", "scaffold"],
         help="Subcommand to run.",
     )
 
@@ -31,6 +31,8 @@ def main(argv=None):
         reference_order.main(remaining, prog="chromo sort")
     elif command == "fix":
         fix_contigs.main(remaining, prog="chromo fix")
+    elif command == "scaffold":
+        scaffold.main(remaining, prog="chromo scaffold")
     else:
         parser.error(f"unknown command: {command}")
 

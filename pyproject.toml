@@ -41,6 +41,7 @@ Issues = "https://github.com/rotheconrad/chromosort/issues"
 chromo = "chromosort.cli:main"
 chromosort = "chromosort.reference_order:main"
 chromosort-fix-contigs = "chromosort.fix_contigs:main"
+chromosort-scaffold = "chromosort.scaffold:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

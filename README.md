@@ -1,21 +1,25 @@
 # ChromoSort
 
-Reference-guided genome assembly utilities for sorting contigs and splitting
-user-flagged or auto-detected chimeric contigs from MUMmer alignments.
+Reference-guided genome assembly utilities for sorting contigs, splitting
+user-flagged or auto-detected chimeric contigs, and scaffolding final ordered
+contigs with N gaps.
 
-ChromoSort provides one command, `chromo`, with two subcommands:
+ChromoSort provides one command, `chromo`, with three subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
   low-value duplicate overlaps, and writes a reference-ordered FASTA.
 - `chromo fix` splits contigs with chromosome transitions or inversion blocks
   into reference-labeled pieces, either from a user-supplied contig list or with
   conservative `--auto` detection that smooths over small SV/INDEL-like noise.
+- `chromo scaffold` joins final sorted contigs into per-reference scaffold
+  records with inferred reference-space N gaps by default, or with a fixed
+  user-specified number of Ns.
 
-Both workflows use standard MUMmer `show-coords` output and are designed for
-reuse across species and genome assembly projects. ChromoSort does not build
-pseudomolecules, insert gaps, polish sequence, call variants, or force contigs
-to match a reference. It keeps full sequence pieces and writes TSV reports so
-each keep, reject, or split decision is auditable.
+The sorting and fixing workflows use standard MUMmer `show-coords` output and
+are designed for reuse across species and genome assembly projects. ChromoSort
+does not polish sequence, call variants, or force contigs to match a reference.
+It keeps full sequence pieces and writes TSV reports so each keep, reject,
+split, or scaffold-gap decision is auditable.
 
 ## Table of Contents
 
@@ -39,6 +43,13 @@ each keep, reject, or split decision is auditable.
   - [`chromo fix` Naming](#chromo-fix-naming)
   - [`chromo fix` Parameters](#chromo-fix-parameters)
   - [Reasoning Behind `chromo fix`](#reasoning-behind-chromo-fix)
+- [chromo scaffold](#chromo-scaffold)
+  - [What `chromo scaffold` Does](#what-chromo-scaffold-does)
+  - [Run `chromo scaffold` With Inferred Gaps](#run-chromo-scaffold-with-inferred-gaps)
+  - [Run `chromo scaffold` With Fixed Gaps](#run-chromo-scaffold-with-fixed-gaps)
+  - [`chromo scaffold` Outputs](#chromo-scaffold-outputs)
+  - [`chromo scaffold` Parameters](#chromo-scaffold-parameters)
+  - [Reasoning Behind `chromo scaffold`](#reasoning-behind-chromo-scaffold)
 - [Development](#development)
 - [Citation](#citation)
 - [Contact](#contact)
@@ -58,6 +69,7 @@ mamba activate chromosort
 chromo --help
 chromo sort --help
 chromo fix --help
+chromo scaffold --help
 ```
 
 Typical reference-ordering run:
@@ -93,6 +105,15 @@ chromo fix \
   --report results/sample.fixed_contigs.tsv
 ```
 
+Typical scaffolding run after final sorting:
+
+```bash
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample
+```
+
 ## Installation With Mamba
 
 Install Mambaforge, Miniforge, or another conda-compatible distribution with
@@ -117,8 +138,9 @@ Legacy command aliases are retained for compatibility:
 
 - `chromosort` is equivalent to `chromo sort`
 - `chromosort-fix-contigs` is equivalent to `chromo fix`
+- `chromosort-scaffold` is equivalent to `chromo scaffold`
 
-New workflows should use `chromo sort` and `chromo fix`.
+New workflows should use `chromo sort`, `chromo fix`, and `chromo scaffold`.
 
 ## Creating Input Files With MUMmer
 
@@ -530,6 +552,104 @@ chimeras, a complex chimera with internal gaps, and terminal/internal inversion
 cases. The expected behavior is conservative: split the large-scale assembly
 error patterns and report the weaker discordance as `not_split_auto_smooth`.
 
+## chromo scaffold
+
+Use `chromo scaffold` when the final sorted and filtered contigs look good and
+you want one FASTA record per reference chromosome or linkage group.
+
+### What `chromo scaffold` Does
+
+Given a final `chromo sort` ordered FASTA and its matching
+`<prefix>.contig_assignments.tsv`, `chromo scaffold`:
+
+1. Reads kept contigs from the assignment report.
+2. Reads the ordered FASTA records by their `new_name` values.
+3. Groups contigs by assigned reference sequence in ordered FASTA order.
+4. Joins neighboring contigs with N gaps.
+5. Infers gap length from adjacent reference coordinates by default.
+6. Optionally uses a fixed user-provided number of Ns between every neighboring
+   contig.
+7. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
+
+The intended input is the final ordered FASTA from the same `chromo sort` run as
+the assignment report. If you run `chromo fix`, re-run `chromo sort` on the
+fixed assembly before scaffolding so the coordinates and FASTA names match the
+final contigs.
+
+### Run `chromo scaffold` With Inferred Gaps
+
+```bash
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample
+```
+
+For adjacent contigs on the same reference, inferred gaps are calculated as:
+
+```text
+next_ref_start - previous_ref_end - 1
+```
+
+Negative values, which indicate overlapping reference spans, are written as
+zero-length gaps in the FASTA and reported in the gap TSV.
+
+### Run `chromo scaffold` With Fixed Gaps
+
+```bash
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.fixed100 \
+  --fixed-gap-bp 100
+```
+
+Fixed-gap mode ignores inferred gap length for FASTA construction and inserts
+the requested number of Ns between every neighboring contig on the same
+scaffold. The report still records the raw inferred gap for comparison.
+
+### `chromo scaffold` Outputs
+
+| Output | Description |
+| --- | --- |
+| `<prefix>.scaffold.fa` | One FASTA record per assigned reference sequence, with ordered contigs joined by Ns. |
+| `<prefix>.scaffold_gaps.tsv` | One row per inserted gap with flanking contigs, inferred gap, written gap, and gap mode. |
+| `<prefix>.scaffold_summary.tsv` | One row per scaffold with contig count, scaffold length, sequence bp, gap bp, and ordered contig list. |
+| `<prefix>.run_summary.txt` | Inputs, gap model, output paths, and total scaffold counts. |
+
+### `chromo scaffold` Parameters
+
+| Parameter | Default | Meaning |
+| --- | ---: | --- |
+| `--ordered-fasta` | required | Final ordered FASTA from `chromo sort`. |
+| `--assignments` | required | Matching `<prefix>.contig_assignments.tsv` report from `chromo sort`. |
+| `--output-prefix` | required | Prefix for scaffold FASTA and reports. |
+| `--fixed-gap-bp` | none | Insert this many Ns between neighboring contigs instead of inferred gaps. |
+| `--simple-headers` | off | Write scaffold FASTA headers containing only the scaffold ID. |
+
+### Reasoning Behind `chromo scaffold`
+
+#### Require the Assignment Report
+
+The ordered FASTA contains sequence, but the assignment report contains the
+reference coordinates needed to infer gap lengths. Requiring both files keeps
+scaffolding explicit and prevents guessing chromosome names from FASTA IDs,
+which can be fragile when contig names contain separators.
+
+#### Infer Gaps Conservatively
+
+Inferred gaps are based only on adjacent retained contigs on the same reference
+sequence. ChromoSort does not add leading or trailing Ns for chromosome ends,
+and overlapping reference spans become zero-length FASTA gaps rather than
+negative gaps. The raw inferred value is still reported so users can inspect
+overlap or coordinate oddities.
+
+#### Keep Fixed Gaps Available
+
+Some downstream tools and submission workflows prefer a constant gap size. The
+`--fixed-gap-bp` option supports that convention while preserving the inferred
+gap estimate in the report for transparency.
+
 ## Development
 
 ```bash
@@ -576,4 +696,4 @@ sorting and splitting tools.
 
 | Version | Notes |
 | --- | --- |
-| `0.1.0` | Initial public package with `chromo sort`, `chromo fix`, duplicate-overlap filtering, user-nominated contig splitting, conservative auto smoothing, and synthetic tests. |
+| `0.1.0` | Initial public package with `chromo sort`, `chromo fix`, `chromo scaffold`, duplicate-overlap filtering, user-nominated contig splitting, conservative auto smoothing, inferred/fixed-gap scaffolding, and synthetic tests. |

@@ -1,0 +1,4 @@
+contig	length	status	kept	new_name	assigned_ref	order_in_ref	ref_start	ref_end	ref_midpoint	orientation	reverse_complemented	raw_aligned_bp	merged_query_bp	query_cov	merged_ref_bp	ref_cov	avg_identity	best_ref_share	novel_ref_bp	novel_ref_frac	overlap_best_contig	overlap_best_new_name	overlap_best_bp	second_ref	second_merged_query_bp	second_query_cov	total_refs_matched
+contigA	4	kept	yes	chr1_contigA	chr1	1	1	4	2.5	+	no	4	4	1.0000	4	0.0400	99.000	1.0000	4	1.0000	.	.	.	.	.	.	1
+contigB	3	kept	yes	chr1_contigB	chr1	2	10	12	11.0	+	no	3	3	1.0000	3	0.0300	99.000	1.0000	3	1.0000	.	.	.	.	.	.	1
+contigC	2	kept	yes	chr2_contigC	chr2	1	2	3	2.5	+	no	2	2	1.0000	2	0.0200	99.000	1.0000	2	1.0000	.	.	.	.	.	.	1

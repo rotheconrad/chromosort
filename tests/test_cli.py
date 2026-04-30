@@ -26,14 +26,16 @@ class CliTests(unittest.TestCase):
         result = run_cli("--help")
         self.assertIn("sort", result.stdout)
         self.assertIn("fix", result.stdout)
+        self.assertIn("scaffold", result.stdout)
 
-    def test_sort_and_fix_help_dispatch_to_full_commands(self):
+    def test_subcommand_help_dispatches_to_full_commands(self):
         sort_help = run_cli("sort", "--help").stdout
         fix_help = run_cli("fix", "--help").stdout
+        scaffold_help = run_cli("scaffold", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
         self.assertIn("--auto", fix_help)
+        self.assertIn("--fixed-gap-bp", scaffold_help)
 
 
 if __name__ == "__main__":
     unittest.main()
-
