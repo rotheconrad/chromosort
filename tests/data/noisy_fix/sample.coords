@@ -1,0 +1,26 @@
+/tmp/noisy_ref.fa /tmp/noisy_assembly.fa
+NUCMER
+
+    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]
+===============================================================================================================================
+       1       80  |       1       80  |       80       80  |    99.20  |      300      240  |    26.67    33.33  | chrom01	contig_indel_noise
+     101      170  |     101      170  |       70       70  |    98.90  |      300      240  |    23.33    29.17  | chrom01	contig_indel_noise
+     201      240  |     191      230  |       40       40  |    97.50  |      300      240  |    13.33    16.67  | chrom01	contig_indel_noise
+       1       80  |       1       80  |       80       80  |    99.00  |      300      180  |    26.67    44.44  | chrom03	contig_small_inv_sv
+      81      100  |     100       81  |       20       20  |    98.50  |      300      180  |     6.67    11.11  | chrom03	contig_small_inv_sv
+     101      180  |     101      180  |       80       80  |    99.10  |      300      180  |    26.67    44.44  | chrom03	contig_small_inv_sv
+       1       80  |       1       80  |       80       80  |    99.30  |      300      180  |    26.67    44.44  | chrom04	contig_repeat_noise
+       1       20  |      81      100  |       20       20  |    97.20  |      300      180  |     6.67    11.11  | chrom09	contig_repeat_noise
+     101      180  |     101      180  |       80       80  |    99.10  |      300      180  |    26.67    44.44  | chrom04	contig_repeat_noise
+       1      120  |       1      120  |      120      120  |    99.40  |      300      240  |    40.00    50.00  | chrom02	contig_true_chimera
+       1      120  |     121      240  |      120      120  |    99.20  |      300      240  |    40.00    50.00  | chrom07	contig_true_chimera
+       1       60  |       1       60  |       60       60  |    99.00  |      300      240  |    20.00    25.00  | chrom06	contig_true_inv_mid
+      61      180  |     180       61  |      120      120  |    99.30  |      300      240  |    40.00    50.00  | chrom06	contig_true_inv_mid
+     181      240  |     181      240  |       60       60  |    99.00  |      300      240  |    20.00    25.00  | chrom06	contig_true_inv_mid
+       1       60  |       1       60  |       60       60  |    99.10  |      300      250  |    20.00    24.00  | chrom10	contig_complex_chimera_indels
+      81      130  |      71      120  |       50       50  |    98.70  |      300      250  |    16.67    20.00  | chrom10	contig_complex_chimera_indels
+       1      130  |     121      250  |      130      130  |    99.20  |      300      250  |    43.33    52.00  | chrom11	contig_complex_chimera_indels
+       1      170  |       1      170  |      170      170  |    99.40  |      300      200  |    56.67    85.00  | chrom12	contig_terminal_inv_noise
+     171      200  |     200      171  |       30       30  |    98.00  |      300      200  |    10.00    15.00  | chrom12	contig_terminal_inv_noise
+       1      150  |       1      150  |      150      150  |    99.50  |      300      240  |    50.00    62.50  | chrom13	contig_true_inv_end
+     151      240  |     240      151  |       90       90  |    99.10  |      300      240  |    30.00    37.50  | chrom13	contig_true_inv_end

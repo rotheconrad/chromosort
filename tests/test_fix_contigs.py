@@ -9,9 +9,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data" / "chimeric"
+NOISY_DATA = Path(__file__).resolve().parent / "data" / "noisy_fix"
 
 
-def run_fix_contigs(tmp_path, *extra_args, contigs=None):
+def run_fix_contigs(tmp_path, *extra_args, contigs=None, data=DATA):
     output_fasta = tmp_path / "fixed.fa"
     report = tmp_path / "fixed.tsv"
     if contigs is None:
@@ -21,9 +22,9 @@ def run_fix_contigs(tmp_path, *extra_args, contigs=None):
         "-m",
         "chromosort.fix_contigs",
         "--assembly-fasta",
-        str(DATA / "assembly.fa"),
+        str(data / "assembly.fa"),
         "--coords",
-        str(DATA / "sample.coords"),
+        str(data / "sample.coords"),
         "--output-fasta",
         str(output_fasta),
         "--report",
@@ -149,6 +150,7 @@ class FixContigsTests(unittest.TestCase):
             output_fasta, report = run_fix_contigs(
                 Path(tmp),
                 "--auto",
+                "--auto-sensitive",
                 "--simple-headers",
                 contigs=[],
             )
@@ -177,6 +179,82 @@ class FixContigsTests(unittest.TestCase):
                 "contig_inv_mid",
                 "contig_inv_end",
             })
+
+    def test_auto_smoothing_splits_large_events_and_ignores_sv_noise(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_fasta, report = run_fix_contigs(
+                Path(tmp),
+                "--auto",
+                "--simple-headers",
+                "--min-segment-bp",
+                "10",
+                "--auto-breakpoint-penalty-bp",
+                "50",
+                "--auto-min-piece-aligned-bp",
+                "50",
+                data=NOISY_DATA,
+                contigs=[],
+            )
+
+            records = read_fasta(output_fasta)
+            self.assertEqual(
+                list(records),
+                [
+                    "contig_indel_noise",
+                    "contig_small_inv_sv",
+                    "contig_repeat_noise",
+                    "chrom02-contig_true_chimera-a",
+                    "chrom07-contig_true_chimera-b",
+                    "chrom06-contig_true_inv_mid-a",
+                    "chrom06-contig_true_inv_mid-b",
+                    "chrom06-contig_true_inv_mid-c",
+                    "chrom10-contig_complex_chimera_indels-a",
+                    "chrom11-contig_complex_chimera_indels-b",
+                    "contig_terminal_inv_noise",
+                    "chrom13-contig_true_inv_end-a",
+                    "chrom13-contig_true_inv_end-b",
+                ],
+            )
+
+            rows = read_report(report)
+            rows_by_contig = {}
+            for row in rows:
+                rows_by_contig.setdefault(row["original_contig"], []).append(row)
+
+            self.assertNotIn("contig_indel_noise", rows_by_contig)
+            for contig in [
+                "contig_small_inv_sv",
+                "contig_repeat_noise",
+                "contig_terminal_inv_noise",
+            ]:
+                self.assertEqual(rows_by_contig[contig][0]["status"], "not_split_auto_smooth")
+
+            self.assertEqual(
+                [row["new_contig"] for row in rows_by_contig["contig_true_chimera"]],
+                ["chrom02-contig_true_chimera-a", "chrom07-contig_true_chimera-b"],
+            )
+            self.assertEqual(
+                [(row["new_contig"], row["orientation"]) for row in rows_by_contig["contig_true_inv_mid"]],
+                [
+                    ("chrom06-contig_true_inv_mid-a", "+"),
+                    ("chrom06-contig_true_inv_mid-b", "-"),
+                    ("chrom06-contig_true_inv_mid-c", "+"),
+                ],
+            )
+            self.assertEqual(
+                [row["new_contig"] for row in rows_by_contig["contig_complex_chimera_indels"]],
+                [
+                    "chrom10-contig_complex_chimera_indels-a",
+                    "chrom11-contig_complex_chimera_indels-b",
+                ],
+            )
+            self.assertEqual(
+                [(row["new_contig"], row["orientation"]) for row in rows_by_contig["contig_true_inv_end"]],
+                [
+                    ("chrom13-contig_true_inv_end-a", "+"),
+                    ("chrom13-contig_true_inv_end-b", "-"),
+                ],
+            )
 
 
 if __name__ == "__main__":

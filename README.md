@@ -9,7 +9,7 @@ ChromoSort provides one command, `chromo`, with two subcommands:
   low-value duplicate overlaps, and writes a reference-ordered FASTA.
 - `chromo fix` splits contigs with chromosome transitions or inversion blocks
   into reference-labeled pieces, either from a user-supplied contig list or with
-  `--auto` detection.
+  conservative `--auto` detection that smooths over small SV/INDEL-like noise.
 
 Both workflows use standard MUMmer `show-coords` output and are designed for
 reuse across species and genome assembly projects. ChromoSort does not build
@@ -356,9 +356,11 @@ For each requested or auto-detected contig, `chromo fix`:
 4. Looks for reference transitions along the contig.
 5. Looks for orientation transitions along the contig, including same-reference
    inversion blocks.
-6. Places breakpoints halfway between neighboring alignment blocks.
-7. Replaces the original contig with two or more pieces in the output FASTA.
-8. Writes a TSV report with slice coordinates, reference labels, orientation,
+6. In `--auto` mode, scores candidate breakpoints with a breakpoint-penalty
+   segmentation model that smooths over weak local discordance.
+7. Places accepted breakpoints halfway between neighboring alignment blocks.
+8. Replaces the original contig with two or more pieces in the output FASTA.
+9. Writes a TSV report with slice coordinates, reference labels, orientation,
    identity, and split status.
 
 By default, unrequested contigs are copied unchanged, producing a full fixed
@@ -391,9 +393,16 @@ chromo fix \
 ```
 
 `--auto` scans all contigs for passing alignment blocks that change reference
-sequence or orientation. It can detect interchromosomal chimeras and
-same-reference inversion blocks after `--min-segment-bp`, `--min-segment-idy`,
-and `--max-merge-gap` have been tuned for the assembly.
+sequence or orientation. Candidate contigs are then segmented with a conservative
+breakpoint-penalty model: keeping a small discordant block inside a larger
+piece has a cost, but adding a breakpoint has a larger fixed penalty. This lets
+`chromo fix` smooth over real-looking small SVs, local repeat hits, fragmented
+alignments, and INDEL-sized gaps while still splitting strong large-scale
+chimeras and inversion blocks.
+
+Use `--auto-sensitive` to recover the earlier behavior that splits every
+passing reference or orientation transition. That mode is useful for debugging
+and exploratory scans, but it is more likely to introduce extra breakpoints.
 
 ### `chromo fix` Outputs
 
@@ -405,7 +414,8 @@ and `--max-merge-gap` have been tuned for the assembly.
 The report includes original contig name, split status, new contig name,
 dominant reference, slice coordinates, alignment coordinates, orientation,
 reverse-complement status, identity, segment count, and the reason for the
-decision.
+decision. Auto candidates that contain discordant blocks but are not cut are
+reported as `not_split_auto_smooth`.
 
 ### `chromo fix` Naming
 
@@ -454,11 +464,15 @@ appear in your FASTA and MUMmer output are used. Change the separator with
 | --- | ---: | --- |
 | `--contigs` | none | Space-separated names of contigs to inspect and split. |
 | `--contigs-file` | none | Optional file with one contig name per line. |
-| `--auto` | off | Scan all contigs and split those with reference or orientation transitions. |
+| `--auto` | off | Scan all contigs and conservatively split those with strong reference or orientation transitions. |
+| `--auto-sensitive` | off | Disable auto smoothing and split every passing reference/orientation transition. |
 | `--min-segment-bp` | `10000` | Minimum alignment segment length used to infer split blocks. |
 | `--min-segment-idy` | `0.0` | Minimum percent identity for split-informing alignment rows. |
 | `--max-merge-gap` | `1000` | Merge nearby same-reference rows separated by this many query bp or less. |
 | `--min-piece-bp` | `1` | Do not emit split pieces shorter than this length. |
+| `--auto-breakpoint-penalty-bp` | `50000` | Identity-weighted aligned bp cost charged for each auto breakpoint. |
+| `--auto-min-piece-aligned-bp` | `50000` | Minimum dominant aligned bp required in each auto-split piece. |
+| `--auto-min-piece-query-frac` | `0.01` | Minimum query-span fraction required in each auto-split piece. |
 | `--orient-to-reference` | off | Reverse-complement split pieces from reverse-strand blocks. |
 | `--pieces-only` | off | Write only split pieces instead of a full fixed assembly FASTA. |
 
@@ -480,20 +494,41 @@ both chromosome transitions and orientation transitions, so it can detect
 classical interchromosomal chimeras as well as same-reference inversion blocks.
 It is opt-in because automatic contig cutting should be reviewed carefully.
 
+#### Breakpoint-Penalty Segmentation
+
+Auto mode uses a small dynamic-programming segmentation model. For each contig,
+`chromo fix` asks whether the query-ordered alignment blocks are better
+explained as one smoothed piece or as multiple pieces separated by breakpoints.
+
+Keeping a discordant block inside a larger piece costs that block's
+identity-weighted aligned bp. Adding a breakpoint costs
+`--auto-breakpoint-penalty-bp`. A breakpoint is accepted only when the reduction
+in discordant support is worth paying the penalty and every resulting piece has
+enough dominant aligned support. This makes the default behavior
+breakpoint-averse: small inversions, short transposed/repeat-like hits,
+fragmented same-chromosome alignments, and INDEL-sized gaps are smoothed over
+instead of cut.
+
 #### Breakpoints Between Alignment Blocks
 
-`chromo fix` places breakpoints halfway between neighboring query-ordered
-alignment blocks. When blocks are adjacent, the breakpoint lands at the
-alignment boundary. When there is an unaligned gap, the gap is divided between
-the neighboring pieces instead of being discarded.
+After segmentation, `chromo fix` places accepted breakpoints halfway between
+neighboring query-ordered alignment blocks. When blocks are adjacent, the
+breakpoint lands at the alignment boundary. When there is an unaligned gap, the
+gap is divided between the neighboring pieces instead of being discarded.
 
 #### Synthetic Test Cases
 
-The synthetic test data under `tests/data/chimeric` includes four fix cases:
+The synthetic test data under `tests/data/chimeric` includes direct fix cases:
 one contig split roughly half-and-half between two reference chromosomes, one
 with 25 percent of its sequence matching one chromosome and 75 percent matching
 another, one with a large inverted block in the middle, and one with an inverted
 block at the end.
+
+The noisier benchmark under `tests/data/noisy_fix` adds INDEL-like gaps, a small
+local inversion, a short repeat-like hit to another chromosome, true large-scale
+chimeras, a complex chimera with internal gaps, and terminal/internal inversion
+cases. The expected behavior is conservative: split the large-scale assembly
+error patterns and report the weaker discordance as `not_split_auto_smooth`.
 
 ## Development
 
@@ -541,4 +576,4 @@ sorting and splitting tools.
 
 | Version | Notes |
 | --- | --- |
-| `0.1.0` | Initial public package with `chromo sort`, `chromo fix`, duplicate-overlap filtering, user-nominated contig splitting, auto detection, and synthetic tests. |
+| `0.1.0` | Initial public package with `chromo sort`, `chromo fix`, duplicate-overlap filtering, user-nominated contig splitting, conservative auto smoothing, and synthetic tests. |
