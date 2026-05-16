@@ -16,3 +16,4 @@ env/
 *.fna.fai
 /results/
 /data/
+/temp/

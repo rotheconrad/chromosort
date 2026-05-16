@@ -75,6 +75,9 @@ class ContigPlan:
     status: str
     pieces: List[SplitPiece]
     reason: str
+    auto_score: float = 0.0
+    auto_breakpoints: int = 0
+    auto_ref_transition: bool = False
 
 
 @dataclass
@@ -123,8 +126,9 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         action="store_true",
         help=(
             "Automatically inspect contigs with passing alignment blocks that "
-            "change reference sequence or orientation. Auto mode uses "
-            "breakpoint-penalty smoothing unless --auto-sensitive is set."
+            "change reference sequence. Add --auto-split-inversions to include "
+            "same-reference orientation changes. Auto mode uses breakpoint-"
+            "penalty smoothing unless --auto-sensitive is set."
         ),
     )
     ap.add_argument(
@@ -134,6 +138,27 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
             "In auto mode, split every passing reference/orientation transition "
             "without breakpoint-penalty smoothing. This is useful for debugging "
             "or intentionally sensitive scans."
+        ),
+    )
+    ap.add_argument(
+        "--auto-split-inversions",
+        action="store_true",
+        help=(
+            "In conservative auto mode, also split same-reference orientation "
+            "transitions. By default, auto mode only cuts chromosome/reference "
+            "changes because large cultivar inversions may be biological rather "
+            "than contig misjoins."
+        ),
+    )
+    ap.add_argument(
+        "--auto-complex-inversions",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "In conservative auto mode, split same-reference orientation "
+            "events only when the proposed pieces have large nested/overlapping "
+            "reference spans. This catches complex contig-order errors while "
+            "leaving simple contiguous inversions unchanged."
         ),
     )
     ap.add_argument(
@@ -200,6 +225,36 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         help=(
             "Minimum query-span fraction required for each auto-split piece. "
             "Set to 0 to disable this fraction check."
+        ),
+    )
+    ap.add_argument(
+        "--auto-complex-inversion-min-piece-aligned-bp",
+        type=int,
+        default=1_000_000,
+        help=(
+            "Minimum dominant aligned bp for pieces used to classify a "
+            "same-reference orientation event as complex rather than a simple "
+            "contiguous inversion."
+        ),
+    )
+    ap.add_argument(
+        "--auto-complex-inversion-min-overlap-frac",
+        type=float,
+        default=0.50,
+        help=(
+            "Minimum reference-span overlap fraction, relative to the smaller "
+            "piece, for a same-reference orientation event to be considered "
+            "complex in auto mode."
+        ),
+    )
+    ap.add_argument(
+        "--auto-max-breakpoints",
+        type=int,
+        default=4,
+        help=(
+            "Maximum accepted auto breakpoints for the whole run. Auto split "
+            "plans are ranked by evidence and accepted until this budget is "
+            "used. Set to a negative value to disable this guardrail."
         ),
     )
     ap.add_argument(
@@ -311,13 +366,19 @@ def split_signature(block):
     return block.ref, block.orientation
 
 
-def has_split_signal(blocks):
+def auto_signature(block, include_orientation):
+    if include_orientation:
+        return split_signature(block)
+    return block.ref, "."
+
+
+def has_split_signal(blocks, include_orientation=True):
     if len(blocks) < 2:
         return False
-    return len({split_signature(block) for block in blocks}) > 1
+    return len({auto_signature(block, include_orientation) for block in blocks}) > 1
 
 
-def group_support(blocks):
+def group_support(blocks, include_orientation=True):
     support = defaultdict(float)
     aligned_bp = defaultdict(int)
     identity_bp = defaultdict(float)
@@ -327,7 +388,7 @@ def group_support(blocks):
     first_seen = {}
 
     for index, block in enumerate(blocks):
-        signature = split_signature(block)
+        signature = auto_signature(block, include_orientation)
         support[signature] += block.weighted_bp
         aligned_bp[signature] += block.aligned_bp
         identity_bp[signature] += block.identity_bp
@@ -361,9 +422,18 @@ def group_support(blocks):
     }
 
 
-def summarize_group(blocks):
-    support = group_support(blocks)
+def dominant_orientation(blocks, ref=None):
+    relevant = [block for block in blocks if ref is None or block.ref == ref]
+    plus_bp = sum(block.aligned_bp for block in relevant if block.orientation == "+")
+    minus_bp = sum(block.aligned_bp for block in relevant if block.orientation == "-")
+    return "-" if minus_bp > plus_bp else "+"
+
+
+def summarize_group(blocks, include_orientation=True):
+    support = group_support(blocks, include_orientation)
     ref, orientation = support["signature"]
+    if not include_orientation:
+        orientation = dominant_orientation(blocks, ref)
     query_start = min(block.query_start for block in blocks)
     query_end = max(block.query_end for block in blocks)
     summary = QueryBlock(
@@ -387,6 +457,24 @@ def summarize_group(blocks):
     )
 
 
+def collapse_adjacent_blocks_by_signature(blocks, include_orientation=True):
+    collapsed = []
+    current = []
+    current_signature = None
+
+    for block in blocks:
+        signature = auto_signature(block, include_orientation)
+        if current and signature != current_signature:
+            collapsed.append(summarize_group(current, include_orientation).summary)
+            current = []
+        current.append(block)
+        current_signature = signature
+
+    if current:
+        collapsed.append(summarize_group(current, include_orientation).summary)
+    return collapsed
+
+
 def auto_group_piece_is_supported(group, seq_len, args):
     span_frac = group.summary.query_span / seq_len if seq_len else 0.0
     return (
@@ -395,7 +483,7 @@ def auto_group_piece_is_supported(group, seq_len, args):
     )
 
 
-def segment_blocks_for_auto(blocks, args):
+def segment_blocks_for_auto(blocks, args, include_orientation):
     nblocks = len(blocks)
     if nblocks == 0:
         return []
@@ -405,7 +493,10 @@ def segment_blocks_for_auto(blocks, args):
     def interval_cost(start, end):
         key = (start, end)
         if key not in cost_cache:
-            cost_cache[key] = group_support(blocks[start:end])["discordant_bp"]
+            cost_cache[key] = group_support(
+                blocks[start:end],
+                include_orientation,
+            )["discordant_bp"]
         return cost_cache[key]
 
     # Dynamic programming: retaining a discordant block inside a segment costs
@@ -434,31 +525,120 @@ def segment_blocks_for_auto(blocks, args):
     end = nblocks
     while end > 0:
         start = dp[end][2]
-        groups.append(summarize_group(blocks[start:end]))
+        groups.append(summarize_group(blocks[start:end], include_orientation))
         end = start
     groups.reverse()
     return groups
 
 
-def count_smoothed_transitions(groups):
+def auto_plan_score(blocks, groups, args, include_orientation):
+    if len(groups) < 2:
+        return 0.0
+    whole_discordant = group_support(blocks, include_orientation)["discordant_bp"]
+    split_discordant = sum(group.discordant_bp for group in groups)
+    breakpoints = len(groups) - 1
+    return whole_discordant - split_discordant - (
+        args.auto_breakpoint_penalty_bp * breakpoints
+    )
+
+
+def ref_span_overlap_fraction(left, right):
+    left_start, left_end = left.summary.ref_start, left.summary.ref_end
+    right_start, right_end = right.summary.ref_start, right.summary.ref_end
+    overlap = min(left_end, right_end) - max(left_start, right_start)
+    if overlap <= 0:
+        return 0.0
+    smaller = min(left_end - left_start, right_end - right_start)
+    return overlap / smaller if smaller > 0 else 0.0
+
+
+def same_ref_orientation_plan_is_complex(groups, args):
+    if len(groups) < 2:
+        return False
+    if len({group.summary.ref for group in groups}) != 1:
+        return False
+    if len({group.summary.orientation for group in groups}) < 2:
+        return False
+
+    for left, right in zip(groups, groups[1:]):
+        if (
+            left.summary.aligned_bp
+            < args.auto_complex_inversion_min_piece_aligned_bp
+            or right.summary.aligned_bp
+            < args.auto_complex_inversion_min_piece_aligned_bp
+        ):
+            continue
+        if (
+            ref_span_overlap_fraction(left, right)
+            >= args.auto_complex_inversion_min_overlap_frac
+        ):
+            return True
+    return False
+
+
+def auto_orientation_groups(blocks, args):
+    return merge_adjacent_auto_groups_by_signature(
+        segment_blocks_for_auto(blocks, args, True),
+        True,
+    )
+
+
+def auto_include_orientation(blocks, args):
+    if not has_split_signal(blocks, True):
+        return False
+    if args.auto_split_inversions:
+        return True
+    if not args.auto_complex_inversions:
+        return False
+    groups = auto_orientation_groups(blocks, args)
+    return same_ref_orientation_plan_is_complex(groups, args)
+
+
+def merge_adjacent_auto_groups_by_signature(groups, include_orientation=True):
+    merged = []
+    for group in groups:
+        if (
+            merged
+            and auto_signature(merged[-1].summary, include_orientation)
+            == auto_signature(group.summary, include_orientation)
+        ):
+            combined = summarize_group(
+                merged[-1].blocks + group.blocks,
+                include_orientation,
+            )
+            if auto_signature(combined.summary, include_orientation) == auto_signature(
+                merged[-1].summary,
+                include_orientation,
+            ):
+                merged[-1] = combined
+                continue
+        merged.append(group)
+    return merged
+
+
+def count_smoothed_transitions(groups, include_orientation=True):
     count = 0
     for group in groups:
         count += sum(
             1
             for left, right in zip(group.blocks, group.blocks[1:])
-            if split_signature(left) != split_signature(right)
+            if auto_signature(left, include_orientation)
+            != auto_signature(right, include_orientation)
         )
     return count
 
 
-def auto_requested_contigs(fasta_path, blocks_by_contig, explicit_contigs):
+def auto_requested_contigs(fasta_path, blocks_by_contig, explicit_contigs, args):
     explicit_set = set(explicit_contigs)
     requested = list(explicit_contigs)
     for name, _, _ in iter_fasta_records(fasta_path):
         if name in explicit_set:
             continue
         blocks = blocks_by_contig.get(name, [])
-        if has_split_signal(blocks):
+        if has_split_signal(blocks, False) or (
+            args.auto_sensitive
+            and has_split_signal(blocks, True)
+        ) or auto_include_orientation(blocks, args):
             requested.append(name)
     return requested
 
@@ -534,8 +714,23 @@ def build_split_plan(contig, seq_len, blocks, args):
             reason="All passing alignment blocks map to the same reference sequence and orientation.",
         )
 
-    boundaries = [boundary_between(left, right) for left, right in zip(blocks, blocks[1:])]
-    pieces = pieces_from_ordered_blocks(contig, seq_len, blocks, boundaries, args)
+    split_blocks = collapse_adjacent_blocks_by_signature(blocks)
+    if len(split_blocks) < 2:
+        return ContigPlan(
+            contig=contig,
+            status="not_split_single_target",
+            pieces=[],
+            reason=(
+                "After collapsing adjacent same-reference/orientation alignment "
+                "runs, only one split target remained."
+            ),
+        )
+
+    boundaries = [
+        boundary_between(left, right)
+        for left, right in zip(split_blocks, split_blocks[1:])
+    ]
+    pieces = pieces_from_ordered_blocks(contig, seq_len, split_blocks, boundaries, args)
 
     if len(pieces) < 2:
         return ContigPlan(
@@ -549,7 +744,11 @@ def build_split_plan(contig, seq_len, blocks, args):
         contig=contig,
         status="split",
         pieces=pieces,
-        reason=f"{len(pieces)} query-ordered pieces inferred from {len(blocks)} alignment blocks.",
+        reason=(
+            f"{len(pieces)} query-ordered pieces inferred from "
+            f"{len(split_blocks)} reference/orientation runs collapsed from "
+            f"{len(blocks)} alignment blocks."
+        ),
     )
 
 
@@ -571,15 +770,27 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
             pieces=[],
             reason="Only one passing alignment block was found.",
         )
-    if not has_split_signal(blocks):
+
+    include_orientation = auto_include_orientation(blocks, args)
+    if not has_split_signal(blocks, False) and not include_orientation:
         return ContigPlan(
             contig=contig,
             status="not_split_single_target",
             pieces=[],
-            reason="All passing alignment blocks map to the same reference sequence and orientation.",
+            reason=(
+                "All passing alignment blocks map to the same reference sequence"
+                + (
+                    ". Same-reference orientation changes look like simple "
+                    "contiguous inversions and are ignored unless "
+                    "--auto-split-inversions is set."
+                )
+            ),
         )
 
-    groups = segment_blocks_for_auto(blocks, args)
+    groups = merge_adjacent_auto_groups_by_signature(
+        segment_blocks_for_auto(blocks, args, include_orientation),
+        include_orientation,
+    )
     if len(groups) < 2:
         discordant_bp = groups[0].discordant_bp if groups else 0.0
         return ContigPlan(
@@ -626,7 +837,10 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
             reason="Fewer than two auto split pieces passed the minimum piece length.",
         )
 
-    smoothed = count_smoothed_transitions(groups)
+    breakpoints = len(pieces) - 1
+    score = auto_plan_score(blocks, groups, args, include_orientation)
+    ref_transition = len({group.summary.ref for group in groups}) > 1
+    smoothed = count_smoothed_transitions(groups, include_orientation)
     return ContigPlan(
         contig=contig,
         status="split",
@@ -634,8 +848,11 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
         reason=(
             f"{len(pieces)} auto pieces inferred from {len(blocks)} alignment blocks "
             f"after smoothing {smoothed} weak transition(s) with breakpoint penalty "
-            f"{args.auto_breakpoint_penalty_bp:.1f}."
+            f"{args.auto_breakpoint_penalty_bp:.1f}; auto_score={score:.1f}."
         ),
+        auto_score=score,
+        auto_breakpoints=breakpoints,
+        auto_ref_transition=ref_transition,
     )
 
 
@@ -667,6 +884,44 @@ def build_plans(fasta_path, requested, explicit_requested, blocks_by_contig, arg
                 args,
             )
     return plans
+
+
+def apply_auto_breakpoint_budget(plans, explicit_requested, args):
+    if not args.auto or args.auto_max_breakpoints < 0:
+        return
+
+    explicit_set = set(explicit_requested)
+    auto_splits = [
+        plan
+        for contig, plan in plans.items()
+        if contig not in explicit_set and plan.status == "split"
+    ]
+    auto_splits.sort(
+        key=lambda plan: (
+            plan.auto_ref_transition,
+            plan.auto_score,
+            -plan.auto_breakpoints,
+            plan.contig,
+        ),
+        reverse=True,
+    )
+
+    used = 0
+    for plan in auto_splits:
+        breakpoints = plan.auto_breakpoints or max(0, len(plan.pieces) - 1)
+        if used + breakpoints <= args.auto_max_breakpoints:
+            used += breakpoints
+            continue
+
+        plan.status = "not_split_auto_too_many_breakpoints"
+        plan.pieces = []
+        plan.reason = (
+            "Auto split plan was rejected by the run-level breakpoint budget: "
+            f"this plan required {breakpoints} breakpoint(s), "
+            f"{used}/{args.auto_max_breakpoints} had already been reserved by "
+            "higher-priority auto plans, and the remaining budget was not enough. "
+            f"auto_score={plan.auto_score:.1f}."
+        )
 
 
 def fasta_header(piece, simple_headers):
@@ -800,7 +1055,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         args.max_merge_gap,
     )
     requested = (
-        auto_requested_contigs(args.assembly_fasta, blocks_by_contig, explicit_requested)
+        auto_requested_contigs(args.assembly_fasta, blocks_by_contig, explicit_requested, args)
         if args.auto
         else explicit_requested
     )
@@ -811,6 +1066,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         blocks_by_contig,
         args,
     )
+    apply_auto_breakpoint_budget(plans, explicit_requested, args)
     write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args)
     write_report(args.report, requested, plans)
 

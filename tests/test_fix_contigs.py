@@ -66,6 +66,186 @@ def read_report(path):
 
 
 class FixContigsTests(unittest.TestCase):
+    def test_user_split_collapses_same_target_alignment_gaps(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            data = tmp_path / "data"
+            data.mkdir()
+            (data / "assembly.fa").write_text(
+                ">contig_gap_chimera\n"
+                + "A" * 20
+                + "N" * 10
+                + "A" * 20
+                + "C" * 20
+                + "N" * 10
+                + "G" * 20
+                + "\n"
+            )
+            (data / "sample.coords").write_text(
+                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "NUCMER\n\n"
+                "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
+                "===============================================================================================================================\n"
+                "       1       20  |       1       20  |       20       20  |   100.00  |      200      100  |    10.00    20.00  | chrom01\tcontig_gap_chimera\n"
+                "      31       50  |      31       50  |       20       20  |   100.00  |      200      100  |    10.00    20.00  | chrom01\tcontig_gap_chimera\n"
+                "       1       20  |      51       70  |       20       20  |   100.00  |      200      100  |    10.00    20.00  | chrom07\tcontig_gap_chimera\n"
+                "      81      100  |      81      100  |       20       20  |   100.00  |      200      100  |    10.00    20.00  | chrom01\tcontig_gap_chimera\n"
+            )
+
+            output_fasta, report = run_fix_contigs(
+                tmp_path,
+                "--simple-headers",
+                contigs=["contig_gap_chimera"],
+                data=data,
+            )
+
+            self.assertEqual(
+                list(read_fasta(output_fasta)),
+                [
+                    "chrom01-contig_gap_chimera-a",
+                    "chrom07-contig_gap_chimera-b",
+                    "chrom01-contig_gap_chimera-c",
+                ],
+            )
+            rows = read_report(report)
+            self.assertEqual(
+                [(row["new_contig"], row["slice_start"], row["slice_end"]) for row in rows],
+                [
+                    ("chrom01-contig_gap_chimera-a", "1", "50"),
+                    ("chrom07-contig_gap_chimera-b", "51", "75"),
+                    ("chrom01-contig_gap_chimera-c", "76", "100"),
+                ],
+            )
+
+    def test_auto_rejects_candidates_with_too_many_breakpoints(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            data = tmp_path / "data"
+            data.mkdir()
+            (data / "assembly.fa").write_text(
+                ">contig_many_transitions\n" + "A" * 60 + "\n"
+            )
+            rows = [
+                (
+                    ref,
+                    start,
+                    end,
+                )
+                for ref, start, end in [
+                    ("chrom01", 1, 10),
+                    ("chrom02", 11, 20),
+                    ("chrom03", 21, 30),
+                    ("chrom04", 31, 40),
+                    ("chrom05", 41, 50),
+                    ("chrom06", 51, 60),
+                ]
+            ]
+            coords = [
+                "/tmp/ref.fa /tmp/assembly.fa",
+                "NUCMER",
+                "",
+                "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]",
+                "===============================================================================================================================",
+            ]
+            for ref, start, end in rows:
+                coords.append(
+                    f"       1       10  |      {start:2d}      {end:2d}  |       10       10  |   100.00  |      100       60  |    10.00    16.67  | {ref}\tcontig_many_transitions"
+                )
+            (data / "sample.coords").write_text("\n".join(coords) + "\n")
+
+            output_fasta, report = run_fix_contigs(
+                tmp_path,
+                "--auto",
+                "--auto-breakpoint-penalty-bp",
+                "1",
+                "--auto-min-piece-aligned-bp",
+                "5",
+                "--auto-min-piece-query-frac",
+                "0",
+                "--simple-headers",
+                data=data,
+                contigs=[],
+            )
+
+            self.assertEqual(list(read_fasta(output_fasta)), ["contig_many_transitions"])
+            rows = read_report(report)
+            self.assertEqual(rows[0]["status"], "not_split_auto_too_many_breakpoints")
+
+    def test_auto_default_ignores_same_reference_inversions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            data = tmp_path / "data"
+            data.mkdir()
+            (data / "assembly.fa").write_text(
+                ">contig_inversion_only\n" + "A" * 60 + "\n"
+            )
+            (data / "sample.coords").write_text(
+                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "NUCMER\n\n"
+                "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
+                "===============================================================================================================================\n"
+                "       1       20  |       1       20  |       20       20  |   100.00  |      100       60  |    20.00    33.33  | chrom01\tcontig_inversion_only\n"
+                "      21       40  |      40       21  |       20       20  |   100.00  |      100       60  |    20.00    33.33  | chrom01\tcontig_inversion_only\n"
+                "      41       60  |      41       60  |       20       20  |   100.00  |      100       60  |    20.00    33.33  | chrom01\tcontig_inversion_only\n"
+            )
+
+            output_fasta, report = run_fix_contigs(
+                tmp_path,
+                "--auto",
+                "--simple-headers",
+                data=data,
+                contigs=[],
+            )
+
+            self.assertEqual(list(read_fasta(output_fasta)), ["contig_inversion_only"])
+            self.assertEqual(read_report(report), [])
+
+    def test_auto_default_splits_complex_same_reference_inversions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            data = tmp_path / "data"
+            data.mkdir()
+            (data / "assembly.fa").write_text(
+                ">contig_complex_inversion\n" + "A" * 90 + "\n"
+            )
+            (data / "sample.coords").write_text(
+                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "NUCMER\n\n"
+                "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
+                "===============================================================================================================================\n"
+                "       1       80  |       1       30  |       80       30  |   100.00  |      100       90  |    80.00    33.33  | chrom01\tcontig_complex_inversion\n"
+                "      30       60  |      60       31  |       31       30  |   100.00  |      100       90  |    31.00    33.33  | chrom01\tcontig_complex_inversion\n"
+                "      50       90  |      61       90  |       41       30  |   100.00  |      100       90  |    41.00    33.33  | chrom01\tcontig_complex_inversion\n"
+            )
+
+            output_fasta, report = run_fix_contigs(
+                tmp_path,
+                "--auto",
+                "--simple-headers",
+                "--auto-breakpoint-penalty-bp",
+                "5",
+                "--auto-min-piece-aligned-bp",
+                "10",
+                "--auto-min-piece-query-frac",
+                "0",
+                "--auto-complex-inversion-min-piece-aligned-bp",
+                "10",
+                data=data,
+                contigs=[],
+            )
+
+            self.assertEqual(
+                list(read_fasta(output_fasta)),
+                [
+                    "chrom01-contig_complex_inversion-a",
+                    "chrom01-contig_complex_inversion-b",
+                    "chrom01-contig_complex_inversion-c",
+                ],
+            )
+            rows = read_report(report)
+            self.assertEqual(len(rows), 3)
+            self.assertTrue(all(row["status"] == "split" for row in rows))
+
     def test_splits_user_nominated_chimeric_contigs(self):
         with tempfile.TemporaryDirectory() as tmp:
             output_fasta, report = run_fix_contigs(Path(tmp))
@@ -151,6 +331,8 @@ class FixContigsTests(unittest.TestCase):
                 Path(tmp),
                 "--auto",
                 "--auto-sensitive",
+                "--auto-max-breakpoints",
+                "-1",
                 "--simple-headers",
                 contigs=[],
             )
@@ -185,6 +367,7 @@ class FixContigsTests(unittest.TestCase):
             output_fasta, report = run_fix_contigs(
                 Path(tmp),
                 "--auto",
+                "--auto-split-inversions",
                 "--simple-headers",
                 "--min-segment-bp",
                 "10",
@@ -192,6 +375,8 @@ class FixContigsTests(unittest.TestCase):
                 "50",
                 "--auto-min-piece-aligned-bp",
                 "50",
+                "--auto-max-breakpoints",
+                "-1",
                 data=NOISY_DATA,
                 contigs=[],
             )

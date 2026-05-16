@@ -91,6 +91,26 @@ class ReferenceOrderTests(unittest.TestCase):
             headers = fasta_headers(prefix.with_suffix(".ordered.fa"))
             self.assertIn("chr1_contigDup", headers)
 
+    def test_split_candidate_is_protected_from_duplicate_overlap_filter(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = run_chromosort(
+                Path(tmp),
+                "--split-candidate-min-aligned-bp",
+                "20",
+                "--split-candidate-min-query-frac",
+                "0.20",
+            )
+
+            assignments = read_assignments(prefix.with_suffix(".contig_assignments.tsv"))
+            candidate = assignments["contigChimeraDup"]
+            self.assertEqual(candidate["status"], "kept_split_candidate")
+            self.assertEqual(candidate["kept"], "yes")
+            self.assertEqual(candidate["split_candidate"], "yes")
+            self.assertEqual(candidate["split_candidate_refs"], "chr1,chr2")
+
+            headers = fasta_headers(prefix.with_suffix(".ordered.fa"))
+            self.assertIn("chr1_contigChimeraDup", headers)
+
 
 if __name__ == "__main__":
     unittest.main()
