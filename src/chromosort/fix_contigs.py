@@ -221,7 +221,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
     ap.add_argument(
         "--auto-min-piece-query-frac",
         type=float,
-        default=0.01,
+        default=0.05,
         help=(
             "Minimum query-span fraction required for each auto-split piece. "
             "Set to 0 to disable this fraction check."
@@ -811,14 +811,20 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
     ]
     if unsupported:
         weakest = min(group.summary.aligned_bp for group in unsupported)
+        weakest_frac = min(
+            group.summary.query_span / seq_len if seq_len else 0.0
+            for group in unsupported
+        )
         return ContigPlan(
             contig=contig,
             status="not_split_auto_smooth",
             pieces=[],
             reason=(
                 "Auto smoothing rejected the best split because at least one "
-                "piece had weak dominant support "
-                f"({weakest} aligned bp; required {args.auto_min_piece_aligned_bp})."
+                "piece failed support thresholds "
+                f"({weakest} aligned bp; required {args.auto_min_piece_aligned_bp}; "
+                f"query span fraction {weakest_frac:.4f}; "
+                f"required {args.auto_min_piece_query_frac:.4f})."
             ),
         )
 

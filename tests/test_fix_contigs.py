@@ -171,6 +171,41 @@ class FixContigsTests(unittest.TestCase):
             rows = read_report(report)
             self.assertEqual(rows[0]["status"], "not_split_auto_too_many_breakpoints")
 
+    def test_auto_default_rejects_tiny_reference_transition_piece(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            data = tmp_path / "data"
+            data.mkdir()
+            (data / "assembly.fa").write_text(
+                ">contig_small_head\n" + "A" * 200 + "\n"
+            )
+            (data / "sample.coords").write_text(
+                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "NUCMER\n\n"
+                "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
+                "===============================================================================================================================\n"
+                "       1        8  |       1        8  |        8        8  |   100.00  |      300      200  |     2.67     4.00  | chrom02\tcontig_small_head\n"
+                "       1      192  |       9      200  |      192      192  |   100.00  |      300      200  |    64.00    96.00  | chrom19\tcontig_small_head\n"
+            )
+
+            output_fasta, report = run_fix_contigs(
+                tmp_path,
+                "--auto",
+                "--auto-breakpoint-penalty-bp",
+                "1",
+                "--auto-min-piece-aligned-bp",
+                "5",
+                "--simple-headers",
+                data=data,
+                contigs=[],
+            )
+
+            self.assertEqual(list(read_fasta(output_fasta)), ["contig_small_head"])
+            rows = read_report(report)
+            self.assertEqual(rows[0]["status"], "not_split_auto_smooth")
+            self.assertIn("failed support thresholds", rows[0]["reason"])
+            self.assertIn("query span fraction 0.0400", rows[0]["reason"])
+
     def test_auto_default_ignores_same_reference_inversions(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

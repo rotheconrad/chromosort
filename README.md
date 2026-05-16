@@ -562,7 +562,7 @@ appear in your FASTA and MUMmer output are used. Change the separator with
 | `--min-piece-bp` | `1` | Do not emit split pieces shorter than this length. |
 | `--auto-breakpoint-penalty-bp` | `50000` | Identity-weighted aligned bp cost charged for each auto breakpoint. |
 | `--auto-min-piece-aligned-bp` | `50000` | Minimum dominant aligned bp required in each auto-split piece. |
-| `--auto-min-piece-query-frac` | `0.01` | Minimum query-span fraction required in each auto-split piece. |
+| `--auto-min-piece-query-frac` | `0.05` | Minimum query-span fraction required in each auto-split piece. |
 | `--auto-complex-inversion-min-piece-aligned-bp` | `1000000` | Minimum dominant aligned bp for pieces used to classify a same-reference orientation event as complex. |
 | `--auto-complex-inversion-min-overlap-frac` | `0.50` | Minimum reference-span overlap fraction for classifying a same-reference orientation event as complex. |
 | `--auto-max-breakpoints` | `4` | Maximum accepted auto breakpoints across the whole run. Set negative to disable. |
@@ -610,10 +610,11 @@ Keeping a discordant block inside a larger piece costs that block's
 identity-weighted aligned bp. Adding a breakpoint costs
 `--auto-breakpoint-penalty-bp`. A breakpoint is accepted only when the reduction
 in discordant support is worth paying the penalty and every resulting piece has
-enough dominant aligned support. This makes the default behavior
-breakpoint-averse: small inversions, short transposed/repeat-like hits,
-fragmented same-chromosome alignments, and INDEL-sized gaps are smoothed over
-instead of cut.
+enough dominant aligned support and spans at least 5% of the contig by default.
+This makes the default behavior breakpoint-averse: small terminal off-target
+blocks, small inversions, short transposed/repeat-like hits, fragmented
+same-chromosome alignments, and INDEL-sized gaps are smoothed over instead of
+cut.
 
 Auto mode also caps the number of accepted breakpoints across the run with
 `--auto-max-breakpoints`. The default of four is meant as a practical guardrail
@@ -788,5 +789,6 @@ sorting and splitting tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.1.2` | Raised the default auto-split query-span support threshold to 5% so small terminal off-target blocks are reported for review instead of being cut automatically. |
 | `0.1.1` | Tightened `chromo fix` breakpoint placement by collapsing adjacent same-reference/orientation runs, added complex same-reference orientation detection, added a run-level auto breakpoint budget, protected strong multi-reference split candidates during `chromo sort`, and documented the fix-before-sort workflow for suspected misjoins. |
 | `0.1.0` | Initial public package with `chromo sort`, `chromo fix`, `chromo scaffold`, duplicate-overlap filtering, user-nominated contig splitting, conservative auto smoothing, inferred/fixed-gap scaffolding, and synthetic tests. |
