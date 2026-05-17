@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Split user-nominated chimeric contigs using MUMmer show-coords alignments.
+Split user-nominated chimeric contigs using coords or PAF alignments.
 
 This module is intentionally conservative by default. User-nominated contigs
 are split directly from query-ordered alignment blocks. With --auto, candidate
@@ -16,7 +16,8 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 
 from .reference_order import (
-    iter_coords,
+    alignment_source_from_args,
+    iter_alignments,
     iter_fasta_records,
     reverse_complement,
     write_wrapped,
@@ -94,7 +95,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         prog=prog,
         description=(
             "Split user-nominated chimeric contigs into reference-labeled pieces "
-            "using MUMmer show-coords alignments."
+            "using MUMmer coords or minimap2 PAF alignments."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -104,11 +105,15 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         required=True,
         help="Assembly FASTA containing the contigs to fix.",
     )
-    ap.add_argument(
+    alignment_group = ap.add_mutually_exclusive_group(required=True)
+    alignment_group.add_argument(
         "-c",
         "--coords",
-        required=True,
         help="MUMmer show-coords file for reference-vs-assembly alignment.",
+    )
+    alignment_group.add_argument(
+        "--paf",
+        help="minimap2 PAF file for reference-vs-assembly alignment.",
     )
     ap.add_argument(
         "--contigs",
@@ -176,13 +181,24 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--min-segment-bp",
         type=int,
         default=10_000,
-        help="Minimum show-coords LEN2 for an alignment segment to inform splitting.",
+        help="Minimum query-aligned bp for an alignment segment to inform splitting.",
     )
     ap.add_argument(
         "--min-segment-idy",
         type=float,
         default=0.0,
         help="Minimum percent identity for an alignment segment to inform splitting.",
+    )
+    ap.add_argument(
+        "--min-mapq",
+        type=int,
+        default=0,
+        help="Ignore PAF rows below this MAPQ. Ignored for MUMmer coords.",
+    )
+    ap.add_argument(
+        "--include-secondary-paf",
+        action="store_true",
+        help="Include minimap2 PAF rows marked with tp:A:S. By default they are skipped.",
     )
     ap.add_argument(
         "--max-merge-gap",
@@ -308,10 +324,25 @@ def ref_interval(segment):
     return min(segment.ref_start, segment.ref_end) - 1, max(segment.ref_start, segment.ref_end)
 
 
-def collect_blocks(coords_path, requested, min_segment_bp, min_segment_idy, max_merge_gap):
+def collect_blocks(
+    alignment_path,
+    alignment_format,
+    requested,
+    min_segment_bp,
+    min_segment_idy,
+    max_merge_gap,
+    min_mapq=0,
+    include_secondary_paf=False,
+):
     raw_blocks = defaultdict(list)
     requested_set = set(requested) if requested is not None else None
-    for segment in iter_coords(coords_path, min_segment_idy):
+    for segment in iter_alignments(
+        alignment_path,
+        alignment_format,
+        min_identity=min_segment_idy,
+        min_mapq=min_mapq,
+        include_secondary_paf=include_secondary_paf,
+    ):
         if requested_set is not None and segment.query not in requested_set:
             continue
         if segment.len_query < min_segment_bp:
@@ -616,6 +647,30 @@ def merge_adjacent_auto_groups_by_signature(groups, include_orientation=True):
     return merged
 
 
+def merge_unsupported_terminal_groups(groups, seq_len, args, include_orientation):
+    groups = list(groups)
+    changed = False
+    while len(groups) > 1 and not auto_group_piece_is_supported(groups[0], seq_len, args):
+        groups[0:2] = [
+            summarize_group(
+                groups[0].blocks + groups[1].blocks,
+                include_orientation,
+            )
+        ]
+        changed = True
+    while len(groups) > 1 and not auto_group_piece_is_supported(groups[-1], seq_len, args):
+        groups[-2:] = [
+            summarize_group(
+                groups[-2].blocks + groups[-1].blocks,
+                include_orientation,
+            )
+        ]
+        changed = True
+    if changed:
+        groups = merge_adjacent_auto_groups_by_signature(groups, include_orientation)
+    return groups, changed
+
+
 def count_smoothed_transitions(groups, include_orientation=True):
     count = 0
     for group in groups:
@@ -791,8 +846,38 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
         segment_blocks_for_auto(blocks, args, include_orientation),
         include_orientation,
     )
+    initial_unsupported = [
+        group
+        for group in groups
+        if not auto_group_piece_is_supported(group, seq_len, args)
+    ]
+    groups, merged_unsupported_terminal = merge_unsupported_terminal_groups(
+        groups,
+        seq_len,
+        args,
+        include_orientation,
+    )
     if len(groups) < 2:
         discordant_bp = groups[0].discordant_bp if groups else 0.0
+        if initial_unsupported and merged_unsupported_terminal:
+            weakest = min(group.summary.aligned_bp for group in initial_unsupported)
+            weakest_frac = min(
+                group.summary.query_span / seq_len if seq_len else 0.0
+                for group in initial_unsupported
+            )
+            return ContigPlan(
+                contig=contig,
+                status="not_split_auto_smooth",
+                pieces=[],
+                reason=(
+                    "Auto smoothing rejected the best split because at least one "
+                    "terminal piece failed support thresholds and was merged into "
+                    "the neighboring piece "
+                    f"({weakest} aligned bp; required {args.auto_min_piece_aligned_bp}; "
+                    f"query span fraction {weakest_frac:.4f}; "
+                    f"required {args.auto_min_piece_query_frac:.4f})."
+                ),
+            )
         return ContigPlan(
             contig=contig,
             status="not_split_auto_smooth",
@@ -1043,6 +1128,7 @@ def write_report(path, requested, plans):
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
+    alignment_path, alignment_format = alignment_source_from_args(args)
     explicit_requested = read_requested_contigs(args.contigs, args.contigs_file)
     if not explicit_requested and not args.auto:
         sys.stderr.write("ERROR: provide at least one contig via --contigs/--contigs-file or use --auto\n")
@@ -1054,11 +1140,14 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
 
     collect_for = None if args.auto else explicit_requested
     blocks_by_contig = collect_blocks(
-        args.coords,
+        alignment_path,
+        alignment_format,
         collect_for,
         args.min_segment_bp,
         args.min_segment_idy,
         args.max_merge_gap,
+        min_mapq=args.min_mapq,
+        include_secondary_paf=args.include_secondary_paf,
     )
     requested = (
         auto_requested_contigs(args.assembly_fasta, blocks_by_contig, explicit_requested, args)

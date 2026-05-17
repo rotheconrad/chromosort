@@ -12,19 +12,20 @@ DATA = Path(__file__).resolve().parent / "data" / "chimeric"
 NOISY_DATA = Path(__file__).resolve().parent / "data" / "noisy_fix"
 
 
-def run_fix_contigs(tmp_path, *extra_args, contigs=None, data=DATA):
+def run_fix_contigs(tmp_path, *extra_args, contigs=None, data=DATA, alignment_args=None):
     output_fasta = tmp_path / "fixed.fa"
     report = tmp_path / "fixed.tsv"
     if contigs is None:
         contigs = ["contig_04", "contig_12"]
+    if alignment_args is None:
+        alignment_args = ["--coords", str(data / "sample.coords")]
     cmd = [
         sys.executable,
         "-m",
         "chromosort.fix_contigs",
         "--assembly-fasta",
         str(data / "assembly.fa"),
-        "--coords",
-        str(data / "sample.coords"),
+        *alignment_args,
         "--output-fasta",
         str(output_fasta),
         "--report",
@@ -206,6 +207,47 @@ class FixContigsTests(unittest.TestCase):
             self.assertIn("failed support thresholds", rows[0]["reason"])
             self.assertIn("query span fraction 0.0400", rows[0]["reason"])
 
+    def test_auto_merges_tiny_terminal_noise_before_large_split(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            data = tmp_path / "data"
+            data.mkdir()
+            (data / "assembly.fa").write_text(
+                ">contig_tiny_head_then_split\n" + "A" * 300 + "\n"
+            )
+            (data / "sample.coords").write_text(
+                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "NUCMER\n\n"
+                "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
+                "===============================================================================================================================\n"
+                "       1        8  |       1        8  |        8        8  |   100.00  |      300      300  |     2.67     2.67  | chrom02\tcontig_tiny_head_then_split\n"
+                "       1      142  |       9      150  |      142      142  |   100.00  |      300      300  |    47.33    47.33  | chrom19\tcontig_tiny_head_then_split\n"
+                "       1      150  |     151      300  |      150      150  |   100.00  |      300      300  |    50.00    50.00  | chrom20\tcontig_tiny_head_then_split\n"
+            )
+
+            output_fasta, report = run_fix_contigs(
+                tmp_path,
+                "--auto",
+                "--auto-breakpoint-penalty-bp",
+                "1",
+                "--auto-min-piece-aligned-bp",
+                "5",
+                "--simple-headers",
+                data=data,
+                contigs=[],
+            )
+
+            self.assertEqual(
+                list(read_fasta(output_fasta)),
+                [
+                    "chrom19-contig_tiny_head_then_split-a",
+                    "chrom20-contig_tiny_head_then_split-b",
+                ],
+            )
+            rows = read_report(report)
+            self.assertEqual([row["dominant_ref"] for row in rows], ["chrom19", "chrom20"])
+            self.assertTrue(all(row["status"] == "split" for row in rows))
+
     def test_auto_default_ignores_same_reference_inversions(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
@@ -309,6 +351,38 @@ class FixContigsTests(unittest.TestCase):
             rows = read_report(report)
             self.assertEqual(len(rows), 5)
             self.assertTrue(all(row["status"] == "split" for row in rows))
+            self.assertEqual(
+                [(row["new_contig"], row["slice_start"], row["slice_end"]) for row in rows],
+                [
+                    ("chrom02-contig_04-a", "1", "20"),
+                    ("chrom07-contig_04-b", "21", "40"),
+                    ("chrom04-contig_12-a", "1", "5"),
+                    ("chrom05-contig_12-b", "6", "35"),
+                    ("chrom04-contig_12-c", "36", "40"),
+                ],
+            )
+
+    def test_paf_input_splits_user_nominated_chimeric_contigs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_fasta, report = run_fix_contigs(
+                Path(tmp),
+                alignment_args=["--paf", str(DATA / "sample.paf")],
+            )
+
+            self.assertEqual(
+                list(read_fasta(output_fasta)),
+                [
+                    "contig_01",
+                    "chrom02-contig_04-a",
+                    "chrom07-contig_04-b",
+                    "chrom04-contig_12-a",
+                    "chrom05-contig_12-b",
+                    "chrom04-contig_12-c",
+                    "contig_inv_mid",
+                    "contig_inv_end",
+                ],
+            )
+            rows = read_report(report)
             self.assertEqual(
                 [(row["new_contig"], row["slice_start"], row["slice_end"]) for row in rows],
                 [

@@ -1,0 +1,6 @@
+contigA	80	0	80	+	chr1	120	0	80	80	80	60	tp:A:P
+contigDup	70	0	70	+	chr1	120	4	74	70	70	60	tp:A:P
+contigB	40	0	40	+	chr1	120	80	120	40	40	60	tp:A:P
+contigC	60	0	60	-	chr2	100	9	69	60	60	60	tp:A:P
+contigChimeraDup	100	0	70	+	chr1	120	4	74	70	70	60	tp:A:P
+contigChimeraDup	100	70	100	+	chr2	100	0	30	30	30	60	tp:A:P

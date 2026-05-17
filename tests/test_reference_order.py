@@ -11,8 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data"
 
 
-def run_chromosort(tmp_path, *extra_args):
+def run_chromosort(tmp_path, *extra_args, alignment_args=None):
     prefix = tmp_path / "sample"
+    if alignment_args is None:
+        alignment_args = ["--coords", str(DATA / "sample.coords")]
     cmd = [
         sys.executable,
         "-m",
@@ -21,8 +23,7 @@ def run_chromosort(tmp_path, *extra_args):
         str(DATA / "ref.fa"),
         "--assembly-fasta",
         str(DATA / "assembly.fa"),
-        "--coords",
-        str(DATA / "sample.coords"),
+        *alignment_args,
         "--output-prefix",
         str(prefix),
         "--min-aligned-bp",
@@ -110,6 +111,35 @@ class ReferenceOrderTests(unittest.TestCase):
 
             headers = fasta_headers(prefix.with_suffix(".ordered.fa"))
             self.assertIn("chr1_contigChimeraDup", headers)
+
+    def test_paf_input_matches_reference_order_decisions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = run_chromosort(
+                Path(tmp),
+                "--split-candidate-min-aligned-bp",
+                "20",
+                "--split-candidate-min-query-frac",
+                "0.20",
+                alignment_args=["--paf", str(DATA / "sample.paf")],
+            )
+
+            assignments = read_assignments(prefix.with_suffix(".contig_assignments.tsv"))
+            self.assertEqual(assignments["contigA"]["status"], "kept")
+            self.assertEqual(assignments["contigB"]["status"], "kept")
+            self.assertEqual(assignments["contigC"]["status"], "kept")
+            self.assertEqual(assignments["contigDup"]["status"], "duplicate_overlap")
+            self.assertEqual(assignments["contigChimeraDup"]["status"], "kept_split_candidate")
+            self.assertEqual(assignments["contigChimeraDup"]["split_candidate_refs"], "chr1,chr2")
+
+            self.assertEqual(
+                fasta_headers(prefix.with_suffix(".ordered.fa")),
+                [
+                    "chr1_contigA",
+                    "chr1_contigChimeraDup",
+                    "chr1_contigB",
+                    "chr2_contigC",
+                ],
+            )
 
 
 if __name__ == "__main__":

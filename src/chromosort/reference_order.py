@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Order assembly contigs by their best MUMmer match to a reference genome.
+Order assembly contigs by their best alignment to a reference genome.
 
-This script is intended for coords files produced from a filtered nucmer delta,
+This script accepts MUMmer coords files produced from a filtered nucmer delta,
 for example:
 
     nucmer -p sample ref.fa assembly.fa
@@ -10,7 +10,7 @@ for example:
     show-coords -r -c -l sample.filter > sample.coords
 
 For each assembly contig, the script:
-  1. merges overlapping alignment intervals from show-coords,
+  1. merges overlapping alignment intervals,
   2. chooses the best reference chromosome by merged query coverage,
   3. keeps confident contig-to-chromosome assignments,
   4. removes contigs that duplicate already-kept reference intervals,
@@ -52,6 +52,8 @@ class Segment:
     ref_length: int
     query_length: int
     orientation: str
+    mapq: Optional[int] = None
+    is_secondary: bool = False
 
 
 @dataclass
@@ -107,8 +109,9 @@ def parse_args(argv=None, prog=None):
     ap = argparse.ArgumentParser(
         prog=prog,
         description=(
-            "Use MUMmer show-coords output to assign assembly contigs to their "
-            "best reference chromosome and write a reference-ordered FASTA."
+            "Use MUMmer coords or minimap2 PAF output to assign assembly "
+            "contigs to their best reference chromosome and write a "
+            "reference-ordered FASTA."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -129,11 +132,15 @@ def parse_args(argv=None, prog=None):
         default=None,
         help="Assembly FASTA index. Defaults to <assembly-fasta>.fai when present.",
     )
-    ap.add_argument(
+    alignment_group = ap.add_mutually_exclusive_group(required=True)
+    alignment_group.add_argument(
         "-c",
         "--coords",
-        required=True,
         help="MUMmer show-coords file, preferably produced from delta-filter output.",
+    )
+    alignment_group.add_argument(
+        "--paf",
+        help="minimap2 PAF file for reference-vs-assembly alignment.",
     )
     ap.add_argument(
         "-o",
@@ -170,7 +177,18 @@ def parse_args(argv=None, prog=None):
         "--min-segment-idy",
         type=float,
         default=0.0,
-        help="Ignore individual show-coords rows below this percent identity.",
+        help="Ignore individual alignment rows below this percent identity.",
+    )
+    ap.add_argument(
+        "--min-mapq",
+        type=int,
+        default=0,
+        help="Ignore PAF rows below this MAPQ. Ignored for MUMmer coords.",
+    )
+    ap.add_argument(
+        "--include-secondary-paf",
+        action="store_true",
+        help="Include minimap2 PAF rows marked with tp:A:S. By default they are skipped.",
     )
     ap.add_argument(
         "--min-novel-ref-bp",
@@ -378,7 +396,7 @@ def parse_coords_line(line):
 
 def iter_coords(path, min_identity=0.0):
     in_table = False
-    with open(path) as fh:
+    with open_text(path) as fh:
         for line in fh:
             line = line.rstrip("\n")
             if not line:
@@ -397,6 +415,115 @@ def iter_coords(path, min_identity=0.0):
             if segment.identity < min_identity:
                 continue
             yield segment
+
+
+def parse_paf_tags(cols):
+    tags = {}
+    for col in cols[12:]:
+        parts = col.split(":", 2)
+        if len(parts) == 3:
+            tags[parts[0]] = (parts[1], parts[2])
+    return tags
+
+
+def parse_paf_line(line):
+    cols = line.rstrip("\n").split("\t")
+    if len(cols) < 12:
+        return None
+
+    try:
+        qname = cols[0]
+        qlen = int(cols[1])
+        qstart = int(cols[2])
+        qend = int(cols[3])
+        strand = cols[4]
+        tname = cols[5]
+        tlen = int(cols[6])
+        tstart = int(cols[7])
+        tend = int(cols[8])
+        nmatch = int(cols[9])
+        block_len = int(cols[10])
+        mapq = int(cols[11])
+    except (ValueError, IndexError):
+        return None
+
+    if strand not in {"+", "-"}:
+        return None
+    if qend <= qstart or tend <= tstart:
+        return None
+
+    query_span = qend - qstart
+    ref_span = tend - tstart
+    identity = (100.0 * nmatch / block_len) if block_len > 0 else 0.0
+    tags = parse_paf_tags(cols)
+    is_secondary = tags.get("tp") == ("A", "S")
+
+    return Segment(
+        ref=tname,
+        query=qname,
+        ref_start=tstart + 1,
+        ref_end=tend,
+        query_start=qstart + 1,
+        query_end=qend,
+        len_ref=ref_span,
+        len_query=query_span,
+        identity=identity,
+        ref_length=tlen,
+        query_length=qlen,
+        orientation=strand,
+        mapq=mapq,
+        is_secondary=is_secondary,
+    )
+
+
+def iter_paf(
+    path,
+    min_identity=0.0,
+    min_mapq=0,
+    include_secondary=False,
+):
+    with open_text(path) as fh:
+        for line in fh:
+            if not line.strip() or line.startswith("#"):
+                continue
+            segment = parse_paf_line(line)
+            if segment is None:
+                continue
+            if segment.identity < min_identity:
+                continue
+            if segment.mapq is not None and segment.mapq < min_mapq:
+                continue
+            if segment.is_secondary and not include_secondary:
+                continue
+            yield segment
+
+
+def alignment_source_from_args(args):
+    if bool(args.coords) == bool(args.paf):
+        raise ValueError("Provide exactly one of --coords or --paf.")
+    if args.coords:
+        return args.coords, "coords"
+    return args.paf, "paf"
+
+
+def iter_alignments(
+    path,
+    input_format,
+    min_identity=0.0,
+    min_mapq=0,
+    include_secondary_paf=False,
+):
+    if input_format == "coords":
+        yield from iter_coords(path, min_identity)
+    elif input_format == "paf":
+        yield from iter_paf(
+            path,
+            min_identity=min_identity,
+            min_mapq=min_mapq,
+            include_secondary=include_secondary_paf,
+        )
+    else:
+        raise ValueError(f"Unknown alignment format: {input_format}")
 
 
 def closed_to_half_open(a, b):
@@ -466,7 +593,15 @@ def subtract_intervals(intervals, covered_intervals):
     return novel
 
 
-def build_match_metrics(coords_path, ref_lengths, query_lengths, min_identity):
+def build_match_metrics(
+    alignment_path,
+    alignment_format,
+    ref_lengths,
+    query_lengths,
+    min_identity,
+    min_mapq=0,
+    include_secondary_paf=False,
+):
     groups = defaultdict(
         lambda: {
             "raw_ref_bp": 0,
@@ -484,7 +619,13 @@ def build_match_metrics(coords_path, ref_lengths, query_lengths, min_identity):
     )
     skipped_unknown_query = 0
 
-    for seg in iter_coords(coords_path, min_identity):
+    for seg in iter_alignments(
+        alignment_path,
+        alignment_format,
+        min_identity=min_identity,
+        min_mapq=min_mapq,
+        include_secondary_paf=include_secondary_paf,
+    ):
         if seg.query not in query_lengths:
             skipped_unknown_query += 1
             continue
@@ -1051,17 +1192,25 @@ def write_chromosome_summary(path, ref_records, kept_assignments):
 def write_run_summary(path, args, output_paths, ref_records, query_records, assignments, skipped_unknown_query):
     status_counts = Counter(a.status for a in assignments.values())
     kept = sum(1 for a in assignments.values() if a.kept)
+    alignment_path, alignment_format = alignment_source_from_args(args)
     with open(path, "w") as out:
         out.write("fasta_mummer_reference_order.py\n")
         out.write("\nInputs\n")
         out.write(f"ref_fasta\t{args.ref_fasta}\n")
         out.write(f"assembly_fasta\t{args.assembly_fasta}\n")
-        out.write(f"coords\t{args.coords}\n")
+        out.write(f"alignment_format\t{alignment_format}\n")
+        out.write(f"alignment_path\t{alignment_path}\n")
+        if args.coords:
+            out.write(f"coords\t{args.coords}\n")
+        if args.paf:
+            out.write(f"paf\t{args.paf}\n")
         out.write("\nThresholds\n")
         out.write(f"min_aligned_bp\t{args.min_aligned_bp}\n")
         out.write(f"min_query_cov\t{args.min_query_cov}\n")
         out.write(f"min_best_ref_share\t{args.min_best_ref_share}\n")
         out.write(f"min_segment_idy\t{args.min_segment_idy}\n")
+        out.write(f"min_mapq\t{args.min_mapq}\n")
+        out.write(f"include_secondary_paf\t{args.include_secondary_paf}\n")
         out.write(f"overlap_filter_enabled\t{not args.no_overlap_filter}\n")
         out.write(f"min_novel_ref_bp\t{args.min_novel_ref_bp}\n")
         out.write(f"min_novel_ref_frac\t{args.min_novel_ref_frac}\n")
@@ -1078,12 +1227,16 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
         out.write(f"assembly_contigs\t{len(query_records)}\n")
         out.write(f"kept_contigs\t{kept}\n")
         out.write(f"discarded_contigs\t{len(query_records) - kept}\n")
-        out.write(f"coords_rows_skipped_unknown_query\t{skipped_unknown_query}\n")
+        out.write(f"alignment_rows_skipped_unknown_query\t{skipped_unknown_query}\n")
+        if alignment_format == "coords":
+            out.write(f"coords_rows_skipped_unknown_query\t{skipped_unknown_query}\n")
+        else:
+            out.write(f"paf_rows_skipped_unknown_query\t{skipped_unknown_query}\n")
         for status, count in sorted(status_counts.items()):
             out.write(f"status_{status}\t{count}\n")
         out.write(
-            "\nNote\tCoverage and ordering are based on merged intervals from show-coords. "
-            "This avoids counting overlapping MUMmer rows more than once. "
+            "\nNote\tCoverage and ordering are based on merged alignment intervals. "
+            "This avoids counting overlapping rows more than once. "
             "The duplicate-overlap filter rejects otherwise-good contigs that add "
             "little or no new reference coverage after better contigs claim intervals. "
             "Strong multi-reference split candidates are protected by default so "
@@ -1093,6 +1246,7 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
 
 def main(argv=None, prog=None):
     args = parse_args(argv, prog=prog)
+    alignment_path, alignment_format = alignment_source_from_args(args)
     prefix = Path(args.output_prefix)
     if prefix.parent and str(prefix.parent) != ".":
         prefix.parent.mkdir(parents=True, exist_ok=True)
@@ -1116,10 +1270,13 @@ def main(argv=None, prog=None):
     query_lengths = {name: rec for name, rec in query_by_name.items()}
 
     matches, by_query, skipped_unknown_query = build_match_metrics(
-        args.coords,
+        alignment_path,
+        alignment_format,
         ref_lengths,
         query_lengths,
         args.min_segment_idy,
+        min_mapq=args.min_mapq,
+        include_secondary_paf=args.include_secondary_paf,
     )
     assignments = choose_assignments(query_records, by_query, args)
     resolve_duplicate_overlaps(assignments, args)

@@ -1,0 +1,10 @@
+contig_04	40	0	20	+	chrom02	50	0	20	20	20	60	tp:A:P
+contig_04	40	20	40	+	chrom07	50	0	20	20	20	60	tp:A:P
+contig_12	40	0	5	+	chrom04	50	0	5	5	5	60	tp:A:P
+contig_12	40	5	35	+	chrom05	50	0	30	30	30	60	tp:A:P
+contig_12	40	35	40	+	chrom04	50	30	35	5	5	60	tp:A:P
+contig_inv_mid	55	0	15	+	chrom06	80	0	15	15	15	60	tp:A:P
+contig_inv_mid	55	15	35	-	chrom06	80	15	35	20	20	60	tp:A:P
+contig_inv_mid	55	35	55	+	chrom06	80	35	55	20	20	60	tp:A:P
+contig_inv_end	40	0	25	+	chrom08	80	0	25	25	25	60	tp:A:P
+contig_inv_end	40	25	40	-	chrom08	80	25	40	15	15	60	tp:A:P

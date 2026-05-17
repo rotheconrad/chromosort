@@ -4,7 +4,7 @@ Reference-guided genome assembly utilities for sorting contigs, splitting
 user-flagged or auto-detected chimeric contigs, and scaffolding final ordered
 contigs with N gaps.
 
-ChromoSort provides one command, `chromo`, with three subcommands:
+ChromoSort provides one command, `chromo`, with four subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
   low-value duplicate overlaps, protects strong multi-reference split
@@ -16,12 +16,16 @@ ChromoSort provides one command, `chromo`, with three subcommands:
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
   records with inferred reference-space N gaps by default, or with a fixed
   user-specified number of Ns.
+- `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
+  minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
+  reviewed without re-running an aligner just to make a plot.
 
-The sorting and fixing workflows use standard MUMmer `show-coords` output and
-are designed for reuse across species and genome assembly projects. ChromoSort
-does not polish sequence, call variants, or force contigs to match a reference.
-It keeps full sequence pieces and writes TSV reports so each keep, reject,
-split, or scaffold-gap decision is auditable.
+The sorting, fixing, and plotting workflows use standard MUMmer `show-coords`
+output or minimap2 PAF. They are designed for reuse across species and genome
+assembly projects. ChromoSort does not polish sequence, call variants, or force
+contigs to match a reference. It keeps full sequence pieces and writes TSV/plot
+reports so each keep, reject, split, plot, or scaffold-gap decision is
+auditable.
 
 ## Table of Contents
 
@@ -29,6 +33,7 @@ split, or scaffold-gap decision is auditable.
 - [Installation With Mamba](#installation-with-mamba)
 - [Creating Input Files With MUMmer](#creating-input-files-with-mummer)
   - [Why These MUMmer Choices?](#why-these-mummer-choices)
+- [Creating Input Files With minimap2](#creating-input-files-with-minimap2)
 - [chromo sort](#chromo-sort)
   - [What `chromo sort` Does](#what-chromo-sort-does)
   - [Run `chromo sort`](#run-chromo-sort)
@@ -45,6 +50,10 @@ split, or scaffold-gap decision is auditable.
   - [`chromo fix` Naming](#chromo-fix-naming)
   - [`chromo fix` Parameters](#chromo-fix-parameters)
   - [Reasoning Behind `chromo fix`](#reasoning-behind-chromo-fix)
+- [chromo plot](#chromo-plot)
+  - [Run `chromo plot`](#run-chromo-plot)
+  - [`chromo plot` Outputs](#chromo-plot-outputs)
+  - [`chromo plot` Parameters](#chromo-plot-parameters)
 - [chromo scaffold](#chromo-scaffold)
   - [What `chromo scaffold` Does](#what-chromo-scaffold-does)
   - [Run `chromo scaffold` With Inferred Gaps](#run-chromo-scaffold-with-inferred-gaps)
@@ -71,6 +80,7 @@ mamba activate chromosort
 chromo --help
 chromo sort --help
 chromo fix --help
+chromo plot --help
 chromo scaffold --help
 ```
 
@@ -92,6 +102,15 @@ chromo sort \
   --coords mummer/fixed.coords \
   --output-prefix results/sample.fixed \
   --orient-to-reference
+
+# 3. Plot from the existing coordinates; no new MUMmer run is needed.
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta results/sample.fixed.fa \
+  --coords mummer/fixed.coords \
+  --assignments results/sample.fixed.contig_assignments.tsv \
+  --output-prefix plots/sample.fixed \
+  --per-ref
 ```
 
 Running `chromo fix` before `chromo sort` is safest for suspected misjoins
@@ -107,6 +126,17 @@ chromo sort \
   --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
+  --output-prefix results/sample \
+  --orient-to-reference
+```
+
+The same command accepts minimap2 PAF instead of MUMmer coords:
+
+```bash
+chromo sort \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --paf paf/sample.paf \
   --output-prefix results/sample \
   --orient-to-reference
 ```
@@ -158,7 +188,9 @@ mamba activate chromosort
 The environment installs:
 
 - Python
+- minimap2
 - MUMmer 4 (`nucmer`, `delta-filter`, `show-coords`)
+- Pillow for optional PNG plot output
 - pytest for the test suite
 - ChromoSort in editable mode
 
@@ -168,7 +200,8 @@ Legacy command aliases are retained for compatibility:
 - `chromosort-fix-contigs` is equivalent to `chromo fix`
 - `chromosort-scaffold` is equivalent to `chromo scaffold`
 
-New workflows should use `chromo sort`, `chromo fix`, and `chromo scaffold`.
+New workflows should use `chromo sort`, `chromo fix`, `chromo plot`, and
+`chromo scaffold`.
 
 ## Creating Input Files With MUMmer
 
@@ -207,15 +240,13 @@ show-coords \
   "mummer/${name}.filter" \
   > "mummer/${name}.coords"
 
-# Optional visual inspection.
-mummerplot \
-  -p "mummer/plot_${name}" \
-  -R "$ref" \
-  --postscript \
-  --large \
-  --layout \
-  --fat \
-  "mummer/${name}.filter"
+# Optional visual inspection from the existing coords file.
+chromo plot \
+  --ref-fasta "$ref" \
+  --assembly-fasta "$asm" \
+  --coords "mummer/${name}.coords" \
+  --output-prefix "mummer/plot_${name}" \
+  --per-ref
 ```
 
 ### Why These MUMmer Choices?
@@ -237,6 +268,48 @@ for distant species or more fragmented assemblies.
 coverage, percent identity, and sequence names. ChromoSort reads those fields
 and recomputes merged coverage itself.
 
+## Creating Input Files With minimap2
+
+ChromoSort can use minimap2 PAF directly. Choose the minimap2 preset that
+matches the expected divergence between the reference and assembly.
+
+```bash
+mkdir -p paf
+
+ref=reference.fa
+asm=assembly.fa
+name=sample
+
+minimap2 \
+  -x asm5 \
+  -t 16 \
+  --secondary=no \
+  "$ref" \
+  "$asm" \
+  > "paf/${name}.paf"
+
+chromo sort \
+  --ref-fasta "$ref" \
+  --assembly-fasta "$asm" \
+  --paf "paf/${name}.paf" \
+  --output-prefix "results/${name}" \
+  --orient-to-reference
+
+chromo plot \
+  --ref-fasta "$ref" \
+  --assembly-fasta "$asm" \
+  --paf "paf/${name}.paf" \
+  --assignments "results/${name}.contig_assignments.tsv" \
+  --output-prefix "plots/${name}" \
+  --per-ref
+```
+
+`--coords` and `--paf` are mutually exclusive for `chromo sort`,
+`chromo fix`, and `chromo plot`. For PAF input, ChromoSort computes percent
+identity from the PAF match and block-length columns, uses the PAF strand for
+orientation, and skips rows marked `tp:A:S` unless `--include-secondary-paf` is
+set. Use `--min-mapq` to ignore low-MAPQ PAF rows.
+
 ## chromo sort
 
 Use `chromo sort` when the goal is to find the best matched assembly contigs for
@@ -244,13 +317,13 @@ each reference chromosome and write them in reference order.
 
 ### What `chromo sort` Does
 
-Given a reference FASTA, assembly FASTA, and MUMmer `show-coords` file,
+Given a reference FASTA, assembly FASTA, and MUMmer coords or minimap2 PAF file,
 `chromo sort`:
 
-1. Parses `show-coords` rows for reference chromosome, assembly contig,
+1. Parses alignment rows for reference chromosome, assembly contig,
    coordinates, alignment length, percent identity, and orientation.
 2. Merges overlapping alignment intervals so coverage is not inflated by
-   repeated MUMmer rows.
+   repeated rows.
 3. Assigns each contig to the reference chromosome with the strongest merged
    query coverage.
 4. Applies thresholds for aligned bp, query coverage, and best-reference share.
@@ -298,10 +371,14 @@ chromo sort \
 
 | Parameter | Default | Meaning |
 | --- | ---: | --- |
+| `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
+| `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
 | `--min-aligned-bp` | `100000` | Minimum merged query-aligned bp required before a contig can be kept. |
 | `--min-query-cov` | `0.50` | Minimum fraction of the contig covered by its best reference match. |
 | `--min-best-ref-share` | `0.50` | Minimum fraction of all matched bp that must belong to the best reference chromosome. |
-| `--min-segment-idy` | `0.0` | Ignore individual `show-coords` rows below this percent identity. |
+| `--min-segment-idy` | `0.0` | Ignore individual alignment rows below this percent identity. |
+| `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
+| `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
 | `--min-novel-ref-bp` | `50000` | Keep an otherwise-good contig if it adds at least this many new reference bp. |
 | `--min-novel-ref-frac` | `0.20` | Keep an otherwise-good contig if this fraction of its reference span is novel. |
 | `--split-candidate-min-aligned-bp` | `100000` | Minimum merged query-aligned bp on at least two references before split-candidate protection applies. |
@@ -323,7 +400,7 @@ conservative.
 multi-reference candidate for `chromo fix` review. These contigs are protected
 from duplicate-overlap removal by default.
 
-`no_alignment`: no usable `show-coords` rows were found for this contig.
+`no_alignment`: no usable alignment rows were found for this contig.
 
 `below_min_aligned_bp`: best match did not meet `--min-aligned-bp`.
 
@@ -338,21 +415,21 @@ reference span. These contigs are not written to the ordered FASTA.
 
 ### Reasoning Behind `chromo sort`
 
-#### Use `show-coords`, Not `show-tiling`
+#### Use Segment Coordinates, Not Tiling Summaries
 
-`show-tiling` can be useful, but it is another derived representation and is not
-always produced. `show-coords` from a filtered delta contains the required
-information: reference name, query name, reference coordinates, query
-coordinates, alignment length, sequence length, percent identity, and strand.
-Using `show-coords` keeps the workflow closer to standard MUMmer output and
-avoids an extra preprocessing step.
+`show-tiling` can be useful for MUMmer workflows, but it is another derived
+representation and is not always produced. `show-coords` from a filtered delta
+and minimap2 PAF both contain the required information: reference name, query
+name, reference coordinates, query coordinates, alignment length, sequence
+length, percent identity, and strand. ChromoSort normalizes either format into
+the same internal segment representation before sorting, fixing, or plotting.
 
 #### Merge Intervals Before Calculating Coverage
 
-MUMmer can report overlapping rows for the same contig-reference pair. Summing
-raw `LEN 2` values can produce apparent coverage greater than 100 percent. By
-merging query intervals and reference intervals first, ChromoSort estimates
-coverage from the unique aligned span instead of from repeated rows.
+Whole-genome aligners can report overlapping rows for the same contig-reference
+pair. Summing raw row lengths can produce apparent coverage greater than 100
+percent. By merging query intervals and reference intervals first, ChromoSort
+estimates coverage from the unique aligned span instead of from repeated rows.
 
 #### Assign Contigs by Best Reference Share
 
@@ -543,13 +620,15 @@ chrom06-contig_21-c
 
 The report records each piece's orientation so the inverted block is explicit.
 The reference names and contig names are not hard-coded. Whatever identifiers
-appear in your FASTA and MUMmer output are used. Change the separator with
+appear in your FASTA and alignment output are used. Change the separator with
 `--name-separator`.
 
 ### `chromo fix` Parameters
 
 | Parameter | Default | Meaning |
 | --- | ---: | --- |
+| `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
+| `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
 | `--contigs` | none | Space-separated names of contigs to inspect and split. |
 | `--contigs-file` | none | Optional file with one contig name per line. |
 | `--auto` | off | Scan all contigs and conservatively split those with strong reference transitions. |
@@ -559,6 +638,8 @@ appear in your FASTA and MUMmer output are used. Change the separator with
 | `--min-segment-bp` | `10000` | Minimum alignment segment length used to infer split blocks. |
 | `--min-segment-idy` | `0.0` | Minimum percent identity for split-informing alignment rows. |
 | `--max-merge-gap` | `1000` | Merge nearby same-reference rows separated by this many query bp or less. |
+| `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
+| `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
 | `--min-piece-bp` | `1` | Do not emit split pieces shorter than this length. |
 | `--auto-breakpoint-penalty-bp` | `50000` | Identity-weighted aligned bp cost charged for each auto breakpoint. |
 | `--auto-min-piece-aligned-bp` | `50000` | Minimum dominant aligned bp required in each auto-split piece. |
@@ -577,7 +658,7 @@ Cutting contigs is a stronger intervention than ordering contigs. A reference
 transition can reflect a real assembly chimera, but it can also reflect
 structural variation, assembly graph complexity, misassembly in the reference,
 or poor alignment around repeats. Requiring an explicit contig list keeps this
-step auditable: ChromoSort proposes breakpoints from MUMmer coordinates, but the
+step auditable: ChromoSort proposes breakpoints from alignment coordinates, but the
 user decides which contigs are appropriate to cut.
 
 #### Auto Detection As An Opt-In Workflow
@@ -598,7 +679,7 @@ reference and orientation, separated by local gaps, repeats, or small assembly
 differences. `chromo fix` collapses adjacent same-target runs before placing
 breakpoints. A contig is cut at accepted reference transitions, or at
 same-reference orientation transitions only when they are complex enough or
-explicitly enabled, not at every ordinary MUMmer row boundary.
+explicitly enabled, not at every ordinary alignment-row boundary.
 
 #### Breakpoint-Penalty Segmentation
 
@@ -644,6 +725,70 @@ cases. The expected behavior is conservative: split the large-scale chromosome
 transition patterns, split only complex same-reference orientation events by
 default, split all strong inversions only when inversion splitting is enabled,
 and report weaker discordance as `not_split_auto_smooth`.
+
+## chromo plot
+
+Use `chromo plot` when you already have a MUMmer coords or minimap2 PAF file
+and want a visual check without running `mummerplot` or re-aligning only for
+the plot. It writes PDF by default and can also write SVG or PNG. Forward-strand
+alignments are blue and reverse-strand alignments are red.
+
+### Run `chromo plot`
+
+Whole-genome plot from MUMmer coords:
+
+```bash
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --output-prefix plots/sample
+```
+
+This writes `plots/sample.pdf`.
+
+Whole-genome and per-reference plots from PAF, ordered by a `chromo sort`
+assignment report:
+
+```bash
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --paf paf/sample.paf \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix plots/sample \
+  --per-ref \
+  --formats pdf svg
+```
+
+When `--assignments` is provided, the query axis is ordered by the kept contigs
+in the assignment report. This is useful for reviewing a sorted ChromoSort
+order from the same alignment file that powered the sort.
+
+### `chromo plot` Outputs
+
+| Output | Description |
+| --- | --- |
+| `<prefix>.pdf` | Whole-genome PDF dot plot by default. |
+| `<prefix>.svg` | Whole-genome SVG dot plot when `--formats svg` is set. |
+| `<prefix>.png` | Whole-genome PNG dot plot when `--formats png` is set. |
+| `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set. |
+
+### `chromo plot` Parameters
+
+| Parameter | Default | Meaning |
+| --- | ---: | --- |
+| `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
+| `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
+| `--formats` | `pdf` | One or more output formats: `pdf`, `svg`, `png`. |
+| `--assignments` | none | Optional `chromo sort` assignment report for ordering the query axis by kept sorted contigs. |
+| `--per-ref` | off | Also write one plot per reference sequence with plotted alignments. |
+| `--per-ref-query-order` | `fasta` | Use FASTA order or first reference-hit order for per-reference query axes. |
+| `--min-segment-bp` | `0` | Minimum query-aligned bp for a row to be drawn. |
+| `--min-segment-idy` | `0.0` | Ignore individual alignment rows below this percent identity. |
+| `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
+| `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
+| `--max-segments` | `0` | Maximum drawn alignment rows after filtering; 0 means no limit. |
 
 ## chromo scaffold
 
@@ -757,14 +902,14 @@ The tests are also compatible with the Python standard-library runner:
 python -m unittest discover -s tests -v
 ```
 
-The tests use tiny synthetic FASTA and coords files under `tests/data`. They do
-not require running MUMmer; MUMmer is included in the environment so users can
-generate real input files.
+The tests use tiny synthetic FASTA, coords, and PAF files under `tests/data`.
+They do not require running MUMmer or minimap2; both are included in the
+environment so users can generate real input files.
 
 ## Citation
 
-If you use ChromoSort, cite this repository and cite MUMmer for the alignment
-files used by the workflow.
+If you use ChromoSort, cite this repository and cite MUMmer or minimap2 for the
+alignment files used by the workflow.
 
 ## Contact
 
@@ -780,15 +925,16 @@ support, or project-specific funding statements here when they are available.
 
 ## Acknowledgements
 
-ChromoSort depends on the MUMmer ecosystem for whole-genome alignment and
-coordinate export. Thanks to the genome assembly and comparative genomics
-communities whose workflows motivated transparent reference-guided contig
-sorting and splitting tools.
+ChromoSort can consume MUMmer and minimap2 whole-genome alignments. Thanks to
+the genome assembly and comparative genomics communities whose workflows
+motivated transparent reference-guided contig sorting, splitting, plotting, and
+scaffolding tools.
 
 ## Version History
 
 | Version | Notes |
 | --- | --- |
+| `0.2.0` | Added minimap2 PAF input for `chromo sort` and `chromo fix`, plus `chromo plot` PDF/SVG/PNG dot plots for coords/PAF with optional assignment-report query ordering. |
 | `0.1.2` | Raised the default auto-split query-span support threshold to 5% so small terminal off-target blocks are reported for review instead of being cut automatically. |
 | `0.1.1` | Tightened `chromo fix` breakpoint placement by collapsing adjacent same-reference/orientation runs, added complex same-reference orientation detection, added a run-level auto breakpoint budget, protected strong multi-reference split candidates during `chromo sort`, and documented the fix-before-sort workflow for suspected misjoins. |
 | `0.1.0` | Initial public package with `chromo sort`, `chromo fix`, `chromo scaffold`, duplicate-overlap filtering, user-nominated contig splitting, conservative auto smoothing, inferred/fixed-gap scaffolding, and synthetic tests. |

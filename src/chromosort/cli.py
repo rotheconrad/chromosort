@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from . import fix_contigs, reference_order, scaffold
+from . import fix_contigs, plot, reference_order, scaffold
 
 
 def main(argv=None):
@@ -17,7 +17,7 @@ def main(argv=None):
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["sort", "fix", "scaffold"],
+        choices=["sort", "fix", "scaffold", "plot"],
         help="Subcommand to run.",
     )
 
@@ -33,6 +33,8 @@ def main(argv=None):
         fix_contigs.main(remaining, prog="chromo fix")
     elif command == "scaffold":
         scaffold.main(remaining, prog="chromo scaffold")
+    elif command == "plot":
+        plot.main(remaining, prog="chromo plot")
     else:
         parser.error(f"unknown command: {command}")
 
