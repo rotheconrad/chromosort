@@ -24,7 +24,7 @@ import argparse
 import gzip
 import sys
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -97,6 +97,7 @@ class Assignment:
     split_candidate: bool = False
     split_candidate_refs: str = "."
     split_candidate_reason: str = "."
+    claim_matches: list = field(default_factory=list, repr=False)
 
 
 RC_TABLE = str.maketrans(
@@ -174,6 +175,25 @@ def parse_args(argv=None, prog=None):
         ),
     )
     ap.add_argument(
+        "--large-alignment-min-bp",
+        type=int,
+        default=10_000_000,
+        help=(
+            "Rescue a contig that is just below --min-query-cov when its best "
+            "reference match has at least this many merged query-aligned bp. "
+            "Set to 0 to disable this rescue."
+        ),
+    )
+    ap.add_argument(
+        "--large-alignment-min-query-cov",
+        type=float,
+        default=0.45,
+        help=(
+            "Minimum query coverage required by --large-alignment-min-bp "
+            "rescues."
+        ),
+    )
+    ap.add_argument(
         "--min-segment-idy",
         type=float,
         default=0.0,
@@ -206,6 +226,28 @@ def parse_args(argv=None, prog=None):
         help=(
             "During overlap filtering, keep a contig if this fraction of its "
             "merged reference match is previously uncovered."
+        ),
+    )
+    ap.add_argument(
+        "--overlap-mode",
+        choices=["span", "alignment"],
+        default="span",
+        help=(
+            "Reference intervals used by duplicate-overlap filtering. 'span' "
+            "uses the broad first-to-last reference span and is better for "
+            "filtering alternate/duplicate fragments around fragmented "
+            "whole-genome alignments. 'alignment' uses only exact merged "
+            "alignment intervals."
+        ),
+    )
+    ap.add_argument(
+        "--novel-ref-criteria",
+        choices=["both", "either"],
+        default="both",
+        help=(
+            "Whether duplicate-overlap filtering requires both "
+            "--min-novel-ref-bp and --min-novel-ref-frac, or either threshold, "
+            "before retaining a lower-ranked contig."
         ),
     )
     ap.add_argument(
@@ -691,17 +733,21 @@ def build_match_metrics(
     return metrics, by_query, skipped_unknown_query
 
 
+def split_candidate_match_is_supported(match, query_length, args):
+    query_frac = match.merged_query_bp / query_length if query_length else 0.0
+    return (
+        match.merged_query_bp >= args.split_candidate_min_aligned_bp
+        and query_frac >= args.split_candidate_min_query_frac
+    )
+
+
 def split_candidate_details(matches, query_length, best_ref_share, args):
     if best_ref_share > args.split_candidate_max_best_share:
-        return False, ".", "."
+        return False, ".", ".", []
 
     supported = []
     for match in matches:
-        query_frac = match.merged_query_bp / query_length if query_length else 0.0
-        if (
-            match.merged_query_bp >= args.split_candidate_min_aligned_bp
-            and query_frac >= args.split_candidate_min_query_frac
-        ):
+        if split_candidate_match_is_supported(match, query_length, args):
             supported.append(match)
 
     refs = []
@@ -713,7 +759,7 @@ def split_candidate_details(matches, query_length, best_ref_share, args):
         seen.add(match.ref)
 
     if len(refs) < 2:
-        return False, ".", "."
+        return False, ".", ".", []
 
     reason = (
         f"{len(refs)} references each have at least "
@@ -721,7 +767,17 @@ def split_candidate_details(matches, query_length, best_ref_share, args):
         f"{args.split_candidate_min_query_frac:.3f} query fraction; "
         f"best_ref_share={best_ref_share:.4f}."
     )
-    return True, ",".join(refs), reason
+    return True, ",".join(refs), reason, supported
+
+
+def large_alignment_is_supported(best, best_ref_share, args):
+    if args.large_alignment_min_bp <= 0:
+        return False
+    return (
+        best.merged_query_bp >= args.large_alignment_min_bp
+        and best.query_cov >= args.large_alignment_min_query_cov
+        and best_ref_share >= args.min_best_ref_share
+    )
 
 
 def choose_assignments(query_records, by_query, args):
@@ -749,7 +805,7 @@ def choose_assignments(query_records, by_query, args):
         second = matches[1] if len(matches) > 1 else None
         total_matched_bp = sum(m.merged_query_bp for m in matches)
         best_ref_share = best.merged_query_bp / total_matched_bp if total_matched_bp else 0.0
-        split_candidate, split_refs, split_reason = split_candidate_details(
+        split_candidate, split_refs, split_reason, split_supported_matches = split_candidate_details(
             matches,
             rec.length,
             best_ref_share,
@@ -766,9 +822,16 @@ def choose_assignments(query_records, by_query, args):
 
         kept = status == "kept"
         if args.protect_split_candidates and split_candidate:
-            if status in {"kept", "ambiguous_ref_match"}:
+            if status in {"kept", "ambiguous_ref_match", "below_min_query_cov"}:
                 status = "kept_split_candidate"
                 kept = True
+        elif status == "below_min_query_cov" and large_alignment_is_supported(
+            best,
+            best_ref_share,
+            args,
+        ):
+            status = "kept_large_alignment"
+            kept = True
 
         assignments[rec.name] = Assignment(
             query=rec.name,
@@ -782,18 +845,48 @@ def choose_assignments(query_records, by_query, args):
             split_candidate=split_candidate,
             split_candidate_refs=split_refs,
             split_candidate_reason=split_reason,
+            claim_matches=split_supported_matches if split_candidate else [best],
         )
     return assignments
 
 
-def best_overlap_contig(candidate, kept_assignments):
+def match_overlap_intervals(match, args):
+    if args.overlap_mode == "span":
+        return [(match.ref_start, match.ref_end + 1)]
+    return match.merged_ref_intervals
+
+
+def assignment_overlap_intervals(assignment, args):
+    return match_overlap_intervals(assignment.best, args)
+
+
+def novel_ref_thresholds_pass(novel_bp, novel_frac, args):
+    adds_enough_ref_bp = novel_bp >= args.min_novel_ref_bp
+    adds_enough_ref_frac = novel_frac >= args.min_novel_ref_frac
+    if args.novel_ref_criteria == "either":
+        return adds_enough_ref_bp or adds_enough_ref_frac
+    return adds_enough_ref_bp and adds_enough_ref_frac
+
+
+def split_candidate_seed_claims(assignments, ref, args):
+    claims = []
+    for assignment in assignments.values():
+        if not assignment.kept or not assignment.split_candidate:
+            continue
+        for match in assignment.claim_matches:
+            if match.ref != ref or match.ref == assignment.best.ref:
+                continue
+            claims.append((assignment.query, match_overlap_intervals(match, args)))
+    return claims
+
+
+def best_overlap_claim(candidate_intervals, kept_claims):
     best_contig = "."
     best_bp = 0
-    candidate_intervals = candidate.best.merged_ref_intervals
-    for kept in kept_assignments:
-        overlap_bp = intersect_bp(candidate_intervals, kept.best.merged_ref_intervals)
+    for contig, intervals in kept_claims:
+        overlap_bp = intersect_bp(candidate_intervals, intervals)
         if overlap_bp > best_bp:
-            best_contig = kept.query
+            best_contig = contig
             best_bp = overlap_bp
     return best_contig, best_bp
 
@@ -810,7 +903,7 @@ def resolve_duplicate_overlaps(assignments, args):
     if args.no_overlap_filter:
         for assignment in assignments.values():
             if assignment.kept and assignment.best is not None:
-                assignment.novel_ref_bp = assignment.best.merged_ref_bp
+                assignment.novel_ref_bp = interval_bp(assignment_overlap_intervals(assignment, args))
                 assignment.novel_ref_frac = 1.0
         return
 
@@ -820,6 +913,7 @@ def resolve_duplicate_overlaps(assignments, args):
             by_ref[assignment.best.ref].append(assignment)
 
     for ref_assignments in by_ref.values():
+        ref = ref_assignments[0].best.ref
         ranked = sorted(
             ref_assignments,
             key=lambda a: (
@@ -831,37 +925,40 @@ def resolve_duplicate_overlaps(assignments, args):
             ),
             reverse=True,
         )
-        covered = []
-        kept_for_ref = []
+        kept_claims = split_candidate_seed_claims(assignments, ref, args)
+        covered = merge_intervals(
+            interval
+            for _, intervals in kept_claims
+            for interval in intervals
+        )
         for assignment in ranked:
-            ref_bp = assignment.best.merged_ref_bp
-            novel_intervals = subtract_intervals(assignment.best.merged_ref_intervals, covered)
+            candidate_intervals = assignment_overlap_intervals(assignment, args)
+            ref_bp = interval_bp(candidate_intervals)
+            novel_intervals = subtract_intervals(candidate_intervals, covered)
             novel_bp = interval_bp(novel_intervals)
             novel_frac = novel_bp / ref_bp if ref_bp else 0.0
 
             assignment.novel_ref_bp = novel_bp
             assignment.novel_ref_frac = novel_frac
-            if kept_for_ref:
-                overlap_contig, overlap_bp = best_overlap_contig(assignment, kept_for_ref)
+            if kept_claims:
+                overlap_contig, overlap_bp = best_overlap_claim(candidate_intervals, kept_claims)
                 assignment.overlap_best_contig = overlap_contig
                 assignment.overlap_best_bp = overlap_bp
             else:
                 assignment.overlap_best_bp = 0
 
-            adds_enough_ref_bp = novel_bp >= args.min_novel_ref_bp
-            adds_enough_ref_frac = novel_frac >= args.min_novel_ref_frac
-            if novel_bp == 0 or (not adds_enough_ref_bp and not adds_enough_ref_frac):
+            if novel_bp == 0 or not novel_ref_thresholds_pass(novel_bp, novel_frac, args):
                 if args.protect_split_candidates and assignment.split_candidate:
                     assignment.status = "kept_split_candidate"
-                    kept_for_ref.append(assignment)
-                    covered = merge_intervals(covered + assignment.best.merged_ref_intervals)
+                    kept_claims.append((assignment.query, candidate_intervals))
+                    covered = merge_intervals(covered + candidate_intervals)
                     continue
                 assignment.status = "duplicate_overlap"
                 assignment.kept = False
                 continue
 
-            kept_for_ref.append(assignment)
-            covered = merge_intervals(covered + assignment.best.merged_ref_intervals)
+            kept_claims.append((assignment.query, candidate_intervals))
+            covered = merge_intervals(covered + candidate_intervals)
 
 
 def order_assignments(assignments, ref_order, separator, orient_to_reference):
@@ -1208,12 +1305,16 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
         out.write(f"min_aligned_bp\t{args.min_aligned_bp}\n")
         out.write(f"min_query_cov\t{args.min_query_cov}\n")
         out.write(f"min_best_ref_share\t{args.min_best_ref_share}\n")
+        out.write(f"large_alignment_min_bp\t{args.large_alignment_min_bp}\n")
+        out.write(f"large_alignment_min_query_cov\t{args.large_alignment_min_query_cov}\n")
         out.write(f"min_segment_idy\t{args.min_segment_idy}\n")
         out.write(f"min_mapq\t{args.min_mapq}\n")
         out.write(f"include_secondary_paf\t{args.include_secondary_paf}\n")
         out.write(f"overlap_filter_enabled\t{not args.no_overlap_filter}\n")
+        out.write(f"overlap_mode\t{args.overlap_mode}\n")
         out.write(f"min_novel_ref_bp\t{args.min_novel_ref_bp}\n")
         out.write(f"min_novel_ref_frac\t{args.min_novel_ref_frac}\n")
+        out.write(f"novel_ref_criteria\t{args.novel_ref_criteria}\n")
         out.write(f"protect_split_candidates\t{args.protect_split_candidates}\n")
         out.write(f"split_candidate_min_aligned_bp\t{args.split_candidate_min_aligned_bp}\n")
         out.write(f"split_candidate_min_query_frac\t{args.split_candidate_min_query_frac}\n")
@@ -1238,7 +1339,8 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
             "\nNote\tCoverage and ordering are based on merged alignment intervals. "
             "This avoids counting overlapping rows more than once. "
             "The duplicate-overlap filter rejects otherwise-good contigs that add "
-            "little or no new reference coverage after better contigs claim intervals. "
+            "little or no new reference coverage after better contigs claim "
+            "reference intervals or spans, depending on overlap_mode. "
             "Strong multi-reference split candidates are protected by default so "
             "potential chromo fix targets are not silently removed before review.\n"
         )

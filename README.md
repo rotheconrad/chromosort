@@ -376,11 +376,15 @@ chromo sort \
 | `--min-aligned-bp` | `100000` | Minimum merged query-aligned bp required before a contig can be kept. |
 | `--min-query-cov` | `0.50` | Minimum fraction of the contig covered by its best reference match. |
 | `--min-best-ref-share` | `0.50` | Minimum fraction of all matched bp that must belong to the best reference chromosome. |
+| `--large-alignment-min-bp` | `10000000` | Rescue a near-threshold contig when its best reference match has at least this many merged query-aligned bp. Set 0 to disable. |
+| `--large-alignment-min-query-cov` | `0.45` | Minimum query coverage required by large-alignment rescue. |
 | `--min-segment-idy` | `0.0` | Ignore individual alignment rows below this percent identity. |
 | `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
 | `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
 | `--min-novel-ref-bp` | `50000` | Keep an otherwise-good contig if it adds at least this many new reference bp. |
 | `--min-novel-ref-frac` | `0.20` | Keep an otherwise-good contig if this fraction of its reference span is novel. |
+| `--overlap-mode` | `span` | Use broad first-to-last reference spans for duplicate filtering. Set `alignment` to use exact merged alignment intervals. |
+| `--novel-ref-criteria` | `both` | Require both novel-bp and novel-fraction thresholds during duplicate filtering. Set `either` for the older permissive behavior. |
 | `--split-candidate-min-aligned-bp` | `100000` | Minimum merged query-aligned bp on at least two references before split-candidate protection applies. |
 | `--split-candidate-min-query-frac` | `0.05` | Minimum query-length fraction on at least two references before split-candidate protection applies. |
 | `--split-candidate-max-best-share` | `0.95` | Do not flag contigs whose best reference accounts for more than this share of total matched bp. |
@@ -388,9 +392,23 @@ chromo sort \
 | `--no-overlap-filter` | off | Keep all contigs passing basic match thresholds, even if they overlap better contigs. |
 | `--no-protect-split-candidates` | off | Let strong multi-reference split candidates be filtered like ordinary contigs. |
 
-For small microbial genomes or tiny test fixtures, lower `--min-aligned-bp`.
+For small microbial genomes or tiny test fixtures, lower `--min-aligned-bp`
+and `--min-novel-ref-bp`.
 For large plant or animal assemblies, the defaults are intentionally
 conservative.
+
+For assemblies with many short alternate/contaminant fragments around strong
+chromosome-scale contigs, a stricter cleanup pass is often appropriate:
+
+```bash
+chromo sort \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --output-prefix results/sample \
+  --min-aligned-bp 1000000 \
+  --min-novel-ref-frac 0.5
+```
 
 ### `chromo sort` Status Values
 
@@ -399,6 +417,10 @@ conservative.
 `kept_split_candidate`: written to the ordered FASTA and flagged as a strong
 multi-reference candidate for `chromo fix` review. These contigs are protected
 from duplicate-overlap removal by default.
+
+`kept_large_alignment`: written to the ordered FASTA because it has a very large
+best-reference alignment even though its query coverage is slightly below
+`--min-query-cov`.
 
 `no_alignment`: no usable alignment rows were found for this contig.
 
@@ -448,12 +470,27 @@ that include short duplicate fragments, alternate haplotigs, or local redundant
 contigs. Rejected contigs are marked `duplicate_overlap`, with novel coverage
 and the strongest overlapping kept contig reported.
 
+By default, duplicate filtering uses each contig's broad first-to-last reference
+span and requires both the novel-bp and novel-fraction thresholds before
+retaining a lower-ranked contig. This is intentionally stricter than exact
+alignment-block overlap: whole-genome alignments can be fragmented by repeats,
+local variation, or filtering, and short duplicate fragments often land in the
+internal gaps of a stronger chromosome-scale contig. Use
+`--overlap-mode alignment --novel-ref-criteria either` for the older, more
+permissive behavior.
+
 Strong multi-reference contigs are treated differently. If at least two
 references carry substantial query support and no single reference explains
 nearly all matched bp, the contig is marked `kept_split_candidate` and retained
-even if its best-reference interval overlaps a better contig. This keeps likely
-`chromo fix` targets available for review instead of removing them during
-sorting.
+even if its best-reference interval overlaps a better contig or its best single
+reference is below `--min-query-cov`. Its secondary supported reference spans
+also block lower-ranked duplicate fragments during overlap filtering. This keeps
+likely `chromo fix` targets available for review instead of removing them during
+sorting while still reducing clutter around those loci.
+
+Very large single-reference alignments are also rescued by default when they
+land just below `--min-query-cov`. This prevents chromosome-scale contigs with
+fragmented alignments from being discarded in favor of smaller redundant pieces.
 
 #### Preserve Full Contigs
 
@@ -934,6 +971,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.1` | Tightened `chromo sort` duplicate filtering for contaminated/alternate-fragment assemblies by using span-based overlap by default, requiring both novel coverage thresholds, rescuing very large near-threshold alignments, and letting split candidates protect their secondary reference spans. |
 | `0.2.0` | Added minimap2 PAF input for `chromo sort` and `chromo fix`, plus `chromo plot` PDF/SVG/PNG dot plots for coords/PAF with optional assignment-report query ordering. |
 | `0.1.2` | Raised the default auto-split query-span support threshold to 5% so small terminal off-target blocks are reported for review instead of being cut automatically. |
 | `0.1.1` | Tightened `chromo fix` breakpoint placement by collapsing adjacent same-reference/orientation runs, added complex same-reference orientation detection, added a run-level auto breakpoint budget, protected strong multi-reference split candidates during `chromo sort`, and documented the fix-before-sort workflow for suspected misjoins. |
