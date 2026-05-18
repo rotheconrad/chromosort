@@ -39,6 +39,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("sort", result.stdout)
         self.assertIn("fix", result.stdout)
         self.assertIn("cut", result.stdout)
+        self.assertIn("manual", result.stdout)
         self.assertIn("scaffold", result.stdout)
         self.assertIn("plot", result.stdout)
 
@@ -46,6 +47,8 @@ class CliTests(unittest.TestCase):
         sort_help = run_cli("sort", "--help").stdout
         fix_help = run_cli("fix", "--help").stdout
         cut_help = run_cli("cut", "--help").stdout
+        manual_help = run_cli("manual", "--help").stdout
+        manual_apply_help = run_cli("manual", "apply", "--help").stdout
         scaffold_help = run_cli("scaffold", "--help").stdout
         plot_help = run_cli("plot", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
@@ -57,6 +60,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("--cut", cut_help)
         self.assertIn("--cuts-file", cut_help)
         self.assertIn("--output-fasta", cut_help)
+        self.assertIn("--output-html", manual_help)
+        self.assertIn("--embed-sequences", manual_help)
+        self.assertIn("--recipe", manual_apply_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--per-ref", plot_help)
         self.assertIn("--paf", plot_help)

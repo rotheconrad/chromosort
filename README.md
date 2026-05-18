@@ -4,7 +4,7 @@ Reference-guided genome assembly utilities for sorting contigs, splitting
 selected contigs or all detected chimeric contigs, and scaffolding final
 ordered contigs with N gaps.
 
-ChromoSort provides one command, `chromo`, with five subcommands:
+ChromoSort provides one command, `chromo`, with six subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
   low-value duplicate overlaps, labels and can rescue terminal overlaps,
@@ -17,6 +17,10 @@ ChromoSort provides one command, `chromo`, with five subcommands:
 - `chromo cut` cuts reviewed contigs at exact user-provided positions and writes
   a new FASTA plus a TSV report. It is useful when the breakpoint is already
   known from manual dot-plot review.
+- `chromo manual` writes a self-contained HTML dashboard for manual dot-plot
+  review and GUI editing. It can remove contigs, reorder pieces, add
+  breakpoints, invert pieces, scaffold edited pieces, export FASTA from the
+  browser, and export reproducible recipe JSON.
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
   records with inferred reference-space N gaps by default, reports negative-gap
   overlaps, and can optionally trim reviewed terminal overlaps.
@@ -24,12 +28,13 @@ ChromoSort provides one command, `chromo`, with five subcommands:
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
 
-The sorting, fixing, and plotting workflows use standard MUMmer `show-coords`
-output or minimap2 PAF. Manual cuts do not require alignments. These commands
-are designed for reuse across species and genome assembly projects. ChromoSort
-does not polish sequence, call variants, or force contigs to match a reference.
-It keeps full sequence pieces and writes TSV/plot reports so each keep, reject,
-split, manual cut, plot, or scaffold-gap decision is auditable.
+The sorting, fixing, plotting, and manual dashboard workflows use standard
+MUMmer `show-coords` output or minimap2 PAF. Manual cuts do not require
+alignments. These commands are designed for reuse across species and genome
+assembly projects. ChromoSort does not polish sequence, call variants, or force
+contigs to match a reference. It keeps full sequence pieces and writes
+TSV/plot/recipe reports so each keep, reject, split, manual edit, plot, or
+scaffold-gap decision is auditable.
 
 ## Table of Contents
 
@@ -51,6 +56,12 @@ split, manual cut, plot, or scaffold-gap decision is auditable.
   - [Run `chromo cut`](#run-chromo-cut)
   - [`chromo cut` Outputs](#chromo-cut-outputs)
   - [`chromo cut` Parameters](#chromo-cut-parameters)
+- [chromo manual](#chromo-manual)
+  - [Run `chromo manual`](#run-chromo-manual)
+  - [Use the Manual Dashboard](#use-the-manual-dashboard)
+  - [Apply a Manual Recipe](#apply-a-manual-recipe)
+  - [`chromo manual` Outputs](#chromo-manual-outputs)
+  - [`chromo manual` Parameters](#chromo-manual-parameters)
 - [chromo fix](#chromo-fix)
   - [What `chromo fix` Does](#what-chromo-fix-does)
   - [Run `chromo fix` With Selected Contigs](#run-chromo-fix-with-selected-contigs)
@@ -91,6 +102,7 @@ chromo --help
 chromo sort --help
 chromo fix --help
 chromo cut --help
+chromo manual --help
 chromo plot --help
 chromo scaffold --help
 ```
@@ -172,6 +184,17 @@ chromo cut \
   --cut contig_2:10000 \
   --output-fasta results/sample.cut.fa \
   --report results/sample.cut_contigs.tsv
+```
+
+Manual GUI review and editing:
+
+```bash
+chromo manual \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --output-html results/sample.manual.html \
+  --suggested-output-fasta sample.manual.fa
 ```
 
 Scan all contigs with the same conservative planner:
@@ -285,7 +308,7 @@ Legacy command aliases are retained for compatibility:
 - `chromosort-scaffold` is equivalent to `chromo scaffold`
 
 New workflows should use `chromo sort`, `chromo fix`, `chromo cut`,
-`chromo plot`, and `chromo scaffold`.
+`chromo manual`, `chromo plot`, and `chromo scaffold`.
 
 ## Creating Input Files With MUMmer
 
@@ -709,6 +732,117 @@ write only the new FASTA IDs in cut-piece headers.
 | `--min-piece-bp` | `1` | Reject cut plans that create pieces shorter than this length. |
 | `--name-separator` | `_cut` | Text inserted before the numeric suffix. |
 | `--simple-headers` | off | Write cut-piece FASTA headers containing only the new sequence ID. |
+
+## chromo manual
+
+Use `chromo manual` when you want to make reviewed assembly edits in a browser
+instead of asking ChromoSort to choose breakpoints or filters automatically. The
+command writes one HTML file with embedded CSS, JavaScript, reference/assembly
+metadata, contig ordering, and alignment rows. No external web assets are
+required.
+
+The dashboard starts with every assembly contig present. Aligned contigs are
+ordered by reference FASTA order and reference coordinate. Unaligned contigs are
+kept at the end until you remove them.
+
+### Run `chromo manual`
+
+```bash
+chromo manual \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --output-html results/sample.manual.html \
+  --suggested-output-fasta sample.manual.fa
+```
+
+The same dashboard can be generated from PAF:
+
+```bash
+chromo manual \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --paf paf/sample.paf \
+  --output-html results/sample.manual.html
+```
+
+For large genomes, the dashboard embeds alignment metadata but not full FASTA
+sequences by default. Open the HTML file in a browser, load the original
+assembly FASTA with the file picker, then export the edited FASTA. For tiny
+assemblies, demos, or tests, use `--embed-sequences` so the HTML can export
+FASTA without loading the source FASTA in the browser:
+
+```bash
+chromo manual \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --output-html results/sample.manual.html \
+  --embed-sequences
+```
+
+### Use the Manual Dashboard
+
+The manual dashboard provides:
+
+- A reference-ordered contig/piece list with every contig retained initially.
+- A per-contig dot plot. Forward alignments are blue; reverse alignments are red.
+- A click-to-stage breakpoint position from the selected contig dot plot.
+- Buttons to remove/restore a contig or piece, move it up/down, invert it, and
+  add a breakpoint.
+- A `Remove unaligned` button for quickly excluding unplaced contigs.
+- A scaffold label for each active piece and a scaffold-export toggle that
+  joins pieces with configurable N gaps.
+- FASTA export and recipe JSON export.
+
+Browser security prevents a static HTML file from silently overwriting arbitrary
+local paths. FASTA export is therefore a normal browser download, and the
+original FASTA is never modified.
+
+### Apply a Manual Recipe
+
+The dashboard can export a recipe JSON file. Apply that recipe from the command
+line for reproducible runs:
+
+```bash
+chromo manual apply \
+  --assembly-fasta assembly.fa \
+  --recipe chromosort.manual.recipe.json \
+  --output-fasta results/sample.manual.fa \
+  --report results/sample.manual.tsv
+```
+
+Use `--scaffold` or `--no-scaffold` to override the recipe export mode, and
+`--gap-bp` to override the recipe gap size.
+
+### `chromo manual` Outputs
+
+| Output | Description |
+| --- | --- |
+| `--output-html` | Self-contained manual-edit dashboard with embedded alignment/order metadata and optional embedded sequences. |
+| Browser FASTA download | Edited FASTA exported from the dashboard. The source FASTA is not modified. |
+| Browser recipe download | JSON recipe describing the current manual edits. |
+| `chromo manual apply --output-fasta` | FASTA generated by applying a recipe from the command line. |
+| `chromo manual apply --report` | Optional TSV report of emitted pieces and removed pieces. |
+
+### `chromo manual` Parameters
+
+| Parameter | Default | Meaning |
+| --- | ---: | --- |
+| `--ref-fasta` | required | Reference FASTA used for ordering and dot-plot axes. |
+| `--ref-fai` | auto | Optional reference FASTA index. Defaults to `<ref-fasta>.fai` when present. |
+| `--assembly-fasta` | required | Assembly FASTA whose contigs should be reviewed. |
+| `--assembly-fai` | auto | Optional assembly FASTA index. Defaults to `<assembly-fasta>.fai` when present. |
+| `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
+| `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
+| `--output-html` | required | Dashboard HTML path. |
+| `--suggested-output-fasta` | `<assembly>.manual.fa` | Suggested browser download filename for FASTA export. |
+| `--embed-sequences` | off | Embed full assembly sequences in the HTML for single-file export. Best for small assemblies. |
+| `--min-segment-bp` | `0` | Minimum alignment row length to embed in the dashboard. |
+| `--min-segment-idy` | `0.0` | Minimum percent identity for embedded alignment rows. |
+| `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
+| `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
+| `--max-segments` | `0` | Maximum number of alignment rows to embed; 0 means no limit. |
 
 ## chromo fix
 
@@ -1183,6 +1317,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.5` | Added `chromo manual`, a self-contained HTML dashboard for manual dot-plot review, contig removal/restoration, order changes, breakpoints, inversions, scaffold labeling/export, FASTA downloads, recipe JSON export, and reproducible `chromo manual apply` recipe execution. |
 | `0.2.4` | Added `chromo cut` for exact reviewed breakpoint cuts, with repeatable `--cut CONTIG:POS[,POS...]`, single-contig `--contig/--pos`, batch `--cuts-file`, cut-piece FASTA output, and an audit TSV report. |
 | `0.2.3` | Added explicit terminal-overlap classification/rescue in `chromo sort`, richer scaffold overlap reporting, and `chromo scaffold --overlap-policy` modes for warn-only, reference-coordinate trimming, and sequence-confirmed trimming. |
 | `0.2.2` | Reworked `chromo fix` so `--contigs`/`--contigs-file` only select the inspection subset, `--all` scans every candidate contig, `--mode` controls planner behavior for both scopes, and breakpoint limits apply per contig. |
