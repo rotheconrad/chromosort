@@ -4,7 +4,7 @@ Reference-guided genome assembly utilities for sorting contigs, splitting
 selected contigs or all detected chimeric contigs, and scaffolding final
 ordered contigs with N gaps.
 
-ChromoSort provides one command, `chromo`, with four subcommands:
+ChromoSort provides one command, `chromo`, with five subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
   low-value duplicate overlaps, labels and can rescue terminal overlaps,
@@ -14,6 +14,9 @@ ChromoSort provides one command, `chromo`, with four subcommands:
   blocks into reference-labeled pieces. Use `--contigs` to inspect a reviewed
   subset or `--all` to scan every contig; both scopes use the same `--mode`
   planner and per-contig breakpoint guardrails.
+- `chromo cut` cuts reviewed contigs at exact user-provided positions and writes
+  a new FASTA plus a TSV report. It is useful when the breakpoint is already
+  known from manual dot-plot review.
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
   records with inferred reference-space N gaps by default, reports negative-gap
   overlaps, and can optionally trim reviewed terminal overlaps.
@@ -22,11 +25,11 @@ ChromoSort provides one command, `chromo`, with four subcommands:
   reviewed without re-running an aligner just to make a plot.
 
 The sorting, fixing, and plotting workflows use standard MUMmer `show-coords`
-output or minimap2 PAF. They are designed for reuse across species and genome
-assembly projects. ChromoSort does not polish sequence, call variants, or force
-contigs to match a reference. It keeps full sequence pieces and writes TSV/plot
-reports so each keep, reject, split, plot, or scaffold-gap decision is
-auditable.
+output or minimap2 PAF. Manual cuts do not require alignments. These commands
+are designed for reuse across species and genome assembly projects. ChromoSort
+does not polish sequence, call variants, or force contigs to match a reference.
+It keeps full sequence pieces and writes TSV/plot reports so each keep, reject,
+split, manual cut, plot, or scaffold-gap decision is auditable.
 
 ## Table of Contents
 
@@ -44,6 +47,10 @@ auditable.
   - [`chromo sort` Status Values](#chromo-sort-status-values)
   - [Reasoning Behind `chromo sort`](#reasoning-behind-chromo-sort)
   - [Batch Sorting Example](#batch-sorting-example)
+- [chromo cut](#chromo-cut)
+  - [Run `chromo cut`](#run-chromo-cut)
+  - [`chromo cut` Outputs](#chromo-cut-outputs)
+  - [`chromo cut` Parameters](#chromo-cut-parameters)
 - [chromo fix](#chromo-fix)
   - [What `chromo fix` Does](#what-chromo-fix-does)
   - [Run `chromo fix` With Selected Contigs](#run-chromo-fix-with-selected-contigs)
@@ -83,6 +90,7 @@ mamba activate chromosort
 chromo --help
 chromo sort --help
 chromo fix --help
+chromo cut --help
 chromo plot --help
 chromo scaffold --help
 ```
@@ -153,6 +161,17 @@ chromo fix \
   --contigs contig_04 contig_12 \
   --output-fasta results/sample.fixed.fa \
   --report results/sample.fixed_contigs.tsv
+```
+
+Manual cut at reviewed positions:
+
+```bash
+chromo cut \
+  --assembly-fasta assembly.fa \
+  --cut contig_1:234567,450000 \
+  --cut contig_2:10000 \
+  --output-fasta results/sample.cut.fa \
+  --report results/sample.cut_contigs.tsv
 ```
 
 Scan all contigs with the same conservative planner:
@@ -265,8 +284,8 @@ Legacy command aliases are retained for compatibility:
 - `chromosort-fix-contigs` is equivalent to `chromo fix`
 - `chromosort-scaffold` is equivalent to `chromo scaffold`
 
-New workflows should use `chromo sort`, `chromo fix`, `chromo plot`, and
-`chromo scaffold`.
+New workflows should use `chromo sort`, `chromo fix`, `chromo cut`,
+`chromo plot`, and `chromo scaffold`.
 
 ## Creating Input Files With MUMmer
 
@@ -611,6 +630,85 @@ for asm in assemblies/*.fa; do
     --orient-to-reference
 done
 ```
+
+## chromo cut
+
+Use `chromo cut` when you already know the exact breakpoint position for one or
+more contigs and want a transparent FASTA edit without running the alignment
+planner in `chromo fix`.
+
+Positions are 1-based and mean "cut after this base." For example, cutting a
+10 bp contig at position 4 emits bases 1-4 and 5-10. Terminal cuts are rejected
+because they would create empty pieces.
+
+### Run `chromo cut`
+
+Repeat `--cut` for multiple contigs, and use commas for multiple positions on
+the same contig:
+
+```bash
+chromo cut \
+  --assembly-fasta assembly.fa \
+  --cut contig_1:234567,450000 \
+  --cut contig_2:10000 \
+  --output-fasta results/sample.cut.fa \
+  --report results/sample.cut_contigs.tsv
+```
+
+For a single contig, the original explicit form is also supported:
+
+```bash
+chromo cut \
+  --assembly-fasta assembly.fa \
+  --contig contig_1 \
+  --pos 234567 450000 \
+  --output-fasta results/sample.cut.fa \
+  --report results/sample.cut_contigs.tsv
+```
+
+For batch review, provide a simple cuts file:
+
+```text
+contig	position
+contig_1	234567	450000
+contig_2	10000
+```
+
+Then run:
+
+```bash
+chromo cut \
+  --assembly-fasta assembly.fa \
+  --cuts-file reviewed_cuts.tsv \
+  --output-fasta results/sample.cut.fa \
+  --report results/sample.cut_contigs.tsv
+```
+
+### `chromo cut` Outputs
+
+| Output | Description |
+| --- | --- |
+| `--output-fasta` | Full assembly FASTA with requested contigs replaced by cut pieces. Uncut contigs are copied unchanged. |
+| `--report` | TSV report describing every emitted cut piece, including original contig, new contig, slice coordinates, piece length, and cut positions. |
+
+Cut pieces are named `CONTIG_cut001`, `CONTIG_cut002`, and so on by default.
+Change the inserted text with `--name-separator`, or use `--simple-headers` to
+write only the new FASTA IDs in cut-piece headers.
+
+### `chromo cut` Parameters
+
+| Parameter | Default | Meaning |
+| --- | ---: | --- |
+| `--assembly-fasta` | required | Assembly FASTA containing the contigs to cut. |
+| `--assembly-fai` | auto | Optional FASTA index used for length validation. Defaults to `<assembly-fasta>.fai` when present. |
+| `--cut` | none | Reviewed cut as `CONTIG:POS[,POS...]`; may be repeated. |
+| `--cuts-file` | none | Optional file with contig and one or more cut positions per line. |
+| `--contig` / `--pos` | none | Convenience form for one contig with one or more positions. |
+| `--output-fasta` | required | New FASTA path. The input FASTA is never modified. |
+| `--report` | required | TSV report path for the cut pieces. |
+| `--min-piece-bp` | `1` | Reject cut plans that create pieces shorter than this length. |
+| `--name-separator` | `_cut` | Text inserted before the numeric suffix. |
+| `--simple-headers` | off | Write cut-piece FASTA headers containing only the new sequence ID. |
 
 ## chromo fix
 
@@ -1085,6 +1183,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.4` | Added `chromo cut` for exact reviewed breakpoint cuts, with repeatable `--cut CONTIG:POS[,POS...]`, single-contig `--contig/--pos`, batch `--cuts-file`, cut-piece FASTA output, and an audit TSV report. |
 | `0.2.3` | Added explicit terminal-overlap classification/rescue in `chromo sort`, richer scaffold overlap reporting, and `chromo scaffold --overlap-policy` modes for warn-only, reference-coordinate trimming, and sequence-confirmed trimming. |
 | `0.2.2` | Reworked `chromo fix` so `--contigs`/`--contigs-file` only select the inspection subset, `--all` scans every candidate contig, `--mode` controls planner behavior for both scopes, and breakpoint limits apply per contig. |
 | `0.2.1` | Tightened `chromo sort` duplicate filtering for contaminated/alternate-fragment assemblies by using span-based overlap by default, requiring both novel coverage thresholds, rescuing very large near-threshold alignments, and letting split candidates protect their secondary reference spans. |

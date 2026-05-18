@@ -38,12 +38,14 @@ class CliTests(unittest.TestCase):
         result = run_cli("--help")
         self.assertIn("sort", result.stdout)
         self.assertIn("fix", result.stdout)
+        self.assertIn("cut", result.stdout)
         self.assertIn("scaffold", result.stdout)
         self.assertIn("plot", result.stdout)
 
     def test_subcommand_help_dispatches_to_full_commands(self):
         sort_help = run_cli("sort", "--help").stdout
         fix_help = run_cli("fix", "--help").stdout
+        cut_help = run_cli("cut", "--help").stdout
         scaffold_help = run_cli("scaffold", "--help").stdout
         plot_help = run_cli("plot", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
@@ -52,6 +54,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("--mode", fix_help)
         self.assertNotIn("--auto", fix_help)
         self.assertIn("--paf", fix_help)
+        self.assertIn("--cut", cut_help)
+        self.assertIn("--cuts-file", cut_help)
+        self.assertIn("--output-fasta", cut_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--per-ref", plot_help)
         self.assertIn("--paf", plot_help)

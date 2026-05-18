@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chromosort"
-version = "0.2.3"
-description = "Reference-order, fix, scaffold, and plot genome assembly contigs from MUMmer or minimap2 alignments."
+version = "0.2.4"
+description = "Reference-order, fix, cut, scaffold, and plot genome assembly contigs from MUMmer or minimap2 alignments."
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
