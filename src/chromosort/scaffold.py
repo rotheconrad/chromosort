@@ -50,6 +50,17 @@ class FastaRecord:
 class ScaffoldMember:
     assignment: AssignmentRow
     record: FastaRecord
+    trim_left_bp: int = 0
+    trim_right_bp: int = 0
+
+    @property
+    def seq(self):
+        end = len(self.record.seq) - self.trim_right_bp
+        return self.record.seq[self.trim_left_bp : end]
+
+    @property
+    def trimmed_bp(self):
+        return self.trim_left_bp + self.trim_right_bp
 
 
 @dataclass
@@ -62,6 +73,14 @@ class GapRecord:
     raw_inferred_gap_bp: int
     gap_bp: int
     gap_mode: str
+    overlap_bp: int
+    overlap_class: str
+    overlap_left_ref_frac: float
+    overlap_right_ref_frac: float
+    overlap_policy: str
+    overlap_action: str
+    trimmed_bp: int
+    sequence_overlap_identity: Optional[float] = None
 
 
 @dataclass
@@ -73,11 +92,19 @@ class ScaffoldRecord:
 
     @property
     def sequence_bp(self):
-        return sum(len(member.record.seq) for member in self.members)
+        return sum(len(member.seq) for member in self.members)
 
     @property
     def gap_bp(self):
         return sum(gap.gap_bp for gap in self.gaps)
+
+    @property
+    def overlap_bp(self):
+        return sum(gap.overlap_bp for gap in self.gaps)
+
+    @property
+    def trimmed_bp(self):
+        return sum(member.trimmed_bp for member in self.members)
 
 
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -119,6 +146,28 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         help=(
             "Use this many Ns between neighboring contigs instead of inferring "
             "gap length from reference coordinates."
+        ),
+    )
+    ap.add_argument(
+        "--overlap-policy",
+        choices=["zero-gap", "warn", "trim-reference", "trim-sequence"],
+        default="zero-gap",
+        help=(
+            "How to handle adjacent contigs with overlapping reference spans. "
+            "zero-gap writes no Ns and keeps both sequences unchanged; warn does "
+            "the same but emits stderr warnings; trim-reference removes the "
+            "reference-inferred overlap from the right contig; trim-sequence "
+            "removes the right-contig prefix only when the terminal sequence "
+            "overlap has high identity."
+        ),
+    )
+    ap.add_argument(
+        "--trim-sequence-min-identity",
+        type=float,
+        default=0.98,
+        help=(
+            "Minimum suffix/prefix identity required by "
+            "--overlap-policy trim-sequence."
         ),
     )
     ap.add_argument(
@@ -207,7 +256,65 @@ def inferred_gap(left, right):
     return right.assignment.ref_start - left.assignment.ref_end - 1
 
 
-def build_scaffold(ref, members, fixed_gap_bp):
+def ref_span_bp(assignment):
+    return max(0, assignment.ref_end - assignment.ref_start + 1)
+
+
+def fmt(value, digits=4):
+    if value is None:
+        return "."
+    if isinstance(value, float):
+        return f"{value:.{digits}f}"
+    return str(value)
+
+
+def classify_adjacent_overlap(left, right, overlap_bp):
+    if overlap_bp <= 0:
+        return "no_overlap"
+    left_start = left.assignment.ref_start
+    left_end = left.assignment.ref_end
+    right_start = right.assignment.ref_start
+    right_end = right.assignment.ref_end
+    if right_start > left_start and right_end > left_end:
+        return "terminal_overlap"
+    if right_start >= left_start and right_end <= left_end:
+        return "contained_overlap"
+    if right_start <= left_start and right_end >= left_end:
+        return "spanning_overlap"
+    return "internal_overlap"
+
+
+def sequence_overlap_identity(left_seq, right_seq, overlap_bp):
+    size = min(overlap_bp, len(left_seq), len(right_seq))
+    if size <= 0:
+        return 0, None
+    left_part = left_seq[-size:].upper()
+    right_part = right_seq[:size].upper()
+    matches = sum(1 for left_base, right_base in zip(left_part, right_part) if left_base == right_base)
+    return size, matches / size
+
+
+def apply_overlap_policy(left, right, overlap_bp, overlap_class, args):
+    if overlap_bp <= 0:
+        return "none", 0, None
+    if args.overlap_policy in {"zero-gap", "warn"}:
+        return "zero_gap", 0, None
+    if overlap_class != "terminal_overlap":
+        return "trim_skipped_nonterminal", 0, None
+
+    if args.overlap_policy == "trim-reference":
+        trim_bp = min(overlap_bp, len(right.seq))
+        right.trim_left_bp += trim_bp
+        return "trimmed_reference", trim_bp, None
+
+    trim_bp, identity = sequence_overlap_identity(left.seq, right.seq, overlap_bp)
+    if trim_bp > 0 and identity is not None and identity >= args.trim_sequence_min_identity:
+        right.trim_left_bp += trim_bp
+        return "trimmed_sequence", trim_bp, identity
+    return "trim_skipped_sequence_identity", 0, identity
+
+
+def build_scaffold(ref, members, fixed_gap_bp, args):
     pieces = []
     gaps = []
     gap_mode = "fixed" if fixed_gap_bp is not None else "inferred"
@@ -216,6 +323,15 @@ def build_scaffold(ref, members, fixed_gap_bp):
         if index:
             left = members[index - 1]
             raw_gap = inferred_gap(left, member)
+            overlap_bp = max(0, -raw_gap)
+            overlap_class = classify_adjacent_overlap(left, member, overlap_bp)
+            overlap_action, trimmed_bp, sequence_identity = apply_overlap_policy(
+                left,
+                member,
+                overlap_bp,
+                overlap_class,
+                args,
+            )
             gap_bp = fixed_gap_bp if fixed_gap_bp is not None else max(0, raw_gap)
             gaps.append(
                 GapRecord(
@@ -227,10 +343,36 @@ def build_scaffold(ref, members, fixed_gap_bp):
                     raw_inferred_gap_bp=raw_gap,
                     gap_bp=gap_bp,
                     gap_mode=gap_mode,
+                    overlap_bp=overlap_bp,
+                    overlap_class=overlap_class,
+                    overlap_left_ref_frac=(
+                        overlap_bp / ref_span_bp(left.assignment)
+                        if ref_span_bp(left.assignment)
+                        else 0.0
+                    ),
+                    overlap_right_ref_frac=(
+                        overlap_bp / ref_span_bp(member.assignment)
+                        if ref_span_bp(member.assignment)
+                        else 0.0
+                    ),
+                    overlap_policy=args.overlap_policy,
+                    overlap_action=overlap_action,
+                    trimmed_bp=trimmed_bp,
+                    sequence_overlap_identity=sequence_identity,
                 )
             )
+            if overlap_bp > 0 and (
+                args.overlap_policy == "warn" or overlap_action.startswith("trim")
+            ):
+                sys.stderr.write(
+                    "WARNING: "
+                    f"{ref} overlap between {left.assignment.new_name} and "
+                    f"{member.assignment.new_name}: raw_gap={raw_gap}, "
+                    f"overlap_bp={overlap_bp}, class={overlap_class}, "
+                    f"action={overlap_action}, trimmed_bp={trimmed_bp}\n"
+                )
             pieces.append("N" * gap_bp)
-        pieces.append(member.record.seq)
+        pieces.append(member.seq)
 
     return ScaffoldRecord(
         name=ref,
@@ -240,9 +382,9 @@ def build_scaffold(ref, members, fixed_gap_bp):
     )
 
 
-def build_scaffolds(groups, fixed_gap_bp):
+def build_scaffolds(groups, fixed_gap_bp, args):
     return [
-        build_scaffold(ref, members, fixed_gap_bp)
+        build_scaffold(ref, members, fixed_gap_bp, args)
         for ref, members in groups.items()
     ]
 
@@ -280,6 +422,14 @@ def write_gap_report(path, scaffolds):
         "raw_inferred_gap_bp",
         "gap_bp",
         "gap_mode",
+        "overlap_bp",
+        "overlap_class",
+        "overlap_left_ref_frac",
+        "overlap_right_ref_frac",
+        "overlap_policy",
+        "overlap_action",
+        "trimmed_bp",
+        "sequence_overlap_identity",
     ]
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
@@ -294,6 +444,14 @@ def write_gap_report(path, scaffolds):
                     gap.raw_inferred_gap_bp,
                     gap.gap_bp,
                     gap.gap_mode,
+                    gap.overlap_bp,
+                    gap.overlap_class,
+                    fmt(gap.overlap_left_ref_frac),
+                    fmt(gap.overlap_right_ref_frac),
+                    gap.overlap_policy,
+                    gap.overlap_action,
+                    gap.trimmed_bp,
+                    fmt(gap.sequence_overlap_identity, 3),
                 ]
                 out.write("\t".join(str(item) for item in row) + "\n")
 
@@ -306,6 +464,9 @@ def write_summary(path, scaffolds, unassigned):
         "sequence_bp",
         "gap_bp",
         "gaps",
+        "overlap_gaps",
+        "overlap_bp",
+        "trimmed_bp",
         "first_ref_start",
         "last_ref_end",
         "ordered_contigs",
@@ -322,6 +483,9 @@ def write_summary(path, scaffolds, unassigned):
                 scaffold.sequence_bp,
                 scaffold.gap_bp,
                 len(scaffold.gaps),
+                sum(1 for gap in scaffold.gaps if gap.overlap_bp > 0),
+                scaffold.overlap_bp,
+                scaffold.trimmed_bp,
                 first_ref_start,
                 last_ref_end,
                 ",".join(member.assignment.new_name for member in scaffold.members),
@@ -333,6 +497,9 @@ def write_summary(path, scaffolds, unassigned):
                 1,
                 len(record.seq),
                 len(record.seq),
+                0,
+                0,
+                0,
                 0,
                 0,
                 ".",
@@ -352,6 +519,8 @@ def write_run_summary(path, args, output_paths, scaffolds, unassigned):
         out.write("\nGap model\n")
         out.write(f"gap_mode\t{gap_mode}\n")
         out.write(f"fixed_gap_bp\t{args.fixed_gap_bp if args.fixed_gap_bp is not None else '.'}\n")
+        out.write(f"overlap_policy\t{args.overlap_policy}\n")
+        out.write(f"trim_sequence_min_identity\t{args.trim_sequence_min_identity}\n")
         out.write("\nOutputs\n")
         for label, value in output_paths.items():
             out.write(f"{label}\t{value}\n")
@@ -360,11 +529,15 @@ def write_run_summary(path, args, output_paths, scaffolds, unassigned):
         out.write(f"unassigned_records\t{len(unassigned)}\n")
         out.write(f"input_contigs_scaffolded\t{sum(len(scaffold.members) for scaffold in scaffolds)}\n")
         out.write(f"total_gap_bp\t{sum(scaffold.gap_bp for scaffold in scaffolds)}\n")
+        out.write(f"total_overlap_bp\t{sum(scaffold.overlap_bp for scaffold in scaffolds)}\n")
+        out.write(f"total_trimmed_bp\t{sum(scaffold.trimmed_bp for scaffold in scaffolds)}\n")
 
 
 def run(args):
     if args.fixed_gap_bp is not None and args.fixed_gap_bp < 0:
         raise ValueError("--fixed-gap-bp must be zero or greater")
+    if not 0.0 <= args.trim_sequence_min_identity <= 1.0:
+        raise ValueError("--trim-sequence-min-identity must be between 0 and 1")
 
     prefix = Path(args.output_prefix)
     if prefix.parent and str(prefix.parent) != ".":
@@ -380,7 +553,7 @@ def run(args):
     assignments = read_assignments(args.assignments)
     records = read_ordered_fasta(args.ordered_fasta)
     groups, unassigned = group_scaffold_members(records, assignments)
-    scaffolds = build_scaffolds(groups, args.fixed_gap_bp)
+    scaffolds = build_scaffolds(groups, args.fixed_gap_bp, args)
     gap_mode = "fixed" if args.fixed_gap_bp is not None else "inferred"
 
     write_scaffold_fasta(output_paths["scaffold_fasta"], scaffolds, unassigned, args.simple_headers, gap_mode)

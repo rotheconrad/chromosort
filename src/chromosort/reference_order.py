@@ -94,6 +94,10 @@ class Assignment:
     novel_ref_frac: Optional[float] = None
     overlap_best_contig: str = "."
     overlap_best_bp: Optional[int] = None
+    overlap_class: str = "."
+    terminal_extension_side: str = "."
+    terminal_extension_bp: Optional[int] = None
+    terminal_extension_frac: Optional[float] = None
     split_candidate: bool = False
     split_candidate_refs: str = "."
     split_candidate_reason: str = "."
@@ -258,6 +262,35 @@ def parse_args(argv=None, prog=None):
             "passing the basic match thresholds are written."
         ),
     )
+    ap.add_argument(
+        "--min-terminal-extension-bp",
+        type=int,
+        default=100_000,
+        help=(
+            "During overlap filtering, rescue a terminally overlapping contig "
+            "if its one-sided novel extension is at least this many reference bp."
+        ),
+    )
+    ap.add_argument(
+        "--min-terminal-extension-frac",
+        type=float,
+        default=0.02,
+        help=(
+            "During overlap filtering, rescue a terminally overlapping contig "
+            "if its one-sided novel extension covers at least this fraction of "
+            "the contig's overlap-filter interval."
+        ),
+    )
+    ap.add_argument(
+        "--no-terminal-overlap-rescue",
+        dest="terminal_overlap_rescue",
+        action="store_false",
+        help=(
+            "Do not keep terminally overlapping contigs that fail the standard "
+            "novel-reference thresholds but pass the terminal-extension rescue."
+        ),
+    )
+    ap.set_defaults(terminal_overlap_rescue=True)
     ap.add_argument(
         "--no-protect-split-candidates",
         dest="protect_split_candidates",
@@ -868,6 +901,51 @@ def novel_ref_thresholds_pass(novel_bp, novel_frac, args):
     return adds_enough_ref_bp and adds_enough_ref_frac
 
 
+def classify_overlap(candidate_intervals, covered_intervals, novel_intervals):
+    """
+    Classify how a lower-ranked contig intersects already-claimed reference space.
+
+    The default overlap mode supplies one broad span, which lets this distinguish
+    dovetail/terminal overlaps from contained duplicate fragments. Exact
+    alignment-interval mode can be fragmented, so only single-interval candidates
+    receive terminal-side labels.
+    """
+    if not candidate_intervals or not covered_intervals:
+        return ".", ".", 0
+    overlap_bp = intersect_bp(candidate_intervals, covered_intervals)
+    if overlap_bp <= 0:
+        return ".", ".", 0
+    if not novel_intervals:
+        return "contained_overlap", ".", 0
+
+    candidate = merge_intervals(candidate_intervals)
+    novel = merge_intervals(novel_intervals)
+    novel_bp = interval_bp(novel)
+    if len(candidate) != 1 or len(novel) != 1:
+        return "internal_overlap", ".", novel_bp
+
+    candidate_start, candidate_end = candidate[0]
+    novel_start, novel_end = novel[0]
+    if novel_start <= candidate_start and novel_end < candidate_end:
+        return "terminal_overlap", "left", novel_bp
+    if novel_start > candidate_start and novel_end >= candidate_end:
+        return "terminal_overlap", "right", novel_bp
+    return "internal_overlap", ".", novel_bp
+
+
+def terminal_extension_thresholds_pass(assignment, args):
+    if not args.terminal_overlap_rescue:
+        return False
+    if assignment.overlap_class != "terminal_overlap":
+        return False
+    extension_bp = assignment.terminal_extension_bp or 0
+    extension_frac = assignment.terminal_extension_frac or 0.0
+    return (
+        extension_bp >= args.min_terminal_extension_bp
+        and extension_frac >= args.min_terminal_extension_frac
+    )
+
+
 def split_candidate_seed_claims(assignments, ref, args):
     claims = []
     for assignment in assignments.values():
@@ -937,9 +1015,20 @@ def resolve_duplicate_overlaps(assignments, args):
             novel_intervals = subtract_intervals(candidate_intervals, covered)
             novel_bp = interval_bp(novel_intervals)
             novel_frac = novel_bp / ref_bp if ref_bp else 0.0
+            overlap_class, extension_side, extension_bp = classify_overlap(
+                candidate_intervals,
+                covered,
+                novel_intervals,
+            )
 
             assignment.novel_ref_bp = novel_bp
             assignment.novel_ref_frac = novel_frac
+            assignment.overlap_class = overlap_class
+            assignment.terminal_extension_side = extension_side
+            assignment.terminal_extension_bp = extension_bp if overlap_class == "terminal_overlap" else 0
+            assignment.terminal_extension_frac = (
+                extension_bp / ref_bp if ref_bp and overlap_class == "terminal_overlap" else 0.0
+            )
             if kept_claims:
                 overlap_contig, overlap_bp = best_overlap_claim(candidate_intervals, kept_claims)
                 assignment.overlap_best_contig = overlap_contig
@@ -953,10 +1042,21 @@ def resolve_duplicate_overlaps(assignments, args):
                     kept_claims.append((assignment.query, candidate_intervals))
                     covered = merge_intervals(covered + candidate_intervals)
                     continue
+                if terminal_extension_thresholds_pass(assignment, args):
+                    assignment.status = "kept_terminal_overlap"
+                    kept_claims.append((assignment.query, candidate_intervals))
+                    covered = merge_intervals(covered + candidate_intervals)
+                    continue
+                if assignment.overlap_class == "terminal_overlap":
+                    assignment.status = "terminal_overlap"
+                    assignment.kept = False
+                    continue
                 assignment.status = "duplicate_overlap"
                 assignment.kept = False
                 continue
 
+            if assignment.status == "kept" and assignment.overlap_class == "terminal_overlap":
+                assignment.status = "kept_terminal_overlap"
             kept_claims.append((assignment.query, candidate_intervals))
             covered = merge_intervals(covered + candidate_intervals)
 
@@ -1140,9 +1240,13 @@ def write_assignment_report(path, query_records, assignments):
         "best_ref_share",
         "novel_ref_bp",
         "novel_ref_frac",
+        "overlap_class",
         "overlap_best_contig",
         "overlap_best_new_name",
         "overlap_best_bp",
+        "terminal_extension_side",
+        "terminal_extension_bp",
+        "terminal_extension_frac",
         "second_ref",
         "second_merged_query_bp",
         "second_query_cov",
@@ -1185,9 +1289,15 @@ def write_assignment_report(path, query_records, assignments):
                 fmt(assignment.best_ref_share),
                 assignment.novel_ref_bp if assignment.novel_ref_bp is not None else ".",
                 fmt(assignment.novel_ref_frac) if assignment.novel_ref_frac is not None else ".",
+                assignment.overlap_class,
                 assignment.overlap_best_contig,
                 overlap_new_name,
                 assignment.overlap_best_bp if assignment.overlap_best_bp is not None else ".",
+                assignment.terminal_extension_side,
+                assignment.terminal_extension_bp if assignment.terminal_extension_bp is not None else ".",
+                fmt(assignment.terminal_extension_frac)
+                if assignment.terminal_extension_frac is not None
+                else ".",
                 second.ref if second else ".",
                 second.merged_query_bp if second else ".",
                 fmt(second.query_cov) if second else ".",
@@ -1315,6 +1425,9 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
         out.write(f"min_novel_ref_bp\t{args.min_novel_ref_bp}\n")
         out.write(f"min_novel_ref_frac\t{args.min_novel_ref_frac}\n")
         out.write(f"novel_ref_criteria\t{args.novel_ref_criteria}\n")
+        out.write(f"terminal_overlap_rescue\t{args.terminal_overlap_rescue}\n")
+        out.write(f"min_terminal_extension_bp\t{args.min_terminal_extension_bp}\n")
+        out.write(f"min_terminal_extension_frac\t{args.min_terminal_extension_frac}\n")
         out.write(f"protect_split_candidates\t{args.protect_split_candidates}\n")
         out.write(f"split_candidate_min_aligned_bp\t{args.split_candidate_min_aligned_bp}\n")
         out.write(f"split_candidate_min_query_frac\t{args.split_candidate_min_query_frac}\n")
@@ -1341,6 +1454,9 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
             "The duplicate-overlap filter rejects otherwise-good contigs that add "
             "little or no new reference coverage after better contigs claim "
             "reference intervals or spans, depending on overlap_mode. "
+            "Terminal overlaps are classified separately from contained/internal "
+            "duplicates; one-sided terminal extensions can be kept when they pass "
+            "the terminal-extension rescue thresholds. "
             "Strong multi-reference split candidates are protected by default so "
             "potential chromo fix targets are not silently removed before review.\n"
         )

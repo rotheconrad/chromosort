@@ -175,7 +175,8 @@ class ReferenceOrderTests(unittest.TestCase):
             assignments = read_assignments(prefix.with_suffix(".contig_assignments.tsv"))
             self.assertEqual(assignments["contigA"]["status"], "kept")
             self.assertEqual(assignments["contigB"]["status"], "kept")
-            self.assertEqual(assignments["contigC"]["status"], "kept")
+            self.assertEqual(assignments["contigC"]["status"], "kept_terminal_overlap")
+            self.assertEqual(assignments["contigC"]["overlap_class"], "terminal_overlap")
             self.assertEqual(assignments["contigDup"]["status"], "duplicate_overlap")
             self.assertEqual(assignments["contigChimeraDup"]["status"], "kept_split_candidate")
             self.assertEqual(assignments["contigChimeraDup"]["split_candidate_refs"], "chr1,chr2")
@@ -292,6 +293,73 @@ class ReferenceOrderTests(unittest.TestCase):
             self.assertEqual(assignments["contigGapDup"]["overlap_best_contig"], "contigAnchor")
             self.assertEqual(assignments["contigSplitDup"]["status"], "duplicate_overlap")
             self.assertEqual(assignments["contigSplitDup"]["overlap_best_contig"], "contigSplit")
+
+    def test_terminal_overlap_is_kept_and_reported_separately(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ref = tmp_path / "ref.fa"
+            assembly = tmp_path / "assembly.fa"
+            coords = tmp_path / "sample.coords"
+            ref.write_text(">chr1\n" + "A" * 240 + "\n")
+            assembly.write_text(
+                ">contigLeft\n" + "A" * 120 + "\n"
+                ">contigRight\n" + "C" * 100 + "\n"
+            )
+            write_coords(
+                coords,
+                [
+                    ("chr1", "contigLeft", 1, 120, 1, 120, 240, 120),
+                    ("chr1", "contigRight", 101, 200, 1, 100, 240, 100),
+                ],
+            )
+
+            prefix = run_custom_sort(tmp_path, ref, assembly, coords)
+
+            assignments = read_assignments(prefix.with_suffix(".contig_assignments.tsv"))
+            self.assertEqual(assignments["contigLeft"]["status"], "kept")
+            self.assertEqual(assignments["contigRight"]["status"], "kept_terminal_overlap")
+            self.assertEqual(assignments["contigRight"]["overlap_class"], "terminal_overlap")
+            self.assertEqual(assignments["contigRight"]["terminal_extension_side"], "right")
+            self.assertEqual(assignments["contigRight"]["terminal_extension_bp"], "80")
+
+    def test_terminal_extension_rescue_keeps_large_one_sided_extension(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ref = tmp_path / "ref.fa"
+            assembly = tmp_path / "assembly.fa"
+            coords = tmp_path / "sample.coords"
+            ref.write_text(">chr1\n" + "A" * 1200 + "\n")
+            assembly.write_text(
+                ">contigAnchor\n" + "A" * 1000 + "\n"
+                ">contigExtension\n" + "C" * 901 + "\n"
+            )
+            write_coords(
+                coords,
+                [
+                    ("chr1", "contigAnchor", 1, 1000, 1, 1000, 1200, 1000),
+                    ("chr1", "contigExtension", 200, 1100, 1, 901, 1200, 901),
+                ],
+            )
+
+            default_prefix = run_custom_sort(tmp_path, ref, assembly, coords)
+            default_assignments = read_assignments(default_prefix.with_suffix(".contig_assignments.tsv"))
+            self.assertEqual(default_assignments["contigExtension"]["status"], "terminal_overlap")
+            self.assertEqual(default_assignments["contigExtension"]["kept"], "no")
+
+            rescued_prefix = run_custom_sort(
+                tmp_path,
+                ref,
+                assembly,
+                coords,
+                "--min-terminal-extension-bp",
+                "50",
+                "--min-terminal-extension-frac",
+                "0.05",
+            )
+            rescued_assignments = read_assignments(rescued_prefix.with_suffix(".contig_assignments.tsv"))
+            self.assertEqual(rescued_assignments["contigExtension"]["status"], "kept_terminal_overlap")
+            self.assertEqual(rescued_assignments["contigExtension"]["kept"], "yes")
+            self.assertEqual(rescued_assignments["contigExtension"]["terminal_extension_bp"], "100")
 
 
 if __name__ == "__main__":

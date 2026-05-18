@@ -7,15 +7,16 @@ ordered contigs with N gaps.
 ChromoSort provides one command, `chromo`, with four subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
-  low-value duplicate overlaps, protects strong multi-reference split
-  candidates, and writes a reference-ordered FASTA.
+  low-value duplicate overlaps, labels and can rescue terminal overlaps,
+  protects strong multi-reference split candidates, and writes a
+  reference-ordered FASTA.
 - `chromo fix` splits contigs with chromosome transitions or reviewed inversion
   blocks into reference-labeled pieces. Use `--contigs` to inspect a reviewed
   subset or `--all` to scan every contig; both scopes use the same `--mode`
   planner and per-contig breakpoint guardrails.
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
-  records with inferred reference-space N gaps by default, or with a fixed
-  user-specified number of Ns.
+  records with inferred reference-space N gaps by default, reports negative-gap
+  overlaps, and can optionally trim reviewed terminal overlaps.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
@@ -30,6 +31,7 @@ auditable.
 ## Table of Contents
 
 - [Quick Start](#quick-start)
+- [Handling Overlapping Contigs](#handling-overlapping-contigs)
 - [Installation With Mamba](#installation-with-mamba)
 - [Creating Input Files With MUMmer](#creating-input-files-with-mummer)
   - [Why These MUMmer Choices?](#why-these-mummer-choices)
@@ -58,6 +60,7 @@ auditable.
   - [What `chromo scaffold` Does](#what-chromo-scaffold-does)
   - [Run `chromo scaffold` With Inferred Gaps](#run-chromo-scaffold-with-inferred-gaps)
   - [Run `chromo scaffold` With Fixed Gaps](#run-chromo-scaffold-with-fixed-gaps)
+  - [Run `chromo scaffold` With Overlap Trimming](#run-chromo-scaffold-with-overlap-trimming)
   - [`chromo scaffold` Outputs](#chromo-scaffold-outputs)
   - [`chromo scaffold` Parameters](#chromo-scaffold-parameters)
   - [Reasoning Behind `chromo scaffold`](#reasoning-behind-chromo-scaffold)
@@ -171,6 +174,68 @@ chromo scaffold \
   --assignments results/sample.contig_assignments.tsv \
   --output-prefix results/sample
 ```
+
+## Handling Overlapping Contigs
+
+Large contigs sometimes have strong reference support but overlap at their ends.
+This can happen with alternate graph paths, small assembly redundancies, or real
+terminal dovetails that another scaffolding workflow might trim or merge. In
+ChromoSort, overlap handling is deliberately split across commands so the
+sequence-changing step stays explicit.
+
+`chromo sort` assigns and filters contigs in reference space. It lets stronger
+contigs claim reference intervals first, then asks whether lower-ranked contigs
+add useful novel reference coverage. Fully contained or internal redundant
+fragments are still reported as `duplicate_overlap`. Dovetail-like one-sided
+overlaps are now classified separately as `terminal_overlap`; if the contig is
+kept, its status is `kept_terminal_overlap`. A mostly overlapping contig can also
+be rescued when its one-sided extension passes
+`--min-terminal-extension-bp` and `--min-terminal-extension-frac`.
+
+`chromo fix` does not resolve overlap between two separate contigs. It only
+splits within a selected contig when query-ordered alignment blocks support a
+reference or eligible orientation transition. If two already-separate contigs
+overlap at their ends on the same reference, `fix` will not trim, merge, or
+deduplicate them.
+
+`chromo scaffold` joins the final sorted contigs. In the default
+`--overlap-policy zero-gap` mode, adjacent negative reference gaps are written as
+zero-length gaps: no Ns are inserted and neither contig is trimmed. The raw
+negative inferred gap, overlap bp, overlap class, overlap fractions, policy, and
+action are reported in `<prefix>.scaffold_gaps.tsv`, and scaffold-level overlap
+and trimming totals are reported in `<prefix>.scaffold_summary.tsv`.
+
+When you want sequence surgery at scaffolding time, choose an explicit overlap
+policy:
+
+```bash
+# Current conservative behavior, with stderr warnings for negative gaps.
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.warn \
+  --overlap-policy warn
+
+# Trim the right contig by the reference-inferred terminal overlap.
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.trim_ref \
+  --overlap-policy trim-reference
+
+# Trim only when the left suffix and right prefix confirm the overlap sequence.
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.trim_seq \
+  --overlap-policy trim-sequence \
+  --trim-sequence-min-identity 0.98
+```
+
+The safest default is still not to trim: overlapping reference spans can reflect
+assembly redundancy, true variation, reference differences, or alignment
+artifacts. The new reports make the case easy to find, and the trimming policies
+make the intervention deliberate when a reviewed dataset needs it.
 
 ## Installation With Mamba
 
@@ -328,12 +393,15 @@ Given a reference FASTA, assembly FASTA, and MUMmer coords or minimap2 PAF file,
    query coverage.
 4. Applies thresholds for aligned bp, query coverage, and best-reference share.
 5. Flags strong multi-reference contigs as possible `chromo fix` candidates.
-6. Removes contigs that duplicate already-kept reference intervals and add
-   little or no new reference coverage.
-7. Protects flagged split candidates from silent duplicate-overlap removal.
-8. Sorts retained contigs by reference FASTA order and reference start.
-9. Writes an ordered FASTA with names like `chromosome_contig`.
-10. Writes TSV reports that explain every keep/reject decision.
+6. Classifies overlap shape against already-kept reference intervals.
+7. Removes contained/internal duplicate overlaps that add little or no new
+   reference coverage.
+8. Keeps or rescues terminal overlaps when they contribute enough one-sided
+   extension.
+9. Protects flagged split candidates from silent duplicate-overlap removal.
+10. Sorts retained contigs by reference FASTA order and reference start.
+11. Writes an ordered FASTA with names like `chromosome_contig`.
+12. Writes TSV reports that explain every keep/reject decision.
 
 ### Run `chromo sort`
 
@@ -385,6 +453,9 @@ chromo sort \
 | `--min-novel-ref-frac` | `0.20` | Keep an otherwise-good contig if this fraction of its reference span is novel. |
 | `--overlap-mode` | `span` | Use broad first-to-last reference spans for duplicate filtering. Set `alignment` to use exact merged alignment intervals. |
 | `--novel-ref-criteria` | `both` | Require both novel-bp and novel-fraction thresholds during duplicate filtering. Set `either` for the older permissive behavior. |
+| `--min-terminal-extension-bp` | `100000` | Rescue a terminally overlapping contig if its one-sided novel extension has at least this many reference bp. |
+| `--min-terminal-extension-frac` | `0.02` | Rescue a terminally overlapping contig if its one-sided novel extension covers at least this fraction of the overlap-filter interval. |
+| `--no-terminal-overlap-rescue` | off | Report terminal overlaps without rescuing contigs that fail the standard novel-reference thresholds. |
 | `--split-candidate-min-aligned-bp` | `100000` | Minimum merged query-aligned bp on at least two references before split-candidate protection applies. |
 | `--split-candidate-min-query-frac` | `0.05` | Minimum query-length fraction on at least two references before split-candidate protection applies. |
 | `--split-candidate-max-best-share` | `0.95` | Do not flag contigs whose best reference accounts for more than this share of total matched bp. |
@@ -422,6 +493,11 @@ from duplicate-overlap removal by default.
 best-reference alignment even though its query coverage is slightly below
 `--min-query-cov`.
 
+`kept_terminal_overlap`: written to the ordered FASTA because it overlaps an
+already-kept contig at one end but still contributes enough novel terminal
+reference span. This status is also used when the terminal-extension rescue keeps
+a contig that would otherwise fail the standard novel-reference fraction.
+
 `no_alignment`: no usable alignment rows were found for this contig.
 
 `below_min_aligned_bp`: best match did not meet `--min-aligned-bp`.
@@ -431,9 +507,14 @@ best-reference alignment even though its query coverage is slightly below
 `ambiguous_ref_match`: the best chromosome did not dominate the contig's total
 matched bp enough to pass `--min-best-ref-share`.
 
+`terminal_overlap`: the contig passed the basic match thresholds, but a stronger
+contig already covered most of its reference span and the one-sided terminal
+extension did not pass the keep or rescue thresholds.
+
 `duplicate_overlap`: the contig passed the basic match thresholds, but better
 contigs on the same reference chromosome already covered nearly all of its
-reference span. These contigs are not written to the ordered FASTA.
+reference span in a contained or internal-overlap pattern. These contigs are not
+written to the ordered FASTA.
 
 ### Reasoning Behind `chromo sort`
 
@@ -479,6 +560,14 @@ internal gaps of a stronger chromosome-scale contig. Use
 `--overlap-mode alignment --novel-ref-criteria either` for the older, more
 permissive behavior.
 
+Terminal overlaps are separated from contained/internal duplicates. If the novel
+reference interval sits at one end of the lower-ranked contig, the assignment
+report records `overlap_class=terminal_overlap`, the extension side, and the
+extension bp/fraction. Terminal overlaps that pass the standard novel-reference
+thresholds are kept as `kept_terminal_overlap`. Mostly overlapping terminal
+contigs can still be rescued when their one-sided extension passes
+`--min-terminal-extension-bp` and `--min-terminal-extension-frac`.
+
 Strong multi-reference contigs are treated differently. If at least two
 references carry substantial query support and no single reference explains
 nearly all matched bp, the contig is marked `kept_split_candidate` and retained
@@ -495,8 +584,10 @@ fragmented alignments from being discarded in favor of smaller redundant pieces.
 #### Preserve Full Contigs
 
 `chromo sort` does not trim contigs to alignment spans. It writes the full input
-contig sequence because unaligned ends may be real assembly sequence. The output
-is an ordered contig FASTA, not a hard reference-guided reconstruction.
+contig sequence because unaligned ends and terminal extensions may be real
+assembly sequence. The output is an ordered contig FASTA, not a hard
+reference-guided reconstruction. Optional overlap trimming is handled only by
+`chromo scaffold`, where the sequence-changing policy is explicit.
 
 #### Make Orientation Optional
 
@@ -548,6 +639,12 @@ For each selected contig, `chromo fix`:
 
 By default, unrequested contigs are copied unchanged, producing a full fixed
 assembly FASTA. Use `--pieces-only` to write only the split pieces.
+
+`chromo fix` is not a cross-contig overlap resolver. It does not merge two
+separate contigs, trim a terminal overlap between neighboring contigs, or choose
+one contig over another. Use `chromo sort` reports to identify duplicate or
+terminal overlap relationships, then use `chromo scaffold --overlap-policy` only
+when you want an explicit scaffolding-time trim.
 
 ### Run `chromo fix` With Selected Contigs
 
@@ -822,9 +919,11 @@ Given a final `chromo sort` ordered FASTA and its matching
 3. Groups contigs by assigned reference sequence in ordered FASTA order.
 4. Joins neighboring contigs with N gaps.
 5. Infers gap length from adjacent reference coordinates by default.
-6. Optionally uses a fixed user-provided number of Ns between every neighboring
+6. Reports negative inferred gaps as adjacent reference overlaps.
+7. Optionally trims reviewed terminal overlaps according to `--overlap-policy`.
+8. Optionally uses a fixed user-provided number of Ns between every neighboring
    contig.
-7. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
+9. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
 
 The intended input is the final ordered FASTA from the same `chromo sort` run as
 the assignment report. If you run `chromo fix`, re-run `chromo sort` on the
@@ -847,7 +946,12 @@ next_ref_start - previous_ref_end - 1
 ```
 
 Negative values, which indicate overlapping reference spans, are written as
-zero-length gaps in the FASTA and reported in the gap TSV.
+zero-length gaps in the FASTA and reported in the gap TSV by default. Use
+`--overlap-policy warn` to keep the same FASTA behavior while emitting stderr
+warnings, `--overlap-policy trim-reference` to trim the right contig by the
+reference-inferred terminal overlap, or `--overlap-policy trim-sequence` to trim
+only when the left suffix and right prefix confirm the overlap sequence at
+`--trim-sequence-min-identity`.
 
 ### Run `chromo scaffold` With Fixed Gaps
 
@@ -863,13 +967,30 @@ Fixed-gap mode ignores inferred gap length for FASTA construction and inserts
 the requested number of Ns between every neighboring contig on the same
 scaffold. The report still records the raw inferred gap for comparison.
 
+### Run `chromo scaffold` With Overlap Trimming
+
+```bash
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.trim_seq \
+  --overlap-policy trim-sequence
+```
+
+`trim-reference` removes the reference-inferred overlap from the left side of
+the right contig when the adjacent reference spans form a terminal overlap.
+`trim-sequence` is more conservative: it trims only when the left contig suffix
+and right contig prefix match across the inferred overlap with at least
+`--trim-sequence-min-identity` identity. Non-terminal overlaps are reported but
+not trimmed by either trimming policy.
+
 ### `chromo scaffold` Outputs
 
 | Output | Description |
 | --- | --- |
 | `<prefix>.scaffold.fa` | One FASTA record per assigned reference sequence, with ordered contigs joined by Ns. |
-| `<prefix>.scaffold_gaps.tsv` | One row per inserted gap with flanking contigs, inferred gap, written gap, and gap mode. |
-| `<prefix>.scaffold_summary.tsv` | One row per scaffold with contig count, scaffold length, sequence bp, gap bp, and ordered contig list. |
+| `<prefix>.scaffold_gaps.tsv` | One row per inserted gap with flanking contigs, inferred gap, written gap, overlap bp/class/fractions, overlap policy/action, trimmed bp, and sequence-overlap identity when checked. |
+| `<prefix>.scaffold_summary.tsv` | One row per scaffold with contig count, scaffold length, sequence bp, gap bp, overlap totals, trimming totals, and ordered contig list. |
 | `<prefix>.run_summary.txt` | Inputs, gap model, output paths, and total scaffold counts. |
 
 ### `chromo scaffold` Parameters
@@ -880,6 +1001,8 @@ scaffold. The report still records the raw inferred gap for comparison.
 | `--assignments` | required | Matching `<prefix>.contig_assignments.tsv` report from `chromo sort`. |
 | `--output-prefix` | required | Prefix for scaffold FASTA and reports. |
 | `--fixed-gap-bp` | none | Insert this many Ns between neighboring contigs instead of inferred gaps. |
+| `--overlap-policy` | `zero-gap` | Handling for negative inferred gaps: `zero-gap`, `warn`, `trim-reference`, or `trim-sequence`. |
+| `--trim-sequence-min-identity` | `0.98` | Minimum suffix/prefix identity required by `--overlap-policy trim-sequence`. |
 | `--simple-headers` | off | Write scaffold FASTA headers containing only the scaffold ID. |
 
 ### Reasoning Behind `chromo scaffold`
@@ -896,8 +1019,19 @@ which can be fragile when contig names contain separators.
 Inferred gaps are based only on adjacent retained contigs on the same reference
 sequence. ChromoSort does not add leading or trailing Ns for chromosome ends,
 and overlapping reference spans become zero-length FASTA gaps rather than
-negative gaps. The raw inferred value is still reported so users can inspect
-overlap or coordinate oddities.
+negative gaps by default. The raw inferred value, overlap bp, overlap class,
+overlap fractions, policy, action, and trimming amount are reported so users can
+inspect overlap or coordinate oddities.
+
+#### Trim Only When Asked
+
+Overlaps are not trimmed by default because a negative reference gap can mean
+several different things: a real dovetail, retained alternate sequence,
+reference/assembly structural difference, or an alignment artifact. The
+`trim-reference` policy trims only terminal overlaps and trusts the reference
+coordinate estimate. The `trim-sequence` policy trims only terminal overlaps
+whose left suffix and right prefix agree at high identity. Contained/internal
+overlaps are reported for review rather than trimmed automatically.
 
 #### Keep Fixed Gaps Available
 
@@ -951,6 +1085,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.3` | Added explicit terminal-overlap classification/rescue in `chromo sort`, richer scaffold overlap reporting, and `chromo scaffold --overlap-policy` modes for warn-only, reference-coordinate trimming, and sequence-confirmed trimming. |
 | `0.2.2` | Reworked `chromo fix` so `--contigs`/`--contigs-file` only select the inspection subset, `--all` scans every candidate contig, `--mode` controls planner behavior for both scopes, and breakpoint limits apply per contig. |
 | `0.2.1` | Tightened `chromo sort` duplicate filtering for contaminated/alternate-fragment assemblies by using span-based overlap by default, requiring both novel coverage thresholds, rescuing very large near-threshold alignments, and letting split candidates protect their secondary reference spans. |
 | `0.2.0` | Added minimap2 PAF input for `chromo sort` and `chromo fix`, plus `chromo plot` PDF/SVG/PNG dot plots for coords/PAF with optional assignment-report query ordering. |
