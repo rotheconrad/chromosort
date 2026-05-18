@@ -48,7 +48,9 @@ class CliTests(unittest.TestCase):
         plot_help = run_cli("plot", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
         self.assertIn("--paf", sort_help)
-        self.assertIn("--auto", fix_help)
+        self.assertIn("--all", fix_help)
+        self.assertIn("--mode", fix_help)
+        self.assertNotIn("--auto", fix_help)
         self.assertIn("--paf", fix_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--per-ref", plot_help)
@@ -71,6 +73,24 @@ class CliTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("not allowed with argument", result.stderr)
+
+    def test_fix_scope_flags_are_mutually_exclusive(self):
+        result = run_cli_raw(
+            "fix",
+            "--assembly-fasta",
+            "assembly.fa",
+            "--coords",
+            "sample.coords",
+            "--contigs",
+            "contig_01",
+            "--all",
+            "--output-fasta",
+            "fixed.fa",
+            "--report",
+            "fixed.tsv",
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("use either --all or --contigs/--contigs-file", result.stderr)
 
 
 if __name__ == "__main__":

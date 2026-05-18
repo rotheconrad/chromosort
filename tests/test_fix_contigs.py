@@ -95,6 +95,8 @@ class FixContigsTests(unittest.TestCase):
 
             output_fasta, report = run_fix_contigs(
                 tmp_path,
+                "--mode",
+                "sensitive",
                 "--simple-headers",
                 contigs=["contig_gap_chimera"],
                 data=data,
@@ -118,7 +120,7 @@ class FixContigsTests(unittest.TestCase):
                 ],
             )
 
-    def test_auto_rejects_candidates_with_too_many_breakpoints(self):
+    def test_all_rejects_candidates_with_too_many_breakpoints_per_contig(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             data = tmp_path / "data"
@@ -156,12 +158,12 @@ class FixContigsTests(unittest.TestCase):
 
             output_fasta, report = run_fix_contigs(
                 tmp_path,
-                "--auto",
-                "--auto-breakpoint-penalty-bp",
+                "--all",
+                "--breakpoint-penalty-bp",
                 "1",
-                "--auto-min-piece-aligned-bp",
+                "--min-piece-aligned-bp",
                 "5",
-                "--auto-min-piece-query-frac",
+                "--min-piece-query-frac",
                 "0",
                 "--simple-headers",
                 data=data,
@@ -170,9 +172,9 @@ class FixContigsTests(unittest.TestCase):
 
             self.assertEqual(list(read_fasta(output_fasta)), ["contig_many_transitions"])
             rows = read_report(report)
-            self.assertEqual(rows[0]["status"], "not_split_auto_too_many_breakpoints")
+            self.assertEqual(rows[0]["status"], "not_split_too_many_breakpoints")
 
-    def test_auto_default_rejects_tiny_reference_transition_piece(self):
+    def test_default_mode_rejects_tiny_reference_transition_piece(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             data = tmp_path / "data"
@@ -191,10 +193,10 @@ class FixContigsTests(unittest.TestCase):
 
             output_fasta, report = run_fix_contigs(
                 tmp_path,
-                "--auto",
-                "--auto-breakpoint-penalty-bp",
+                "--all",
+                "--breakpoint-penalty-bp",
                 "1",
-                "--auto-min-piece-aligned-bp",
+                "--min-piece-aligned-bp",
                 "5",
                 "--simple-headers",
                 data=data,
@@ -203,11 +205,11 @@ class FixContigsTests(unittest.TestCase):
 
             self.assertEqual(list(read_fasta(output_fasta)), ["contig_small_head"])
             rows = read_report(report)
-            self.assertEqual(rows[0]["status"], "not_split_auto_smooth")
+            self.assertEqual(rows[0]["status"], "not_split_smooth")
             self.assertIn("failed support thresholds", rows[0]["reason"])
             self.assertIn("query span fraction 0.0400", rows[0]["reason"])
 
-    def test_auto_merges_tiny_terminal_noise_before_large_split(self):
+    def test_default_mode_merges_tiny_terminal_noise_before_large_split(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             data = tmp_path / "data"
@@ -227,10 +229,10 @@ class FixContigsTests(unittest.TestCase):
 
             output_fasta, report = run_fix_contigs(
                 tmp_path,
-                "--auto",
-                "--auto-breakpoint-penalty-bp",
+                "--all",
+                "--breakpoint-penalty-bp",
                 "1",
-                "--auto-min-piece-aligned-bp",
+                "--min-piece-aligned-bp",
                 "5",
                 "--simple-headers",
                 data=data,
@@ -248,7 +250,7 @@ class FixContigsTests(unittest.TestCase):
             self.assertEqual([row["dominant_ref"] for row in rows], ["chrom19", "chrom20"])
             self.assertTrue(all(row["status"] == "split" for row in rows))
 
-    def test_auto_default_ignores_same_reference_inversions(self):
+    def test_default_mode_ignores_same_reference_inversions(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             data = tmp_path / "data"
@@ -268,7 +270,7 @@ class FixContigsTests(unittest.TestCase):
 
             output_fasta, report = run_fix_contigs(
                 tmp_path,
-                "--auto",
+                "--all",
                 "--simple-headers",
                 data=data,
                 contigs=[],
@@ -277,7 +279,7 @@ class FixContigsTests(unittest.TestCase):
             self.assertEqual(list(read_fasta(output_fasta)), ["contig_inversion_only"])
             self.assertEqual(read_report(report), [])
 
-    def test_auto_default_splits_complex_same_reference_inversions(self):
+    def test_default_mode_splits_complex_same_reference_inversions(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             data = tmp_path / "data"
@@ -297,15 +299,15 @@ class FixContigsTests(unittest.TestCase):
 
             output_fasta, report = run_fix_contigs(
                 tmp_path,
-                "--auto",
+                "--all",
                 "--simple-headers",
-                "--auto-breakpoint-penalty-bp",
+                "--breakpoint-penalty-bp",
                 "5",
-                "--auto-min-piece-aligned-bp",
+                "--min-piece-aligned-bp",
                 "10",
-                "--auto-min-piece-query-frac",
+                "--min-piece-query-frac",
                 "0",
-                "--auto-complex-inversion-min-piece-aligned-bp",
+                "--complex-inversion-min-piece-aligned-bp",
                 "10",
                 data=data,
                 contigs=[],
@@ -323,9 +325,9 @@ class FixContigsTests(unittest.TestCase):
             self.assertEqual(len(rows), 3)
             self.assertTrue(all(row["status"] == "split" for row in rows))
 
-    def test_splits_user_nominated_chimeric_contigs(self):
+    def test_sensitive_mode_splits_selected_chimeric_contigs(self):
         with tempfile.TemporaryDirectory() as tmp:
-            output_fasta, report = run_fix_contigs(Path(tmp))
+            output_fasta, report = run_fix_contigs(Path(tmp), "--mode", "sensitive")
 
             records = read_fasta(output_fasta)
             self.assertEqual(
@@ -362,10 +364,12 @@ class FixContigsTests(unittest.TestCase):
                 ],
             )
 
-    def test_paf_input_splits_user_nominated_chimeric_contigs(self):
+    def test_paf_input_splits_selected_chimeric_contigs(self):
         with tempfile.TemporaryDirectory() as tmp:
             output_fasta, report = run_fix_contigs(
                 Path(tmp),
+                "--mode",
+                "sensitive",
                 alignment_args=["--paf", str(DATA / "sample.paf")],
             )
 
@@ -396,7 +400,13 @@ class FixContigsTests(unittest.TestCase):
 
     def test_pieces_only_omits_untargeted_contigs(self):
         with tempfile.TemporaryDirectory() as tmp:
-            output_fasta, _ = run_fix_contigs(Path(tmp), "--pieces-only", "--simple-headers")
+            output_fasta, _ = run_fix_contigs(
+                Path(tmp),
+                "--mode",
+                "sensitive",
+                "--pieces-only",
+                "--simple-headers",
+            )
 
             records = read_fasta(output_fasta)
             self.assertNotIn("contig_01", records)
@@ -406,6 +416,8 @@ class FixContigsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             output_fasta, report = run_fix_contigs(
                 Path(tmp),
+                "--mode",
+                "sensitive",
                 "--pieces-only",
                 "--simple-headers",
                 contigs=["contig_inv_mid", "contig_inv_end"],
@@ -434,13 +446,14 @@ class FixContigsTests(unittest.TestCase):
                 ],
             )
 
-    def test_auto_detects_chromosome_and_orientation_transitions(self):
+    def test_all_sensitive_mode_detects_chromosome_and_orientation_transitions(self):
         with tempfile.TemporaryDirectory() as tmp:
             output_fasta, report = run_fix_contigs(
                 Path(tmp),
-                "--auto",
-                "--auto-sensitive",
-                "--auto-max-breakpoints",
+                "--all",
+                "--mode",
+                "sensitive",
+                "--max-breakpoints-per-contig",
                 "-1",
                 "--simple-headers",
                 contigs=[],
@@ -471,20 +484,21 @@ class FixContigsTests(unittest.TestCase):
                 "contig_inv_end",
             })
 
-    def test_auto_smoothing_splits_large_events_and_ignores_sv_noise(self):
+    def test_comprehensive_mode_splits_large_events_and_ignores_sv_noise(self):
         with tempfile.TemporaryDirectory() as tmp:
             output_fasta, report = run_fix_contigs(
                 Path(tmp),
-                "--auto",
-                "--auto-split-inversions",
+                "--all",
+                "--mode",
+                "comprehensive",
                 "--simple-headers",
                 "--min-segment-bp",
                 "10",
-                "--auto-breakpoint-penalty-bp",
+                "--breakpoint-penalty-bp",
                 "50",
-                "--auto-min-piece-aligned-bp",
+                "--min-piece-aligned-bp",
                 "50",
-                "--auto-max-breakpoints",
+                "--max-breakpoints-per-contig",
                 "-1",
                 data=NOISY_DATA,
                 contigs=[],
@@ -521,7 +535,7 @@ class FixContigsTests(unittest.TestCase):
                 "contig_repeat_noise",
                 "contig_terminal_inv_noise",
             ]:
-                self.assertEqual(rows_by_contig[contig][0]["status"], "not_split_auto_smooth")
+                self.assertEqual(rows_by_contig[contig][0]["status"], "not_split_smooth")
 
             self.assertEqual(
                 [row["new_contig"] for row in rows_by_contig["contig_true_chimera"]],
@@ -549,6 +563,64 @@ class FixContigsTests(unittest.TestCase):
                     ("chrom13-contig_true_inv_end-b", "-"),
                 ],
             )
+
+    def test_contig_subset_uses_same_planner_as_all_scope(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            all_dir = tmp_path / "all"
+            subset_dir = tmp_path / "subset"
+            all_dir.mkdir()
+            subset_dir.mkdir()
+            common_args = [
+                "--mode",
+                "comprehensive",
+                "--simple-headers",
+                "--min-segment-bp",
+                "10",
+                "--breakpoint-penalty-bp",
+                "50",
+                "--min-piece-aligned-bp",
+                "50",
+                "--max-breakpoints-per-contig",
+                "-1",
+            ]
+            targets = [
+                "contig_true_chimera",
+                "contig_true_inv_mid",
+                "contig_small_inv_sv",
+            ]
+
+            _, all_report = run_fix_contigs(
+                all_dir,
+                "--all",
+                *common_args,
+                data=NOISY_DATA,
+                contigs=[],
+            )
+            _, subset_report = run_fix_contigs(
+                subset_dir,
+                *common_args,
+                data=NOISY_DATA,
+                contigs=targets,
+            )
+
+            def selected_rows(path):
+                return sorted(
+                    [
+                        (
+                            row["original_contig"],
+                            row["status"],
+                            row["new_contig"],
+                            row["slice_start"],
+                            row["slice_end"],
+                            row["orientation"],
+                        )
+                        for row in read_report(path)
+                        if row["original_contig"] in targets
+                    ]
+                )
+
+            self.assertEqual(selected_rows(subset_report), selected_rows(all_report))
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 # ChromoSort
 
 Reference-guided genome assembly utilities for sorting contigs, splitting
-user-flagged or auto-detected chimeric contigs, and scaffolding final ordered
-contigs with N gaps.
+selected contigs or all detected chimeric contigs, and scaffolding final
+ordered contigs with N gaps.
 
 ChromoSort provides one command, `chromo`, with four subcommands:
 
@@ -10,9 +10,9 @@ ChromoSort provides one command, `chromo`, with four subcommands:
   low-value duplicate overlaps, protects strong multi-reference split
   candidates, and writes a reference-ordered FASTA.
 - `chromo fix` splits contigs with chromosome transitions or reviewed inversion
-  blocks into reference-labeled pieces, either from a user-supplied contig list
-  or with conservative `--auto` detection that smooths over small
-  SV/INDEL-like noise and rejects implausibly break-heavy auto plans.
+  blocks into reference-labeled pieces. Use `--contigs` to inspect a reviewed
+  subset or `--all` to scan every contig; both scopes use the same `--mode`
+  planner and per-contig breakpoint guardrails.
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
   records with inferred reference-space N gaps by default, or with a fixed
   user-specified number of Ns.
@@ -44,8 +44,8 @@ auditable.
   - [Batch Sorting Example](#batch-sorting-example)
 - [chromo fix](#chromo-fix)
   - [What `chromo fix` Does](#what-chromo-fix-does)
-  - [Run `chromo fix` With User-Nominated Contigs](#run-chromo-fix-with-user-nominated-contigs)
-  - [Run `chromo fix` With Auto Detection](#run-chromo-fix-with-auto-detection)
+  - [Run `chromo fix` With Selected Contigs](#run-chromo-fix-with-selected-contigs)
+  - [Run `chromo fix` Across All Contigs](#run-chromo-fix-across-all-contigs)
   - [`chromo fix` Outputs](#chromo-fix-outputs)
   - [`chromo fix` Naming](#chromo-fix-naming)
   - [`chromo fix` Parameters](#chromo-fix-parameters)
@@ -87,7 +87,7 @@ chromo scaffold --help
 Recommended order when raw dot plots show possible misjoined contigs:
 
 ```bash
-# 1. Fix only reviewed/suspect raw contigs, or run conservative auto mode.
+# 1. Fix only reviewed/suspect raw contigs, or use --all to scan every contig.
 chromo fix \
   --assembly-fasta assembly.fa \
   --coords mummer/raw.coords \
@@ -152,13 +152,13 @@ chromo fix \
   --report results/sample.fixed_contigs.tsv
 ```
 
-Auto-detect contigs with chromosome transitions:
+Scan all contigs with the same conservative planner:
 
 ```bash
 chromo fix \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
-  --auto \
+  --all \
   --output-fasta results/sample.fixed.fa \
   --report results/sample.fixed_contigs.tsv
 ```
@@ -528,30 +528,28 @@ assembly contigs into reference-labeled pieces.
 
 ### What `chromo fix` Does
 
-For each requested or auto-detected contig, `chromo fix`:
+For each selected contig, `chromo fix`:
 
-1. Reads passing `show-coords` alignment segments for that contig.
+1. Reads passing `show-coords` or PAF alignment segments for that contig.
 2. Sorts those segments by query-coordinate order along the assembly contig.
 3. Merges nearby neighboring rows that map to the same reference sequence and
    orientation.
 4. Collapses adjacent same-reference/orientation runs so ordinary alignment
    gaps do not become breakpoints.
-5. Looks for reference transitions along the contig.
-6. In user-nominated mode, also looks for orientation transitions along the
-   contig, including same-reference inversion blocks.
-7. In `--auto` mode, scores candidate breakpoints with a breakpoint-penalty
-   segmentation model that smooths over weak local discordance.
-8. Ranks auto split plans by evidence and accepts them until the run-level
-   `--auto-max-breakpoints` budget is used.
-9. Places accepted breakpoints halfway between neighboring alignment blocks.
-10. Replaces the original contig with two or more pieces in the output FASTA.
-11. Writes a TSV report with slice coordinates, reference labels, orientation,
+5. Applies the selected `--mode` to decide which reference/orientation
+   transitions are eligible.
+6. In smoothed modes, scores candidate breakpoints with a breakpoint-penalty
+   segmentation model that filters weak local discordance.
+7. Rejects any plan exceeding `--max-breakpoints-per-contig`.
+8. Places accepted breakpoints halfway between neighboring alignment blocks.
+9. Replaces the original contig with two or more pieces in the output FASTA.
+10. Writes a TSV report with slice coordinates, reference labels, orientation,
    identity, and split status.
 
 By default, unrequested contigs are copied unchanged, producing a full fixed
 assembly FASTA. Use `--pieces-only` to write only the split pieces.
 
-### Run `chromo fix` With User-Nominated Contigs
+### Run `chromo fix` With Selected Contigs
 
 ```bash
 chromo fix \
@@ -562,48 +560,33 @@ chromo fix \
   --report results/sample.fixed_contigs.tsv
 ```
 
-This mode is intentionally user-directed. Provide contigs that you already
-suspect are chimeric, usually after inspecting dot plots, assignment reports, or
-other QC evidence.
+`--contigs` and `--contigs-file` only choose which contigs to inspect. They do
+not switch to a different splitting algorithm. By default, selected contigs use
+the same conservative smoothing and breakpoint penalties as `--all`, which is
+useful when you want Benning-style targeted fixes without allowing off-target
+contigs to receive a break.
 
-### Run `chromo fix` With Auto Detection
+### Run `chromo fix` Across All Contigs
 
 ```bash
 chromo fix \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
-  --auto \
+  --all \
   --output-fasta results/sample.fixed.fa \
   --report results/sample.fixed_contigs.tsv
 ```
 
-`--auto` scans all contigs for passing alignment blocks that change reference
-sequence. Candidate contigs are then segmented with a conservative
-breakpoint-penalty model: keeping a small discordant block inside a larger
-piece has a cost, but adding a breakpoint has a larger fixed penalty. This lets
-`chromo fix` smooth over real-looking small SVs, local repeat hits, fragmented
-alignments, and INDEL-sized gaps while still splitting strong large-scale
-chimeras. Auto mode also reviews same-reference orientation events: simple
-contiguous inversions are left unchanged, while complex/nested orientation
-events with large overlapping reference spans can be split.
+`--all` scans every contig and queues those with passing split signals for the
+same planner used by `--contigs`. The default `--mode conservative` smooths over
+real-looking small SVs, local repeat hits, fragmented alignments, and INDEL-sized
+gaps while still splitting strong large-scale chimeras.
 
-By default, at most four auto breakpoints are accepted across the whole run.
-Candidate plans are ranked by evidence, with reference/chromosome transitions
-ahead of same-reference complex orientation events. Lower-priority plans that
-do not fit the remaining budget are left unchanged and reported for manual
-review.
-
-Use `--auto-split-inversions` only when all same-reference orientation changes
-should be considered for splitting. Without it, conservative auto mode limits
-same-reference auto cuts to complex/nested events because large cultivar
-inversions may be biological or reference-relative structure rather than
-misjoined contigs.
-
-Use `--auto-sensitive` to recover the earlier behavior that splits every
-passing reference or orientation transition. That mode is useful for debugging
-and exploratory scans, but it is more likely to introduce extra breakpoints.
-Even in sensitive mode, adjacent same-reference/orientation runs are collapsed
-before cutting.
+Use `--mode chromosome` when only reference/chromosome transitions should be
+eligible. Use `--mode comprehensive` when all same-reference orientation changes
+should also be considered. Use `--mode sensitive` for the earlier direct behavior
+that cuts every passing reference/orientation transition after collapsing
+adjacent same-target runs.
 
 ### `chromo fix` Outputs
 
@@ -615,9 +598,9 @@ before cutting.
 The report includes original contig name, split status, new contig name,
 dominant reference, slice coordinates, alignment coordinates, orientation,
 reverse-complement status, identity, segment count, and the reason for the
-decision. Auto candidates that contain discordant blocks but are not cut are
-reported as `not_split_auto_smooth`. Candidates rejected by the auto breakpoint
-cap are reported as `not_split_auto_too_many_breakpoints`.
+decision. Candidates that contain discordant blocks but are not cut by
+breakpoint smoothing are reported as `not_split_smooth`. Candidates rejected by
+the per-contig breakpoint cap are reported as `not_split_too_many_breakpoints`.
 
 ### `chromo fix` Naming
 
@@ -668,46 +651,43 @@ appear in your FASTA and alignment output are used. Change the separator with
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
 | `--contigs` | none | Space-separated names of contigs to inspect and split. |
 | `--contigs-file` | none | Optional file with one contig name per line. |
-| `--auto` | off | Scan all contigs and conservatively split those with strong reference transitions. |
-| `--auto-sensitive` | off | Disable auto smoothing and split every passing reference/orientation transition. |
-| `--auto-split-inversions` | off | In conservative auto mode, also split same-reference orientation transitions. |
-| `--auto-complex-inversions` | on | In conservative auto mode, split complex/nested same-reference orientation events while leaving simple contiguous inversions unchanged. |
+| `--all` | off | Inspect all contigs with passing split signals. |
+| `--mode` | `conservative` | Planner used for `--contigs`, `--contigs-file`, or `--all`: `conservative`, `chromosome`, `comprehensive`, or `sensitive`. |
 | `--min-segment-bp` | `10000` | Minimum alignment segment length used to infer split blocks. |
 | `--min-segment-idy` | `0.0` | Minimum percent identity for split-informing alignment rows. |
 | `--max-merge-gap` | `1000` | Merge nearby same-reference rows separated by this many query bp or less. |
 | `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
 | `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
 | `--min-piece-bp` | `1` | Do not emit split pieces shorter than this length. |
-| `--auto-breakpoint-penalty-bp` | `50000` | Identity-weighted aligned bp cost charged for each auto breakpoint. |
-| `--auto-min-piece-aligned-bp` | `50000` | Minimum dominant aligned bp required in each auto-split piece. |
-| `--auto-min-piece-query-frac` | `0.05` | Minimum query-span fraction required in each auto-split piece. |
-| `--auto-complex-inversion-min-piece-aligned-bp` | `1000000` | Minimum dominant aligned bp for pieces used to classify a same-reference orientation event as complex. |
-| `--auto-complex-inversion-min-overlap-frac` | `0.50` | Minimum reference-span overlap fraction for classifying a same-reference orientation event as complex. |
-| `--auto-max-breakpoints` | `4` | Maximum accepted auto breakpoints across the whole run. Set negative to disable. |
+| `--breakpoint-penalty-bp` | `50000` | Identity-weighted aligned bp cost charged for each smoothed breakpoint. |
+| `--min-piece-aligned-bp` | `50000` | Minimum dominant aligned bp required in each smoothed split piece. |
+| `--min-piece-query-frac` | `0.05` | Minimum query-span fraction required in each smoothed split piece. |
+| `--complex-inversion-min-piece-aligned-bp` | `1000000` | Minimum dominant aligned bp for pieces used to classify a same-reference orientation event as complex. |
+| `--complex-inversion-min-overlap-frac` | `0.50` | Minimum reference-span overlap fraction for classifying a same-reference orientation event as complex. |
+| `--max-breakpoints-per-contig` | `4` | Maximum accepted breakpoints per contig. Set negative to disable. |
 | `--orient-to-reference` | off | Reverse-complement split pieces from reverse-strand blocks. |
 | `--pieces-only` | off | Write only split pieces instead of a full fixed assembly FASTA. |
 
 ### Reasoning Behind `chromo fix`
 
-#### User-Nominated Splitting By Default
+#### Scope Is Separate From Mode
 
 Cutting contigs is a stronger intervention than ordering contigs. A reference
 transition can reflect a real assembly chimera, but it can also reflect
 structural variation, assembly graph complexity, misassembly in the reference,
-or poor alignment around repeats. Requiring an explicit contig list keeps this
-step auditable: ChromoSort proposes breakpoints from alignment coordinates, but the
-user decides which contigs are appropriate to cut.
+or poor alignment around repeats. `--contigs` and `--contigs-file` keep the
+operation auditable by limiting which contigs can receive a break. `--all` uses
+the same planner across the whole assembly after the alignment filters have
+been tuned.
 
-#### Auto Detection As An Opt-In Workflow
-
-`--auto` is useful after the alignment filters have been tuned. It prioritizes
-chromosome/reference transitions because these are the strongest signal for
-misjoined contigs. Same-reference orientation events are handled more carefully:
-simple contiguous inversions are ignored by default, while complex/nested
-events with large overlapping reference spans can be split. Use
-`--auto-split-inversions` to consider all same-reference orientation changes.
-Auto fixing is opt-in because automatic contig cutting should be reviewed
-carefully.
+`--mode conservative` prioritizes chromosome/reference transitions because
+these are the strongest signal for misjoined contigs. Same-reference orientation
+events are handled more carefully: simple contiguous inversions are ignored by
+default, while complex/nested events with large overlapping reference spans can
+be split. `--mode comprehensive` considers all same-reference orientation
+changes. `--mode chromosome` ignores same-reference orientation changes.
+`--mode sensitive` disables breakpoint-penalty smoothing and is mainly useful
+for debugging or intentionally aggressive exploratory scans.
 
 #### Collapse Same-Target Runs Before Cutting
 
@@ -720,13 +700,13 @@ explicitly enabled, not at every ordinary alignment-row boundary.
 
 #### Breakpoint-Penalty Segmentation
 
-Auto mode uses a small dynamic-programming segmentation model. For each contig,
+Smoothed modes use a small dynamic-programming segmentation model. For each contig,
 `chromo fix` asks whether the query-ordered alignment blocks are better
 explained as one smoothed piece or as multiple pieces separated by breakpoints.
 
 Keeping a discordant block inside a larger piece costs that block's
 identity-weighted aligned bp. Adding a breakpoint costs
-`--auto-breakpoint-penalty-bp`. A breakpoint is accepted only when the reduction
+`--breakpoint-penalty-bp`. A breakpoint is accepted only when the reduction
 in discordant support is worth paying the penalty and every resulting piece has
 enough dominant aligned support and spans at least 5% of the contig by default.
 This makes the default behavior breakpoint-averse: small terminal off-target
@@ -734,11 +714,11 @@ blocks, small inversions, short transposed/repeat-like hits, fragmented
 same-chromosome alignments, and INDEL-sized gaps are smoothed over instead of
 cut.
 
-Auto mode also caps the number of accepted breakpoints across the run with
-`--auto-max-breakpoints`. The default of four is meant as a practical guardrail
-for soybean-scale samples: if many candidate plans compete for that budget,
-ChromoFix keeps the highest-priority/highest-score plans and reports the rest
-as `not_split_auto_too_many_breakpoints` for manual dot plot review.
+`--max-breakpoints-per-contig` caps accepted breakpoints independently for each
+contig. The default of four is meant as a practical guardrail for soybean-scale
+samples: a contig that appears to need many breaks is more likely to need manual
+dot plot review than automatic sequence surgery. Those plans are reported as
+`not_split_too_many_breakpoints`.
 
 #### Breakpoints Between Alignment Blocks
 
@@ -760,8 +740,8 @@ local inversion, a short repeat-like hit to another chromosome, true large-scale
 chimeras, a complex chimera with internal gaps, and terminal/internal inversion
 cases. The expected behavior is conservative: split the large-scale chromosome
 transition patterns, split only complex same-reference orientation events by
-default, split all strong inversions only when inversion splitting is enabled,
-and report weaker discordance as `not_split_auto_smooth`.
+default, split all strong inversions only in `--mode comprehensive`, and report
+weaker discordance as `not_split_smooth`.
 
 ## chromo plot
 
@@ -971,6 +951,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.2` | Reworked `chromo fix` so `--contigs`/`--contigs-file` only select the inspection subset, `--all` scans every candidate contig, `--mode` controls planner behavior for both scopes, and breakpoint limits apply per contig. |
 | `0.2.1` | Tightened `chromo sort` duplicate filtering for contaminated/alternate-fragment assemblies by using span-based overlap by default, requiring both novel coverage thresholds, rescuing very large near-threshold alignments, and letting split candidates protect their secondary reference spans. |
 | `0.2.0` | Added minimap2 PAF input for `chromo sort` and `chromo fix`, plus `chromo plot` PDF/SVG/PNG dot plots for coords/PAF with optional assignment-report query ordering. |
 | `0.1.2` | Raised the default auto-split query-span support threshold to 5% so small terminal off-target blocks are reported for review instead of being cut automatically. |

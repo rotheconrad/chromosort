@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Split user-nominated chimeric contigs using coords or PAF alignments.
+Split chimeric contigs using coords or PAF alignments.
 
-This module is intentionally conservative by default. User-nominated contigs
-are split directly from query-ordered alignment blocks. With --auto, candidate
-blocks are first passed through a breakpoint-penalty segmentation step so small
-discordant blocks, INDEL-sized gaps, and local SV-like noise are smoothed over.
+This module is intentionally conservative by default. --contigs and
+--contigs-file choose a user-reviewed subset to inspect, while --all scans every
+contig with a split signal. The selected contigs then go through the same
+mode-specific planner so small discordant blocks, INDEL-sized gaps, and local
+SV-like noise can be smoothed over before breakpoints are accepted.
 """
 
 import argparse
@@ -76,9 +77,9 @@ class ContigPlan:
     status: str
     pieces: List[SplitPiece]
     reason: str
-    auto_score: float = 0.0
-    auto_breakpoints: int = 0
-    auto_ref_transition: bool = False
+    planner_score: float = 0.0
+    planner_breakpoints: int = 0
+    planner_ref_transition: bool = False
 
 
 @dataclass
@@ -90,12 +91,15 @@ class BlockGroup:
     total_weighted_bp: float
 
 
+MODE_CHOICES = ("conservative", "chromosome", "comprehensive", "sensitive")
+
+
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     ap = argparse.ArgumentParser(
         prog=prog,
         description=(
-            "Split user-nominated chimeric contigs into reference-labeled pieces "
-            "using MUMmer coords or minimap2 PAF alignments."
+            "Split selected chimeric contigs into reference-labeled pieces using "
+            "MUMmer coords or minimap2 PAF alignments."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -127,50 +131,57 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         help="Optional text file with one contig name per line.",
     )
     ap.add_argument(
+        "--all",
+        action="store_true",
+        dest="all_contigs",
+        help=(
+            "Inspect all contigs with a passing split signal. Use --contigs or "
+            "--contigs-file instead to inspect only a reviewed subset."
+        ),
+    )
+    ap.add_argument(
+        "--mode",
+        choices=MODE_CHOICES,
+        default="conservative",
+        help=(
+            "Breakpoint planner to use for selected contigs. conservative "
+            "smooths weak discordance and cuts reference transitions plus "
+            "complex same-reference orientation events; chromosome cuts only "
+            "reference transitions; comprehensive also considers all "
+            "same-reference orientation changes; sensitive disables smoothing "
+            "and cuts every passing reference/orientation transition."
+        ),
+    )
+    ap.add_argument(
         "--auto",
         action="store_true",
-        help=(
-            "Automatically inspect contigs with passing alignment blocks that "
-            "change reference sequence. Add --auto-split-inversions to include "
-            "same-reference orientation changes. Auto mode uses breakpoint-"
-            "penalty smoothing unless --auto-sensitive is set."
-        ),
+        dest="legacy_auto",
+        help=argparse.SUPPRESS,
     )
     ap.add_argument(
         "--auto-sensitive",
         action="store_true",
-        help=(
-            "In auto mode, split every passing reference/orientation transition "
-            "without breakpoint-penalty smoothing. This is useful for debugging "
-            "or intentionally sensitive scans."
-        ),
+        dest="legacy_auto_sensitive",
+        help=argparse.SUPPRESS,
     )
     ap.add_argument(
         "--auto-split-inversions",
         action="store_true",
-        help=(
-            "In conservative auto mode, also split same-reference orientation "
-            "transitions. By default, auto mode only cuts chromosome/reference "
-            "changes because large cultivar inversions may be biological rather "
-            "than contig misjoins."
-        ),
+        dest="legacy_auto_split_inversions",
+        help=argparse.SUPPRESS,
     )
     ap.add_argument(
         "--auto-complex-inversions",
         action=argparse.BooleanOptionalAction,
-        default=True,
-        help=(
-            "In conservative auto mode, split same-reference orientation "
-            "events only when the proposed pieces have large nested/overlapping "
-            "reference spans. This catches complex contig-order errors while "
-            "leaving simple contiguous inversions unchanged."
-        ),
+        default=None,
+        dest="legacy_auto_complex_inversions",
+        help=argparse.SUPPRESS,
     )
     ap.add_argument(
         "-o",
         "--output-fasta",
         required=True,
-        help="Output FASTA with nominated chimeras replaced by split pieces.",
+        help="Output FASTA with selected chimeras replaced by split pieces.",
     )
     ap.add_argument(
         "--report",
@@ -216,37 +227,59 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         help="Minimum emitted split-piece length.",
     )
     ap.add_argument(
-        "--auto-breakpoint-penalty-bp",
+        "--breakpoint-penalty-bp",
         type=float,
         default=50_000.0,
+        dest="breakpoint_penalty_bp",
         help=(
-            "Auto-mode breakpoint penalty, measured as identity-weighted aligned bp. "
-            "A split is kept only when doing so explains more discordant support "
-            "than this penalty."
+            "Breakpoint penalty for smoothed modes, measured as identity-weighted "
+            "aligned bp. A split is kept only when doing so explains more "
+            "discordant support than this penalty."
+        ),
+    )
+    ap.add_argument(
+        "--auto-breakpoint-penalty-bp",
+        type=float,
+        dest="breakpoint_penalty_bp",
+        help=argparse.SUPPRESS,
+    )
+    ap.add_argument(
+        "--min-piece-aligned-bp",
+        type=int,
+        default=50_000,
+        dest="min_piece_aligned_bp",
+        help=(
+            "Minimum dominant aligned bp required in each smoothed split piece. "
+            "This prevents cutting off weak local SV or repeat hits."
         ),
     )
     ap.add_argument(
         "--auto-min-piece-aligned-bp",
         type=int,
-        default=50_000,
+        dest="min_piece_aligned_bp",
+        help=argparse.SUPPRESS,
+    )
+    ap.add_argument(
+        "--min-piece-query-frac",
+        type=float,
+        default=0.05,
+        dest="min_piece_query_frac",
         help=(
-            "Minimum dominant aligned bp required in each auto-split piece. "
-            "This prevents auto mode from cutting off weak local SV or repeat hits."
+            "Minimum query-span fraction required for each smoothed split piece. "
+            "Set to 0 to disable this fraction check."
         ),
     )
     ap.add_argument(
         "--auto-min-piece-query-frac",
         type=float,
-        default=0.05,
-        help=(
-            "Minimum query-span fraction required for each auto-split piece. "
-            "Set to 0 to disable this fraction check."
-        ),
+        dest="min_piece_query_frac",
+        help=argparse.SUPPRESS,
     )
     ap.add_argument(
-        "--auto-complex-inversion-min-piece-aligned-bp",
+        "--complex-inversion-min-piece-aligned-bp",
         type=int,
         default=1_000_000,
+        dest="complex_inversion_min_piece_aligned_bp",
         help=(
             "Minimum dominant aligned bp for pieces used to classify a "
             "same-reference orientation event as complex rather than a simple "
@@ -254,24 +287,43 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         ),
     )
     ap.add_argument(
-        "--auto-complex-inversion-min-overlap-frac",
+        "--auto-complex-inversion-min-piece-aligned-bp",
+        type=int,
+        dest="complex_inversion_min_piece_aligned_bp",
+        help=argparse.SUPPRESS,
+    )
+    ap.add_argument(
+        "--complex-inversion-min-overlap-frac",
         type=float,
         default=0.50,
+        dest="complex_inversion_min_overlap_frac",
         help=(
             "Minimum reference-span overlap fraction, relative to the smaller "
             "piece, for a same-reference orientation event to be considered "
-            "complex in auto mode."
+            "complex."
+        ),
+    )
+    ap.add_argument(
+        "--auto-complex-inversion-min-overlap-frac",
+        type=float,
+        dest="complex_inversion_min_overlap_frac",
+        help=argparse.SUPPRESS,
+    )
+    ap.add_argument(
+        "--max-breakpoints-per-contig",
+        type=int,
+        default=4,
+        dest="max_breakpoints_per_contig",
+        help=(
+            "Maximum accepted breakpoints per contig. Set to a negative value "
+            "to disable this guardrail."
         ),
     )
     ap.add_argument(
         "--auto-max-breakpoints",
         type=int,
-        default=4,
-        help=(
-            "Maximum accepted auto breakpoints for the whole run. Auto split "
-            "plans are ranked by evidence and accepted until this budget is "
-            "used. Set to a negative value to disable this guardrail."
-        ),
+        dest="max_breakpoints_per_contig",
+        help=argparse.SUPPRESS,
     )
     ap.add_argument(
         "--name-separator",
@@ -293,7 +345,16 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         action="store_true",
         help="Write only split pieces instead of a full fixed assembly FASTA.",
     )
-    return ap.parse_args(argv)
+    args = ap.parse_args(argv)
+    if args.legacy_auto:
+        args.all_contigs = True
+    if args.legacy_auto_sensitive:
+        args.mode = "sensitive"
+    elif args.legacy_auto_split_inversions:
+        args.mode = "comprehensive"
+    elif args.legacy_auto_complex_inversions is False:
+        args.mode = "chromosome"
+    return args
 
 
 def read_requested_contigs(names: Iterable[str], path: Optional[str]) -> List[str]:
@@ -509,8 +570,8 @@ def collapse_adjacent_blocks_by_signature(blocks, include_orientation=True):
 def auto_group_piece_is_supported(group, seq_len, args):
     span_frac = group.summary.query_span / seq_len if seq_len else 0.0
     return (
-        group.summary.aligned_bp >= args.auto_min_piece_aligned_bp
-        and span_frac >= args.auto_min_piece_query_frac
+        group.summary.aligned_bp >= args.min_piece_aligned_bp
+        and span_frac >= args.min_piece_query_frac
     )
 
 
@@ -541,7 +602,7 @@ def segment_blocks_for_auto(blocks, args, include_orientation):
             previous_cost, previous_breaks, _ = dp[start]
             if previous_cost == float("inf"):
                 continue
-            breakpoint_cost = args.auto_breakpoint_penalty_bp if start else 0.0
+            breakpoint_cost = args.breakpoint_penalty_bp if start else 0.0
             breakpoint_count = previous_breaks + (1 if start else 0)
             candidate = (
                 previous_cost + interval_cost(start, end) + breakpoint_cost,
@@ -569,7 +630,7 @@ def auto_plan_score(blocks, groups, args, include_orientation):
     split_discordant = sum(group.discordant_bp for group in groups)
     breakpoints = len(groups) - 1
     return whole_discordant - split_discordant - (
-        args.auto_breakpoint_penalty_bp * breakpoints
+        args.breakpoint_penalty_bp * breakpoints
     )
 
 
@@ -594,14 +655,14 @@ def same_ref_orientation_plan_is_complex(groups, args):
     for left, right in zip(groups, groups[1:]):
         if (
             left.summary.aligned_bp
-            < args.auto_complex_inversion_min_piece_aligned_bp
+            < args.complex_inversion_min_piece_aligned_bp
             or right.summary.aligned_bp
-            < args.auto_complex_inversion_min_piece_aligned_bp
+            < args.complex_inversion_min_piece_aligned_bp
         ):
             continue
         if (
             ref_span_overlap_fraction(left, right)
-            >= args.auto_complex_inversion_min_overlap_frac
+            >= args.complex_inversion_min_overlap_frac
         ):
             return True
     return False
@@ -617,9 +678,9 @@ def auto_orientation_groups(blocks, args):
 def auto_include_orientation(blocks, args):
     if not has_split_signal(blocks, True):
         return False
-    if args.auto_split_inversions:
+    if args.mode in {"comprehensive", "sensitive"}:
         return True
-    if not args.auto_complex_inversions:
+    if args.mode == "chromosome":
         return False
     groups = auto_orientation_groups(blocks, args)
     return same_ref_orientation_plan_is_complex(groups, args)
@@ -683,17 +744,18 @@ def count_smoothed_transitions(groups, include_orientation=True):
     return count
 
 
-def auto_requested_contigs(fasta_path, blocks_by_contig, explicit_contigs, args):
-    explicit_set = set(explicit_contigs)
-    requested = list(explicit_contigs)
+def all_requested_contigs(fasta_path, blocks_by_contig, args):
+    requested = []
     for name, _, _ in iter_fasta_records(fasta_path):
-        if name in explicit_set:
-            continue
         blocks = blocks_by_contig.get(name, [])
-        if has_split_signal(blocks, False) or (
-            args.auto_sensitive
-            and has_split_signal(blocks, True)
-        ) or auto_include_orientation(blocks, args):
+        if args.mode == "sensitive":
+            include = has_split_signal(blocks, True)
+        else:
+            include = has_split_signal(blocks, False) or auto_include_orientation(
+                blocks,
+                args,
+            )
+        if include:
             requested.append(name)
     return requested
 
@@ -804,19 +866,18 @@ def build_split_plan(contig, seq_len, blocks, args):
             f"{len(split_blocks)} reference/orientation runs collapsed from "
             f"{len(blocks)} alignment blocks."
         ),
+        planner_breakpoints=max(0, len(pieces) - 1),
+        planner_ref_transition=len({piece.ref for piece in pieces}) > 1,
     )
 
 
-def build_auto_split_plan(contig, seq_len, blocks, args):
-    if args.auto_sensitive:
-        return build_split_plan(contig, seq_len, blocks, args)
-
+def build_smoothed_split_plan(contig, seq_len, blocks, args):
     if not blocks:
         return ContigPlan(
             contig=contig,
             status="not_split_no_alignment",
             pieces=[],
-            reason="No passing alignment segments were found for this auto candidate.",
+            reason="No passing alignment segments were found for this candidate.",
         )
     if len(blocks) == 1:
         return ContigPlan(
@@ -835,9 +896,11 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
             reason=(
                 "All passing alignment blocks map to the same reference sequence"
                 + (
-                    ". Same-reference orientation changes look like simple "
-                    "contiguous inversions and are ignored unless "
-                    "--auto-split-inversions is set."
+                    ". Same-reference orientation changes are ignored in this "
+                    "mode unless they look complex enough to separate from "
+                    "simple reference-relative inversions. Use --mode "
+                    "comprehensive to consider all orientation changes or "
+                    "--mode sensitive to disable smoothing."
                 )
             ),
         )
@@ -867,25 +930,25 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
             )
             return ContigPlan(
                 contig=contig,
-                status="not_split_auto_smooth",
+                status="not_split_smooth",
                 pieces=[],
                 reason=(
-                    "Auto smoothing rejected the best split because at least one "
+                    "Breakpoint smoothing rejected the best split because at least one "
                     "terminal piece failed support thresholds and was merged into "
                     "the neighboring piece "
-                    f"({weakest} aligned bp; required {args.auto_min_piece_aligned_bp}; "
+                    f"({weakest} aligned bp; required {args.min_piece_aligned_bp}; "
                     f"query span fraction {weakest_frac:.4f}; "
-                    f"required {args.auto_min_piece_query_frac:.4f})."
+                    f"required {args.min_piece_query_frac:.4f})."
                 ),
             )
         return ContigPlan(
             contig=contig,
-            status="not_split_auto_smooth",
+            status="not_split_smooth",
             pieces=[],
             reason=(
-                "Auto smoothing retained one piece: discordant support "
+                "Breakpoint smoothing retained one piece: discordant support "
                 f"({discordant_bp:.1f} identity-weighted bp) did not overcome "
-                f"the breakpoint penalty ({args.auto_breakpoint_penalty_bp:.1f})."
+                f"the breakpoint penalty ({args.breakpoint_penalty_bp:.1f})."
             ),
         )
 
@@ -902,14 +965,14 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
         )
         return ContigPlan(
             contig=contig,
-            status="not_split_auto_smooth",
+            status="not_split_smooth",
             pieces=[],
             reason=(
-                "Auto smoothing rejected the best split because at least one "
+                "Breakpoint smoothing rejected the best split because at least one "
                 "piece failed support thresholds "
-                f"({weakest} aligned bp; required {args.auto_min_piece_aligned_bp}; "
+                f"({weakest} aligned bp; required {args.min_piece_aligned_bp}; "
                 f"query span fraction {weakest_frac:.4f}; "
-                f"required {args.auto_min_piece_query_frac:.4f})."
+                f"required {args.min_piece_query_frac:.4f})."
             ),
         )
 
@@ -925,7 +988,7 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
             contig=contig,
             status="not_split_short_piece",
             pieces=[],
-            reason="Fewer than two auto split pieces passed the minimum piece length.",
+            reason="Fewer than two smoothed split pieces passed the minimum piece length.",
         )
 
     breakpoints = len(pieces) - 1
@@ -937,20 +1000,19 @@ def build_auto_split_plan(contig, seq_len, blocks, args):
         status="split",
         pieces=pieces,
         reason=(
-            f"{len(pieces)} auto pieces inferred from {len(blocks)} alignment blocks "
+            f"{len(pieces)} smoothed pieces inferred from {len(blocks)} alignment blocks "
             f"after smoothing {smoothed} weak transition(s) with breakpoint penalty "
-            f"{args.auto_breakpoint_penalty_bp:.1f}; auto_score={score:.1f}."
+            f"{args.breakpoint_penalty_bp:.1f}; planner_score={score:.1f}."
         ),
-        auto_score=score,
-        auto_breakpoints=breakpoints,
-        auto_ref_transition=ref_transition,
+        planner_score=score,
+        planner_breakpoints=breakpoints,
+        planner_ref_transition=ref_transition,
     )
 
 
-def build_plans(fasta_path, requested, explicit_requested, blocks_by_contig, args):
+def build_plans(fasta_path, requested, blocks_by_contig, args):
     seq_lengths = {name: len(seq) for name, _, seq in iter_fasta_records(fasta_path)}
     plans: Dict[str, ContigPlan] = {}
-    explicit_set = set(explicit_requested)
     for contig in requested:
         if contig not in seq_lengths:
             plans[contig] = ContigPlan(
@@ -960,15 +1022,15 @@ def build_plans(fasta_path, requested, explicit_requested, blocks_by_contig, arg
                 reason="Requested contig was not found in the assembly FASTA.",
             )
             continue
-        if args.auto and contig not in explicit_set:
-            plans[contig] = build_auto_split_plan(
+        if args.mode == "sensitive":
+            plans[contig] = build_split_plan(
                 contig,
                 seq_lengths[contig],
                 blocks_by_contig.get(contig, []),
                 args,
             )
         else:
-            plans[contig] = build_split_plan(
+            plans[contig] = build_smoothed_split_plan(
                 contig,
                 seq_lengths[contig],
                 blocks_by_contig.get(contig, []),
@@ -977,41 +1039,24 @@ def build_plans(fasta_path, requested, explicit_requested, blocks_by_contig, arg
     return plans
 
 
-def apply_auto_breakpoint_budget(plans, explicit_requested, args):
-    if not args.auto or args.auto_max_breakpoints < 0:
+def apply_breakpoint_guard(plans, args):
+    if args.max_breakpoints_per_contig < 0:
         return
 
-    explicit_set = set(explicit_requested)
-    auto_splits = [
-        plan
-        for contig, plan in plans.items()
-        if contig not in explicit_set and plan.status == "split"
-    ]
-    auto_splits.sort(
-        key=lambda plan: (
-            plan.auto_ref_transition,
-            plan.auto_score,
-            -plan.auto_breakpoints,
-            plan.contig,
-        ),
-        reverse=True,
-    )
-
-    used = 0
-    for plan in auto_splits:
-        breakpoints = plan.auto_breakpoints or max(0, len(plan.pieces) - 1)
-        if used + breakpoints <= args.auto_max_breakpoints:
-            used += breakpoints
+    for plan in plans.values():
+        if plan.status != "split":
+            continue
+        breakpoints = plan.planner_breakpoints or max(0, len(plan.pieces) - 1)
+        if breakpoints <= args.max_breakpoints_per_contig:
             continue
 
-        plan.status = "not_split_auto_too_many_breakpoints"
+        plan.status = "not_split_too_many_breakpoints"
         plan.pieces = []
         plan.reason = (
-            "Auto split plan was rejected by the run-level breakpoint budget: "
-            f"this plan required {breakpoints} breakpoint(s), "
-            f"{used}/{args.auto_max_breakpoints} had already been reserved by "
-            "higher-priority auto plans, and the remaining budget was not enough. "
-            f"auto_score={plan.auto_score:.1f}."
+            "Split plan was rejected by the per-contig breakpoint guardrail: "
+            f"this plan required {breakpoints} breakpoint(s), which is above "
+            f"--max-breakpoints-per-contig {args.max_breakpoints_per_contig}. "
+            f"planner_score={plan.planner_score:.1f}."
         )
 
 
@@ -1130,15 +1175,18 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
     alignment_path, alignment_format = alignment_source_from_args(args)
     explicit_requested = read_requested_contigs(args.contigs, args.contigs_file)
-    if not explicit_requested and not args.auto:
-        sys.stderr.write("ERROR: provide at least one contig via --contigs/--contigs-file or use --auto\n")
+    if args.all_contigs and explicit_requested:
+        sys.stderr.write("ERROR: use either --all or --contigs/--contigs-file, not both\n")
+        sys.exit(2)
+    if not explicit_requested and not args.all_contigs:
+        sys.stderr.write("ERROR: provide at least one contig via --contigs/--contigs-file or use --all\n")
         sys.exit(2)
 
     for output_path in [Path(args.output_fasta), Path(args.report)]:
         if output_path.parent and str(output_path.parent) != ".":
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    collect_for = None if args.auto else explicit_requested
+    collect_for = None if args.all_contigs else explicit_requested
     blocks_by_contig = collect_blocks(
         alignment_path,
         alignment_format,
@@ -1150,18 +1198,17 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         include_secondary_paf=args.include_secondary_paf,
     )
     requested = (
-        auto_requested_contigs(args.assembly_fasta, blocks_by_contig, explicit_requested, args)
-        if args.auto
+        all_requested_contigs(args.assembly_fasta, blocks_by_contig, args)
+        if args.all_contigs
         else explicit_requested
     )
     plans = build_plans(
         args.assembly_fasta,
         requested,
-        explicit_requested,
         blocks_by_contig,
         args,
     )
-    apply_auto_breakpoint_budget(plans, explicit_requested, args)
+    apply_breakpoint_guard(plans, args)
     write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args)
     write_report(args.report, requested, plans)
 
