@@ -36,8 +36,9 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
   reviewed without re-running an aligner just to make a plot.
 
 The sorting, fixing, plotting, and manual dashboard workflows use standard
-MUMmer `show-coords` output or minimap2 PAF. Manual cuts do not require
-alignments. These commands are designed for reuse across species and genome
+MUMmer `show-coords` output or minimap2 PAF. Graph evidence and filling use
+GFA and optional GAF files from assembly-graph workflows. Manual cuts do not
+require alignments. These commands are designed for reuse across species and genome
 assembly projects. ChromoSort does not polish sequence, call variants, or force
 contigs to match a reference. It keeps full sequence pieces and writes
 TSV/plot/recipe reports so each keep, reject, split, manual edit, plot, or
@@ -53,6 +54,10 @@ overlaps, and flank sequence mismatches.
 - [Creating Input Files With MUMmer](#creating-input-files-with-mummer)
   - [Why These MUMmer Choices?](#why-these-mummer-choices)
 - [Creating Input Files With minimap2](#creating-input-files-with-minimap2)
+- [Graph Input Files](#graph-input-files)
+  - [Where to Find the GFA](#where-to-find-the-gfa)
+  - [Which PAF Files to Keep](#which-paf-files-to-keep)
+  - [Creating GAF Read-to-Graph Alignments](#creating-gaf-read-to-graph-alignments)
 - [chromo sort](#chromo-sort)
   - [What `chromo sort` Does](#what-chromo-sort-does)
   - [Run `chromo sort`](#run-chromo-sort)
@@ -453,6 +458,107 @@ chromo plot \
 identity from the PAF match and block-length columns, uses the PAF strand for
 orientation, and skips rows marked `tp:A:S` unless `--include-secondary-paf` is
 set. Use `--min-mapq` to ignore low-MAPQ PAF rows.
+
+## Graph Input Files
+
+Graph-aware ChromoSort commands use three graph-related file types:
+
+- GFA: the assembly graph, used by `chromo sort --gfa`, `chromo fix --gfa`,
+  `chromo scaffold --gfa`, and `chromo fill --gfa`.
+- reference-to-assembly PAF: the same minimap2 alignment format used by
+  `chromo sort`, `chromo fix`, `chromo manual`, and `chromo plot`.
+- GAF: optional read-to-graph alignments used by `chromo fill --gaf` to resolve
+  otherwise ambiguous graph paths.
+
+### Where to Find the GFA
+
+The GFA usually comes from the assembler, not from ChromoSort. Look in the
+original assembly output directory before any post-processing or renaming step.
+Common examples are hifiasm primary/haplotype graph files, Verkko graph files,
+or graph outputs produced while converting unitig/contig graphs to FASTA. The
+most important practical rule is that GFA segment names must still match the
+sequence names ChromoSort sees in the assembly FASTA or in the `chromo sort`
+assignment report. If the FASTA was exported from the same graph, this usually
+works naturally. If the FASTA was renamed, polished, split, or scaffolded by
+another tool, keep a name map or regenerate graph evidence for the renamed
+sequences.
+
+For graph review, use the graph closest to the FASTA being sorted or filled:
+
+```text
+assembly.fa              # FASTA passed to chromo sort/fix/fill
+assembly_graph.gfa       # GFA whose S records match assembly.fa sequence IDs
+```
+
+ChromoSort currently reads GFA `S` segment records and `L` link records. Segment
+sequences are required only when `chromo fill --apply` may insert graph
+sequence. Report-only graph evidence can still use segments with `*` sequence
+fields when lengths are provided with `LN:i`.
+
+### Which PAF Files to Keep
+
+The main PAF file for ChromoSort is a reference-to-assembly whole-genome
+alignment:
+
+```bash
+minimap2 \
+  -x asm5 \
+  -t 16 \
+  --secondary=no \
+  reference.fa \
+  assembly.fa \
+  > paf/sample.ref_vs_asm.paf
+```
+
+Use this PAF anywhere you would otherwise use MUMmer coords:
+
+```bash
+chromo sort --ref-fasta reference.fa --assembly-fasta assembly.fa \
+  --paf paf/sample.ref_vs_asm.paf --output-prefix results/sample
+
+chromo fix --assembly-fasta assembly.fa --paf paf/sample.ref_vs_asm.paf \
+  --contigs suspect_1 suspect_2 --output-fasta results/sample.fixed.fa \
+  --report results/sample.fixed.tsv
+
+chromo manual --ref-fasta reference.fa --assembly-fasta assembly.fa \
+  --paf paf/sample.ref_vs_asm.paf --output-html results/sample.manual.html
+
+chromo plot --ref-fasta reference.fa --assembly-fasta assembly.fa \
+  --paf paf/sample.ref_vs_asm.paf --output-prefix plots/sample
+```
+
+If you run `chromo fix` and create a new fixed FASTA, re-align the fixed FASTA
+and keep that second PAF beside the fixed results:
+
+```bash
+minimap2 -x asm5 -t 16 --secondary=no reference.fa results/sample.fixed.fa \
+  > paf/sample.fixed.ref_vs_asm.paf
+```
+
+The original PAF explains the raw assembly; the fixed PAF explains the edited
+assembly. Do not mix a fixed FASTA with an old raw-assembly PAF unless you are
+only doing a very specific manual comparison.
+
+### Creating GAF Read-to-Graph Alignments
+
+GAF is a graph-alignment format. ChromoSort uses it only in `chromo fill --gaf`
+as optional read-path evidence for candidate graph fills. A typical source is a
+long-read-to-GFA alignment from a graph aligner:
+
+```bash
+GraphAligner \
+  -g assembly_graph.gfa \
+  -f reads.fastq.gz \
+  -a graph_alignments/sample.reads_to_graph.gaf
+```
+
+`GraphAligner` is an optional external tool; it is not needed for the core
+sorting/fixing/scaffolding workflow. In the current `chromo fill` implementation,
+GAF is used as path support only. ChromoSort reads the query name, path string,
+and MAPQ columns, filters with `--min-gaf-mapq`, and counts how many read paths
+contain each candidate graph path. If one candidate path has unique support
+above `--min-gaf-path-support`, that path can resolve an otherwise ambiguous
+GFA branch. Tied, weak, or absent support keeps the fill unresolved for review.
 
 ## chromo sort
 
@@ -1552,6 +1658,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.11` | Expanded the input-file documentation with a dedicated graph-input section describing where to find matching GFA files, which reference-to-assembly PAF files to keep for raw and fixed FASTAs, and how optional GAF read-to-graph alignments are used by `chromo fill`. |
 | `0.2.10` | Added optional GAF read-path evidence to `chromo fill`. Fill plans now report GAF support counts, and otherwise ambiguous graph branches can be resolved when one candidate path has unique support after `--min-gaf-mapq` filtering and meets `--min-gaf-path-support`; weak, tied, or missing support still leaves the junction unresolved. |
 | `0.2.9` | Added `chromo fill`, a conservative graph-gap planning and optional application command. It writes `<prefix>.fill_plan.tsv`, refuses ambiguous or unverifiable GFA paths, applies sequence only with `--apply`, trims the right flank by the final graph overlap when filling, and falls back to inferred or fixed N gaps for unresolved junctions. |
 | `0.2.8` | Added report-only `--gfa` graph context to `chromo sort` and `chromo fix`. Sorting now writes `<prefix>.graph_assignments.tsv` with resolved graph nodes, node degree/self-loop evidence, and direct links to overlap-best contigs; fixing now writes a graph context table beside the split report so reviewed contigs can be checked against the assembly graph before fill workflows. |
