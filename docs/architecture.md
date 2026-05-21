@@ -60,20 +60,20 @@ it makes sequence-changing steps depend on documented inputs and reports.
 <figure class="method-diagram">
 <div class="mermaid">
 flowchart TD
-  A["FASTA inputs"] --> B["Alignment evidence"]
-  C["Graph evidence"] --> D["Graph-aware review"]
-  B --> E["Review: plot, manual"]
-  B --> F["Edit: fix, cut, manual apply"]
-  B --> G["sort"]
-  C --> G
-  G --> H["Assignments + ordered FASTA"]
-  H --> I["scaffold"]
-  C --> I
-  I --> J["Scaffold FASTA + gap reports"]
-  H --> K["gapfill plan"]
-  C --> K
-  D --> K
-  K --> L["Optional gapfilled FASTA"]
+  A[FASTA] --> B[Alignments]
+  C[Graph] --> D[Review]
+  B --> D
+  B --> E[Edit]
+  B --> F[Sort]
+  C --> F
+  F --> G[OrderedFASTA]
+  G --> H[Scaffold]
+  C --> H
+  H --> I[ScaffoldFASTA]
+  G --> J[Gapfill]
+  C --> J
+  D --> J
+  J --> K[GapfilledFASTA]
 </div>
 </figure>
 

@@ -10,8 +10,8 @@
     <script>
       window.MathJax = {
         tex: {
-          inlineMath: [["$", "$"], ["\(", "\)"]],
-          displayMath: [["$$", "$$"], ["\[", "\]"]],
+          inlineMath: [["$", "$"], ["\\(", "\\)"]],
+          displayMath: [["$$", "$$"], ["\\[", "\\]"]],
           processEscapes: true
         }
       };
@@ -106,7 +106,10 @@
         startOnLoad: true,
         theme: "neutral",
         securityLevel: "loose",
-        maxTextSize: 200000
+        maxTextSize: 200000,
+        flowchart: {
+          htmlLabels: false
+        }
       });
     </script>
     {% endif %}
