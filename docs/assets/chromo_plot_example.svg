@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+<style>text{font-family:Arial,Helvetica,sans-serif;}line{stroke-linecap:round;}</style>
+<rect x="0.00" y="0.00" width="1600.00" height="1200.00" fill="#ffffff" stroke="none" opacity="1.0"/>
+<text x="24.00" y="32.00" font-size="18" text-anchor="start" fill="#111827">ChromoSort whole-genome dot plot</text>
+<text x="24.00" y="54.00" font-size="12" text-anchor="start" fill="#6b7280">6 alignments | x: reference (220 bp) | y: query (380 bp)</text>
+<rect x="130.00" y="92.00" width="1430.00" height="1016.00" fill="#f9fafb" stroke="#9ca3af" opacity="1.0"/>
+<line x1="130.00" y1="92.00" x2="130.00" y2="1108.00" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="133.00" y="84.00" font-size="10" text-anchor="start" fill="#6b7280" transform="rotate(-35 133.00 84.00)">chr1</text>
+<line x1="910.00" y1="92.00" x2="910.00" y2="1108.00" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="913.00" y="84.00" font-size="10" text-anchor="start" fill="#6b7280" transform="rotate(-35 913.00 84.00)">chr2</text>
+<line x1="130.00" y1="92.00" x2="1560.00" y2="92.00" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="122.00" y="95.00" font-size="10" text-anchor="end" fill="#6b7280">contigA</text>
+<line x1="130.00" y1="305.89" x2="1560.00" y2="305.89" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="122.00" y="308.89" font-size="10" text-anchor="end" fill="#6b7280">contigB</text>
+<line x1="130.00" y1="412.84" x2="1560.00" y2="412.84" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="122.00" y="415.84" font-size="10" text-anchor="end" fill="#6b7280">contigC</text>
+<line x1="130.00" y1="573.26" x2="1560.00" y2="573.26" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="122.00" y="576.26" font-size="10" text-anchor="end" fill="#6b7280">contigDup</text>
+<line x1="130.00" y1="760.42" x2="1560.00" y2="760.42" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="122.00" y="763.42" font-size="10" text-anchor="end" fill="#6b7280">contigChimeraDup</text>
+<line x1="130.00" y1="1027.79" x2="1560.00" y2="1027.79" stroke="#d1d5db" stroke-width="0.8" opacity="0.65" vector-effect="non-scaling-stroke"/>
+<text x="122.00" y="1030.79" font-size="10" text-anchor="end" fill="#6b7280">contigNo</text>
+<line x1="130.00" y1="92.00" x2="650.00" y2="305.89" stroke="#2563eb" stroke-width="1.1" opacity="0.62" vector-effect="non-scaling-stroke"/>
+<line x1="156.00" y1="573.26" x2="611.00" y2="760.42" stroke="#2563eb" stroke-width="1.1" opacity="0.62" vector-effect="non-scaling-stroke"/>
+<line x1="650.00" y1="305.89" x2="910.00" y2="412.84" stroke="#2563eb" stroke-width="1.1" opacity="0.62" vector-effect="non-scaling-stroke"/>
+<line x1="968.50" y1="573.26" x2="1358.50" y2="412.84" stroke="#dc2626" stroke-width="1.1" opacity="0.62" vector-effect="non-scaling-stroke"/>
+<line x1="156.00" y1="760.42" x2="611.00" y2="947.58" stroke="#2563eb" stroke-width="1.1" opacity="0.62" vector-effect="non-scaling-stroke"/>
+<line x1="910.00" y1="947.58" x2="1105.00" y2="1027.79" stroke="#2563eb" stroke-width="1.1" opacity="0.62" vector-effect="non-scaling-stroke"/>
+<line x1="130.00" y1="1108.00" x2="1560.00" y2="1108.00" stroke="#374151" stroke-width="1.2" opacity="1.0" vector-effect="non-scaling-stroke"/>
+<line x1="130.00" y1="92.00" x2="130.00" y2="1108.00" stroke="#374151" stroke-width="1.2" opacity="1.0" vector-effect="non-scaling-stroke"/>
+<text x="845.00" y="1176.00" font-size="13" text-anchor="middle" fill="#111827">Reference position</text>
+<text x="22.00" y="600.00" font-size="13" text-anchor="middle" fill="#111827" transform="rotate(-90 22.00 600.00)">Query position</text>
+<line x1="1390.00" y1="30.00" x2="1430.00" y2="30.00" stroke="#2563eb" stroke-width="2.0" opacity="1.0" vector-effect="non-scaling-stroke"/>
+<text x="1440.00" y="34.00" font-size="12" text-anchor="start" fill="#111827">forward</text>
+<line x1="1390.00" y1="50.00" x2="1430.00" y2="50.00" stroke="#dc2626" stroke-width="2.0" opacity="1.0" vector-effect="non-scaling-stroke"/>
+<text x="1440.00" y="54.00" font-size="12" text-anchor="start" fill="#111827">reverse</text>
+
+</svg>

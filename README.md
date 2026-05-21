@@ -60,6 +60,7 @@ overlaps, flank sequence mismatches, and stale reviewed fill-plan paths.
 - [Quick Start](#quick-start)
 - [Handling Overlapping Contigs](#handling-overlapping-contigs)
 - [Installation With Mamba](#installation-with-mamba)
+- [Installation With Pixi](#installation-with-pixi)
 - [Creating Input Files With MUMmer](#creating-input-files-with-mummer)
   - [Why These MUMmer Choices?](#why-these-mummer-choices)
 - [Creating Input Files With minimap2](#creating-input-files-with-minimap2)
@@ -366,6 +367,24 @@ Legacy command aliases are retained for compatibility:
 
 New workflows should use `chromo sort`, `chromo fix`, `chromo cut`,
 `chromo manual`, `chromo scaffold`, `chromo fill`, and `chromo plot`.
+
+## Installation With Pixi
+
+If you prefer [Pixi](https://pixi.sh), ChromoSort also ships a `pixi.toml`
+environment file:
+
+```bash
+git clone https://github.com/rotheconrad/chromosort.git
+cd chromosort
+
+pixi install
+pixi run help
+pixi run test
+```
+
+The Pixi environment uses the same conda-forge/bioconda stack as
+`environment.yml`, including Python, minimap2, MUMmer 4, Pillow, pytest, and an
+editable install of the local ChromoSort package.
 
 ## Creating Input Files With MUMmer
 
@@ -995,6 +1014,11 @@ lengths, and whether each neighbor is aligned to the same best reference. This
 borrows the useful graph-inspection idea from Gap-Graph while keeping
 ChromoSort's sequence-changing actions explicit in the manual recipe.
 
+<figure>
+  <img src="docs/assets/chromo_manual_graph_review.png" alt="Screenshot-style view of chromo manual showing contig graph filters, a selected-contig dot plot, and a graph-neighborhood panel." width="900">
+  <figcaption><strong>Figure 1. chromo manual graph review.</strong> A documentation screenshot-style view built from the synthetic graph-gotchas fixture, showing the curation surface ChromoSort presents for dot-plot review plus read-only GFA neighborhood evidence.</figcaption>
+</figure>
+
 For large genomes, the dashboard embeds alignment metadata but not full FASTA
 sequences by default. Open the HTML file in a browser, load the original
 assembly FASTA with the file picker, then export the edited FASTA. For tiny
@@ -1341,6 +1365,16 @@ Use `chromo plot` when you already have a MUMmer coords or minimap2 PAF file
 and want a visual check without running `mummerplot` or re-aligning only for
 the plot. It writes PDF by default and can also write SVG or PNG. Forward-strand
 alignments are blue and reverse-strand alignments are red.
+
+<figure>
+  <img src="docs/assets/chromo_plot_example.png" alt="ChromoSort whole-genome dot plot with forward and reverse alignments." width="900">
+  <figcaption><strong>Figure 2. chromo plot whole-genome view.</strong> Example PNG output from the synthetic coords fixture, showing all reference sequences on the x-axis and assembly contigs on the y-axis.</figcaption>
+</figure>
+
+<figure>
+  <img src="docs/assets/chromo_plot_example.chr1.png" alt="ChromoSort per-reference dot plot for chr1." width="900">
+  <figcaption><strong>Figure 3. chromo plot per-reference view.</strong> Example `--per-ref` output for `chr1`, useful for inspecting a chromosome-level slice without re-running an aligner.</figcaption>
+</figure>
 
 ### Run `chromo plot`
 
@@ -1887,6 +1921,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.22` | Added Pixi installation support with `pixi.toml`, plus README figure assets and captions for `chromo manual` graph review and `chromo plot` whole-genome/per-reference examples. |
 | `0.2.21` | Added graph-aware safety policies. `chromo sort` and `chromo fix` now have warning-only `--graph-guard` checks, while `chromo scaffold --graph-overlap-policy report|warn|confirm` keeps graph evidence report-only by default and only lets direct oriented GFA links confirm narrow terminal-overlap trimming when explicitly requested. |
 | `0.2.20` | Added an end-to-end synthetic graph workflow to the README and shipped focused fill walkthrough inputs. The tutorial runs sort/manual/scaffold/fill with the graph-gotcha GFA, PAF, GAF, Hi-C-like contacts, review HTML, reviewed-plan TSV, and reviewed fill application. |
 | `0.2.19` | Improved `chromo fill --review-html` candidate comparison. Review dashboards now embed per-candidate path rows with path nodes, support scores, validation status, fill length, trim length, risk flags, and optional fill sequence so reviewers can compare ambiguous branches directly before exporting a reviewed plan. |

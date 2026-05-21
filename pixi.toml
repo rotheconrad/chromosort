@@ -1,0 +1,21 @@
+[project]
+name = "chromosort"
+version = "0.2.22"
+description = "Reference-order, fix, cut, manually edit, scaffold, fill, plot, and review genome assembly contigs."
+channels = ["conda-forge", "bioconda"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+[dependencies]
+python = ">=3.9"
+pip = "*"
+minimap2 = "*"
+mummer4 = "*"
+pillow = ">=9"
+pytest = "*"
+
+[pypi-dependencies]
+chromosort = { path = ".", editable = true }
+
+[tasks]
+test = "python -m unittest discover -s tests -v"
+help = "chromo --help"
