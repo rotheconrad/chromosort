@@ -48,7 +48,7 @@ borrows the useful graph-inspection idea from Gap-Graph while keeping
 ChromoSort's sequence-changing actions explicit in the manual recipe.
 
 <figure>
-  <img src="{{ '/assets/chromo_manual_graph_review.png' | relative_url }}" alt="Screenshot-style view of chromo manual showing contig graph filters, a selected-contig dot plot, and a graph-neighborhood panel." width="900">
+  <img src="https://rotheconrad.github.io/chromosort/assets/chromo_manual_graph_review.png" alt="Screenshot-style view of chromo manual showing contig graph filters, a selected-contig dot plot, and a graph-neighborhood panel." width="900">
   <figcaption><strong>Figure 1. chromo manual graph review.</strong> A documentation screenshot-style view built from the synthetic graph-gotchas fixture, showing the curation surface ChromoSort presents for dot-plot review plus read-only GFA neighborhood evidence.</figcaption>
 </figure>
 

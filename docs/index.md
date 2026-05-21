@@ -12,32 +12,32 @@ This documentation is organized as a user guide rather than one very long README
 
 ## Start Here
 
-- [Installation]({{ '/installation/' | relative_url }})
-- [Input files]({{ '/input-files/' | relative_url }})
-- [Workflows]({{ '/workflows/' | relative_url }})
-- [Command reference]({{ '/commands/' | relative_url }})
+- [Installation](https://rotheconrad.github.io/chromosort/installation/)
+- [Input files](https://rotheconrad.github.io/chromosort/input-files/)
+- [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
+- [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 
 ## Commands
 
-- [chromo sort]({{ '/commands/sort/' | relative_url }})
-- [chromo fix]({{ '/commands/fix/' | relative_url }})
-- [chromo cut]({{ '/commands/cut/' | relative_url }})
-- [chromo manual]({{ '/commands/manual/' | relative_url }})
-- [chromo plot]({{ '/commands/plot/' | relative_url }})
-- [chromo scaffold]({{ '/commands/scaffold/' | relative_url }})
-- [chromo gapfill]({{ '/commands/gapfill/' | relative_url }})
+- [chromo sort](https://rotheconrad.github.io/chromosort/commands/sort/)
+- [chromo fix](https://rotheconrad.github.io/chromosort/commands/fix/)
+- [chromo cut](https://rotheconrad.github.io/chromosort/commands/cut/)
+- [chromo manual](https://rotheconrad.github.io/chromosort/commands/manual/)
+- [chromo plot](https://rotheconrad.github.io/chromosort/commands/plot/)
+- [chromo scaffold](https://rotheconrad.github.io/chromosort/commands/scaffold/)
+- [chromo gapfill](https://rotheconrad.github.io/chromosort/commands/gapfill/)
 
 ## Running Analyses
 
-- [Output files]({{ '/outputs/' | relative_url }})
-- [Architecture]({{ '/architecture/' | relative_url }})
-- [Troubleshooting]({{ '/troubleshooting/' | relative_url }})
+- [Output files](https://rotheconrad.github.io/chromosort/outputs/)
+- [Architecture](https://rotheconrad.github.io/chromosort/architecture/)
+- [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/)
 
 ## Project Information
 
-- [Current status and version history]({{ '/status/' | relative_url }})
-- [Contributing]({{ '/contributing/' | relative_url }})
-- [Archived longform README]({{ '/archive/longform-readme/' | relative_url }})
+- [Current status and version history](https://rotheconrad.github.io/chromosort/status/)
+- [Contributing](https://rotheconrad.github.io/chromosort/contributing/)
+- [Archived longform README](https://rotheconrad.github.io/chromosort/archive/longform-readme/)
 
 ## Main Workflow
 

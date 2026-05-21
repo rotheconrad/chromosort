@@ -11,13 +11,13 @@ Most ChromoSort commands write both sequence files and audit tables. The FASTA o
 
 | Command | Primary outputs |
 | --- | --- |
-| [`chromo sort`]({{ '/commands/sort/' | relative_url }}) | `<prefix>.ordered.fa`, `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv`, optional `<prefix>.graph_assignments.tsv`, and `<prefix>.run_summary.txt`. |
-| [`chromo fix`]({{ '/commands/fix/' | relative_url }}) | Reviewed fixed FASTA at `--output-fasta`, split report at `--report`, and optional graph report. |
-| [`chromo cut`]({{ '/commands/cut/' | relative_url }}) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
-| [`chromo manual`]({{ '/commands/manual/' | relative_url }}) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
-| [`chromo plot`]({{ '/commands/plot/' | relative_url }}) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG. |
-| [`chromo scaffold`]({{ '/commands/scaffold/' | relative_url }}) | `<prefix>.scaffold.fa`, `<prefix>.scaffold_gaps.tsv`, optional `<prefix>.graph_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, and `<prefix>.run_summary.txt`. |
-| [`chromo gapfill`]({{ '/commands/gapfill/' | relative_url }}) | `<prefix>.gapfill_plan.tsv`, optional review HTML, optional `<prefix>.gapfilled.fa`, and `<prefix>.run_summary.txt`. |
+| [`chromo sort`](https://rotheconrad.github.io/chromosort/commands/sort/) | `<prefix>.ordered.fa`, `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv`, optional `<prefix>.graph_assignments.tsv`, and `<prefix>.run_summary.txt`. |
+| [`chromo fix`](https://rotheconrad.github.io/chromosort/commands/fix/) | Reviewed fixed FASTA at `--output-fasta`, split report at `--report`, and optional graph report. |
+| [`chromo cut`](https://rotheconrad.github.io/chromosort/commands/cut/) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
+| [`chromo manual`](https://rotheconrad.github.io/chromosort/commands/manual/) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
+| [`chromo plot`](https://rotheconrad.github.io/chromosort/commands/plot/) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG. |
+| [`chromo scaffold`](https://rotheconrad.github.io/chromosort/commands/scaffold/) | `<prefix>.scaffold.fa`, `<prefix>.scaffold_gaps.tsv`, optional `<prefix>.graph_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, and `<prefix>.run_summary.txt`. |
+| [`chromo gapfill`](https://rotheconrad.github.io/chromosort/commands/gapfill/) | `<prefix>.gapfill_plan.tsv`, optional review HTML, optional `<prefix>.gapfilled.fa`, and `<prefix>.run_summary.txt`. |
 
 ## Audit Tables
 

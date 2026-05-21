@@ -11,12 +11,12 @@ the plot. It writes PDF by default and can also write SVG or PNG. Forward-strand
 alignments are blue and reverse-strand alignments are red.
 
 <figure>
-  <img src="{{ '/assets/chromo_plot_example.png' | relative_url }}" alt="ChromoSort whole-genome dot plot with forward and reverse alignments." width="900">
+  <img src="https://rotheconrad.github.io/chromosort/assets/chromo_plot_example.png" alt="ChromoSort whole-genome dot plot with forward and reverse alignments." width="900">
   <figcaption><strong>Figure 2. chromo plot whole-genome view.</strong> Example PNG output from the synthetic coords fixture, showing all reference sequences on the x-axis and assembly contigs on the y-axis.</figcaption>
 </figure>
 
 <figure>
-  <img src="{{ '/assets/chromo_plot_example.chr1.png' | relative_url }}" alt="ChromoSort per-reference dot plot for chr1." width="900">
+  <img src="https://rotheconrad.github.io/chromosort/assets/chromo_plot_example.chr1.png" alt="ChromoSort per-reference dot plot for chr1." width="900">
   <figcaption><strong>Figure 3. chromo plot per-reference view.</strong> Example `--per-ref` output for `chr1`, useful for inspecting a chromosome-level slice without re-running an aligner.</figcaption>
 </figure>
 
