@@ -6,7 +6,7 @@ import csv
 import json
 import sys
 from collections import defaultdict, deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, Sequence
 
@@ -64,6 +64,7 @@ class FillPlan:
     accept_fill: bool = False
     applied: bool = False
     reason: str = "."
+    candidate_details: list = field(default_factory=list)
 
 
 @dataclass
@@ -632,6 +633,64 @@ def path_risk_annotations(
     }
 
 
+def support_value(supports, index):
+    if not supports:
+        return "."
+    return supports[index]
+
+
+def candidate_path_details(
+    graph,
+    paths,
+    selected_index,
+    left,
+    right,
+    args,
+    gaf_supports=None,
+    hic_supports=None,
+    ref_supports=None,
+    cycles_avoided=0,
+):
+    details = []
+    gaf_supports = gaf_supports or []
+    hic_supports = hic_supports or []
+    ref_supports = ref_supports or []
+    for index, path in enumerate(paths):
+        fill_sequence, right_trim_bp, reason = reconstruct_fill_sequence(
+            graph,
+            path,
+            left,
+            right,
+            args.max_fill_bp,
+        )
+        risk = path_risk_annotations(
+            graph,
+            [path],
+            len(paths),
+            cycles_avoided,
+            extra_flags=[] if fill_sequence is not None else ["sequence_validation_failed"],
+        )
+        details.append(
+            {
+                "candidate_index": index + 1,
+                "reported": "yes" if index == selected_index else "no",
+                "path_nodes": graph_path_nodes(path),
+                "intermediate_nodes": graph_intermediate_nodes(path),
+                "path_edges": len(path),
+                "gaf_support": support_value(gaf_supports, index),
+                "hic_support": support_value(hic_supports, index),
+                "ref_support": support_value(ref_supports, index),
+                "candidate_status": "fillable" if fill_sequence is not None else reason,
+                "fill_bp": len(fill_sequence or ""),
+                "right_trim_bp": right_trim_bp,
+                "risk_flags": risk["risk_flags"],
+                "branch_complexity_score": risk["branch_complexity_score"],
+                "fill_sequence": fill_sequence or ".",
+            }
+        )
+    return details
+
+
 def parse_review_accept(value, line_number):
     normalized = (value or "").strip().lower()
     if normalized in {"yes", "y", "true", "1", "accept", "accepted", "apply"}:
@@ -946,6 +1005,18 @@ def plan_gap(
                 ref_supports,
                 0,
             )
+            candidates = candidate_path_details(
+                graph,
+                paths,
+                0,
+                left,
+                right,
+                args,
+                supports,
+                hic_supports,
+                ref_supports,
+                path_search.cycles_avoided,
+            )
             return FillPlan(
                 scaffold=scaffold_name,
                 left_contig=left.assignment.new_name,
@@ -971,6 +1042,7 @@ def plan_gap(
                 ref_path_support=selected_ref_support,
                 ref_best_alt_support=alt_ref_support,
                 reason=support_conflict_reason(support_choices),
+                candidate_details=candidates,
                 **risk,
             )
         if not support_choices:
@@ -995,6 +1067,18 @@ def plan_gap(
             selected_ref_support, alt_ref_support = selected_and_alt_support(
                 ref_supports,
                 0,
+            )
+            candidates = candidate_path_details(
+                graph,
+                paths,
+                0,
+                left,
+                right,
+                args,
+                supports,
+                hic_supports,
+                ref_supports,
+                path_search.cycles_avoided,
             )
             return FillPlan(
                 scaffold=scaffold_name,
@@ -1021,6 +1105,7 @@ def plan_gap(
                 ref_path_support=selected_ref_support,
                 ref_best_alt_support=alt_ref_support,
                 reason="multiple_candidate_paths",
+                candidate_details=candidates,
                 **risk,
             )
         selected_index = support_choices[0][1]
@@ -1054,6 +1139,18 @@ def plan_gap(
         path_search.cycles_avoided,
         extra_flags=[] if fillable else ["sequence_validation_failed"],
     )
+    candidates = candidate_path_details(
+        graph,
+        paths,
+        selected_index,
+        left,
+        right,
+        args,
+        supports,
+        hic_supports,
+        ref_supports,
+        path_search.cycles_avoided,
+    )
     return FillPlan(
         scaffold=scaffold_name,
         left_contig=left.assignment.new_name,
@@ -1082,6 +1179,7 @@ def plan_gap(
         fill_bp=len(fill_sequence or ""),
         right_trim_bp=right_trim_bp,
         reason=reason,
+        candidate_details=candidates,
         **risk,
     )
 
@@ -1271,6 +1369,44 @@ def fill_plan_dict(plan, include_sequences):
     }
 
 
+def candidate_detail_columns():
+    return [
+        "candidate_index",
+        "reported",
+        "path_nodes",
+        "intermediate_nodes",
+        "path_edges",
+        "gaf_support",
+        "hic_support",
+        "ref_support",
+        "candidate_status",
+        "fill_bp",
+        "right_trim_bp",
+        "risk_flags",
+        "branch_complexity_score",
+        "fill_sequence",
+    ]
+
+
+def candidate_detail_for_review(detail, include_sequences):
+    row = {
+        column: str(detail.get(column, "."))
+        for column in candidate_detail_columns()
+    }
+    if not include_sequences:
+        row["fill_sequence"] = "."
+    return row
+
+
+def fill_plan_review_dict(plan, include_sequences):
+    row = fill_plan_dict(plan, include_sequences)
+    row["_candidate_paths"] = [
+        candidate_detail_for_review(detail, include_sequences)
+        for detail in plan.candidate_details
+    ]
+    return row
+
+
 def write_fill_plan(path, plans, include_sequences):
     header = fill_plan_header()
     with open(path, "w") as out:
@@ -1293,7 +1429,8 @@ def write_review_html(path, plans, include_sequences):
     data = {
         "schema": "chromosort-fill-review-v1",
         "columns": fill_plan_header(),
-        "rows": [fill_plan_dict(plan, include_sequences) for plan in plans],
+        "candidateColumns": candidate_detail_columns(),
+        "rows": [fill_plan_review_dict(plan, include_sequences) for plan in plans],
     }
     html_text = FILL_REVIEW_HTML.replace(
         "__CHROMOSORT_FILL_REVIEW_DATA__",
@@ -1566,6 +1703,32 @@ FILL_REVIEW_HTML = r"""<!doctype html>
     .status-missing_node,
     .status-left_flank_sequence_mismatch,
     .status-right_flank_sequence_mismatch { color: var(--bad); font-weight: 700; }
+    .candidate-cell {
+      background: #f8fafc;
+      white-space: normal;
+    }
+    .candidate-title {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .candidate-table {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+    .candidate-table th {
+      position: static;
+      background: #e2e8f0;
+    }
+    .candidate-table th,
+    .candidate-table td {
+      padding: 5px 7px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -1591,6 +1754,7 @@ FILL_REVIEW_HTML = r"""<!doctype html>
     const data = JSON.parse(document.getElementById("chromosort-fill-review-data").textContent);
     const rows = data.rows.map(row => ({...row}));
     const columns = data.columns;
+    const candidateColumns = data.candidateColumns || [];
     const displayColumns = [
       "accept_fill", "scaffold", "left_contig", "right_contig", "fill_status",
       "graph_status", "path_nodes", "gaf_path_support", "gaf_best_alt_support",
@@ -1638,7 +1802,11 @@ FILL_REVIEW_HTML = r"""<!doctype html>
       return rows.filter(row => {
         if (status && row.fill_status !== status) return false;
         if (!needle) return true;
-        return displayColumns.some(column => String(row[column] || "").toLowerCase().includes(needle));
+        const rowHit = displayColumns.some(column => String(row[column] || "").toLowerCase().includes(needle));
+        const candidateHit = (row._candidate_paths || []).some(candidate =>
+          candidateColumns.some(column => String(candidate[column] || "").toLowerCase().includes(needle))
+        );
+        return rowHit || candidateHit;
       });
     }
 
@@ -1697,8 +1865,52 @@ FILL_REVIEW_HTML = r"""<!doctype html>
           tr.appendChild(td);
         }
         els.tbody.appendChild(tr);
+        if ((row._candidate_paths || []).length > 1) {
+          renderCandidateRows(row);
+        }
       }
       renderSummary();
+    }
+
+    function renderCandidateRows(row) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = displayColumns.length;
+      td.className = "candidate-cell";
+
+      const title = document.createElement("div");
+      title.className = "candidate-title";
+      title.textContent = `Candidate path comparison for ${row.left_contig} -> ${row.right_contig}`;
+      td.appendChild(title);
+
+      const table = document.createElement("table");
+      table.className = "candidate-table";
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      for (const column of candidateColumns) {
+        const th = document.createElement("th");
+        th.textContent = column;
+        headRow.appendChild(th);
+      }
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      for (const candidate of row._candidate_paths || []) {
+        const candidateRow = document.createElement("tr");
+        for (const column of candidateColumns) {
+          const cell = document.createElement("td");
+          cell.textContent = candidate[column] ?? ".";
+          if (column === "path_nodes") cell.className = "path";
+          if (column === "fill_sequence") cell.className = "sequence";
+          candidateRow.appendChild(cell);
+        }
+        tbody.appendChild(candidateRow);
+      }
+      table.appendChild(tbody);
+      td.appendChild(table);
+      tr.appendChild(td);
+      els.tbody.appendChild(tr);
     }
 
     function exportTsv() {

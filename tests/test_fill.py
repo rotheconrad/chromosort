@@ -424,6 +424,7 @@ class FillTests(unittest.TestCase):
             ordered = tmp_path / "ordered.fa"
             assignments = tmp_path / "assignments.tsv"
             prefix = tmp_path / "ref_supported"
+            review_html = tmp_path / "ref_supported.review.html"
 
             ordered.write_text(">chr1_left\nAAAACCCC\n>chr1_right\nGGGGTTTT\n")
             write_assignments(
@@ -467,6 +468,8 @@ class FillTests(unittest.TestCase):
                 str(prefix),
                 "--apply",
                 "--include-fill-sequences",
+                "--review-html",
+                str(review_html),
                 "--simple-headers",
             )
 
@@ -484,6 +487,15 @@ class FillTests(unittest.TestCase):
 
             records = read_fasta(Path(str(prefix) + ".filled.fa"))
             self.assertEqual(records["chr1"], "AAAACCCCGGGGTTTT")
+            self.assertIn("Candidate path comparison", review_html.read_text())
+            review_data = review_html_data(review_html)
+            self.assertIn("candidateColumns", review_data)
+            candidates = review_data["rows"][0]["_candidate_paths"]
+            self.assertEqual(len(candidates), 2)
+            self.assertEqual(candidates[0]["reported"], "yes")
+            self.assertEqual(candidates[0]["path_nodes"], "left+,bridge_good+,right+")
+            self.assertEqual(candidates[1]["path_nodes"], "left+,bridge_alt+,right+")
+            self.assertEqual(candidates[1]["ref_support"], "6")
 
     def test_hic_support_resolves_ambiguous_graph_paths(self):
         with tempfile.TemporaryDirectory() as tmp:

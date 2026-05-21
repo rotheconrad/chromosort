@@ -1597,8 +1597,9 @@ Planning mode writes the fill plan but does not create a FASTA. Add
 the TSV for manual review. To make application explicitly reviewed, edit the
 `accept_fill` column from `no` to `yes` only for rows you want to apply, then
 pass that edited table back with `--reviewed-plan`. When `--review-html` is
-provided, the HTML table can filter rows, toggle accepted fillable paths, and
-export a reviewed-plan TSV with the same columns.
+provided, the HTML table can filter rows, toggle accepted fillable paths, show
+side-by-side candidate path comparisons for ambiguous branches, and export a
+reviewed-plan TSV with the same columns.
 
 ### Apply Reviewed Graph Fills
 
@@ -1637,7 +1638,7 @@ overlap. Unfilled junctions receive the inferred reference-space N gap, or
 | Output | Description |
 | --- | --- |
 | `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
-| `--review-html` path | Optional self-contained HTML table for reviewing fill-plan rows and exporting a reviewed-plan TSV. |
+| `--review-html` path | Optional self-contained HTML table for reviewing fill-plan rows, comparing candidate paths, and exporting a reviewed-plan TSV. |
 | `<prefix>.filled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
 
@@ -1760,6 +1761,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.19` | Improved `chromo fill --review-html` candidate comparison. Review dashboards now embed per-candidate path rows with path nodes, support scores, validation status, fill length, trim length, risk flags, and optional fill sequence so reviewers can compare ambiguous branches directly before exporting a reviewed plan. |
 | `0.2.18` | Added richer path-risk annotations to `chromo fill`. Fill plans and review HTML now report risk flags, branch-complexity score, high-degree graph nodes, self-loop nodes, unsequenced nodes, and cycle-guard counts so ambiguous or risky candidate paths are easier to triage. |
 | `0.2.17` | Added reference-placement PAF evidence to `chromo fill`. The new `--ref-paf` path scorer reports selected and best-alternate reference support, can conservatively resolve ambiguous branches when one candidate has unique expected-gap placement support, and conflicts with GAF or Hi-C support leave the gap unresolved. |
 | `0.2.16` | Expanded `chromo manual --gfa` review. Manual dashboards now include graph-neighborhood filtering, a selected-contig upstream/downstream neighbor panel, overlap/orientation details, and same-reference neighbor flags so branching graph context is easier to compare during manual curation. |
