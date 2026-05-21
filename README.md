@@ -28,8 +28,9 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
   records with inferred reference-space N gaps by default, reports negative-gap
   overlaps, can optionally trim reviewed terminal overlaps, and can report GFA
   graph evidence for adjacent scaffold junctions.
-- `chromo fill` plans graph-supported fills between adjacent sorted contigs and
-  optionally applies only unambiguous, sequence-verified GFA paths.
+- `chromo fill` plans graph-supported fills between adjacent sorted contigs,
+  can use GAF long-read paths to resolve supported branches, and optionally
+  applies only unambiguous, sequence-verified graph paths.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
@@ -247,6 +248,7 @@ chromo fill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
+  --gaf reads_to_graph.gaf \
   --output-prefix results/sample.fill \
   --apply
 ```
@@ -1391,18 +1393,20 @@ simple sequence path between adjacent sorted contigs.
 
 ### What `chromo fill` Does
 
-Given a final `chromo sort` ordered FASTA, the matching assignment report, and a
-GFA assembly graph, `chromo fill`:
+Given a final `chromo sort` ordered FASTA, the matching assignment report, a
+GFA assembly graph, and optional GAF graph alignments, `chromo fill`:
 
 1. Groups retained contigs by assigned reference sequence.
 2. Looks at adjacent contig pairs in sorted order.
 3. Resolves each flank to a GFA segment using original and renamed contig IDs.
 4. Enumerates graph paths up to `--max-path-edges`.
-5. Rejects missing nodes, disconnected flanks, ambiguous paths, unsequenced
-   nodes, unknown or invalid overlaps, oversized fills, and flank sequence
-   mismatches.
-6. Writes `<prefix>.fill_plan.tsv` for review.
-7. With `--apply`, writes `<prefix>.filled.fa`, filling only accepted paths and
+5. Uses GAF read-path support to resolve an otherwise ambiguous graph branch
+   only when one candidate path has unique support above threshold.
+6. Rejects missing nodes, disconnected flanks, unresolved ambiguous paths,
+   unsequenced nodes, unknown or invalid overlaps, oversized fills, and flank
+   sequence mismatches.
+7. Writes `<prefix>.fill_plan.tsv` for review.
+8. With `--apply`, writes `<prefix>.filled.fa`, filling only accepted paths and
    using inferred or fixed N gaps everywhere else.
 
 ### Plan Graph Fills
@@ -1426,21 +1430,25 @@ chromo fill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
+  --gaf reads_to_graph.gaf \
   --output-prefix results/sample.fill \
   --apply
 ```
 
-Applied mode still refuses ambiguous or unverifiable paths. For a fillable path,
-ChromoSort inserts the graph sequence after the left flank and trims the right
-flank prefix by the final GFA overlap so the joined sequence follows the graph
-path without duplicating the overlap. Unfilled junctions receive the inferred
-reference-space N gap, or `--fixed-gap-bp` when provided.
+Applied mode still refuses ambiguous or unverifiable paths. If GAF is provided,
+an ambiguous GFA branch can be filled only when one candidate path has unique
+support of at least `--min-gaf-path-support` reads after `--min-gaf-mapq`
+filtering. For a fillable path, ChromoSort inserts the graph sequence after the
+left flank and trims the right flank prefix by the final GFA overlap so the
+joined sequence follows the graph path without duplicating the overlap. Unfilled
+junctions receive the inferred reference-space N gap, or `--fixed-gap-bp` when
+provided.
 
 ### `chromo fill` Outputs
 
 | Output | Description |
 | --- | --- |
-| `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, fill status, inserted bp, right-trim bp, fallback gap bp, and whether the fill was applied. |
+| `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF support counts, fill status, inserted bp, right-trim bp, fallback gap bp, and whether the fill was applied. |
 | `<prefix>.filled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
 
@@ -1451,11 +1459,14 @@ reference-space N gap, or `--fixed-gap-bp` when provided.
 | `--ordered-fasta` | required | Final ordered FASTA from `chromo sort`. |
 | `--assignments` | required | Matching `<prefix>.contig_assignments.tsv` report from `chromo sort`. |
 | `--gfa` | required | Assembly graph GFA containing segment sequences and links. |
+| `--gaf` | none | Optional GAF graph alignments used to resolve otherwise ambiguous candidate graph paths. |
 | `--output-prefix` | required | Prefix for fill plan, run summary, and optional filled FASTA. |
 | `--apply` | off | Write `<prefix>.filled.fa` using only accepted graph paths. |
 | `--fixed-gap-bp` | none | Use this many Ns for unresolved gaps in `--apply` output instead of inferred reference-space gaps. |
 | `--max-path-edges` | `4` | Maximum GFA link depth searched between adjacent sorted contigs. |
 | `--max-candidate-paths` | `2` | Stop path enumeration after this many candidates. The default distinguishes unique from ambiguous paths. |
+| `--min-gaf-mapq` | `20` | Minimum GAF MAPQ for a read path to support a candidate fill. |
+| `--min-gaf-path-support` | `1` | Minimum supporting GAF read paths required to resolve an ambiguous branch. |
 | `--max-fill-bp` | `1000000` | Maximum inserted graph sequence allowed for one fill. Set negative to disable. |
 | `--include-fill-sequences` | off | Include candidate fill sequences in the TSV plan. |
 | `--simple-headers` | off | Write filled FASTA headers containing only the scaffold ID. |
@@ -1468,13 +1479,15 @@ reference-space N gap, or `--fixed-gap-bp` when provided.
 sequence-changing command, and it only changes sequence when `--apply` is set.
 This keeps evidence review separate from FASTA construction.
 
-#### Unique Paths Only
+#### Unique Paths Or Unique Evidence
 
 Assembly graphs often contain repeats, bubbles, and alternate paths. If more
-than one candidate path is found within the search limit, `chromo fill` marks
-the junction `ambiguous_paths` and falls back to Ns in applied output. This is
-the right place for future Hi-C, GAF, or manual recipe evidence to narrow the
-choice.
+than one candidate path is found within the search limit, `chromo fill` usually
+marks the junction `ambiguous_paths` and falls back to Ns in applied output. GAF
+read paths are the first supported tie-breaker: an ambiguous branch can be
+resolved only when one candidate has unique read-path support above the
+configured threshold. Ties or weak support still remain unresolved for manual
+review.
 
 #### Verify the Flanks
 
@@ -1506,8 +1519,10 @@ small GFA, unitig-to-reference PAF, GraphAligner-like GAF, Hi-C-like pair table,
 and expected path labels. They are designed to exercise direct gap paths,
 ambiguous branches, orientation-specific links, disconnected mapped nodes,
 cycle guards, and repeat/duplicate warnings as graph evidence features are added.
-The `chromo fill` tests add a minimal unique-path fill case and reuse the
-ambiguous graph branch fixture to make sure graph fills are not guessed.
+The `chromo fill` tests add a minimal unique-path fill case, reuse the
+ambiguous graph branch fixture to make sure graph fills are not guessed, and
+use the GAF fixture to confirm read-path support can resolve a branch only when
+the supported path is unique.
 
 ## Citation
 
@@ -1537,6 +1552,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.10` | Added optional GAF read-path evidence to `chromo fill`. Fill plans now report GAF support counts, and otherwise ambiguous graph branches can be resolved when one candidate path has unique support after `--min-gaf-mapq` filtering and meets `--min-gaf-path-support`; weak, tied, or missing support still leaves the junction unresolved. |
 | `0.2.9` | Added `chromo fill`, a conservative graph-gap planning and optional application command. It writes `<prefix>.fill_plan.tsv`, refuses ambiguous or unverifiable GFA paths, applies sequence only with `--apply`, trims the right flank by the final graph overlap when filling, and falls back to inferred or fixed N gaps for unresolved junctions. |
 | `0.2.8` | Added report-only `--gfa` graph context to `chromo sort` and `chromo fix`. Sorting now writes `<prefix>.graph_assignments.tsv` with resolved graph nodes, node degree/self-loop evidence, and direct links to overlap-best contigs; fixing now writes a graph context table beside the split report so reviewed contigs can be checked against the assembly graph before fill workflows. |
 | `0.2.7` | Added `chromo scaffold --gfa` report-only graph evidence. When a GFA is provided, scaffolding now writes `<prefix>.graph_gaps.tsv` with resolved graph nodes, orientation-aware direct links, link overlap bp, short explicit GFA paths up to `--graph-max-path-edges`, intermediate candidate nodes, and missing/no-path statuses without changing FASTA output. |
