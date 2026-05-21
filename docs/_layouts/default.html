@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+    <meta name="description" content="{{ page.description | default: site.description }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    {% if page.math %}
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["$", "$"], ["\(", "\)"]],
+          displayMath: [["$$", "$$"], ["\[", "\]"]],
+          processEscapes: true
+        }
+      };
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    {% endif %}
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="skip-link" href="#content">Skip to content</a>
+      <div class="site-shell site-header__inner">
+        <a class="brand" href="{{ '/' | relative_url }}">
+          <span class="brand__title">{{ site.title }}</span>
+          <span class="brand__tagline">{{ site.tagline | default: site.description }}</span>
+        </a>
+        <nav class="top-nav" aria-label="Primary navigation">
+          <a class="repo-link" href="{{ site.repository_url }}">View Repository</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="site-shell docs-layout">
+      <aside class="sidebar" aria-label="Documentation navigation">
+        <nav>
+          {% for item in site.nav %}
+            {% assign item_active = false %}
+            {% if page.url == item.url %}
+              {% assign item_active = true %}
+            {% endif %}
+            {% if item.children %}
+              {% for child in item.children %}
+                {% if page.url == child.url %}
+                  {% assign item_active = true %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+            {% if item.children %}
+              <details class="sidebar__group{% if item_active %} sidebar__group--active{% endif %}"{% if item_active %} open{% endif %}>
+                <summary class="sidebar__summary">
+                  <a
+                    class="sidebar__summary-link{% if page.url == item.url %} sidebar__summary-link--active{% endif %}"
+                    href="{{ item.url | relative_url }}"
+                  >
+                    {{ item.title }}
+                  </a>
+                </summary>
+                <div class="sidebar__children">
+                  {% for child in item.children %}
+                    <a
+                      class="sidebar__link sidebar__child-link{% if page.url == child.url %} sidebar__link--active{% endif %}"
+                      href="{{ child.url | relative_url }}"
+                    >
+                      {{ child.title }}
+                    </a>
+                  {% endfor %}
+                </div>
+              </details>
+            {% else %}
+              <a
+                class="sidebar__link{% if item_active %} sidebar__link--active{% endif %}"
+                href="{{ item.url | relative_url }}"
+              >
+                {{ item.title }}
+              </a>
+            {% endif %}
+          {% endfor %}
+          <a class="sidebar__link sidebar__link--repo" href="{{ site.repository_url }}">
+            GitHub Repository
+          </a>
+        </nav>
+      </aside>
+
+      <main id="content" class="content">
+        {{ content }}
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <div class="site-shell">
+        <span>{{ site.title }}</span>
+        <span>
+          Built from the <code>/docs</code> folder.
+          <a href="{{ site.repository_url }}">Back to repository</a>
+        </span>
+      </div>
+    </footer>
+    {% if page.mermaid %}
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "neutral",
+        securityLevel: "loose"
+      });
+    </script>
+    {% endif %}
+  </body>
+</html>

@@ -11,6 +11,11 @@ dist/
 *.egg-info/
 .venv/
 .pixi/
+.bundle/
+vendor/bundle/
+_site/
+docs/.jekyll-cache/
+docs/_site/
 env/
 *.fa.fai
 *.fasta.fai

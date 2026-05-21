@@ -1,0 +1,88 @@
+title: ChromoSort
+description: Reference-guided genome assembly curation utilities
+tagline: reference-guided assembly curation
+url: "https://rotheconrad.github.io"
+baseurl: "/chromosort"
+repository: rotheconrad/chromosort
+repository_url: https://github.com/rotheconrad/chromosort
+
+markdown: kramdown
+permalink: pretty
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+nav:
+  - title: Home
+    url: /
+  - title: Installation
+    url: /installation/
+    children:
+      - title: Mamba
+        url: /installation/#installation-with-mamba
+      - title: Pixi
+        url: /installation/#installation-with-pixi
+      - title: Verify
+        url: /installation/#verify-the-install
+  - title: Input Files
+    url: /input-files/
+    children:
+      - title: MUMmer
+        url: /input-files/#creating-input-files-with-mummer
+      - title: minimap2
+        url: /input-files/#creating-input-files-with-minimap2
+      - title: Graph inputs
+        url: /input-files/#graph-input-files
+  - title: Workflows
+    url: /workflows/
+    children:
+      - title: Quick start
+        url: /workflows/#quick-start
+      - title: Overlaps
+        url: /workflows/#handling-overlapping-contigs
+      - title: Synthetic graph workflow
+        url: /workflows/#synthetic-graph-workflow
+  - title: Commands
+    url: /commands/
+    children:
+      - title: sort
+        url: /commands/sort/
+      - title: fix
+        url: /commands/fix/
+      - title: cut
+        url: /commands/cut/
+      - title: manual
+        url: /commands/manual/
+      - title: plot
+        url: /commands/plot/
+      - title: scaffold
+        url: /commands/scaffold/
+      - title: gapfill
+        url: /commands/gapfill/
+  - title: Outputs
+    url: /outputs/
+  - title: Architecture
+    url: /architecture/
+  - title: Status
+    url: /status/
+    children:
+      - title: Works now
+        url: /status/#what-works-now
+      - title: Version history
+        url: /status/#version-history
+  - title: Troubleshooting
+    url: /troubleshooting/
+  - title: Contributing
+    url: /contributing/
+  - title: Archive
+    url: /archive/longform-readme/
+
+exclude:
+  - dev/
+  - "*.txt"
