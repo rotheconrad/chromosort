@@ -206,6 +206,16 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         ),
     )
     ap.add_argument(
+        "--graph-guard",
+        action="store_true",
+        help=(
+            "Requires --gfa. Emit conservative warnings when planned splits "
+            "intersect simple graph neighborhoods or when unsplit reviewed "
+            "contigs sit in complex graph neighborhoods. This does not change "
+            "breakpoints or sequence output."
+        ),
+    )
+    ap.add_argument(
         "--min-segment-bp",
         type=int,
         default=10_000,
@@ -1257,10 +1267,42 @@ def write_graph_report(path, requested, plans, graph):
             out.write("\t".join(str(item) for item in row) + "\n")
 
 
+def graph_guard_fix_warnings(requested, plans, graph, stream=None):
+    stream = stream or sys.stderr
+    for contig in requested:
+        plan = plans[contig]
+        node_evidence = graph_node_evidence(graph, [contig])
+        if node_evidence.graph_node_status != "present":
+            continue
+        neighbor_count = node_evidence.graph_neighbor_count or 0
+        self_loop = bool(node_evidence.graph_self_loop)
+        is_simple = neighbor_count <= 2 and not self_loop
+        is_complex = neighbor_count > 2 or self_loop
+        if plan.status == "split" and is_simple:
+            stream.write(
+                "WARNING: graph guard: "
+                f"{contig} is planned for splitting, but its GFA node "
+                f"{node_evidence.graph_node} has a simple neighborhood "
+                f"(neighbors={neighbor_count}, self_loop=no). Review the "
+                "breakpoints before applying this edit.\n"
+            )
+        elif plan.status != "split" and is_complex:
+            stream.write(
+                "WARNING: graph guard: "
+                f"{contig} was not split, but its GFA node "
+                f"{node_evidence.graph_node} is graph-complex "
+                f"(neighbors={neighbor_count}, self_loop={'yes' if self_loop else 'no'}). "
+                "Manual graph review may be useful.\n"
+            )
+
+
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
     if args.graph_report and not args.gfa:
         sys.stderr.write("ERROR: --graph-report requires --gfa\n")
+        sys.exit(2)
+    if args.graph_guard and not args.gfa:
+        sys.stderr.write("ERROR: --graph-guard requires --gfa\n")
         sys.exit(2)
     alignment_path, alignment_format = alignment_source_from_args(args)
     explicit_requested = read_requested_contigs(args.contigs, args.contigs_file)
@@ -1314,6 +1356,8 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     if args.gfa:
         graph = read_gfa(args.gfa)
         write_graph_report(graph_report_path, requested, plans, graph)
+        if args.graph_guard:
+            graph_guard_fix_warnings(requested, plans, graph)
 
     status_counts = defaultdict(int)
     for plan in plans.values():

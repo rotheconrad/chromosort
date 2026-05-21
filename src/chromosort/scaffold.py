@@ -80,7 +80,9 @@ class GapRecord:
     overlap_left_ref_frac: float
     overlap_right_ref_frac: float
     overlap_policy: str
+    graph_overlap_policy: str
     overlap_action: str
+    graph_overlap_action: str
     trimmed_bp: int
     sequence_overlap_identity: Optional[float] = None
 
@@ -203,6 +205,18 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
             "Optional assembly graph GFA. When provided, writes "
             "<prefix>.graph_gaps.tsv with report-only graph evidence for "
             "each adjacent scaffold junction."
+        ),
+    )
+    ap.add_argument(
+        "--graph-overlap-policy",
+        choices=["report", "warn", "confirm"],
+        default="report",
+        help=(
+            "How graph evidence should affect negative reference-gap overlaps. "
+            "report keeps graph evidence report-only; warn emits warnings for "
+            "graph-confirmed overlaps; confirm allows a direct oriented GFA "
+            "edge to trim only terminal overlaps that would otherwise use the "
+            "zero-gap/warn overlap policy."
         ),
     )
     ap.add_argument(
@@ -334,27 +348,59 @@ def sequence_overlap_identity(left_seq, right_seq, overlap_bp):
     return size, matches / size
 
 
-def apply_overlap_policy(left, right, overlap_bp, overlap_class, args):
+def graph_direct_edge_for_members(left, right, graph):
+    if graph is None:
+        return False, "."
+    left_node = graph_node_name(left, graph)
+    right_node = graph_node_name(right, graph)
+    if missing_graph_status(left_node, right_node) is not None:
+        return False, "."
+    left_orientation = graph_orientation(left)
+    right_orientation = graph_orientation(right)
+    direct = graph.direct_edges(
+        left_node,
+        right_node,
+        source_orientation=left_orientation if left_orientation in ORIENTATIONS else None,
+        target_orientation=right_orientation if right_orientation in ORIENTATIONS else None,
+    )
+    return bool(direct), edge_orientations(direct)
+
+
+def apply_overlap_policy(left, right, overlap_bp, overlap_class, args, graph=None):
+    graph_overlap_action = "."
     if overlap_bp <= 0:
-        return "none", 0, None
+        return "none", graph_overlap_action, 0, None
+
+    graph_direct, graph_edges = graph_direct_edge_for_members(left, right, graph)
+    if graph_direct:
+        graph_overlap_action = f"direct_edge:{graph_edges}"
+        if (
+            args.graph_overlap_policy == "confirm"
+            and args.overlap_policy in {"zero-gap", "warn"}
+            and overlap_class == "terminal_overlap"
+        ):
+            trim_bp = min(overlap_bp, len(right.seq))
+            right.trim_left_bp += trim_bp
+            return "graph_confirmed_trim_reference", graph_overlap_action, trim_bp, None
+
     if args.overlap_policy in {"zero-gap", "warn"}:
-        return "zero_gap", 0, None
+        return "zero_gap", graph_overlap_action, 0, None
     if overlap_class != "terminal_overlap":
-        return "trim_skipped_nonterminal", 0, None
+        return "trim_skipped_nonterminal", graph_overlap_action, 0, None
 
     if args.overlap_policy == "trim-reference":
         trim_bp = min(overlap_bp, len(right.seq))
         right.trim_left_bp += trim_bp
-        return "trimmed_reference", trim_bp, None
+        return "trimmed_reference", graph_overlap_action, trim_bp, None
 
     trim_bp, identity = sequence_overlap_identity(left.seq, right.seq, overlap_bp)
     if trim_bp > 0 and identity is not None and identity >= args.trim_sequence_min_identity:
         right.trim_left_bp += trim_bp
-        return "trimmed_sequence", trim_bp, identity
-    return "trim_skipped_sequence_identity", 0, identity
+        return "trimmed_sequence", graph_overlap_action, trim_bp, identity
+    return "trim_skipped_sequence_identity", graph_overlap_action, 0, identity
 
 
-def build_scaffold(ref, members, fixed_gap_bp, args):
+def build_scaffold(ref, members, fixed_gap_bp, args, graph=None):
     pieces = []
     gaps = []
     gap_mode = "fixed" if fixed_gap_bp is not None else "inferred"
@@ -365,12 +411,13 @@ def build_scaffold(ref, members, fixed_gap_bp, args):
             raw_gap = inferred_gap(left, member)
             overlap_bp = max(0, -raw_gap)
             overlap_class = classify_adjacent_overlap(left, member, overlap_bp)
-            overlap_action, trimmed_bp, sequence_identity = apply_overlap_policy(
+            overlap_action, graph_overlap_action, trimmed_bp, sequence_identity = apply_overlap_policy(
                 left,
                 member,
                 overlap_bp,
                 overlap_class,
                 args,
+                graph,
             )
             gap_bp = fixed_gap_bp if fixed_gap_bp is not None else max(0, raw_gap)
             gaps.append(
@@ -396,20 +443,27 @@ def build_scaffold(ref, members, fixed_gap_bp, args):
                         else 0.0
                     ),
                     overlap_policy=args.overlap_policy,
+                    graph_overlap_policy=args.graph_overlap_policy,
                     overlap_action=overlap_action,
+                    graph_overlap_action=graph_overlap_action,
                     trimmed_bp=trimmed_bp,
                     sequence_overlap_identity=sequence_identity,
                 )
             )
             if overlap_bp > 0 and (
                 args.overlap_policy == "warn" or overlap_action.startswith("trim")
+                or (
+                    args.graph_overlap_policy in {"warn", "confirm"}
+                    and graph_overlap_action != "."
+                )
             ):
                 sys.stderr.write(
                     "WARNING: "
                     f"{ref} overlap between {left.assignment.new_name} and "
                     f"{member.assignment.new_name}: raw_gap={raw_gap}, "
                     f"overlap_bp={overlap_bp}, class={overlap_class}, "
-                    f"action={overlap_action}, trimmed_bp={trimmed_bp}\n"
+                    f"action={overlap_action}, graph_action={graph_overlap_action}, "
+                    f"trimmed_bp={trimmed_bp}\n"
                 )
             pieces.append("N" * gap_bp)
         pieces.append(member.seq)
@@ -422,9 +476,9 @@ def build_scaffold(ref, members, fixed_gap_bp, args):
     )
 
 
-def build_scaffolds(groups, fixed_gap_bp, args):
+def build_scaffolds(groups, fixed_gap_bp, args, graph=None):
     return [
-        build_scaffold(ref, members, fixed_gap_bp, args)
+        build_scaffold(ref, members, fixed_gap_bp, args, graph)
         for ref, members in groups.items()
     ]
 
@@ -647,7 +701,9 @@ def write_gap_report(path, scaffolds):
         "overlap_left_ref_frac",
         "overlap_right_ref_frac",
         "overlap_policy",
+        "graph_overlap_policy",
         "overlap_action",
+        "graph_overlap_action",
         "trimmed_bp",
         "sequence_overlap_identity",
     ]
@@ -669,7 +725,9 @@ def write_gap_report(path, scaffolds):
                     fmt(gap.overlap_left_ref_frac),
                     fmt(gap.overlap_right_ref_frac),
                     gap.overlap_policy,
+                    gap.graph_overlap_policy,
                     gap.overlap_action,
+                    gap.graph_overlap_action,
                     gap.trimmed_bp,
                     fmt(gap.sequence_overlap_identity, 3),
                 ]
@@ -781,6 +839,7 @@ def write_run_summary(path, args, output_paths, scaffolds, unassigned):
         out.write(f"gap_mode\t{gap_mode}\n")
         out.write(f"fixed_gap_bp\t{args.fixed_gap_bp if args.fixed_gap_bp is not None else '.'}\n")
         out.write(f"overlap_policy\t{args.overlap_policy}\n")
+        out.write(f"graph_overlap_policy\t{args.graph_overlap_policy}\n")
         out.write(f"trim_sequence_min_identity\t{args.trim_sequence_min_identity}\n")
         out.write("\nGraph evidence\n")
         out.write(f"gfa\t{args.gfa if args.gfa else '.'}\n")
@@ -804,6 +863,8 @@ def run(args):
         raise ValueError("--trim-sequence-min-identity must be between 0 and 1")
     if args.graph_max_path_edges < 1:
         raise ValueError("--graph-max-path-edges must be at least 1")
+    if args.graph_overlap_policy != "report" and not args.gfa:
+        raise ValueError("--graph-overlap-policy warn/confirm requires --gfa")
 
     prefix = Path(args.output_prefix)
     if prefix.parent and str(prefix.parent) != ".":
@@ -821,11 +882,11 @@ def run(args):
     assignments = read_assignments(args.assignments)
     records = read_ordered_fasta(args.ordered_fasta)
     groups, unassigned = group_scaffold_members(records, assignments)
-    scaffolds = build_scaffolds(groups, args.fixed_gap_bp, args)
+    graph = read_gfa(args.gfa) if args.gfa else None
+    scaffolds = build_scaffolds(groups, args.fixed_gap_bp, args, graph)
     gap_mode = "fixed" if args.fixed_gap_bp is not None else "inferred"
     graph_gap_records = []
-    if args.gfa:
-        graph = read_gfa(args.gfa)
+    if graph is not None:
         graph_gap_records = build_graph_gap_records(
             scaffolds,
             graph,
@@ -834,14 +895,14 @@ def run(args):
 
     write_scaffold_fasta(output_paths["scaffold_fasta"], scaffolds, unassigned, args.simple_headers, gap_mode)
     write_gap_report(output_paths["gap_report"], scaffolds)
-    if args.gfa:
+    if graph is not None:
         write_graph_gap_report(output_paths["graph_gap_report"], graph_gap_records)
     write_summary(output_paths["scaffold_summary"], scaffolds, unassigned)
     write_run_summary(output_paths["run_summary"], args, output_paths, scaffolds, unassigned)
 
     sys.stderr.write(f"Wrote scaffold FASTA: {output_paths['scaffold_fasta']}\n")
     sys.stderr.write(f"Wrote gap report: {output_paths['gap_report']}\n")
-    if args.gfa:
+    if graph is not None:
         sys.stderr.write(f"Wrote graph gap report: {output_paths['graph_gap_report']}\n")
     sys.stderr.write(f"Wrote scaffold summary: {output_paths['scaffold_summary']}\n")
 

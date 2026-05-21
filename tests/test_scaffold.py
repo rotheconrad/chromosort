@@ -366,6 +366,57 @@ class ScaffoldTests(unittest.TestCase):
             self.assertEqual(gaps[0]["trimmed_bp"], "4")
             self.assertEqual(gaps[0]["overlap_action"], "trimmed_reference")
 
+    def test_scaffold_graph_confirm_can_trim_direct_terminal_overlap(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered = tmp_path / "ordered.fa"
+            assignments = tmp_path / "assignments.tsv"
+            ordered.write_text(">chr1_left\nAAAACCCC\n>chr1_bridge_good\nCCCCGGGG\n")
+            write_graph_assignment_table(
+                assignments,
+                [
+                    {
+                        "contig": "left",
+                        "kept": "yes",
+                        "new_name": "chr1_left",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "1",
+                        "ref_start": "1",
+                        "ref_end": "8",
+                        "orientation": "+",
+                    },
+                    {
+                        "contig": "bridge_good",
+                        "kept": "yes",
+                        "new_name": "chr1_bridge_good",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "2",
+                        "ref_start": "5",
+                        "ref_end": "12",
+                        "orientation": "+",
+                    },
+                ],
+            )
+
+            prefix = run_custom_scaffold(
+                tmp_path,
+                ordered,
+                assignments,
+                "--gfa",
+                str(GRAPH_DATA / "unitigs.gfa"),
+                "--graph-overlap-policy",
+                "confirm",
+            )
+
+            records = read_fasta(Path(str(prefix) + ".scaffold.fa"))
+            self.assertEqual(records["chr1"], "AAAACCCCGGGG")
+
+            gaps = read_tsv(Path(str(prefix) + ".scaffold_gaps.tsv"))
+            self.assertEqual(gaps[0]["graph_overlap_policy"], "confirm")
+            self.assertEqual(gaps[0]["overlap_action"], "graph_confirmed_trim_reference")
+            self.assertEqual(gaps[0]["graph_overlap_action"], "direct_edge:left+>bridge_good+")
+            self.assertEqual(gaps[0]["trimmed_bp"], "4")
+
     def test_scaffold_can_trim_sequence_confirmed_terminal_overlap(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

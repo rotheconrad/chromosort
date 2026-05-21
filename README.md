@@ -11,12 +11,14 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
   low-value duplicate overlaps, labels and can rescue terminal overlaps,
   protects strong multi-reference split candidates, and writes a
   reference-ordered FASTA. With `--gfa`, it also writes report-only graph
-  evidence for assignment and overlap decisions.
+  evidence for assignment and overlap decisions; `--graph-guard` adds
+  warning-only checks for graph-supported overlap conflicts.
 - `chromo fix` splits contigs with chromosome transitions or reviewed inversion
   blocks into reference-labeled pieces. Use `--contigs` to inspect a reviewed
   subset or `--all` to scan every contig; both scopes use the same `--mode`
   planner and per-contig breakpoint guardrails. With `--gfa`, it reports graph
-  context for the reviewed source contigs.
+  context for the reviewed source contigs and can emit warning-only
+  `--graph-guard` messages for simple split targets or complex unsplit targets.
 - `chromo cut` cuts reviewed contigs at exact user-provided positions and writes
   a new FASTA plus a TSV report. It is useful when the breakpoint is already
   known from manual dot-plot review.
@@ -28,7 +30,9 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
   records with inferred reference-space N gaps by default, reports negative-gap
   overlaps, can optionally trim reviewed terminal overlaps, and can report GFA
-  graph evidence for adjacent scaffold junctions.
+  graph evidence for adjacent scaffold junctions. Its graph-overlap policy is
+  report-only by default, with opt-in warnings or narrow graph-confirmed
+  terminal-overlap trimming.
 - `chromo fill` plans graph-supported fills between adjacent sorted contigs,
   can use GAF long-read paths, Hi-C-like contact counts, and reference-placement
   PAF to resolve supported branches, and optionally applies only unambiguous,
@@ -682,6 +686,7 @@ chromo sort \
 | `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
 | `--gfa` | none | Optional assembly graph GFA for report-only evidence about resolved graph nodes, node degree, self loops, and direct graph links to overlap-best contigs. |
+| `--graph-guard` | off | Requires `--gfa`; emits conservative warnings when graph links contradict or complicate duplicate/terminal-overlap decisions without changing sorting output. |
 | `--min-aligned-bp` | `100000` | Minimum merged query-aligned bp required before a contig can be kept. |
 | `--min-query-cov` | `0.50` | Minimum fraction of the contig covered by its best reference match. |
 | `--min-best-ref-share` | `0.50` | Minimum fraction of all matched bp that must belong to the best reference chromosome. |
@@ -830,6 +835,11 @@ report resolves each assembly contig to a GFA segment when possible, records
 node length, sequence availability, in/out degree, self loops, and direct graph
 links to the contig that drove a duplicate-overlap decision. It does not change
 which contigs are kept, renamed, or written to FASTA.
+
+With `--graph-guard`, `chromo sort` also writes stderr warnings when a contig
+classified as `duplicate_overlap` or `terminal_overlap` has a direct GFA link to
+the overlap-best contig. This is a review signal only; it does not rescue or
+discard contigs.
 
 #### Preserve Full Contigs
 
@@ -1216,6 +1226,7 @@ appear in your FASTA and alignment output are used. Change the separator with
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
 | `--gfa` | none | Optional assembly graph GFA for report-only context about reviewed source contigs. |
 | `--graph-report` | report path with `.graph.tsv` suffix | Optional path for the `--gfa` graph context report. |
+| `--graph-guard` | off | Requires `--gfa`; emits conservative warnings for graph-simple planned splits and graph-complex unsplit contigs without changing the fixed FASTA. |
 | `--contigs` | none | Space-separated names of contigs to inspect and split. |
 | `--contigs-file` | none | Optional file with one contig name per line. |
 | `--all` | off | Inspect all contigs with passing split signals. |
@@ -1295,6 +1306,11 @@ shows the alignment-supported edit, while the graph report shows whether the
 source contig is present in the assembly graph and whether it sits in a simple
 or tangled local graph neighborhood. The graph report does not alter breakpoint
 planning or FASTA output.
+
+With `--graph-guard`, `chromo fix` also writes stderr warnings when a planned
+split sits in a simple graph neighborhood or an unsplit target sits in a
+high-degree/self-loop graph neighborhood. The warning is meant to send those
+cases back through manual review, not to rewrite breakpoints automatically.
 
 #### Breakpoints Between Alignment Blocks
 
@@ -1476,11 +1492,17 @@ chromo scaffold \
 ```
 
 When `--gfa` is provided, `chromo scaffold` writes
-`<prefix>.graph_gaps.tsv`. This is report-only: scaffold FASTA construction,
-gap lengths, and overlap policies are unchanged. The graph report resolves each
-adjacent scaffold contig to a GFA segment when possible, records direct
-orientation-aware GFA links, and searches for a short explicit GFA path up to
-`--graph-max-path-edges`.
+`<prefix>.graph_gaps.tsv`. With the default `--graph-overlap-policy report`,
+this is report-only: scaffold FASTA construction, gap lengths, and overlap
+policies are unchanged. The graph report resolves each adjacent scaffold contig
+to a GFA segment when possible, records direct orientation-aware GFA links, and
+searches for a short explicit GFA path up to `--graph-max-path-edges`.
+
+Set `--graph-overlap-policy warn` to emit warnings for graph-confirmed terminal
+overlaps. Set `--graph-overlap-policy confirm` only after review; it allows a
+direct orientation-matching GFA edge to trim a terminal reference-space overlap
+when the normal overlap policy is `zero-gap` or `warn`. Nonterminal overlaps,
+missing nodes, orientation mismatches, and indirect paths remain report-only.
 
 ### `chromo scaffold` Outputs
 
@@ -1504,6 +1526,7 @@ orientation-aware GFA links, and searches for a short explicit GFA path up to
 | `--trim-sequence-min-identity` | `0.98` | Minimum suffix/prefix identity required by `--overlap-policy trim-sequence`. |
 | `--simple-headers` | off | Write scaffold FASTA headers containing only the scaffold ID. |
 | `--gfa` | none | Optional assembly graph GFA for report-only graph evidence at scaffold junctions. |
+| `--graph-overlap-policy` | `report` | Graph safety mode for negative-gap overlaps: `report`, `warn`, or `confirm`. `confirm` only trims direct oriented GFA-confirmed terminal overlaps under `zero-gap`/`warn`. |
 | `--graph-max-path-edges` | `4` | Maximum explicit GFA link depth searched for short paths in the graph gap report. |
 
 ### Reasoning Behind `chromo scaffold`
@@ -1864,6 +1887,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.21` | Added graph-aware safety policies. `chromo sort` and `chromo fix` now have warning-only `--graph-guard` checks, while `chromo scaffold --graph-overlap-policy report|warn|confirm` keeps graph evidence report-only by default and only lets direct oriented GFA links confirm narrow terminal-overlap trimming when explicitly requested. |
 | `0.2.20` | Added an end-to-end synthetic graph workflow to the README and shipped focused fill walkthrough inputs. The tutorial runs sort/manual/scaffold/fill with the graph-gotcha GFA, PAF, GAF, Hi-C-like contacts, review HTML, reviewed-plan TSV, and reviewed fill application. |
 | `0.2.19` | Improved `chromo fill --review-html` candidate comparison. Review dashboards now embed per-candidate path rows with path nodes, support scores, validation status, fill length, trim length, risk flags, and optional fill sequence so reviewers can compare ambiguous branches directly before exporting a reviewed plan. |
 | `0.2.18` | Added richer path-risk annotations to `chromo fill`. Fill plans and review HTML now report risk flags, branch-complexity score, high-degree graph nodes, self-loop nodes, unsequenced nodes, and cycle-guard counts so ambiguous or risky candidate paths are easier to triage. |

@@ -1,4 +1,5 @@
 import csv
+import io
 import os
 import subprocess
 import sys
@@ -8,6 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 DATA = Path(__file__).resolve().parent / "data" / "chimeric"
 NOISY_DATA = Path(__file__).resolve().parent / "data" / "noisy_fix"
 
@@ -67,6 +69,29 @@ def read_report(path):
 
 
 class FixContigsTests(unittest.TestCase):
+    def test_graph_guard_warns_on_simple_split_target(self):
+        from chromosort.fix_contigs import ContigPlan, graph_guard_fix_warnings
+        from chromosort.graph import read_gfa
+
+        graph_data = Path(__file__).resolve().parent / "data" / "graph_gotchas"
+        graph = read_gfa(graph_data / "unitigs.gfa")
+        plans = {
+            "isolated": ContigPlan(
+                contig="isolated",
+                status="split",
+                pieces=[],
+                reason="test plan",
+            )
+        }
+        stream = io.StringIO()
+
+        graph_guard_fix_warnings(["isolated"], plans, graph, stream)
+
+        warning = stream.getvalue()
+        self.assertIn("graph guard", warning)
+        self.assertIn("isolated", warning)
+        self.assertIn("simple neighborhood", warning)
+
     def test_user_split_collapses_same_target_alignment_gaps(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

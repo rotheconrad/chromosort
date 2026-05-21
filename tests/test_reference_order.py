@@ -1,13 +1,16 @@
 import csv
+import io
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 DATA = Path(__file__).resolve().parent / "data"
 GRAPH_DATA = DATA / "graph_gotchas"
 
@@ -137,6 +140,52 @@ def run_graph_sort(tmp_path, *extra_args):
 
 
 class ReferenceOrderTests(unittest.TestCase):
+    def test_graph_guard_warns_when_discarded_overlap_has_direct_graph_link(self):
+        from chromosort.graph import read_gfa
+        from chromosort.reference_order import (
+            Assignment,
+            graph_guard_sort_warnings,
+        )
+
+        graph = read_gfa(GRAPH_DATA / "unitigs.gfa")
+        assignments = {
+            "repeat_shared": Assignment(
+                query="repeat_shared",
+                query_length=8,
+                status="duplicate_overlap",
+                kept=False,
+                best=None,
+                second=None,
+                best_ref_share=1.0,
+                total_refs_matched=1,
+                overlap_best_contig="bridge_good",
+            ),
+            "bridge_good": Assignment(
+                query="bridge_good",
+                query_length=8,
+                status="kept",
+                kept=True,
+                best=None,
+                second=None,
+                best_ref_share=1.0,
+                total_refs_matched=1,
+                new_name="chr1_bridge_good",
+            ),
+        }
+        stream = io.StringIO()
+
+        graph_guard_sort_warnings(
+            [SimpleNamespace(name="repeat_shared")],
+            assignments,
+            graph,
+            stream,
+        )
+
+        warning = stream.getvalue()
+        self.assertIn("graph guard", warning)
+        self.assertIn("repeat_shared", warning)
+        self.assertIn("repeat_shared+>bridge_good+", warning)
+
     def test_reference_order_and_duplicate_overlap_status(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = run_chromosort(Path(tmp))

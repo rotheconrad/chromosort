@@ -56,12 +56,14 @@ class CliTests(unittest.TestCase):
         self.assertIn("--output-prefix", sort_help)
         self.assertIn("--paf", sort_help)
         self.assertIn("--gfa", sort_help)
+        self.assertIn("--graph-guard", sort_help)
         self.assertIn("--all", fix_help)
         self.assertIn("--mode", fix_help)
         self.assertNotIn("--auto", fix_help)
         self.assertIn("--paf", fix_help)
         self.assertIn("--gfa", fix_help)
         self.assertIn("--graph-report", fix_help)
+        self.assertIn("--graph-guard", fix_help)
         self.assertIn("--cut", cut_help)
         self.assertIn("--cuts-file", cut_help)
         self.assertIn("--output-fasta", cut_help)
@@ -71,6 +73,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--recipe", manual_apply_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--gfa", scaffold_help)
+        self.assertIn("--graph-overlap-policy", scaffold_help)
         self.assertIn("--graph-max-path-edges", scaffold_help)
         self.assertIn("--apply", fill_help)
         self.assertIn("--gaf", fill_help)
@@ -121,6 +124,53 @@ class CliTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("use either --all or --contigs/--contigs-file", result.stderr)
+
+    def test_graph_safety_flags_require_graph_input(self):
+        sort_result = run_cli_raw(
+            "sort",
+            "--ref-fasta",
+            "ref.fa",
+            "--assembly-fasta",
+            "assembly.fa",
+            "--paf",
+            "sample.paf",
+            "--output-prefix",
+            "sample",
+            "--graph-guard",
+        )
+        self.assertNotEqual(sort_result.returncode, 0)
+        self.assertIn("--graph-guard requires --gfa", sort_result.stderr)
+
+        fix_result = run_cli_raw(
+            "fix",
+            "--assembly-fasta",
+            "assembly.fa",
+            "--paf",
+            "sample.paf",
+            "--contigs",
+            "contig_01",
+            "--output-fasta",
+            "fixed.fa",
+            "--report",
+            "fixed.tsv",
+            "--graph-guard",
+        )
+        self.assertNotEqual(fix_result.returncode, 0)
+        self.assertIn("--graph-guard requires --gfa", fix_result.stderr)
+
+        scaffold_result = run_cli_raw(
+            "scaffold",
+            "--ordered-fasta",
+            "ordered.fa",
+            "--assignments",
+            "assignments.tsv",
+            "--output-prefix",
+            "sample",
+            "--graph-overlap-policy",
+            "warn",
+        )
+        self.assertNotEqual(scaffold_result.returncode, 0)
+        self.assertIn("--graph-overlap-policy warn/confirm requires --gfa", scaffold_result.stderr)
 
 
 if __name__ == "__main__":

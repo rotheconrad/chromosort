@@ -169,6 +169,15 @@ def parse_args(argv=None, prog=None):
         ),
     )
     ap.add_argument(
+        "--graph-guard",
+        action="store_true",
+        help=(
+            "Requires --gfa. Emit conservative warnings when graph evidence "
+            "contradicts or complicates sort overlap decisions. This does not "
+            "change default sorting behavior."
+        ),
+    )
+    ap.add_argument(
         "--min-aligned-bp",
         type=int,
         default=100_000,
@@ -1430,6 +1439,36 @@ def write_graph_assignment_report(path, query_records, assignments, graph):
             out.write("\t".join(str(x) for x in row) + "\n")
 
 
+def graph_guard_sort_warnings(query_records, assignments, graph, stream=None):
+    stream = stream or sys.stderr
+    for rec in query_records:
+        assignment = assignments[rec.name]
+        if assignment.status not in {"duplicate_overlap", "terminal_overlap"}:
+            continue
+        overlap_contig = assignment.overlap_best_contig
+        if not overlap_contig or overlap_contig == ".":
+            continue
+        overlap_assignment = assignments.get(overlap_contig)
+        overlap_candidates = [overlap_contig]
+        if overlap_assignment is not None:
+            overlap_candidates.append(overlap_assignment.new_name)
+        node_evidence = graph_node_evidence(graph, [assignment.query, assignment.new_name])
+        overlap_node_evidence = graph_node_evidence(graph, overlap_candidates)
+        link_evidence = graph_link_evidence(
+            graph,
+            node_evidence.graph_node,
+            overlap_node_evidence.graph_node,
+        )
+        if link_evidence.graph_direct_edge:
+            stream.write(
+                "WARNING: graph guard: "
+                f"{assignment.query} was classified as {assignment.status} "
+                f"against overlap-best {overlap_contig}, but the supplied GFA "
+                f"has a direct link ({link_evidence.graph_direct_edge_orientations}). "
+                "Review before discarding this contig.\n"
+            )
+
+
 def write_match_report(path, matches):
     header = [
         "contig",
@@ -1533,6 +1572,7 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
         if args.paf:
             out.write(f"paf\t{args.paf}\n")
         out.write(f"gfa\t{args.gfa if args.gfa else '.'}\n")
+        out.write(f"graph_guard\t{args.graph_guard}\n")
         out.write("\nThresholds\n")
         out.write(f"min_aligned_bp\t{args.min_aligned_bp}\n")
         out.write(f"min_query_cov\t{args.min_query_cov}\n")
@@ -1586,6 +1626,9 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
 
 def main(argv=None, prog=None):
     args = parse_args(argv, prog=prog)
+    if args.graph_guard and not args.gfa:
+        sys.stderr.write("ERROR: --graph-guard requires --gfa\n")
+        sys.exit(2)
     alignment_path, alignment_format = alignment_source_from_args(args)
     prefix = Path(args.output_prefix)
     if prefix.parent and str(prefix.parent) != ".":
@@ -1633,6 +1676,8 @@ def main(argv=None, prog=None):
     if args.gfa:
         graph = read_gfa(args.gfa)
         write_graph_assignment_report(output_paths["graph_assignments"], query_records, assignments, graph)
+        if args.graph_guard:
+            graph_guard_sort_warnings(query_records, assignments, graph)
     write_match_report(output_paths["contig_ref_matches"], matches)
     write_chromosome_summary(output_paths["chromosome_summary"], ref_records, kept_assignments)
     write_run_summary(
