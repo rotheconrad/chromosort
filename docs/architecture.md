@@ -59,49 +59,21 @@ it makes sequence-changing steps depend on documented inputs and reports.
 
 <figure class="method-diagram">
 <div class="mermaid">
-flowchart LR
-  ref["Reference FASTA"] --> len["FASTA length records"]
-  asm["Assembly FASTA"] --> len
-  coords["MUMmer coords"] --> seg["Segment normalization"]
-  paf["minimap2 PAF"] --> seg
-  gfa["GFA S/L graph"] --> graph["AssemblyGraph"]
-  gaf["GAF read paths"] --> gapfill["gapfill planner"]
-  hic["Hi-C node contacts"] --> gapfill
-  refpaf["Reference-placement PAF"] --> gapfill
-
-  len --> sort["chromo sort"]
-  seg --> sort
-  graph --> sort
-  sort --> assign["assignment and match TSVs"]
-  sort --> ordered["ordered FASTA"]
-
-  seg --> fix["chromo fix"]
-  graph --> fix
-  fix --> fixed["fixed FASTA and split report"]
-
-  asm --> cut["chromo cut"]
-  cut --> cutfa["cut FASTA and cut report"]
-
-  seg --> manual["chromo manual"]
-  graph --> manual
-  manual --> html["manual-review HTML"]
-  html --> apply["chromo manual apply"]
-  apply --> manfa["manual-edited FASTA"]
-
-  seg --> plot["chromo plot"]
-  assign --> plot
-  plot --> plots["SVG, PDF, PNG plots"]
-
-  ordered --> scaffold["chromo scaffold"]
-  assign --> scaffold
-  graph --> scaffold
-  scaffold --> scaffa["scaffold FASTA and gap reports"]
-
-  ordered --> gapfill
-  assign --> gapfill
-  graph --> gapfill
-  gapfill --> plan["gapfill plan TSV and review HTML"]
-  plan --> filled["optional gapfilled FASTA"]
+flowchart TD
+  A["FASTA inputs"] --> B["Alignment evidence"]
+  C["Graph evidence"] --> D["Graph-aware review"]
+  B --> E["Review: plot, manual"]
+  B --> F["Edit: fix, cut, manual apply"]
+  B --> G["sort"]
+  C --> G
+  G --> H["Assignments + ordered FASTA"]
+  H --> I["scaffold"]
+  C --> I
+  I --> J["Scaffold FASTA + gap reports"]
+  H --> K["gapfill plan"]
+  C --> K
+  D --> K
+  K --> L["Optional gapfilled FASTA"]
 </div>
 </figure>
 
