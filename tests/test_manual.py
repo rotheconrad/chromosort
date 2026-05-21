@@ -10,20 +10,32 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data"
+GRAPH_DATA = DATA / "graph_gotchas"
 
 
-def run_manual(tmp_path, *extra_args, alignment_args=None, output_name="manual.html"):
+def run_manual(
+    tmp_path,
+    *extra_args,
+    alignment_args=None,
+    output_name="manual.html",
+    ref_fasta=None,
+    assembly_fasta=None,
+):
     output_html = tmp_path / output_name
     if alignment_args is None:
         alignment_args = ["--paf", str(DATA / "sample.paf")]
+    if ref_fasta is None:
+        ref_fasta = DATA / "ref.fa"
+    if assembly_fasta is None:
+        assembly_fasta = DATA / "assembly.fa"
     cmd = [
         sys.executable,
         "-m",
         "chromosort.manual",
         "--ref-fasta",
-        str(DATA / "ref.fa"),
+        str(ref_fasta),
         "--assembly-fasta",
-        str(DATA / "assembly.fa"),
+        str(assembly_fasta),
         *alignment_args,
         "--output-html",
         str(output_html),
@@ -129,6 +141,39 @@ class ManualTests(unittest.TestCase):
             self.assertTrue(data["settings"]["embedSequences"])
             self.assertEqual(data["stats"]["embeddedSequenceCount"], 6)
             self.assertIn("contigA", data["sequences"])
+
+    def test_manual_dashboard_embeds_graph_context(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_html = run_manual(
+                Path(tmp),
+                "--gfa",
+                str(GRAPH_DATA / "unitigs.gfa"),
+                alignment_args=["--paf", str(GRAPH_DATA / "unitig_to_ref.paf")],
+                ref_fasta=GRAPH_DATA / "ref.fa",
+                assembly_fasta=GRAPH_DATA / "assembly.fa",
+            )
+            text = output_html.read_text()
+            data = html_data(output_html)
+
+            self.assertIn("Graph present", text)
+            self.assertEqual(data["inputs"]["gfa"], str(GRAPH_DATA / "unitigs.gfa"))
+            self.assertEqual(data["stats"]["graphContigsPresent"], 8)
+            self.assertEqual(data["stats"]["graphBranchingContigs"], 5)
+
+            graph_by_name = {
+                item["name"]: item["graph"]
+                for item in data["queryRecords"]
+            }
+            self.assertEqual(graph_by_name["left"]["graphNode"], "left")
+            self.assertEqual(graph_by_name["left"]["graphComplexity"], "branching")
+            self.assertEqual(graph_by_name["left"]["graphCoverage"], 20)
+            self.assertEqual(graph_by_name["left"]["graphOutDegree"], 3)
+            self.assertEqual(
+                sorted(edge["otherNode"] for edge in graph_by_name["left"]["outgoing"]),
+                ["bridge_alt", "bridge_good", "reverse_only"],
+            )
+            self.assertEqual(graph_by_name["isolated"]["graphComplexity"], "simple")
+            self.assertTrue(graph_by_name["bridge_alt"]["graphSelfLoop"])
 
     def test_manual_apply_piece_recipe_cuts_inverts_and_removes(self):
         with tempfile.TemporaryDirectory() as tmp:

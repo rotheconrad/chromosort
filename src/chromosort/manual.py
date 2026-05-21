@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Sequence
 
+from . import __version__
+from .graph import graph_node_evidence, read_gfa
 from .reference_order import (
     alignment_source_from_args,
     build_match_metrics,
@@ -85,6 +87,14 @@ def parse_generate_args(argv=None, prog=None):
         help=(
             "Embed assembly sequences in the HTML so FASTA export works without "
             "loading the original FASTA in the browser. Best for small/demo assemblies."
+        ),
+    )
+    ap.add_argument(
+        "--gfa",
+        default=None,
+        help=(
+            "Optional assembly graph GFA. When provided, the dashboard embeds "
+            "per-contig graph node context for manual review."
         ),
     )
     ap.add_argument(
@@ -253,7 +263,85 @@ def match_to_dict(match):
     }
 
 
-def build_query_items(query_records, best_matches, all_matches, ref_rank):
+def graph_edge_to_dict(edge, direction):
+    other_node = edge.source if direction == "incoming" else edge.target
+    other_orientation = (
+        edge.source_orientation if direction == "incoming" else edge.target_orientation
+    )
+    return {
+        "direction": direction,
+        "source": edge.source,
+        "sourceOrientation": edge.source_orientation,
+        "target": edge.target,
+        "targetOrientation": edge.target_orientation,
+        "otherNode": other_node,
+        "otherOrientation": other_orientation,
+        "overlap": edge.overlap,
+        "overlapBp": edge.overlap_bp,
+    }
+
+
+def graph_complexity(evidence):
+    if evidence.graph_node_status != "present":
+        return "missing"
+    if evidence.graph_self_loop:
+        return "self_loop"
+    if (
+        (evidence.graph_in_degree or 0) > 1
+        or (evidence.graph_out_degree or 0) > 1
+        or (evidence.graph_neighbor_count or 0) > 2
+    ):
+        return "branching"
+    return "simple"
+
+
+def graph_context_to_dict(graph, evidence):
+    data = {
+        "graphNode": evidence.graph_node,
+        "graphNodeStatus": evidence.graph_node_status,
+        "graphNodeLength": evidence.graph_node_length,
+        "graphNodeHasSequence": evidence.graph_node_has_sequence,
+        "graphInDegree": evidence.graph_in_degree,
+        "graphOutDegree": evidence.graph_out_degree,
+        "graphNeighborCount": evidence.graph_neighbor_count,
+        "graphSelfLoop": evidence.graph_self_loop,
+        "graphComplexity": graph_complexity(evidence),
+        "graphCoverage": None,
+        "incoming": [],
+        "outgoing": [],
+    }
+    if evidence.graph_node_status != "present":
+        return data
+
+    node = graph.nodes[evidence.graph_node]
+    coverage = node.tags.get("RC", node.tags.get("KC", node.tags.get("dp")))
+    if isinstance(coverage, (int, float, str)):
+        data["graphCoverage"] = coverage
+    data["incoming"] = [
+        graph_edge_to_dict(edge, "incoming")
+        for edge in graph.incoming(evidence.graph_node)
+    ]
+    data["outgoing"] = [
+        graph_edge_to_dict(edge, "outgoing")
+        for edge in graph.outgoing(evidence.graph_node)
+    ]
+    return data
+
+
+def build_graph_context(query_records, graph):
+    if graph is None:
+        return {}
+    return {
+        rec.name: graph_context_to_dict(
+            graph,
+            graph_node_evidence(graph, [rec.name]),
+        )
+        for rec in query_records
+    }
+
+
+def build_query_items(query_records, best_matches, all_matches, ref_rank, graph_context=None):
+    graph_context = graph_context or {}
     indexed_records = list(enumerate(query_records))
 
     def order_key(item):
@@ -293,6 +381,7 @@ def build_query_items(query_records, best_matches, all_matches, ref_rank):
                 "bestRefShare": fmt_float(best_share) if best else 0.0,
                 "totalRefsMatched": len(matches),
                 "matches": [match_to_dict(match) for match in matches],
+                "graph": graph_context.get(rec.name),
             }
         )
     return ordered
@@ -336,7 +425,15 @@ def build_dashboard_data(args):
     )
     best_matches, all_matches = sorted_best_matches(by_query)
     ref_rank = {rec.name: idx for idx, rec in enumerate(ref_records)}
-    query_items = build_query_items(query_records, best_matches, all_matches, ref_rank)
+    graph = read_gfa(args.gfa) if args.gfa else None
+    graph_context = build_graph_context(query_records, graph)
+    query_items = build_query_items(
+        query_records,
+        best_matches,
+        all_matches,
+        ref_rank,
+        graph_context,
+    )
     segments, skipped = load_dashboard_segments(args, ref_by_name, query_by_name)
     if skipped_unknown_query:
         skipped["unknown_query_in_metrics"] = skipped_unknown_query
@@ -351,13 +448,14 @@ def build_dashboard_data(args):
 
     return {
         "schema": SCHEMA,
-        "version": "0.2.5",
+        "version": __version__,
         "mode": "manual-dashboard",
         "inputs": {
             "refFasta": str(args.ref_fasta),
             "assemblyFasta": str(args.assembly_fasta),
             "alignmentFormat": alignment_format,
             "alignmentPath": str(alignment_path),
+            "gfa": str(args.gfa) if args.gfa else None,
         },
         "settings": {
             "minSegmentBp": args.min_segment_bp,
@@ -377,6 +475,21 @@ def build_dashboard_data(args):
             "allMatchRows": len(matches),
             "embeddedSequenceCount": len(sequences),
             "embeddedSequenceBp": sum(len(seq) for seq in sequences.values()),
+            "graphContigsPresent": sum(
+                1 for item in query_items
+                if item.get("graph")
+                and item["graph"].get("graphNodeStatus") == "present"
+            ),
+            "graphContigsMissing": sum(
+                1 for item in query_items
+                if item.get("graph")
+                and item["graph"].get("graphNodeStatus") != "present"
+            ),
+            "graphBranchingContigs": sum(
+                1 for item in query_items
+                if item.get("graph")
+                and item["graph"].get("graphComplexity") in {"branching", "self_loop"}
+            ),
             "skipped": skipped,
         },
         "refRecords": [
@@ -778,6 +891,7 @@ input[type="file"] {
 .badge.red { color: var(--red); border-color: #fecaca; }
 .badge.green { color: var(--green); border-color: #bbf7d0; }
 .badge.amber { color: var(--amber); border-color: #fde68a; }
+.badge.blue { color: var(--blue); border-color: #bfdbfe; }
 .workspace {
   display: grid;
   grid-template-rows: auto minmax(260px, 1fr) auto;
@@ -892,6 +1006,7 @@ label input, label select {
       <div class="plot-title">
         <strong id="selectedName">No contig selected</strong>
         <span id="selectedMeta"></span>
+        <span id="selectedGraph"></span>
       </div>
       <div class="detail-tools">
         <button id="moveUp">Up</button>
@@ -945,6 +1060,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     pieceList: document.getElementById("pieceList"),
     selectedName: document.getElementById("selectedName"),
     selectedMeta: document.getElementById("selectedMeta"),
+    selectedGraph: document.getElementById("selectedGraph"),
     dotplot: document.getElementById("dotplot"),
     status: document.getElementById("status"),
     cutPos: document.getElementById("cutPos"),
@@ -976,12 +1092,56 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
 
   function pieceBadges(piece) {
     const q = queriesByName.get(piece.source) || {};
+    const graph = q.graph || null;
     const badges = [];
     badges.push(`<span class="badge">${fmtBp(pieceLength(piece))}</span>`);
     badges.push(`<span class="badge ${piece.strand === "-" ? "red" : "green"}">${piece.strand}</span>`);
     badges.push(`<span class="badge ${q.aligned ? "green" : "amber"}">${q.bestRef || "unaligned"}</span>`);
+    if (graph) {
+      const graphClass = graphBadgeClass(graph);
+      const graphLabel = graph.graphNodeStatus === "present"
+        ? graph.graphNode
+        : "graph missing";
+      badges.push(`<span class="badge ${graphClass}">${escapeHtml(graphLabel)}</span>`);
+      if (graph.graphComplexity && graph.graphComplexity !== "missing") {
+        badges.push(`<span class="badge ${graphClass}">${escapeHtml(graph.graphComplexity)}</span>`);
+      }
+    }
     if (piece.removed) badges.push('<span class="badge red">removed</span>');
     return badges.join("");
+  }
+
+  function graphBadgeClass(graph) {
+    if (!graph || graph.graphNodeStatus !== "present") return "red";
+    if (graph.graphComplexity === "simple") return "green";
+    if (graph.graphComplexity === "branching" || graph.graphComplexity === "self_loop") return "amber";
+    return "blue";
+  }
+
+  function graphNeighbors(edges) {
+    return (edges || []).map(edge => {
+      const overlap = edge.overlapBp === null || edge.overlapBp === undefined ? edge.overlap : edge.overlapBp + " bp";
+      return edge.otherNode + edge.otherOrientation + " (" + overlap + ")";
+    }).join(", ");
+  }
+
+  function graphDetail(graph) {
+    if (!graph) return "";
+    if (graph.graphNodeStatus !== "present") return "Graph: missing from GFA";
+    const pieces = [
+      "Graph: " + graph.graphNode,
+      "complexity " + graph.graphComplexity,
+      "in/out " + graph.graphInDegree + "/" + graph.graphOutDegree,
+      "neighbors " + graph.graphNeighborCount
+    ];
+    if (graph.graphCoverage !== null && graph.graphCoverage !== undefined) {
+      pieces.push("coverage " + graph.graphCoverage);
+    }
+    const incoming = graphNeighbors(graph.incoming);
+    const outgoing = graphNeighbors(graph.outgoing);
+    if (incoming) pieces.push("in " + incoming);
+    if (outgoing) pieces.push("out " + outgoing);
+    return pieces.join(" | ");
   }
 
   function renderStats() {
@@ -991,21 +1151,37 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       const q = queriesByName.get(p.source);
       return q && (p.start !== 1 || p.end !== q.length);
     }).length;
-    els.stats.innerHTML = [
+    const stats = [
       ["Active", active.length],
       ["Removed", removed],
       ["Pieces", pieces.length],
       ["Cut pieces", cutPieces],
       ["Aligned", data.stats.alignedContigs],
       ["Unaligned", data.stats.unalignedContigs]
-    ].map(([label, value]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+    ];
+    if (data.inputs.gfa) {
+      stats.push(["Graph present", data.stats.graphContigsPresent || 0]);
+      stats.push(["Graph branching", data.stats.graphBranchingContigs || 0]);
+    }
+    els.stats.innerHTML = stats.map(([label, value]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
   }
 
   function renderList() {
     const needle = els.search.value.trim().toLowerCase();
     const rows = pieces.filter(piece => {
       if (!needle) return true;
-      return [piece.name, piece.source, piece.scaffold, piece.bestRef || ""]
+      const q = queriesByName.get(piece.source) || {};
+      const graph = q.graph || {};
+      return [
+        piece.name,
+        piece.source,
+        piece.scaffold,
+        piece.bestRef || "",
+        graph.graphNode || "",
+        graph.graphNodeStatus || "",
+        graph.graphComplexity || "",
+        graphDetail(graph)
+      ]
         .some(v => String(v).toLowerCase().includes(needle));
     });
     els.pieceList.innerHTML = rows.map(piece => {
@@ -1033,9 +1209,11 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     if (!piece) {
       els.selectedName.textContent = "No contig selected";
       els.selectedMeta.textContent = "";
+      els.selectedGraph.textContent = "";
       return;
     }
     const q = queriesByName.get(piece.source) || {};
+    const graph = q.graph || null;
     els.selectedName.textContent = piece.name;
     els.selectedMeta.textContent = [
       piece.source + ":" + piece.start + "-" + piece.end,
@@ -1043,6 +1221,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       q.bestRef ? "best " + q.bestRef + ":" + q.refStart + "-" + q.refEnd : "unaligned",
       q.queryCov ? "query cov " + (q.queryCov * 100).toFixed(1) + "%" : ""
     ].filter(Boolean).join(" | ");
+    els.selectedGraph.textContent = graphDetail(graph);
     els.cutPos.value = "";
     els.cutPos.min = String(piece.start);
     els.cutPos.max = String(piece.end - 1);

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chromosort"
-version = "0.2.14"
+version = "0.2.15"
 description = "Reference-order, fix, cut, manually edit, scaffold, fill, plot, and review genome assembly contigs from MUMmer, minimap2, GFA, GAF, and Hi-C evidence."
 readme = "README.md"
 requires-python = ">=3.9"

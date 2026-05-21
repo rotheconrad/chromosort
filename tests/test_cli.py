@@ -67,6 +67,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--output-fasta", cut_help)
         self.assertIn("--output-html", manual_help)
         self.assertIn("--embed-sequences", manual_help)
+        self.assertIn("--gfa", manual_help)
         self.assertIn("--recipe", manual_apply_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--gfa", scaffold_help)

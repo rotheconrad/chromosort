@@ -23,7 +23,8 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
 - `chromo manual` writes a self-contained HTML dashboard for manual dot-plot
   review and GUI editing. It can remove contigs, reorder pieces, add
   breakpoints, invert pieces, scaffold edited pieces, export FASTA from the
-  browser, and export reproducible recipe JSON.
+  browser, export reproducible recipe JSON, and optionally show GFA graph
+  context for each reviewed contig.
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
   records with inferred reference-space N gaps by default, reports negative-gap
   overlaps, can optionally trim reviewed terminal overlaps, and can report GFA
@@ -219,6 +220,7 @@ chromo manual \
   --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
+  --gfa assembly_graph.gfa \
   --output-html results/sample.manual.html \
   --suggested-output-fasta sample.manual.fa
 ```
@@ -469,8 +471,8 @@ set. Use `--min-mapq` to ignore low-MAPQ PAF rows.
 
 Graph-aware ChromoSort commands use these graph-related evidence files:
 
-- GFA: the assembly graph, used by `chromo sort --gfa`, `chromo fix --gfa`,
-  `chromo scaffold --gfa`, and `chromo fill --gfa`.
+- GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
+  `chromo fix --gfa`, `chromo scaffold --gfa`, and `chromo fill --gfa`.
 - reference-to-assembly PAF: the same minimap2 alignment format used by
   `chromo sort`, `chromo fix`, `chromo manual`, and `chromo plot`.
 - GAF: optional read-to-graph alignments used by `chromo fill --gaf` to resolve
@@ -948,6 +950,7 @@ chromo manual \
   --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
+  --gfa assembly_graph.gfa \
   --output-html results/sample.manual.html \
   --suggested-output-fasta sample.manual.fa
 ```
@@ -961,6 +964,14 @@ chromo manual \
   --paf paf/sample.paf \
   --output-html results/sample.manual.html
 ```
+
+When `--gfa` is provided, the manual dashboard embeds per-contig graph context
+beside the dot plot review. Contig badges and details show whether the matching
+GFA node is present, whether its local neighborhood is simple, branching, or
+self-looped, node coverage tags such as `RC:i`, in/out degree, neighbor count,
+and oriented neighboring nodes. This borrows the useful graph-inspection idea
+from Gap-Graph while keeping ChromoSort's sequence-changing actions explicit in
+the manual recipe.
 
 For large genomes, the dashboard embeds alignment metadata but not full FASTA
 sequences by default. Open the HTML file in a browser, load the original
@@ -983,6 +994,7 @@ The manual dashboard provides:
 
 - A reference-ordered contig/piece list with every contig retained initially.
 - A per-contig dot plot. Forward alignments are blue; reverse alignments are red.
+- Optional GFA node badges and neighbor details when generated with `--gfa`.
 - A click-to-stage breakpoint position from the selected contig dot plot.
 - Buttons to remove/restore a contig or piece, move it up/down, invert it, and
   add a breakpoint.
@@ -1034,6 +1046,7 @@ Use `--scaffold` or `--no-scaffold` to override the recipe export mode, and
 | `--output-html` | required | Dashboard HTML path. |
 | `--suggested-output-fasta` | `<assembly>.manual.fa` | Suggested browser download filename for FASTA export. |
 | `--embed-sequences` | off | Embed full assembly sequences in the HTML for single-file export. Best for small assemblies. |
+| `--gfa` | none | Optional assembly graph GFA for per-contig node status, graph complexity, degree, coverage tag, and neighbor context. |
 | `--min-segment-bp` | `0` | Minimum alignment row length to embed in the dashboard. |
 | `--min-segment-idy` | `0.0` | Minimum percent identity for embedded alignment rows. |
 | `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
@@ -1720,6 +1733,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.15` | Added `chromo manual --gfa` graph context. Manual dashboards now embed per-contig GFA node evidence, graph complexity labels, degree/neighbor counts, coverage tags such as `RC:i`, and oriented neighbor summaries so manual breakpoint and ordering review can consider local assembly-graph structure. |
 | `0.2.14` | Added `chromo fill --review-html`, a self-contained HTML review table for fill plans. It embeds the same TSV columns, supports filtering and accepted-fill toggles, and exports a reviewed-plan TSV for `--reviewed-plan`; the TSV and HTML writers now share one row-generation path. |
 | `0.2.13` | Added reviewed fill-plan application for `chromo fill`. Planning output now includes an editable `accept_fill` column, and `--reviewed-plan` makes `--apply` fill only accepted rows after rechecking the current scaffold, contig pair, path nodes, and fillability; rejected or unaccepted rows fall back to N gaps. |
 | `0.2.12` | Added optional Hi-C pair support to `chromo fill`. Fill plans now report Hi-C path support and best alternate support, and otherwise ambiguous graph branches can be resolved when one candidate has unique summed contact support at or above `--min-hic-path-support`; conflicting GAF and Hi-C support leaves the junction unresolved. |
