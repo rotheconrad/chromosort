@@ -10,11 +10,12 @@ of Ns between neighboring contigs.
 import argparse
 import csv
 import sys
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Sequence
 
+from .graph import ORIENTATIONS, format_oriented_node, read_gfa
 from .reference_order import iter_fasta_records, write_wrapped
 
 
@@ -37,6 +38,7 @@ class AssignmentRow:
     order_in_ref: int
     ref_start: int
     ref_end: int
+    orientation: str = "."
 
 
 @dataclass
@@ -81,6 +83,25 @@ class GapRecord:
     overlap_action: str
     trimmed_bp: int
     sequence_overlap_identity: Optional[float] = None
+
+
+@dataclass
+class GraphGapRecord:
+    scaffold: str
+    left_contig: str
+    right_contig: str
+    left_graph_node: str
+    right_graph_node: str
+    left_orientation: str
+    right_orientation: str
+    graph_status: str
+    direct_edge: bool
+    direct_edge_orientations: str
+    direct_edge_overlap_bp: str
+    shortest_path_edges: Optional[int]
+    shortest_path_nodes: str
+    candidate_intermediate_nodes: str
+    max_path_edges: int
 
 
 @dataclass
@@ -175,6 +196,24 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         action="store_true",
         help="Write FASTA headers containing only the scaffold sequence ID.",
     )
+    ap.add_argument(
+        "--gfa",
+        default=None,
+        help=(
+            "Optional assembly graph GFA. When provided, writes "
+            "<prefix>.graph_gaps.tsv with report-only graph evidence for "
+            "each adjacent scaffold junction."
+        ),
+    )
+    ap.add_argument(
+        "--graph-max-path-edges",
+        type=int,
+        default=4,
+        help=(
+            "Maximum explicit GFA link depth searched when reporting short "
+            "paths between adjacent scaffold contigs."
+        ),
+    )
     return ap.parse_args(argv)
 
 
@@ -210,6 +249,7 @@ def read_assignments(path):
                 order_in_ref=parse_int(row["order_in_ref"], "order_in_ref", new_name),
                 ref_start=parse_int(row["ref_start"], "ref_start", new_name),
                 ref_end=parse_int(row["ref_end"], "ref_end", new_name),
+                orientation=(row.get("orientation") or ".").strip() or ".",
             )
     return assignments
 
@@ -389,6 +429,186 @@ def build_scaffolds(groups, fixed_gap_bp, args):
     ]
 
 
+def graph_node_name(member, graph):
+    candidates = [member.assignment.contig, member.assignment.new_name, member.record.name]
+    for candidate in candidates:
+        if candidate in graph.nodes:
+            return candidate
+    return "."
+
+
+def graph_orientation(member):
+    orientation = member.assignment.orientation
+    return orientation if orientation in ORIENTATIONS else "."
+
+
+def graph_start_keys(node, orientation):
+    if node == ".":
+        return []
+    if orientation in ORIENTATIONS:
+        return [(node, orientation)]
+    return [(node, orient) for orient in sorted(ORIENTATIONS)]
+
+
+def graph_target_keys(node, orientation):
+    if node == ".":
+        return set()
+    if orientation in ORIENTATIONS:
+        return {(node, orientation)}
+    return {(node, orient) for orient in ORIENTATIONS}
+
+
+def find_shortest_graph_path(graph, left_node, right_node, left_orientation, right_orientation, max_edges):
+    if max_edges < 1:
+        return []
+
+    targets = graph_target_keys(right_node, right_orientation)
+    if not targets:
+        return []
+
+    queue = deque((start, []) for start in graph_start_keys(left_node, left_orientation))
+    seen = {start for start, _ in queue}
+    while queue:
+        (node, orientation), path = queue.popleft()
+        if len(path) >= max_edges:
+            continue
+        for edge in graph.outgoing(node, orientation):
+            next_key = edge.target_key
+            next_path = path + [edge]
+            if next_key in targets:
+                return next_path
+            if next_key in seen:
+                continue
+            seen.add(next_key)
+            queue.append((next_key, next_path))
+    return []
+
+
+def graph_path_nodes(path):
+    if not path:
+        return "."
+    nodes = [format_oriented_node(path[0].source_key)]
+    nodes.extend(format_oriented_node(edge.target_key) for edge in path)
+    return ",".join(nodes)
+
+
+def graph_intermediate_nodes(path):
+    if len(path) <= 1:
+        return "."
+    intermediates = []
+    for edge in path[:-1]:
+        node = format_oriented_node(edge.target_key)
+        if node not in intermediates:
+            intermediates.append(node)
+    return ",".join(intermediates) if intermediates else "."
+
+
+def edge_orientations(edges):
+    if not edges:
+        return "."
+    return ",".join(
+        f"{edge.source}{edge.source_orientation}>{edge.target}{edge.target_orientation}"
+        for edge in edges
+    )
+
+
+def edge_overlap_bps(edges):
+    values = []
+    for edge in edges:
+        value = fmt(edge.overlap_bp)
+        if value not in values:
+            values.append(value)
+    return ",".join(values) if values else "."
+
+
+def missing_graph_status(left_node, right_node):
+    if left_node == "." and right_node == ".":
+        return "missing_both_nodes"
+    if left_node == ".":
+        return "missing_left_node"
+    if right_node == ".":
+        return "missing_right_node"
+    return None
+
+
+def graph_gap_record(scaffold, left, right, graph, max_path_edges):
+    left_node = graph_node_name(left, graph)
+    right_node = graph_node_name(right, graph)
+    left_orientation = graph_orientation(left)
+    right_orientation = graph_orientation(right)
+
+    status = missing_graph_status(left_node, right_node)
+    if status is not None:
+        return GraphGapRecord(
+            scaffold=scaffold.name,
+            left_contig=left.assignment.new_name,
+            right_contig=right.assignment.new_name,
+            left_graph_node=left_node,
+            right_graph_node=right_node,
+            left_orientation=left_orientation,
+            right_orientation=right_orientation,
+            graph_status=status,
+            direct_edge=False,
+            direct_edge_orientations=".",
+            direct_edge_overlap_bp=".",
+            shortest_path_edges=None,
+            shortest_path_nodes=".",
+            candidate_intermediate_nodes=".",
+            max_path_edges=max_path_edges,
+        )
+
+    direct = graph.direct_edges(
+        left_node,
+        right_node,
+        source_orientation=left_orientation if left_orientation in ORIENTATIONS else None,
+        target_orientation=right_orientation if right_orientation in ORIENTATIONS else None,
+    )
+    any_orientation_direct = graph.direct_edges(left_node, right_node)
+    path = find_shortest_graph_path(
+        graph,
+        left_node,
+        right_node,
+        left_orientation,
+        right_orientation,
+        max_path_edges,
+    )
+
+    if direct:
+        status = "direct_edge"
+    elif any_orientation_direct:
+        status = "direct_edge_orientation_mismatch"
+    elif path:
+        status = "short_path"
+    else:
+        status = "no_path"
+
+    return GraphGapRecord(
+        scaffold=scaffold.name,
+        left_contig=left.assignment.new_name,
+        right_contig=right.assignment.new_name,
+        left_graph_node=left_node,
+        right_graph_node=right_node,
+        left_orientation=left_orientation,
+        right_orientation=right_orientation,
+        graph_status=status,
+        direct_edge=bool(direct),
+        direct_edge_orientations=edge_orientations(direct or any_orientation_direct),
+        direct_edge_overlap_bp=edge_overlap_bps(direct or any_orientation_direct),
+        shortest_path_edges=len(path) if path else None,
+        shortest_path_nodes=graph_path_nodes(path),
+        candidate_intermediate_nodes=graph_intermediate_nodes(path),
+        max_path_edges=max_path_edges,
+    )
+
+
+def build_graph_gap_records(scaffolds, graph, max_path_edges):
+    records = []
+    for scaffold in scaffolds:
+        for left, right in zip(scaffold.members, scaffold.members[1:]):
+            records.append(graph_gap_record(scaffold, left, right, graph, max_path_edges))
+    return records
+
+
 def scaffold_header(scaffold, simple_headers, gap_mode):
     if simple_headers:
         return scaffold.name
@@ -456,6 +676,47 @@ def write_gap_report(path, scaffolds):
                 out.write("\t".join(str(item) for item in row) + "\n")
 
 
+def write_graph_gap_report(path, records):
+    header = [
+        "scaffold",
+        "left_contig",
+        "right_contig",
+        "left_graph_node",
+        "right_graph_node",
+        "left_orientation",
+        "right_orientation",
+        "graph_status",
+        "direct_edge",
+        "direct_edge_orientations",
+        "direct_edge_overlap_bp",
+        "shortest_path_edges",
+        "shortest_path_nodes",
+        "candidate_intermediate_nodes",
+        "max_path_edges",
+    ]
+    with open(path, "w") as out:
+        out.write("\t".join(header) + "\n")
+        for record in records:
+            row = [
+                record.scaffold,
+                record.left_contig,
+                record.right_contig,
+                record.left_graph_node,
+                record.right_graph_node,
+                record.left_orientation,
+                record.right_orientation,
+                record.graph_status,
+                "yes" if record.direct_edge else "no",
+                record.direct_edge_orientations,
+                record.direct_edge_overlap_bp,
+                record.shortest_path_edges if record.shortest_path_edges is not None else ".",
+                record.shortest_path_nodes,
+                record.candidate_intermediate_nodes,
+                record.max_path_edges,
+            ]
+            out.write("\t".join(str(item) for item in row) + "\n")
+
+
 def write_summary(path, scaffolds, unassigned):
     header = [
         "scaffold",
@@ -521,6 +782,9 @@ def write_run_summary(path, args, output_paths, scaffolds, unassigned):
         out.write(f"fixed_gap_bp\t{args.fixed_gap_bp if args.fixed_gap_bp is not None else '.'}\n")
         out.write(f"overlap_policy\t{args.overlap_policy}\n")
         out.write(f"trim_sequence_min_identity\t{args.trim_sequence_min_identity}\n")
+        out.write("\nGraph evidence\n")
+        out.write(f"gfa\t{args.gfa if args.gfa else '.'}\n")
+        out.write(f"graph_max_path_edges\t{args.graph_max_path_edges}\n")
         out.write("\nOutputs\n")
         for label, value in output_paths.items():
             out.write(f"{label}\t{value}\n")
@@ -538,6 +802,8 @@ def run(args):
         raise ValueError("--fixed-gap-bp must be zero or greater")
     if not 0.0 <= args.trim_sequence_min_identity <= 1.0:
         raise ValueError("--trim-sequence-min-identity must be between 0 and 1")
+    if args.graph_max_path_edges < 1:
+        raise ValueError("--graph-max-path-edges must be at least 1")
 
     prefix = Path(args.output_prefix)
     if prefix.parent and str(prefix.parent) != ".":
@@ -549,20 +815,34 @@ def run(args):
         "scaffold_summary": Path(str(prefix) + ".scaffold_summary.tsv"),
         "run_summary": Path(str(prefix) + ".run_summary.txt"),
     }
+    if args.gfa:
+        output_paths["graph_gap_report"] = Path(str(prefix) + ".graph_gaps.tsv")
 
     assignments = read_assignments(args.assignments)
     records = read_ordered_fasta(args.ordered_fasta)
     groups, unassigned = group_scaffold_members(records, assignments)
     scaffolds = build_scaffolds(groups, args.fixed_gap_bp, args)
     gap_mode = "fixed" if args.fixed_gap_bp is not None else "inferred"
+    graph_gap_records = []
+    if args.gfa:
+        graph = read_gfa(args.gfa)
+        graph_gap_records = build_graph_gap_records(
+            scaffolds,
+            graph,
+            args.graph_max_path_edges,
+        )
 
     write_scaffold_fasta(output_paths["scaffold_fasta"], scaffolds, unassigned, args.simple_headers, gap_mode)
     write_gap_report(output_paths["gap_report"], scaffolds)
+    if args.gfa:
+        write_graph_gap_report(output_paths["graph_gap_report"], graph_gap_records)
     write_summary(output_paths["scaffold_summary"], scaffolds, unassigned)
     write_run_summary(output_paths["run_summary"], args, output_paths, scaffolds, unassigned)
 
     sys.stderr.write(f"Wrote scaffold FASTA: {output_paths['scaffold_fasta']}\n")
     sys.stderr.write(f"Wrote gap report: {output_paths['gap_report']}\n")
+    if args.gfa:
+        sys.stderr.write(f"Wrote graph gap report: {output_paths['graph_gap_report']}\n")
     sys.stderr.write(f"Wrote scaffold summary: {output_paths['scaffold_summary']}\n")
 
 

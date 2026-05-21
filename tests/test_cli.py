@@ -64,6 +64,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("--embed-sequences", manual_help)
         self.assertIn("--recipe", manual_apply_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
+        self.assertIn("--gfa", scaffold_help)
+        self.assertIn("--graph-max-path-edges", scaffold_help)
         self.assertIn("--per-ref", plot_help)
         self.assertIn("--paf", plot_help)
         self.assertIn("--formats", plot_help)

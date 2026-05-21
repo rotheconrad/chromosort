@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data" / "scaffold"
+GRAPH_DATA = Path(__file__).resolve().parent / "data" / "graph_gotchas"
 
 
 def run_scaffold(tmp_path, *extra_args):
@@ -62,6 +63,23 @@ def write_assignment_table(path, rows):
         "order_in_ref",
         "ref_start",
         "ref_end",
+    ]
+    with open(path, "w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=header, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def write_graph_assignment_table(path, rows):
+    header = [
+        "contig",
+        "kept",
+        "new_name",
+        "assigned_ref",
+        "order_in_ref",
+        "ref_start",
+        "ref_end",
+        "orientation",
     ]
     with open(path, "w", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=header, delimiter="\t")
@@ -127,6 +145,131 @@ class ScaffoldTests(unittest.TestCase):
             self.assertEqual(gaps[0]["raw_inferred_gap_bp"], "5")
             self.assertEqual(gaps[0]["gap_bp"], "2")
             self.assertEqual(gaps[0]["gap_mode"], "fixed")
+
+    def test_scaffold_graph_report_marks_direct_edges(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered = tmp_path / "ordered.fa"
+            assignments = tmp_path / "assignments.tsv"
+            ordered.write_text(
+                ">chr1_left\nAAAACCCC\n"
+                ">chr1_bridge_good\nCCCCGGGG\n"
+                ">chr1_right\nGGGGTTTT\n"
+            )
+            write_graph_assignment_table(
+                assignments,
+                [
+                    {
+                        "contig": "left",
+                        "kept": "yes",
+                        "new_name": "chr1_left",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "1",
+                        "ref_start": "1",
+                        "ref_end": "8",
+                        "orientation": "+",
+                    },
+                    {
+                        "contig": "bridge_good",
+                        "kept": "yes",
+                        "new_name": "chr1_bridge_good",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "2",
+                        "ref_start": "19",
+                        "ref_end": "26",
+                        "orientation": "+",
+                    },
+                    {
+                        "contig": "right",
+                        "kept": "yes",
+                        "new_name": "chr1_right",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "3",
+                        "ref_start": "37",
+                        "ref_end": "44",
+                        "orientation": "+",
+                    },
+                ],
+            )
+
+            prefix = run_custom_scaffold(
+                tmp_path,
+                ordered,
+                assignments,
+                "--gfa",
+                str(GRAPH_DATA / "unitigs.gfa"),
+            )
+            rows = read_tsv(Path(str(prefix) + ".graph_gaps.tsv"))
+
+            self.assertEqual([row["graph_status"] for row in rows], ["direct_edge", "direct_edge"])
+            self.assertEqual(rows[0]["direct_edge"], "yes")
+            self.assertEqual(rows[0]["direct_edge_orientations"], "left+>bridge_good+")
+            self.assertEqual(rows[0]["direct_edge_overlap_bp"], "4")
+            self.assertEqual(rows[0]["shortest_path_edges"], "1")
+            self.assertEqual(rows[0]["shortest_path_nodes"], "left+,bridge_good+")
+
+    def test_scaffold_graph_report_marks_short_paths_and_missing_nodes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered = tmp_path / "ordered.fa"
+            assignments = tmp_path / "assignments.tsv"
+            ordered.write_text(
+                ">chr1_left\nAAAACCCC\n"
+                ">chr1_right\nGGGGTTTT\n"
+                ">chr1_missing\nAAAA\n"
+            )
+            write_graph_assignment_table(
+                assignments,
+                [
+                    {
+                        "contig": "left",
+                        "kept": "yes",
+                        "new_name": "chr1_left",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "1",
+                        "ref_start": "1",
+                        "ref_end": "8",
+                        "orientation": "+",
+                    },
+                    {
+                        "contig": "right",
+                        "kept": "yes",
+                        "new_name": "chr1_right",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "2",
+                        "ref_start": "37",
+                        "ref_end": "44",
+                        "orientation": "+",
+                    },
+                    {
+                        "contig": "missing",
+                        "kept": "yes",
+                        "new_name": "chr1_missing",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": "3",
+                        "ref_start": "50",
+                        "ref_end": "53",
+                        "orientation": "+",
+                    },
+                ],
+            )
+
+            prefix = run_custom_scaffold(
+                tmp_path,
+                ordered,
+                assignments,
+                "--gfa",
+                str(GRAPH_DATA / "unitigs.gfa"),
+            )
+            rows = read_tsv(Path(str(prefix) + ".graph_gaps.tsv"))
+
+            self.assertEqual(rows[0]["graph_status"], "short_path")
+            self.assertEqual(rows[0]["direct_edge"], "no")
+            self.assertEqual(rows[0]["shortest_path_edges"], "2")
+            self.assertEqual(rows[0]["shortest_path_nodes"], "left+,bridge_good+,right+")
+            self.assertEqual(rows[0]["candidate_intermediate_nodes"], "bridge_good+")
+            self.assertEqual(rows[1]["graph_status"], "missing_right_node")
+            self.assertEqual(rows[1]["right_graph_node"], ".")
 
     def test_scaffold_reports_negative_reference_gap_as_overlap(self):
         with tempfile.TemporaryDirectory() as tmp:

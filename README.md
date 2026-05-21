@@ -79,6 +79,7 @@ scaffold-gap decision is auditable.
   - [Run `chromo scaffold` With Inferred Gaps](#run-chromo-scaffold-with-inferred-gaps)
   - [Run `chromo scaffold` With Fixed Gaps](#run-chromo-scaffold-with-fixed-gaps)
   - [Run `chromo scaffold` With Overlap Trimming](#run-chromo-scaffold-with-overlap-trimming)
+  - [Run `chromo scaffold` With GFA Graph Evidence](#run-chromo-scaffold-with-gfa-graph-evidence)
   - [`chromo scaffold` Outputs](#chromo-scaffold-outputs)
   - [`chromo scaffold` Parameters](#chromo-scaffold-parameters)
   - [Reasoning Behind `chromo scaffold`](#reasoning-behind-chromo-scaffold)
@@ -1155,7 +1156,9 @@ Given a final `chromo sort` ordered FASTA and its matching
 7. Optionally trims reviewed terminal overlaps according to `--overlap-policy`.
 8. Optionally uses a fixed user-provided number of Ns between every neighboring
    contig.
-9. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
+9. Optionally writes a report-only GFA graph-evidence table for adjacent
+   scaffold junctions.
+10. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
 
 The intended input is the final ordered FASTA from the same `chromo sort` run as
 the assignment report. If you run `chromo fix`, re-run `chromo sort` on the
@@ -1216,12 +1219,30 @@ and right contig prefix match across the inferred overlap with at least
 `--trim-sequence-min-identity` identity. Non-terminal overlaps are reported but
 not trimmed by either trimming policy.
 
+### Run `chromo scaffold` With GFA Graph Evidence
+
+```bash
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.graph \
+  --gfa assembly_graph.gfa
+```
+
+When `--gfa` is provided, `chromo scaffold` writes
+`<prefix>.graph_gaps.tsv`. This is report-only: scaffold FASTA construction,
+gap lengths, and overlap policies are unchanged. The graph report resolves each
+adjacent scaffold contig to a GFA segment when possible, records direct
+orientation-aware GFA links, and searches for a short explicit GFA path up to
+`--graph-max-path-edges`.
+
 ### `chromo scaffold` Outputs
 
 | Output | Description |
 | --- | --- |
 | `<prefix>.scaffold.fa` | One FASTA record per assigned reference sequence, with ordered contigs joined by Ns. |
 | `<prefix>.scaffold_gaps.tsv` | One row per inserted gap with flanking contigs, inferred gap, written gap, overlap bp/class/fractions, overlap policy/action, trimmed bp, and sequence-overlap identity when checked. |
+| `<prefix>.graph_gaps.tsv` | Optional report-only GFA evidence for adjacent scaffold junctions when `--gfa` is provided, including direct links, short paths, orientations, overlap bp, and missing-node statuses. |
 | `<prefix>.scaffold_summary.tsv` | One row per scaffold with contig count, scaffold length, sequence bp, gap bp, overlap totals, trimming totals, and ordered contig list. |
 | `<prefix>.run_summary.txt` | Inputs, gap model, output paths, and total scaffold counts. |
 
@@ -1236,6 +1257,8 @@ not trimmed by either trimming policy.
 | `--overlap-policy` | `zero-gap` | Handling for negative inferred gaps: `zero-gap`, `warn`, `trim-reference`, or `trim-sequence`. |
 | `--trim-sequence-min-identity` | `0.98` | Minimum suffix/prefix identity required by `--overlap-policy trim-sequence`. |
 | `--simple-headers` | off | Write scaffold FASTA headers containing only the scaffold ID. |
+| `--gfa` | none | Optional assembly graph GFA for report-only graph evidence at scaffold junctions. |
+| `--graph-max-path-edges` | `4` | Maximum explicit GFA link depth searched for short paths in the graph gap report. |
 
 ### Reasoning Behind `chromo scaffold`
 
@@ -1270,6 +1293,15 @@ overlaps are reported for review rather than trimmed automatically.
 Some downstream tools and submission workflows prefer a constant gap size. The
 `--fixed-gap-bp` option supports that convention while preserving the inferred
 gap estimate in the report for transparency.
+
+#### Keep Graph Evidence Report-Only
+
+The optional GFA report is evidence, not an assembler. It can show that two
+adjacent scaffold contigs are directly linked in the assembly graph, connected
+through a short path, connected only in a different orientation, absent from the
+graph, or disconnected within the configured search depth. It does not fill
+gaps, trim sequence, or reorder contigs. Those operations remain explicit
+review steps.
 
 ## Development
 
@@ -1323,6 +1355,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.7` | Added `chromo scaffold --gfa` report-only graph evidence. When a GFA is provided, scaffolding now writes `<prefix>.graph_gaps.tsv` with resolved graph nodes, orientation-aware direct links, link overlap bp, short explicit GFA paths up to `--graph-max-path-edges`, intermediate candidate nodes, and missing/no-path statuses without changing FASTA output. |
 | `0.2.6` | Added the first graph-evidence foundation: a tested GFA parser for segment/link records, orientation-aware edge lookup helpers, overlap-CIGAR handling that preserves complex overlaps as non-trim lengths, and synthetic graph-gotcha fixtures with GFA, PAF, GAF, Hi-C-like, and expected-path files for future roadmap development. |
 | `0.2.5` | Added `chromo manual`, a self-contained HTML dashboard for manual dot-plot review, contig removal/restoration, order changes, breakpoints, inversions, scaffold labeling/export, FASTA downloads, recipe JSON export, and reproducible `chromo manual apply` recipe execution. |
 | `0.2.4` | Added `chromo cut` for exact reviewed breakpoint cuts, with repeatable `--cut CONTIG:POS[,POS...]`, single-contig `--contig/--pos`, batch `--cuts-file`, cut-piece FASTA output, and an audit TSV report. |
