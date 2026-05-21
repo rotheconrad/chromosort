@@ -2,6 +2,7 @@
 """Plan and optionally apply reviewed graph-based gap fills."""
 
 import argparse
+import csv
 import sys
 from collections import defaultdict, deque
 from dataclasses import dataclass
@@ -51,6 +52,7 @@ class FillPlan:
     fill_sequence: str = ""
     fill_bp: int = 0
     right_trim_bp: int = 0
+    accept_fill: bool = False
     applied: bool = False
     reason: str = "."
 
@@ -131,6 +133,15 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--apply",
         action="store_true",
         help="Write <prefix>.filled.fa using only fillable graph paths.",
+    )
+    ap.add_argument(
+        "--reviewed-plan",
+        default=None,
+        help=(
+            "Optional edited fill plan TSV. When provided with --apply, only "
+            "rows with accept_fill=yes are applied after the current graph "
+            "path is rechecked."
+        ),
     )
     ap.add_argument(
         "--fixed-gap-bp",
@@ -367,6 +378,86 @@ def choose_unique_supported_path(supports, min_support):
     if supports.count(best_support) != 1:
         return None
     return supports.index(best_support)
+
+
+def parse_review_accept(value, line_number):
+    normalized = (value or "").strip().lower()
+    if normalized in {"yes", "y", "true", "1", "accept", "accepted", "apply"}:
+        return True
+    if normalized in {"", ".", "no", "n", "false", "0", "reject", "skip"}:
+        return False
+    raise ValueError(
+        f"Malformed accept_fill value at reviewed plan line {line_number}: "
+        f"{value!r}"
+    )
+
+
+def fill_plan_key(plan):
+    return (plan.scaffold, plan.left_contig, plan.right_contig)
+
+
+def read_reviewed_plan(path):
+    required = {"scaffold", "left_contig", "right_contig", "path_nodes", "accept_fill"}
+    decisions = {}
+    with open(path, newline="") as fh:
+        reader = csv.DictReader(fh, delimiter="\t")
+        fieldnames = set(reader.fieldnames or [])
+        missing = sorted(required - fieldnames)
+        if missing:
+            raise ValueError(
+                "Reviewed fill plan is missing required column(s): "
+                + ", ".join(missing)
+            )
+        for line_number, row in enumerate(reader, start=2):
+            key = (
+                row.get("scaffold", ""),
+                row.get("left_contig", ""),
+                row.get("right_contig", ""),
+            )
+            if not all(key):
+                raise ValueError(
+                    f"Malformed reviewed plan row at line {line_number}: "
+                    "missing scaffold, left_contig, or right_contig"
+                )
+            if key in decisions:
+                raise ValueError(
+                    f"Duplicate reviewed plan row at line {line_number}: "
+                    f"{key[0]} {key[1]} {key[2]}"
+                )
+            decisions[key] = {
+                "accept": parse_review_accept(row.get("accept_fill", ""), line_number),
+                "path_nodes": row.get("path_nodes", ""),
+                "line_number": line_number,
+            }
+    return decisions
+
+
+def apply_reviewed_plan(plans, decisions):
+    plan_by_key = {fill_plan_key(plan): plan for plan in plans}
+    for key, decision in decisions.items():
+        if key not in plan_by_key and decision["accept"]:
+            raise ValueError(
+                "Reviewed plan accepts a gap that is not in the current plan "
+                f"at line {decision['line_number']}: {key[0]} {key[1]} {key[2]}"
+            )
+
+    for plan in plans:
+        decision = decisions.get(fill_plan_key(plan))
+        if not decision or not decision["accept"]:
+            continue
+        if decision["path_nodes"] != plan.path_nodes:
+            raise ValueError(
+                "Reviewed plan accepted path no longer matches current graph "
+                f"path for {plan.scaffold} {plan.left_contig}->{plan.right_contig}: "
+                f"{decision['path_nodes']} != {plan.path_nodes}"
+            )
+        if plan.fill_status != "fillable":
+            raise ValueError(
+                "Reviewed plan accepts a gap that is not currently fillable "
+                f"for {plan.scaffold} {plan.left_contig}->{plan.right_contig}: "
+                f"{plan.fill_status}"
+            )
+        plan.accept_fill = True
 
 
 def enumerate_graph_paths(
@@ -719,7 +810,9 @@ def build_filled_scaffolds(groups, unassigned, plans, args):
         fallback_gap_bp = 0
         trimmed_bp = 0
         for plan, member in zip(grouped_plans.get(scaffold_name, []), members[1:]):
-            if plan.fill_status == "fillable":
+            if plan.fill_status == "fillable" and (
+                not args.reviewed_plan or plan.accept_fill
+            ):
                 plan.applied = True
                 pieces.append(plan.fill_sequence)
                 pieces.append(member.record.seq[plan.right_trim_bp:])
@@ -786,6 +879,7 @@ def write_fill_plan(path, plans, include_sequences):
         "fill_status",
         "fill_bp",
         "right_trim_bp",
+        "accept_fill",
         "applied",
         "reason",
         "fill_sequence",
@@ -817,6 +911,7 @@ def write_fill_plan(path, plans, include_sequences):
                 plan.fill_status,
                 plan.fill_bp,
                 plan.right_trim_bp,
+                "yes" if plan.accept_fill else "no",
                 "yes" if plan.applied else "no",
                 plan.reason,
                 plan.fill_sequence if include_sequences and plan.fill_sequence else ".",
@@ -842,6 +937,7 @@ def write_run_summary(path, args, output_paths, plans, filled_records):
         out.write(f"gfa\t{args.gfa}\n")
         out.write(f"gaf\t{args.gaf if args.gaf else '.'}\n")
         out.write(f"hic_pairs\t{args.hic_pairs if args.hic_pairs else '.'}\n")
+        out.write(f"reviewed_plan\t{args.reviewed_plan if args.reviewed_plan else '.'}\n")
         out.write("\nParameters\n")
         out.write(f"apply\t{args.apply}\n")
         out.write(f"fixed_gap_bp\t{args.fixed_gap_bp if args.fixed_gap_bp is not None else '.'}\n")
@@ -909,6 +1005,8 @@ def run(args):
     records = read_ordered_fasta(args.ordered_fasta)
     groups, unassigned = group_scaffold_members(records, assignments)
     plans = build_fill_plans(groups, graph, args, gaf_records, hic_contacts)
+    if args.reviewed_plan:
+        apply_reviewed_plan(plans, read_reviewed_plan(args.reviewed_plan))
 
     filled_records = None
     if args.apply:

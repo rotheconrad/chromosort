@@ -34,6 +34,13 @@ def read_tsv(path):
         return list(csv.DictReader(fh, delimiter="\t"))
 
 
+def write_tsv(path, rows):
+    with open(path, "w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=list(rows[0]), delimiter="\t")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def read_fasta(path):
     records = {}
     name = None
@@ -64,49 +71,54 @@ def run_fill(*args):
     )
 
 
+def write_unique_fill_fixture(tmp_path):
+    ordered = tmp_path / "ordered.fa"
+    assignments = tmp_path / "assignments.tsv"
+    graph = tmp_path / "graph.gfa"
+
+    ordered.write_text(">chr1_left\nAAAACC\n>chr1_right\nTTCCCC\n")
+    write_assignments(
+        assignments,
+        [
+            {
+                "contig": "left",
+                "kept": "yes",
+                "new_name": "chr1_left",
+                "assigned_ref": "chr1",
+                "order_in_ref": 1,
+                "ref_start": 1,
+                "ref_end": 6,
+                "orientation": "+",
+            },
+            {
+                "contig": "right",
+                "kept": "yes",
+                "new_name": "chr1_right",
+                "assigned_ref": "chr1",
+                "order_in_ref": 2,
+                "ref_start": 21,
+                "ref_end": 26,
+                "orientation": "+",
+            },
+        ],
+    )
+    graph.write_text(
+        "H\tVN:Z:1.0\n"
+        "S\tleft\tAAAACC\tLN:i:6\n"
+        "S\tgapper\tCCGGGGTT\tLN:i:8\n"
+        "S\tright\tTTCCCC\tLN:i:6\n"
+        "L\tleft\t+\tgapper\t+\t2M\n"
+        "L\tgapper\t+\tright\t+\t2M\n"
+    )
+    return ordered, assignments, graph
+
+
 class FillTests(unittest.TestCase):
     def test_fill_applies_unique_sequence_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            ordered = tmp_path / "ordered.fa"
-            assignments = tmp_path / "assignments.tsv"
-            graph = tmp_path / "graph.gfa"
+            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
             prefix = tmp_path / "filled"
-
-            ordered.write_text(">chr1_left\nAAAACC\n>chr1_right\nTTCCCC\n")
-            write_assignments(
-                assignments,
-                [
-                    {
-                        "contig": "left",
-                        "kept": "yes",
-                        "new_name": "chr1_left",
-                        "assigned_ref": "chr1",
-                        "order_in_ref": 1,
-                        "ref_start": 1,
-                        "ref_end": 6,
-                        "orientation": "+",
-                    },
-                    {
-                        "contig": "right",
-                        "kept": "yes",
-                        "new_name": "chr1_right",
-                        "assigned_ref": "chr1",
-                        "order_in_ref": 2,
-                        "ref_start": 21,
-                        "ref_end": 26,
-                        "orientation": "+",
-                    },
-                ],
-            )
-            graph.write_text(
-                "H\tVN:Z:1.0\n"
-                "S\tleft\tAAAACC\tLN:i:6\n"
-                "S\tgapper\tCCGGGGTT\tLN:i:8\n"
-                "S\tright\tTTCCCC\tLN:i:6\n"
-                "L\tleft\t+\tgapper\t+\t2M\n"
-                "L\tgapper\t+\tright\t+\t2M\n"
-            )
 
             run_fill(
                 "--ordered-fasta",
@@ -127,10 +139,119 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["path_nodes"], "left+,gapper+,right+")
             self.assertEqual(plan["fill_sequence"], "GGGGTT")
             self.assertEqual(plan["right_trim_bp"], "2")
+            self.assertEqual(plan["accept_fill"], "no")
             self.assertEqual(plan["applied"], "yes")
 
             records = read_fasta(Path(str(prefix) + ".filled.fa"))
             self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
+
+    def test_reviewed_plan_controls_graph_fill_application(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
+            plan_prefix = tmp_path / "planned"
+            accepted_plan = tmp_path / "accepted_plan.tsv"
+            rejected_plan = tmp_path / "rejected_plan.tsv"
+
+            run_fill(
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--output-prefix",
+                str(plan_prefix),
+                "--include-fill-sequences",
+            )
+            rows = read_tsv(Path(str(plan_prefix) + ".fill_plan.tsv"))
+            self.assertEqual(rows[0]["fill_status"], "fillable")
+            self.assertEqual(rows[0]["accept_fill"], "no")
+
+            rows[0]["accept_fill"] = "yes"
+            write_tsv(accepted_plan, rows)
+            accepted_prefix = tmp_path / "accepted"
+            run_fill(
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--reviewed-plan",
+                str(accepted_plan),
+                "--output-prefix",
+                str(accepted_prefix),
+                "--apply",
+                "--simple-headers",
+            )
+
+            accepted_rows = read_tsv(Path(str(accepted_prefix) + ".fill_plan.tsv"))
+            self.assertEqual(accepted_rows[0]["accept_fill"], "yes")
+            self.assertEqual(accepted_rows[0]["applied"], "yes")
+            records = read_fasta(Path(str(accepted_prefix) + ".filled.fa"))
+            self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
+
+            rows[0]["accept_fill"] = "no"
+            write_tsv(rejected_plan, rows)
+            rejected_prefix = tmp_path / "rejected"
+            run_fill(
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--reviewed-plan",
+                str(rejected_plan),
+                "--output-prefix",
+                str(rejected_prefix),
+                "--apply",
+                "--simple-headers",
+            )
+
+            rejected_rows = read_tsv(Path(str(rejected_prefix) + ".fill_plan.tsv"))
+            self.assertEqual(rejected_rows[0]["accept_fill"], "no")
+            self.assertEqual(rejected_rows[0]["applied"], "no")
+            records = read_fasta(Path(str(rejected_prefix) + ".filled.fa"))
+            self.assertEqual(records["chr1"], "AAAACC" + "N" * 14 + "TTCCCC")
+
+    def test_reviewed_plan_rejects_stale_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
+            plan_prefix = tmp_path / "planned"
+            reviewed_plan = tmp_path / "reviewed_plan.tsv"
+
+            run_fill(
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--output-prefix",
+                str(plan_prefix),
+            )
+            rows = read_tsv(Path(str(plan_prefix) + ".fill_plan.tsv"))
+            rows[0]["accept_fill"] = "yes"
+            rows[0]["path_nodes"] = "left+,stale+,right+"
+            write_tsv(reviewed_plan, rows)
+
+            with self.assertRaises(subprocess.CalledProcessError):
+                run_fill(
+                    "--ordered-fasta",
+                    str(ordered),
+                    "--assignments",
+                    str(assignments),
+                    "--gfa",
+                    str(graph),
+                    "--reviewed-plan",
+                    str(reviewed_plan),
+                    "--output-prefix",
+                    str(tmp_path / "stale"),
+                    "--apply",
+                )
 
     def test_fill_refuses_ambiguous_graph_paths(self):
         with tempfile.TemporaryDirectory() as tmp:

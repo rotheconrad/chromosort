@@ -74,6 +74,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--apply", fill_help)
         self.assertIn("--gaf", fill_help)
         self.assertIn("--hic-pairs", fill_help)
+        self.assertIn("--reviewed-plan", fill_help)
         self.assertIn("--max-path-edges", fill_help)
         self.assertIn("--min-gaf-path-support", fill_help)
         self.assertIn("--min-hic-path-support", fill_help)
