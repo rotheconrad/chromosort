@@ -110,6 +110,7 @@ overlaps, flank sequence mismatches, and stale reviewed fill-plan paths.
   - [`chromo fill` Outputs](#chromo-fill-outputs)
   - [`chromo fill` Parameters](#chromo-fill-parameters)
   - [Reasoning Behind `chromo fill`](#reasoning-behind-chromo-fill)
+- [Synthetic Graph Workflow](#synthetic-graph-workflow)
 - [Development](#development)
 - [Citation](#citation)
 - [Contact](#contact)
@@ -1705,6 +1706,108 @@ sequences match the oriented GFA segments used by the path. This protects
 against applying a graph path to a FASTA that has been renamed, trimmed,
 reverse-complemented, or otherwise edited without matching graph coordinates.
 
+## Synthetic Graph Workflow
+
+The repo ships a tiny graph-aware fixture under `tests/data/graph_gotchas`.
+It is intentionally small enough to inspect by eye, but it exercises the same
+file types used in real graph-aware ChromoSort runs: FASTA, PAF, GFA, GAF, and
+Hi-C-like contact counts.
+
+```bash
+mkdir -p results/graph_gotchas
+DATA=tests/data/graph_gotchas
+
+chromo sort \
+  --ref-fasta "$DATA/ref.fa" \
+  --assembly-fasta "$DATA/assembly.fa" \
+  --paf "$DATA/unitig_to_ref.paf" \
+  --gfa "$DATA/unitigs.gfa" \
+  --output-prefix results/graph_gotchas/sort
+
+chromo manual \
+  --ref-fasta "$DATA/ref.fa" \
+  --assembly-fasta "$DATA/assembly.fa" \
+  --paf "$DATA/unitig_to_ref.paf" \
+  --gfa "$DATA/unitigs.gfa" \
+  --embed-sequences \
+  --output-html results/graph_gotchas/manual.html
+
+chromo scaffold \
+  --ordered-fasta results/graph_gotchas/sort.ordered.fa \
+  --assignments results/graph_gotchas/sort.contig_assignments.tsv \
+  --gfa "$DATA/unitigs.gfa" \
+  --output-prefix results/graph_gotchas/scaffold
+```
+
+Open `results/graph_gotchas/manual.html` to inspect dot plots beside graph
+neighbors. The scaffold graph report at
+`results/graph_gotchas/scaffold.graph_gaps.tsv` shows report-only GFA context
+for adjacent sorted contigs.
+
+For a focused gap-fill example, the fixture includes `fill_ordered.fa` and
+`fill_assignments.tsv`, a two-flank chr1 case where `bridge_good` and
+`bridge_alt` are both possible graph paths:
+
+```bash
+chromo fill \
+  --ordered-fasta "$DATA/fill_ordered.fa" \
+  --assignments "$DATA/fill_assignments.tsv" \
+  --gfa "$DATA/unitigs.gfa" \
+  --ref-paf "$DATA/unitig_to_ref.paf" \
+  --gaf "$DATA/reads_to_graph.gaf" \
+  --hic-pairs "$DATA/hic_pairs.tsv" \
+  --output-prefix results/graph_gotchas/fill \
+  --include-fill-sequences \
+  --review-html results/graph_gotchas/fill.review.html
+```
+
+The fill plan should mark `left+,bridge_good+,right+` as fillable, while the
+review HTML shows both candidate paths side by side with PAF, GAF, Hi-C, and
+risk annotations. After reviewing the HTML, export a reviewed TSV, or script the
+expected toy approval:
+
+```bash
+python - <<'PY'
+import csv
+
+src = "results/graph_gotchas/fill.fill_plan.tsv"
+dst = "results/graph_gotchas/fill.reviewed_plan.tsv"
+
+with open(src, newline="") as fh:
+    reader = csv.DictReader(fh, delimiter="\t")
+    rows = list(reader)
+    fieldnames = reader.fieldnames
+
+for row in rows:
+    row["accept_fill"] = (
+        "yes"
+        if row["fill_status"] == "fillable"
+        and row["path_nodes"] == "left+,bridge_good+,right+"
+        else "no"
+    )
+
+with open(dst, "w", newline="") as fh:
+    writer = csv.DictWriter(fh, fieldnames=fieldnames, delimiter="\t")
+    writer.writeheader()
+    writer.writerows(rows)
+PY
+
+chromo fill \
+  --ordered-fasta "$DATA/fill_ordered.fa" \
+  --assignments "$DATA/fill_assignments.tsv" \
+  --gfa "$DATA/unitigs.gfa" \
+  --ref-paf "$DATA/unitig_to_ref.paf" \
+  --gaf "$DATA/reads_to_graph.gaf" \
+  --hic-pairs "$DATA/hic_pairs.tsv" \
+  --reviewed-plan results/graph_gotchas/fill.reviewed_plan.tsv \
+  --output-prefix results/graph_gotchas/fill.reviewed \
+  --apply \
+  --simple-headers
+```
+
+The reviewed fill FASTA should contain chr1 with the graph-supported bridge
+inserted and the right flank overlap trimmed.
+
 ## Development
 
 ```bash
@@ -1761,6 +1864,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.20` | Added an end-to-end synthetic graph workflow to the README and shipped focused fill walkthrough inputs. The tutorial runs sort/manual/scaffold/fill with the graph-gotcha GFA, PAF, GAF, Hi-C-like contacts, review HTML, reviewed-plan TSV, and reviewed fill application. |
 | `0.2.19` | Improved `chromo fill --review-html` candidate comparison. Review dashboards now embed per-candidate path rows with path nodes, support scores, validation status, fill length, trim length, risk flags, and optional fill sequence so reviewers can compare ambiguous branches directly before exporting a reviewed plan. |
 | `0.2.18` | Added richer path-risk annotations to `chromo fill`. Fill plans and review HTML now report risk flags, branch-complexity score, high-degree graph nodes, self-loop nodes, unsequenced nodes, and cycle-guard counts so ambiguous or risky candidate paths are easier to triage. |
 | `0.2.17` | Added reference-placement PAF evidence to `chromo fill`. The new `--ref-paf` path scorer reports selected and best-alternate reference support, can conservatively resolve ambiguous branches when one candidate has unique expected-gap placement support, and conflicts with GAF or Hi-C support leave the gap unresolved. |

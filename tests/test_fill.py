@@ -421,37 +421,10 @@ class FillTests(unittest.TestCase):
     def test_ref_paf_support_resolves_ambiguous_graph_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            ordered = tmp_path / "ordered.fa"
-            assignments = tmp_path / "assignments.tsv"
+            ordered = GRAPH_DATA / "fill_ordered.fa"
+            assignments = GRAPH_DATA / "fill_assignments.tsv"
             prefix = tmp_path / "ref_supported"
             review_html = tmp_path / "ref_supported.review.html"
-
-            ordered.write_text(">chr1_left\nAAAACCCC\n>chr1_right\nGGGGTTTT\n")
-            write_assignments(
-                assignments,
-                [
-                    {
-                        "contig": "left",
-                        "kept": "yes",
-                        "new_name": "chr1_left",
-                        "assigned_ref": "chr1",
-                        "order_in_ref": 1,
-                        "ref_start": 1,
-                        "ref_end": 8,
-                        "orientation": "+",
-                    },
-                    {
-                        "contig": "right",
-                        "kept": "yes",
-                        "new_name": "chr1_right",
-                        "assigned_ref": "chr1",
-                        "order_in_ref": 2,
-                        "ref_start": 37,
-                        "ref_end": 44,
-                        "orientation": "+",
-                    },
-                ],
-            )
 
             run_fill(
                 "--ordered-fasta",

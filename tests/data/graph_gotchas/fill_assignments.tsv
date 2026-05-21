@@ -1,0 +1,3 @@
+contig	kept	new_name	assigned_ref	order_in_ref	ref_start	ref_end	orientation
+left	yes	chr1_left	chr1	1	1	8	+
+right	yes	chr1_right	chr1	2	37	44	+

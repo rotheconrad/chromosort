@@ -12,6 +12,9 @@ Files:
 - `unitig_to_ref.paf`: minimap2-like unitig-to-reference placements.
 - `reads_to_graph.gaf`: GraphAligner-like long-read paths through the graph.
 - `hic_pairs.tsv`: simple node-pair contact counts.
+- `fill_ordered.fa`: tiny two-flank ordered FASTA for fill walkthroughs.
+- `fill_assignments.tsv`: matching two-row assignment table for
+  `fill_ordered.fa`.
 - `expected_gap_paths.tsv`: expected high-level path labels for future candidate
   ranking tests.
 
