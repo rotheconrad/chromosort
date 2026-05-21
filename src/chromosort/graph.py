@@ -137,6 +137,26 @@ class AssemblyGraph:
         )
 
 
+@dataclass(frozen=True)
+class GraphNodeEvidence:
+    graph_node: str
+    graph_node_status: str
+    graph_node_length: Optional[int]
+    graph_node_has_sequence: Optional[bool]
+    graph_in_degree: Optional[int]
+    graph_out_degree: Optional[int]
+    graph_neighbor_count: Optional[int]
+    graph_self_loop: Optional[bool]
+
+
+@dataclass(frozen=True)
+class GraphLinkEvidence:
+    graph_link_status: str
+    graph_direct_edge: bool
+    graph_direct_edge_orientations: str
+    graph_direct_edge_overlap_bp: str
+
+
 def open_text(path):
     path = Path(path)
     if str(path).endswith(".gz"):
@@ -313,3 +333,105 @@ def oriented_node(name, orientation):
 def format_oriented_node(item):
     name, orientation = item
     return f"{name}{orientation}"
+
+
+def resolve_graph_node(graph, candidates):
+    """Resolve a sequence/report name to the first matching GFA segment."""
+
+    for candidate in candidates:
+        if candidate and candidate != "." and candidate in graph.nodes:
+            return candidate
+    return "."
+
+
+def _unique_neighbor_count(edges, node):
+    neighbors = set()
+    for edge in edges:
+        if edge.source != node:
+            neighbors.add(edge.source)
+        if edge.target != node:
+            neighbors.add(edge.target)
+    return len(neighbors)
+
+
+def graph_node_evidence(graph, candidates):
+    """Summarize whether and how a report row maps to a GFA segment."""
+
+    graph_node = resolve_graph_node(graph, candidates)
+    if graph_node == ".":
+        return GraphNodeEvidence(
+            graph_node=".",
+            graph_node_status="missing_node",
+            graph_node_length=None,
+            graph_node_has_sequence=None,
+            graph_in_degree=None,
+            graph_out_degree=None,
+            graph_neighbor_count=None,
+            graph_self_loop=None,
+        )
+
+    node = graph.nodes[graph_node]
+    incoming = graph.incoming(graph_node)
+    outgoing = graph.outgoing(graph_node)
+    self_loop = any(edge.source == edge.target == graph_node for edge in incoming + outgoing)
+    return GraphNodeEvidence(
+        graph_node=graph_node,
+        graph_node_status="present",
+        graph_node_length=node.length,
+        graph_node_has_sequence=node.has_sequence,
+        graph_in_degree=len(incoming),
+        graph_out_degree=len(outgoing),
+        graph_neighbor_count=_unique_neighbor_count(incoming + outgoing, graph_node),
+        graph_self_loop=self_loop,
+    )
+
+
+def _edge_orientations(edges):
+    if not edges:
+        return "."
+    return ",".join(
+        f"{edge.source}{edge.source_orientation}>{edge.target}{edge.target_orientation}"
+        for edge in edges
+    )
+
+
+def _edge_overlap_bps(edges):
+    values = []
+    for edge in edges:
+        value = "." if edge.overlap_bp is None else str(edge.overlap_bp)
+        if value not in values:
+            values.append(value)
+    return ",".join(values) if values else "."
+
+
+def graph_link_evidence(graph, left_node, right_node):
+    """Summarize direct GFA links between two resolved graph nodes."""
+
+    if left_node == "." and right_node == ".":
+        status = "missing_both_nodes"
+        direct_edges = []
+    elif left_node == ".":
+        status = "missing_left_node"
+        direct_edges = []
+    elif right_node == ".":
+        status = "missing_right_node"
+        direct_edges = []
+    else:
+        forward = graph.direct_edges(left_node, right_node)
+        reverse = graph.direct_edges(right_node, left_node)
+        direct_edges = forward + reverse
+        if forward and reverse:
+            status = "bidirectional_direct_edge"
+        elif forward:
+            status = "direct_edge"
+        elif reverse:
+            status = "reverse_direct_edge"
+        else:
+            status = "no_direct_edge"
+
+    return GraphLinkEvidence(
+        graph_link_status=status,
+        graph_direct_edge=bool(direct_edges),
+        graph_direct_edge_orientations=_edge_orientations(direct_edges),
+        graph_direct_edge_overlap_bp=_edge_overlap_bps(direct_edges),
+    )

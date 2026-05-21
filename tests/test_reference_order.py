@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data"
+GRAPH_DATA = DATA / "graph_gotchas"
 
 
 def run_chromosort(tmp_path, *extra_args, alignment_args=None):
@@ -105,6 +106,36 @@ def run_custom_sort(tmp_path, ref_fasta, assembly_fasta, coords, *extra_args):
     return prefix
 
 
+def run_graph_sort(tmp_path, *extra_args):
+    prefix = tmp_path / "graph"
+    cmd = [
+        sys.executable,
+        "-m",
+        "chromosort.reference_order",
+        "--ref-fasta",
+        str(GRAPH_DATA / "ref.fa"),
+        "--assembly-fasta",
+        str(GRAPH_DATA / "assembly.fa"),
+        "--paf",
+        str(GRAPH_DATA / "unitig_to_ref.paf"),
+        "--output-prefix",
+        str(prefix),
+        "--min-aligned-bp",
+        "4",
+        "--min-query-cov",
+        "0.50",
+        "--min-novel-ref-bp",
+        "1",
+        "--gfa",
+        str(GRAPH_DATA / "unitigs.gfa"),
+        *extra_args,
+    ]
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "src")
+    subprocess.run(cmd, cwd=ROOT, check=True, env=env)
+    return prefix
+
+
 class ReferenceOrderTests(unittest.TestCase):
     def test_reference_order_and_duplicate_overlap_status(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -190,6 +221,20 @@ class ReferenceOrderTests(unittest.TestCase):
                     "chr2_contigC",
                 ],
             )
+
+    def test_graph_assignment_report_summarizes_gfa_context(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = run_graph_sort(Path(tmp))
+
+            graph_rows = read_assignments(prefix.with_suffix(".graph_assignments.tsv"))
+            self.assertEqual(graph_rows["left"]["graph_node"], "left")
+            self.assertEqual(graph_rows["left"]["graph_node_status"], "present")
+            self.assertEqual(graph_rows["left"]["graph_node_has_sequence"], "yes")
+            self.assertEqual(graph_rows["left"]["overlap_graph_status"], ".")
+            self.assertEqual(graph_rows["left"]["graph_note"], "node_context_only")
+
+            self.assertEqual(graph_rows["bridge_alt"]["graph_self_loop"], "yes")
+            self.assertEqual(graph_rows["isolated"]["graph_neighbor_count"], "0")
 
     def test_low_coverage_split_candidate_is_protected(self):
         with tempfile.TemporaryDirectory() as tmp:

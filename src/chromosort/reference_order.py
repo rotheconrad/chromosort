@@ -28,6 +28,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+from .graph import graph_link_evidence, graph_node_evidence, read_gfa
+
 
 @dataclass
 class FastaIndexRecord:
@@ -155,6 +157,15 @@ def parse_args(argv=None, prog=None):
             "Output prefix. Writes <prefix>.ordered.fa, <prefix>.contig_assignments.tsv, "
             "<prefix>.contig_ref_matches.tsv, <prefix>.chromosome_summary.tsv, "
             "and <prefix>.run_summary.txt."
+        ),
+    )
+    ap.add_argument(
+        "--gfa",
+        default=None,
+        help=(
+            "Optional assembly graph GFA. When provided, writes "
+            "<prefix>.graph_assignments.tsv with report-only graph evidence for "
+            "sort assignments and duplicate-overlap decisions."
         ),
     )
     ap.add_argument(
@@ -1217,6 +1228,12 @@ def fmt(value, digits=4):
     return str(value)
 
 
+def fmt_bool(value):
+    if value is None:
+        return "."
+    return "yes" if value else "no"
+
+
 def write_assignment_report(path, query_records, assignments):
     header = [
         "contig",
@@ -1305,6 +1322,110 @@ def write_assignment_report(path, query_records, assignments):
                 "yes" if assignment.split_candidate else "no",
                 assignment.split_candidate_refs,
                 assignment.split_candidate_reason,
+            ]
+            out.write("\t".join(str(x) for x in row) + "\n")
+
+
+def graph_assignment_note(node_evidence, overlap_contig, overlap_node_evidence, link_evidence):
+    if node_evidence.graph_node_status != "present":
+        return "contig_missing_from_graph"
+    if not overlap_contig or overlap_contig == ".":
+        return "node_context_only"
+    if overlap_node_evidence.graph_node_status != "present":
+        return "overlap_best_missing_from_graph"
+    if link_evidence.graph_direct_edge:
+        return "overlap_best_direct_graph_link"
+    return "overlap_best_no_direct_graph_link"
+
+
+def write_graph_assignment_report(path, query_records, assignments, graph):
+    header = [
+        "contig",
+        "status",
+        "kept",
+        "new_name",
+        "assigned_ref",
+        "orientation",
+        "graph_node",
+        "graph_node_status",
+        "graph_node_length",
+        "graph_node_has_sequence",
+        "graph_in_degree",
+        "graph_out_degree",
+        "graph_neighbor_count",
+        "graph_self_loop",
+        "overlap_best_contig",
+        "overlap_best_graph_node",
+        "overlap_graph_status",
+        "overlap_direct_edge",
+        "overlap_direct_edge_orientations",
+        "overlap_direct_edge_overlap_bp",
+        "graph_note",
+    ]
+    with open(path, "w") as out:
+        out.write("\t".join(header) + "\n")
+        for rec in query_records:
+            assignment = assignments[rec.name]
+            best = assignment.best
+            node_evidence = graph_node_evidence(
+                graph,
+                [assignment.query, assignment.new_name],
+            )
+
+            overlap_contig = assignment.overlap_best_contig
+            overlap_node_evidence = None
+            link_evidence = None
+            if overlap_contig and overlap_contig != ".":
+                overlap_assignment = assignments.get(overlap_contig)
+                overlap_candidates = [overlap_contig]
+                if overlap_assignment is not None:
+                    overlap_candidates.append(overlap_assignment.new_name)
+                overlap_node_evidence = graph_node_evidence(graph, overlap_candidates)
+                link_evidence = graph_link_evidence(
+                    graph,
+                    node_evidence.graph_node,
+                    overlap_node_evidence.graph_node,
+                )
+                overlap_graph_status = link_evidence.graph_link_status
+                overlap_direct_edge = fmt_bool(link_evidence.graph_direct_edge)
+                overlap_direct_edge_orientations = link_evidence.graph_direct_edge_orientations
+                overlap_direct_edge_overlap_bp = link_evidence.graph_direct_edge_overlap_bp
+                overlap_best_graph_node = overlap_node_evidence.graph_node
+            else:
+                overlap_node_evidence = graph_node_evidence(graph, [])
+                overlap_graph_status = "."
+                overlap_direct_edge = "."
+                overlap_direct_edge_orientations = "."
+                overlap_direct_edge_overlap_bp = "."
+                overlap_best_graph_node = "."
+
+            row = [
+                rec.name,
+                assignment.status,
+                "yes" if assignment.kept else "no",
+                assignment.new_name,
+                best.ref if best else ".",
+                best.orientation if best else ".",
+                node_evidence.graph_node,
+                node_evidence.graph_node_status,
+                fmt(node_evidence.graph_node_length, 0),
+                fmt_bool(node_evidence.graph_node_has_sequence),
+                fmt(node_evidence.graph_in_degree, 0),
+                fmt(node_evidence.graph_out_degree, 0),
+                fmt(node_evidence.graph_neighbor_count, 0),
+                fmt_bool(node_evidence.graph_self_loop),
+                overlap_contig,
+                overlap_best_graph_node,
+                overlap_graph_status,
+                overlap_direct_edge,
+                overlap_direct_edge_orientations,
+                overlap_direct_edge_overlap_bp,
+                graph_assignment_note(
+                    node_evidence,
+                    overlap_contig,
+                    overlap_node_evidence,
+                    link_evidence,
+                ),
             ]
             out.write("\t".join(str(x) for x in row) + "\n")
 
@@ -1411,6 +1532,7 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
             out.write(f"coords\t{args.coords}\n")
         if args.paf:
             out.write(f"paf\t{args.paf}\n")
+        out.write(f"gfa\t{args.gfa if args.gfa else '.'}\n")
         out.write("\nThresholds\n")
         out.write(f"min_aligned_bp\t{args.min_aligned_bp}\n")
         out.write(f"min_query_cov\t{args.min_query_cov}\n")
@@ -1478,6 +1600,8 @@ def main(argv=None, prog=None):
     }
     if args.discarded_fasta:
         output_paths["discarded_fasta"] = Path(args.discarded_fasta)
+    if args.gfa:
+        output_paths["graph_assignments"] = Path(str(prefix) + ".graph_assignments.tsv")
     for output_path in output_paths.values():
         if output_path.parent and str(output_path.parent) != ".":
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1506,6 +1630,9 @@ def main(argv=None, prog=None):
     )
 
     write_assignment_report(output_paths["contig_assignments"], query_records, assignments)
+    if args.gfa:
+        graph = read_gfa(args.gfa)
+        write_graph_assignment_report(output_paths["graph_assignments"], query_records, assignments, graph)
     write_match_report(output_paths["contig_ref_matches"], matches)
     write_chromosome_summary(output_paths["chromosome_summary"], ref_records, kept_assignments)
     write_run_summary(
@@ -1542,6 +1669,8 @@ def main(argv=None, prog=None):
     for status, count in sorted(status_counts.items()):
         sys.stderr.write(f"  {status}: {count}\n")
     sys.stderr.write(f"Wrote reports with prefix: {prefix}\n")
+    if args.gfa:
+        sys.stderr.write(f"Wrote graph assignment report: {output_paths['graph_assignments']}\n")
     if args.reports_only:
         sys.stderr.write("Skipped FASTA output because --reports-only was set.\n")
     else:

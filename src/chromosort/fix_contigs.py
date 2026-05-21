@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 
+from .graph import graph_node_evidence, read_gfa
 from .reference_order import (
     alignment_source_from_args,
     iter_alignments,
@@ -187,6 +188,22 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--report",
         required=True,
         help="TSV report describing split pieces and unsplit requested contigs.",
+    )
+    ap.add_argument(
+        "--gfa",
+        default=None,
+        help=(
+            "Optional assembly graph GFA. When provided, writes a report-only "
+            "graph context table for requested contigs."
+        ),
+    )
+    ap.add_argument(
+        "--graph-report",
+        default=None,
+        help=(
+            "Optional path for --gfa graph context output. Defaults to the "
+            "--report path with a .graph.tsv suffix."
+        ),
     )
     ap.add_argument(
         "--min-segment-bp",
@@ -1108,6 +1125,12 @@ def fmt(value, digits=3):
     return str(value)
 
 
+def fmt_bool(value):
+    if value is None:
+        return "."
+    return "yes" if value else "no"
+
+
 def write_report(path, requested, plans):
     header = [
         "original_contig",
@@ -1171,8 +1194,74 @@ def write_report(path, requested, plans):
                 out.write("\t".join(str(item) for item in row) + "\n")
 
 
+def default_graph_report_path(report_path):
+    return Path(report_path).with_suffix(".graph.tsv")
+
+
+def graph_fix_note(plan, node_evidence):
+    present = node_evidence.graph_node_status == "present"
+    if plan.status == "split":
+        return (
+            "split_source_present_in_graph_review"
+            if present
+            else "split_source_missing_from_graph"
+        )
+    return "graph_context_only" if present else "source_missing_from_graph"
+
+
+def write_graph_report(path, requested, plans, graph):
+    header = [
+        "original_contig",
+        "status",
+        "graph_node",
+        "graph_node_status",
+        "graph_node_length",
+        "graph_node_has_sequence",
+        "graph_in_degree",
+        "graph_out_degree",
+        "graph_neighbor_count",
+        "graph_self_loop",
+        "split_pieces",
+        "planner_breakpoints",
+        "planner_ref_transition",
+        "planner_score",
+        "graph_note",
+    ]
+    with open(path, "w") as out:
+        out.write("\t".join(header) + "\n")
+        for contig in requested:
+            plan = plans[contig]
+            node_evidence = graph_node_evidence(graph, [contig])
+            split_pieces = (
+                ",".join(piece.new_name for piece in plan.pieces)
+                if plan.status == "split"
+                else "."
+            )
+            row = [
+                contig,
+                plan.status,
+                node_evidence.graph_node,
+                node_evidence.graph_node_status,
+                fmt(node_evidence.graph_node_length, 0),
+                fmt_bool(node_evidence.graph_node_has_sequence),
+                fmt(node_evidence.graph_in_degree, 0),
+                fmt(node_evidence.graph_out_degree, 0),
+                fmt(node_evidence.graph_neighbor_count, 0),
+                fmt_bool(node_evidence.graph_self_loop),
+                split_pieces,
+                plan.planner_breakpoints,
+                fmt_bool(plan.planner_ref_transition),
+                fmt(plan.planner_score, 1),
+                graph_fix_note(plan, node_evidence),
+            ]
+            out.write("\t".join(str(item) for item in row) + "\n")
+
+
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
+    if args.graph_report and not args.gfa:
+        sys.stderr.write("ERROR: --graph-report requires --gfa\n")
+        sys.exit(2)
     alignment_path, alignment_format = alignment_source_from_args(args)
     explicit_requested = read_requested_contigs(args.contigs, args.contigs_file)
     if args.all_contigs and explicit_requested:
@@ -1182,7 +1271,18 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         sys.stderr.write("ERROR: provide at least one contig via --contigs/--contigs-file or use --all\n")
         sys.exit(2)
 
-    for output_path in [Path(args.output_fasta), Path(args.report)]:
+    graph_report_path = None
+    if args.gfa:
+        graph_report_path = (
+            Path(args.graph_report)
+            if args.graph_report
+            else default_graph_report_path(args.report)
+        )
+
+    output_paths = [Path(args.output_fasta), Path(args.report)]
+    if graph_report_path is not None:
+        output_paths.append(graph_report_path)
+    for output_path in output_paths:
         if output_path.parent and str(output_path.parent) != ".":
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -1211,6 +1311,9 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     apply_breakpoint_guard(plans, args)
     write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args)
     write_report(args.report, requested, plans)
+    if args.gfa:
+        graph = read_gfa(args.gfa)
+        write_graph_report(graph_report_path, requested, plans, graph)
 
     status_counts = defaultdict(int)
     for plan in plans.values():
@@ -1220,6 +1323,8 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         sys.stderr.write(f"  {status}: {count}\n")
     sys.stderr.write(f"Wrote fixed FASTA: {args.output_fasta}\n")
     sys.stderr.write(f"Wrote report: {args.report}\n")
+    if args.gfa:
+        sys.stderr.write(f"Wrote graph report: {graph_report_path}\n")
 
 
 if __name__ == "__main__":

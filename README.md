@@ -1,19 +1,21 @@
 # ChromoSort
 
 Reference-guided genome assembly utilities for sorting contigs, splitting
-selected contigs or all detected chimeric contigs, and scaffolding final
-ordered contigs with N gaps.
+selected contigs or all detected chimeric contigs, reviewing assembly-graph
+evidence, and scaffolding final ordered contigs with N gaps.
 
 ChromoSort provides one command, `chromo`, with six subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
   low-value duplicate overlaps, labels and can rescue terminal overlaps,
   protects strong multi-reference split candidates, and writes a
-  reference-ordered FASTA.
+  reference-ordered FASTA. With `--gfa`, it also writes report-only graph
+  evidence for assignment and overlap decisions.
 - `chromo fix` splits contigs with chromosome transitions or reviewed inversion
   blocks into reference-labeled pieces. Use `--contigs` to inspect a reviewed
   subset or `--all` to scan every contig; both scopes use the same `--mode`
-  planner and per-contig breakpoint guardrails.
+  planner and per-contig breakpoint guardrails. With `--gfa`, it reports graph
+  context for the reviewed source contigs.
 - `chromo cut` cuts reviewed contigs at exact user-provided positions and writes
   a new FASTA plus a TSV report. It is useful when the breakpoint is already
   known from manual dot-plot review.
@@ -23,7 +25,8 @@ ChromoSort provides one command, `chromo`, with six subcommands:
   browser, and export reproducible recipe JSON.
 - `chromo scaffold` joins final sorted contigs into per-reference scaffold
   records with inferred reference-space N gaps by default, reports negative-gap
-  overlaps, and can optionally trim reviewed terminal overlaps.
+  overlaps, can optionally trim reviewed terminal overlaps, and can report GFA
+  graph evidence for adjacent scaffold junctions.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
@@ -34,7 +37,9 @@ alignments. These commands are designed for reuse across species and genome
 assembly projects. ChromoSort does not polish sequence, call variants, or force
 contigs to match a reference. It keeps full sequence pieces and writes
 TSV/plot/recipe reports so each keep, reject, split, manual edit, plot, or
-scaffold-gap decision is auditable.
+scaffold-gap decision is auditable. Current graph-aware features are review
+reports only; a future `chromo fill` command is planned for reviewed,
+recipe-driven gap filling after the evidence trail is strong enough.
 
 ## Table of Contents
 
@@ -444,7 +449,8 @@ Given a reference FASTA, assembly FASTA, and MUMmer coords or minimap2 PAF file,
 9. Protects flagged split candidates from silent duplicate-overlap removal.
 10. Sorts retained contigs by reference FASTA order and reference start.
 11. Writes an ordered FASTA with names like `chromosome_contig`.
-12. Writes TSV reports that explain every keep/reject decision.
+12. Optionally writes GFA graph evidence for assignments and overlap calls.
+13. Writes TSV reports that explain every keep/reject decision.
 
 ### Run `chromo sort`
 
@@ -468,6 +474,17 @@ chromo sort \
   --discarded-fasta results/sample.discarded.fa
 ```
 
+Optional graph evidence for assignment review:
+
+```bash
+chromo sort \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --paf minimap2/sample.paf \
+  --output-prefix results/sample \
+  --gfa assembly_graph.gfa
+```
+
 ### `chromo sort` Outputs
 
 | Output | Description |
@@ -476,6 +493,7 @@ chromo sort \
 | `<prefix>.contig_assignments.tsv` | One row per assembly contig with final status and assignment metrics. |
 | `<prefix>.contig_ref_matches.tsv` | One row per contig-reference match before final assignment. |
 | `<prefix>.chromosome_summary.tsv` | One row per reference sequence with ordered contig lists and covered reference bp. |
+| `<prefix>.graph_assignments.tsv` | Optional report-only graph evidence for assignment and duplicate-overlap decisions when `--gfa` is provided. |
 | `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, and status counts. |
 
 ### `chromo sort` Parameters
@@ -484,6 +502,7 @@ chromo sort \
 | --- | ---: | --- |
 | `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
+| `--gfa` | none | Optional assembly graph GFA for report-only evidence about resolved graph nodes, node degree, self loops, and direct graph links to overlap-best contigs. |
 | `--min-aligned-bp` | `100000` | Minimum merged query-aligned bp required before a contig can be kept. |
 | `--min-query-cov` | `0.50` | Minimum fraction of the contig covered by its best reference match. |
 | `--min-best-ref-share` | `0.50` | Minimum fraction of all matched bp that must belong to the best reference chromosome. |
@@ -623,6 +642,15 @@ sorting while still reducing clutter around those loci.
 Very large single-reference alignments are also rescued by default when they
 land just below `--min-query-cov`. This prevents chromosome-scale contigs with
 fragmented alignments from being discarded in favor of smaller redundant pieces.
+
+#### Treat Graph Evidence as Review Context
+
+When `--gfa` is provided, `chromo sort` writes
+`<prefix>.graph_assignments.tsv` beside the normal assignment report. The graph
+report resolves each assembly contig to a GFA segment when possible, records
+node length, sequence availability, in/out degree, self loops, and direct graph
+links to the contig that drove a duplicate-overlap decision. It does not change
+which contigs are kept, renamed, or written to FASTA.
 
 #### Preserve Full Contigs
 
@@ -918,12 +946,25 @@ should also be considered. Use `--mode sensitive` for the earlier direct behavio
 that cuts every passing reference/orientation transition after collapsing
 adjacent same-target runs.
 
+Optional graph context for the reviewed contigs:
+
+```bash
+chromo fix \
+  --assembly-fasta assembly.fa \
+  --paf minimap2/sample.paf \
+  --contigs contig_04 contig_12 \
+  --output-fasta results/sample.fixed.fa \
+  --report results/sample.fixed_contigs.tsv \
+  --gfa assembly_graph.gfa
+```
+
 ### `chromo fix` Outputs
 
 | Output | Description |
 | --- | --- |
 | `--output-fasta` | Full fixed assembly FASTA by default, with split pieces replacing fixed contigs. |
 | `--report` | TSV report describing split pieces and unsplit requested contigs. |
+| `--graph-report` | Optional graph context TSV when `--gfa` is provided. Defaults to the `--report` path with a `.graph.tsv` suffix. |
 
 The report includes original contig name, split status, new contig name,
 dominant reference, slice coordinates, alignment coordinates, orientation,
@@ -979,6 +1020,8 @@ appear in your FASTA and alignment output are used. Change the separator with
 | --- | ---: | --- |
 | `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
+| `--gfa` | none | Optional assembly graph GFA for report-only context about reviewed source contigs. |
+| `--graph-report` | report path with `.graph.tsv` suffix | Optional path for the `--gfa` graph context report. |
 | `--contigs` | none | Space-separated names of contigs to inspect and split. |
 | `--contigs-file` | none | Optional file with one contig name per line. |
 | `--all` | off | Inspect all contigs with passing split signals. |
@@ -1049,6 +1092,15 @@ contig. The default of four is meant as a practical guardrail for soybean-scale
 samples: a contig that appears to need many breaks is more likely to need manual
 dot plot review than automatic sequence surgery. Those plans are reported as
 `not_split_too_many_breakpoints`.
+
+#### Keep Graph Context Beside Split Decisions
+
+When `--gfa` is provided, `chromo fix` writes a graph context report for the
+requested contigs. This is useful after manual review because the split report
+shows the alignment-supported edit, while the graph report shows whether the
+source contig is present in the assembly graph and whether it sits in a simple
+or tangled local graph neighborhood. The graph report does not alter breakpoint
+planning or FASTA output.
 
 #### Breakpoints Between Alignment Blocks
 
@@ -1326,6 +1378,9 @@ small GFA, unitig-to-reference PAF, GraphAligner-like GAF, Hi-C-like pair table,
 and expected path labels. They are designed to exercise direct gap paths,
 ambiguous branches, orientation-specific links, disconnected mapped nodes,
 cycle guards, and repeat/duplicate warnings as graph evidence features are added.
+The intended next step is a reviewed gap-fill workflow, likely exposed as
+`chromo fill`, that consumes manual/graph evidence rather than filling gaps
+implicitly during sorting, fixing, or scaffolding.
 
 ## Citation
 
@@ -1355,6 +1410,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.8` | Added report-only `--gfa` graph context to `chromo sort` and `chromo fix`. Sorting now writes `<prefix>.graph_assignments.tsv` with resolved graph nodes, node degree/self-loop evidence, and direct links to overlap-best contigs; fixing now writes a graph context table beside the split report so reviewed contigs can be checked against the assembly graph before future gap-fill workflows. |
 | `0.2.7` | Added `chromo scaffold --gfa` report-only graph evidence. When a GFA is provided, scaffolding now writes `<prefix>.graph_gaps.tsv` with resolved graph nodes, orientation-aware direct links, link overlap bp, short explicit GFA paths up to `--graph-max-path-edges`, intermediate candidate nodes, and missing/no-path statuses without changing FASTA output. |
 | `0.2.6` | Added the first graph-evidence foundation: a tested GFA parser for segment/link records, orientation-aware edge lookup helpers, overlap-CIGAR handling that preserves complex overlaps as non-trim lengths, and synthetic graph-gotcha fixtures with GFA, PAF, GAF, Hi-C-like, and expected-path files for future roadmap development. |
 | `0.2.5` | Added `chromo manual`, a self-contained HTML dashboard for manual dot-plot review, contig removal/restoration, order changes, breakpoints, inversions, scaffold labeling/export, FASTA downloads, recipe JSON export, and reproducible `chromo manual apply` recipe execution. |

@@ -398,6 +398,35 @@ class FixContigsTests(unittest.TestCase):
                 ],
             )
 
+    def test_graph_report_summarizes_requested_contigs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            gfa = tmp_path / "assembly.gfa"
+            gfa.write_text(
+                "H\tVN:Z:1.0\n"
+                "S\tcontig_04\t*\tLN:i:40\n"
+                "S\tcontig_12\t*\tLN:i:40\n"
+                "L\tcontig_04\t+\tcontig_12\t+\t0M\n"
+            )
+
+            _, report = run_fix_contigs(
+                tmp_path,
+                "--mode",
+                "sensitive",
+                "--gfa",
+                str(gfa),
+            )
+
+            rows = {
+                row["original_contig"]: row
+                for row in read_report(report.with_suffix(".graph.tsv"))
+            }
+            self.assertEqual(rows["contig_04"]["status"], "split")
+            self.assertEqual(rows["contig_04"]["graph_node_status"], "present")
+            self.assertEqual(rows["contig_04"]["graph_note"], "split_source_present_in_graph_review")
+            self.assertIn("chrom02-contig_04-a", rows["contig_04"]["split_pieces"])
+            self.assertEqual(rows["contig_12"]["graph_out_degree"], "0")
+
     def test_pieces_only_omits_untargeted_contigs(self):
         with tempfile.TemporaryDirectory() as tmp:
             output_fasta, _ = run_fix_contigs(

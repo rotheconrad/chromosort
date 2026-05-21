@@ -53,10 +53,13 @@ class CliTests(unittest.TestCase):
         plot_help = run_cli("plot", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
         self.assertIn("--paf", sort_help)
+        self.assertIn("--gfa", sort_help)
         self.assertIn("--all", fix_help)
         self.assertIn("--mode", fix_help)
         self.assertNotIn("--auto", fix_help)
         self.assertIn("--paf", fix_help)
+        self.assertIn("--gfa", fix_help)
+        self.assertIn("--graph-report", fix_help)
         self.assertIn("--cut", cut_help)
         self.assertIn("--cuts-file", cut_help)
         self.assertIn("--output-fasta", cut_help)

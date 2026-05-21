@@ -13,8 +13,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="chromo",
         description=(
-            "Reference-order, fix, cut, manually edit, scaffold, and plot "
-            "genome assembly contigs."
+            "Reference-order, fix, cut, manually edit, scaffold, plot, and "
+            "review genome assembly contigs."
         ),
     )
     parser.add_argument(
