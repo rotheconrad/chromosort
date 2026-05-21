@@ -33,12 +33,20 @@ nav:
   - title: Input Files
     url: /input-files/
     children:
+      - title: Input sets
+        url: /input-files/#input-sets-by-task
+      - title: Name matching
+        url: /input-files/#name-matching-rules
+      - title: Format contracts
+        url: /input-files/#file-format-contracts
       - title: MUMmer
         url: /input-files/#creating-input-files-with-mummer
       - title: minimap2
         url: /input-files/#creating-input-files-with-minimap2
       - title: Graph inputs
         url: /input-files/#graph-input-files
+      - title: Preflight
+        url: /input-files/#preflight-checks
   - title: Workflows
     url: /workflows/
     children:
