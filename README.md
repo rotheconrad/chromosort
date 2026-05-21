@@ -30,9 +30,9 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
   overlaps, can optionally trim reviewed terminal overlaps, and can report GFA
   graph evidence for adjacent scaffold junctions.
 - `chromo fill` plans graph-supported fills between adjacent sorted contigs,
-  can use GAF long-read paths and Hi-C-like contact counts to resolve supported
-  branches, and optionally applies only unambiguous, sequence-verified graph
-  paths after review from TSV or HTML review artifacts.
+  can use GAF long-read paths, Hi-C-like contact counts, and reference-placement
+  PAF to resolve supported branches, and optionally applies only unambiguous,
+  sequence-verified graph paths after review from TSV or HTML review artifacts.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
@@ -474,7 +474,8 @@ Graph-aware ChromoSort commands use these graph-related evidence files:
 - GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
   `chromo fix --gfa`, `chromo scaffold --gfa`, and `chromo fill --gfa`.
 - reference-to-assembly PAF: the same minimap2 alignment format used by
-  `chromo sort`, `chromo fix`, `chromo manual`, and `chromo plot`.
+  `chromo sort`, `chromo fix`, `chromo manual`, `chromo fill --ref-paf`, and
+  `chromo plot`.
 - GAF: optional read-to-graph alignments used by `chromo fill --gaf` to resolve
   otherwise ambiguous graph paths.
 - Hi-C pairs: optional graph-node contact counts used by
@@ -536,6 +537,11 @@ chromo manual --ref-fasta reference.fa --assembly-fasta assembly.fa \
 
 chromo plot --ref-fasta reference.fa --assembly-fasta assembly.fa \
   --paf paf/sample.ref_vs_asm.paf --output-prefix plots/sample
+
+chromo fill --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa --ref-paf paf/sample.ref_vs_asm.paf \
+  --output-prefix results/sample.fill
 ```
 
 If you run `chromo fix` and create a new fixed FASTA, re-align the fixed FASTA
@@ -548,12 +554,13 @@ minimap2 -x asm5 -t 16 --secondary=no reference.fa results/sample.fixed.fa \
 
 The original PAF explains the raw assembly; the fixed PAF explains the edited
 assembly. Do not mix a fixed FASTA with an old raw-assembly PAF unless you are
-only doing a very specific manual comparison.
+only doing a very specific manual comparison. For `chromo fill --ref-paf`, use
+the PAF whose query names still match the GFA segment names being evaluated.
 
 ### Creating GAF Read-to-Graph Alignments
 
-GAF is a graph-alignment format. ChromoSort uses it only in `chromo fill --gaf`
-as optional read-path evidence for candidate graph fills. A typical source is a
+GAF is a graph-alignment format. ChromoSort uses it in `chromo fill --gaf` as
+optional read-path evidence for candidate graph fills. A typical source is a
 long-read-to-GFA alignment from a graph aligner:
 
 ```bash
@@ -1547,16 +1554,17 @@ simple sequence path between adjacent sorted contigs.
 ### What `chromo fill` Does
 
 Given a final `chromo sort` ordered FASTA, the matching assignment report, a
-GFA assembly graph, and optional GAF graph alignments or Hi-C pair evidence,
-`chromo fill`:
+GFA assembly graph, and optional GAF graph alignments, Hi-C pair evidence, or
+reference-placement PAF evidence, `chromo fill`:
 
 1. Groups retained contigs by assigned reference sequence.
 2. Looks at adjacent contig pairs in sorted order.
 3. Resolves each flank to a GFA segment using original and renamed contig IDs.
 4. Enumerates graph paths up to `--max-path-edges`.
-5. Uses GAF read-path support and Hi-C contact support to resolve an otherwise
-   ambiguous graph branch only when one candidate path has unique support above
-   threshold and evidence sources do not conflict.
+5. Uses GAF read-path support, Hi-C contact support, and reference-placement
+   PAF support to resolve an otherwise ambiguous graph branch only when one
+   candidate path has unique support above threshold and evidence sources do
+   not conflict.
 6. Rejects missing nodes, disconnected flanks, unresolved ambiguous paths,
    unsequenced nodes, unknown or invalid overlaps, oversized fills, and flank
    sequence mismatches.
@@ -1574,6 +1582,7 @@ chromo fill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
+  --ref-paf paf/sample.ref_vs_asm.paf \
   --output-prefix results/sample.fill \
   --review-html results/sample.fill.review.html
 ```
@@ -1593,6 +1602,7 @@ chromo fill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
+  --ref-paf paf/sample.ref_vs_asm.paf \
   --gaf reads_to_graph.gaf \
   --hic-pairs graph_contacts.tsv \
   --reviewed-plan chromosort.fill.reviewed_plan.tsv \
@@ -1604,21 +1614,24 @@ Applied mode still refuses ambiguous or unverifiable paths. If GAF is provided,
 an ambiguous GFA branch can be filled only when one candidate path has unique
 support of at least `--min-gaf-path-support` reads after `--min-gaf-mapq`
 filtering. If Hi-C pair evidence is provided, one candidate path must have
-unique summed contact support of at least `--min-hic-path-support`. When both
-evidence sources uniquely support different paths, the branch remains
-unresolved. When `--reviewed-plan` is used, ChromoSort rechecks the current
-scaffold, contig pair, and `path_nodes` against the edited plan before applying
-an accepted row, so stale reviewed paths fail instead of being applied. For a
-fillable path, ChromoSort inserts the graph sequence after the left flank and
-trims the right flank prefix by the final GFA overlap so the joined sequence
-follows the graph path without duplicating the overlap. Unfilled junctions
-receive the inferred reference-space N gap, or `--fixed-gap-bp` when provided.
+unique summed contact support of at least `--min-hic-path-support`. If
+`--ref-paf` is provided, one candidate path can be chosen when its intermediate
+graph nodes have uniquely stronger same-reference placement support inside the
+expected reference-space gap. When evidence sources uniquely support different
+paths, the branch remains unresolved. When `--reviewed-plan` is used,
+ChromoSort rechecks the current scaffold, contig pair, and `path_nodes` against
+the edited plan before applying an accepted row, so stale reviewed paths fail
+instead of being applied. For a fillable path, ChromoSort inserts the graph
+sequence after the left flank and trims the right flank prefix by the final GFA
+overlap so the joined sequence follows the graph path without duplicating the
+overlap. Unfilled junctions receive the inferred reference-space N gap, or
+`--fixed-gap-bp` when provided.
 
 ### `chromo fill` Outputs
 
 | Output | Description |
 | --- | --- |
-| `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF and Hi-C support counts, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
+| `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
 | `--review-html` path | Optional self-contained HTML table for reviewing fill-plan rows and exporting a reviewed-plan TSV. |
 | `<prefix>.filled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
@@ -1632,6 +1645,7 @@ receive the inferred reference-space N gap, or `--fixed-gap-bp` when provided.
 | `--gfa` | required | Assembly graph GFA containing segment sequences and links. |
 | `--gaf` | none | Optional GAF graph alignments used to resolve otherwise ambiguous candidate graph paths. |
 | `--hic-pairs` | none | Optional TSV of graph-node contact counts with `node_a`, `node_b`, and `count` columns. |
+| `--ref-paf` | none | Optional reference-to-assembly PAF used to score intermediate graph nodes against the expected reference-space gap. |
 | `--output-prefix` | required | Prefix for fill plan, run summary, and optional filled FASTA. |
 | `--apply` | off | Write `<prefix>.filled.fa` using only accepted graph paths. |
 | `--reviewed-plan` | none | Optional edited fill plan TSV. With `--apply`, only rows with `accept_fill=yes` are applied after the current path is rechecked. |
@@ -1642,6 +1656,10 @@ receive the inferred reference-space N gap, or `--fixed-gap-bp` when provided.
 | `--min-gaf-mapq` | `20` | Minimum GAF MAPQ for a read path to support a candidate fill. |
 | `--min-gaf-path-support` | `1` | Minimum supporting GAF read paths required to resolve an ambiguous branch. |
 | `--min-hic-path-support` | `1` | Minimum summed Hi-C contact support required to resolve an ambiguous branch. |
+| `--min-ref-path-support` | `1` | Minimum expected-gap reference-placement support required to resolve an ambiguous branch. |
+| `--min-ref-paf-mapq` | `0` | Minimum MAPQ for PAF rows used by `--ref-paf`. |
+| `--min-ref-paf-idy` | `0.0` | Minimum percent identity for PAF rows used by `--ref-paf`. |
+| `--include-secondary-ref-paf` | off | Include secondary PAF rows marked `tp:A:S` when reading `--ref-paf`. |
 | `--max-fill-bp` | `1000000` | Maximum inserted graph sequence allowed for one fill. Set negative to disable. |
 | `--include-fill-sequences` | off | Include candidate fill sequences in the TSV plan. |
 | `--simple-headers` | off | Write filled FASTA headers containing only the scaffold ID. |
@@ -1737,6 +1755,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.17` | Added reference-placement PAF evidence to `chromo fill`. The new `--ref-paf` path scorer reports selected and best-alternate reference support, can conservatively resolve ambiguous branches when one candidate has unique expected-gap placement support, and conflicts with GAF or Hi-C support leave the gap unresolved. |
 | `0.2.16` | Expanded `chromo manual --gfa` review. Manual dashboards now include graph-neighborhood filtering, a selected-contig upstream/downstream neighbor panel, overlap/orientation details, and same-reference neighbor flags so branching graph context is easier to compare during manual curation. |
 | `0.2.15` | Added `chromo manual --gfa` graph context. Manual dashboards now embed per-contig GFA node evidence, graph complexity labels, degree/neighbor counts, coverage tags such as `RC:i`, and oriented neighbor summaries so manual breakpoint and ordering review can consider local assembly-graph structure. |
 | `0.2.14` | Added `chromo fill --review-html`, a self-contained HTML review table for fill plans. It embeds the same TSV columns, supports filtering and accepted-fill toggles, and exports a reviewed-plan TSV for `--reviewed-plan`; the TSV and HTML writers now share one row-generation path. |

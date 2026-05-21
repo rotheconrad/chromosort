@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from .graph import read_gfa
-from .reference_order import reverse_complement, write_wrapped
+from .reference_order import iter_paf, reverse_complement, write_wrapped
 from .scaffold import (
     classify_adjacent_overlap,
     graph_intermediate_nodes,
@@ -50,6 +50,8 @@ class FillPlan:
     gaf_best_alt_support: Optional[int] = None
     hic_path_support: Optional[int] = None
     hic_best_alt_support: Optional[int] = None
+    ref_path_support: Optional[int] = None
+    ref_best_alt_support: Optional[int] = None
     fill_sequence: str = ""
     fill_bp: int = 0
     right_trim_bp: int = 0
@@ -118,6 +120,15 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         help=(
             "Optional TSV of graph-node Hi-C contact counts. Expected columns "
             "are node_a, node_b, and count; a header row is allowed."
+        ),
+    )
+    ap.add_argument(
+        "--ref-paf",
+        default=None,
+        help=(
+            "Optional reference-to-assembly PAF. Candidate graph paths can use "
+            "intermediate node reference placement to resolve an ambiguous "
+            "branch when one path has unique expected-gap support."
         ),
     )
     ap.add_argument(
@@ -199,6 +210,32 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
             "Minimum summed Hi-C contact support required to resolve an "
             "ambiguous GFA branch."
         ),
+    )
+    ap.add_argument(
+        "--min-ref-path-support",
+        type=int,
+        default=1,
+        help=(
+            "Minimum expected-gap reference-placement support required to "
+            "resolve an ambiguous graph branch from --ref-paf."
+        ),
+    )
+    ap.add_argument(
+        "--min-ref-paf-mapq",
+        type=int,
+        default=0,
+        help="Minimum MAPQ for reference-placement PAF rows used by --ref-paf.",
+    )
+    ap.add_argument(
+        "--min-ref-paf-idy",
+        type=float,
+        default=0.0,
+        help="Minimum percent identity for reference-placement PAF rows used by --ref-paf.",
+    )
+    ap.add_argument(
+        "--include-secondary-ref-paf",
+        action="store_true",
+        help="Include secondary PAF rows marked tp:A:S when reading --ref-paf.",
     )
     ap.add_argument(
         "--max-fill-bp",
@@ -389,6 +426,99 @@ def choose_unique_supported_path(supports, min_support):
     return supports.index(best_support)
 
 
+def selected_and_alt_support(supports, selected_index):
+    if not supports:
+        return None, None
+    selected = supports[selected_index]
+    alternatives = [
+        support for index, support in enumerate(supports)
+        if index != selected_index
+    ]
+    return selected, max(alternatives, default=0)
+
+
+def support_conflict_reason(choices):
+    labels = {label for label, _index in choices}
+    if labels == {"gaf", "hic"}:
+        return "conflicting_gaf_hic_support"
+    if "ref_paf" in labels:
+        return "conflicting_ref_paf_support"
+    return "conflicting_path_support"
+
+
+def support_graph_status(choices):
+    labels = [label for label, _index in choices]
+    if "gaf" in labels:
+        return "gaf_resolved_paths"
+    if "hic" in labels:
+        return "hic_resolved_paths"
+    return "ref_paf_resolved_paths"
+
+
+def read_ref_paf(path, min_identity=0.0, min_mapq=0, include_secondary=False):
+    placements = defaultdict(list)
+    for segment in iter_paf(
+        path,
+        min_identity=min_identity,
+        min_mapq=min_mapq,
+        include_secondary=include_secondary,
+    ):
+        placements[segment.query].append(segment)
+    return dict(placements)
+
+
+def expected_ref_gap_window(left, right):
+    left_edge = left.assignment.ref_end
+    right_edge = right.assignment.ref_start
+    return min(left_edge, right_edge), max(left_edge, right_edge)
+
+
+def segment_midpoint(segment):
+    return (segment.ref_start + segment.ref_end) / 2.0
+
+
+def ref_segment_support(segment):
+    return int(round(segment.len_query * (segment.identity / 100.0)))
+
+
+def ref_placement_support_for_node(placements, node, orientation, ref_name, ref_window):
+    best = 0
+    for segment in placements.get(node, []):
+        if segment.ref != ref_name:
+            continue
+        if segment.orientation != orientation:
+            continue
+        if not ref_window[0] <= segment_midpoint(segment) <= ref_window[1]:
+            continue
+        best = max(best, ref_segment_support(segment))
+    return best
+
+
+def ref_support_for_path(ref_placements, path, ref_name, ref_window):
+    support = 0
+    for node, orientation in path_oriented_nodes(path)[1:-1]:
+        support += ref_placement_support_for_node(
+            ref_placements,
+            node,
+            orientation,
+            ref_name,
+            ref_window,
+        )
+    return support
+
+
+def ref_path_supports(ref_placements, paths, left, right, scaffold_name):
+    if not ref_placements:
+        return []
+    if left.assignment.ref != right.assignment.ref:
+        return [0 for _path in paths]
+    ref_window = expected_ref_gap_window(left, right)
+    return [
+        ref_support_for_path(ref_placements, path, scaffold_name, ref_window)
+        for path in paths
+    ]
+
+
 def parse_review_accept(value, line_number):
     normalized = (value or "").strip().lower()
     if normalized in {"yes", "y", "true", "1", "accept", "accepted", "apply"}:
@@ -572,9 +702,11 @@ def plan_gap(
     args,
     gaf_records=None,
     hic_contacts=None,
+    ref_placements=None,
 ):
     gaf_records = gaf_records or []
     hic_contacts = hic_contacts or {}
+    ref_placements = ref_placements or {}
     raw_gap = inferred_gap(left, right)
     overlap_bp = max(0, -raw_gap)
     fallback_gap_bp = args.fixed_gap_bp if args.fixed_gap_bp is not None else max(0, raw_gap)
@@ -640,6 +772,13 @@ def plan_gap(
 
     supports = gaf_path_supports(gaf_records, paths) if gaf_records else []
     hic_supports = hic_path_supports(hic_contacts, paths) if hic_contacts else []
+    ref_supports = ref_path_supports(
+        ref_placements,
+        paths,
+        left,
+        right,
+        scaffold_name,
+    )
     selected_index = 0
     graph_status = "direct_edge" if len(paths[0]) == 1 else "short_path"
 
@@ -653,42 +792,30 @@ def plan_gap(
             hic_supports,
             args.min_hic_path_support,
         )
-        if gaf_choice is not None and hic_choice is not None and gaf_choice != hic_choice:
-            path = paths[0]
-            selected_support = supports[0] if supports else None
-            alt_support = max(supports[1:], default=0) if supports else None
-            selected_hic_support = hic_supports[0] if hic_supports else None
-            alt_hic_support = max(hic_supports[1:], default=0) if hic_supports else None
-            return FillPlan(
-                scaffold=scaffold_name,
-                left_contig=left.assignment.new_name,
-                right_contig=right.assignment.new_name,
-                left_graph_node=left_node,
-                right_graph_node=right_node,
-                left_orientation=left_orientation,
-                right_orientation=right_orientation,
-                raw_inferred_gap_bp=raw_gap,
-                fallback_gap_bp=fallback_gap_bp,
-                overlap_bp=overlap_bp,
-                overlap_class=overlap_class,
-                graph_status="ambiguous_paths",
-                path_edges=len(path),
-                path_nodes=graph_path_nodes(path),
-                intermediate_nodes=graph_intermediate_nodes(path),
-                candidate_paths=len(paths),
-                fill_status="ambiguous_paths",
-                gaf_path_support=selected_support,
-                gaf_best_alt_support=alt_support,
-                hic_path_support=selected_hic_support,
-                hic_best_alt_support=alt_hic_support,
-                reason="conflicting_gaf_hic_support",
+        ref_choice = choose_unique_supported_path(
+            ref_supports,
+            args.min_ref_path_support,
+        )
+        support_choices = [
+            (label, choice)
+            for label, choice in (
+                ("gaf", gaf_choice),
+                ("hic", hic_choice),
+                ("ref_paf", ref_choice),
             )
-        if gaf_choice is None and hic_choice is None:
+            if choice is not None
+        ]
+        if len({choice for _label, choice in support_choices}) > 1:
             path = paths[0]
-            selected_support = supports[0] if supports else None
-            alt_support = max(supports[1:], default=0) if supports else None
-            selected_hic_support = hic_supports[0] if hic_supports else None
-            alt_hic_support = max(hic_supports[1:], default=0) if hic_supports else None
+            selected_support, alt_support = selected_and_alt_support(supports, 0)
+            selected_hic_support, alt_hic_support = selected_and_alt_support(
+                hic_supports,
+                0,
+            )
+            selected_ref_support, alt_ref_support = selected_and_alt_support(
+                ref_supports,
+                0,
+            )
             return FillPlan(
                 scaffold=scaffold_name,
                 left_contig=left.assignment.new_name,
@@ -711,28 +838,60 @@ def plan_gap(
                 gaf_best_alt_support=alt_support,
                 hic_path_support=selected_hic_support,
                 hic_best_alt_support=alt_hic_support,
+                ref_path_support=selected_ref_support,
+                ref_best_alt_support=alt_ref_support,
+                reason=support_conflict_reason(support_choices),
+            )
+        if not support_choices:
+            path = paths[0]
+            selected_support, alt_support = selected_and_alt_support(supports, 0)
+            selected_hic_support, alt_hic_support = selected_and_alt_support(
+                hic_supports,
+                0,
+            )
+            selected_ref_support, alt_ref_support = selected_and_alt_support(
+                ref_supports,
+                0,
+            )
+            return FillPlan(
+                scaffold=scaffold_name,
+                left_contig=left.assignment.new_name,
+                right_contig=right.assignment.new_name,
+                left_graph_node=left_node,
+                right_graph_node=right_node,
+                left_orientation=left_orientation,
+                right_orientation=right_orientation,
+                raw_inferred_gap_bp=raw_gap,
+                fallback_gap_bp=fallback_gap_bp,
+                overlap_bp=overlap_bp,
+                overlap_class=overlap_class,
+                graph_status="ambiguous_paths",
+                path_edges=len(path),
+                path_nodes=graph_path_nodes(path),
+                intermediate_nodes=graph_intermediate_nodes(path),
+                candidate_paths=len(paths),
+                fill_status="ambiguous_paths",
+                gaf_path_support=selected_support,
+                gaf_best_alt_support=alt_support,
+                hic_path_support=selected_hic_support,
+                hic_best_alt_support=alt_hic_support,
+                ref_path_support=selected_ref_support,
+                ref_best_alt_support=alt_ref_support,
                 reason="multiple_candidate_paths",
             )
-        if gaf_choice is not None:
-            selected_index = gaf_choice
-            graph_status = "gaf_resolved_paths"
-        else:
-            selected_index = hic_choice
-            graph_status = "hic_resolved_paths"
+        selected_index = support_choices[0][1]
+        graph_status = support_graph_status(support_choices)
 
     path = paths[selected_index]
-    selected_support = supports[selected_index] if supports else None
-    alt_supports = [
-        support for index, support in enumerate(supports)
-        if index != selected_index
-    ]
-    alt_support = max(alt_supports, default=0) if supports else None
-    selected_hic_support = hic_supports[selected_index] if hic_supports else None
-    alt_hic_supports = [
-        support for index, support in enumerate(hic_supports)
-        if index != selected_index
-    ]
-    alt_hic_support = max(alt_hic_supports, default=0) if hic_supports else None
+    selected_support, alt_support = selected_and_alt_support(supports, selected_index)
+    selected_hic_support, alt_hic_support = selected_and_alt_support(
+        hic_supports,
+        selected_index,
+    )
+    selected_ref_support, alt_ref_support = selected_and_alt_support(
+        ref_supports,
+        selected_index,
+    )
     path_nodes = graph_path_nodes(path)
     intermediate_nodes = graph_intermediate_nodes(path)
 
@@ -766,6 +925,8 @@ def plan_gap(
         gaf_best_alt_support=alt_support,
         hic_path_support=selected_hic_support,
         hic_best_alt_support=alt_hic_support,
+        ref_path_support=selected_ref_support,
+        ref_best_alt_support=alt_ref_support,
         fill_sequence=fill_sequence or "",
         fill_bp=len(fill_sequence or ""),
         right_trim_bp=right_trim_bp,
@@ -773,7 +934,14 @@ def plan_gap(
     )
 
 
-def build_fill_plans(groups, graph, args, gaf_records=None, hic_contacts=None):
+def build_fill_plans(
+    groups,
+    graph,
+    args,
+    gaf_records=None,
+    hic_contacts=None,
+    ref_placements=None,
+):
     plans = []
     for scaffold_name, members in groups.items():
         for left, right in zip(members, members[1:]):
@@ -786,6 +954,7 @@ def build_fill_plans(groups, graph, args, gaf_records=None, hic_contacts=None):
                     args,
                     gaf_records,
                     hic_contacts,
+                    ref_placements,
                 )
             )
     return plans
@@ -885,6 +1054,8 @@ def fill_plan_header():
         "gaf_best_alt_support",
         "hic_path_support",
         "hic_best_alt_support",
+        "ref_path_support",
+        "ref_best_alt_support",
         "fill_status",
         "fill_bp",
         "right_trim_bp",
@@ -917,6 +1088,8 @@ def fill_plan_row(plan, include_sequences):
         plan.gaf_best_alt_support if plan.gaf_best_alt_support is not None else ".",
         plan.hic_path_support if plan.hic_path_support is not None else ".",
         plan.hic_best_alt_support if plan.hic_best_alt_support is not None else ".",
+        plan.ref_path_support if plan.ref_path_support is not None else ".",
+        plan.ref_best_alt_support if plan.ref_best_alt_support is not None else ".",
         plan.fill_status,
         plan.fill_bp,
         plan.right_trim_bp,
@@ -984,6 +1157,7 @@ def write_run_summary(path, args, output_paths, plans, filled_records):
         out.write(f"gfa\t{args.gfa}\n")
         out.write(f"gaf\t{args.gaf if args.gaf else '.'}\n")
         out.write(f"hic_pairs\t{args.hic_pairs if args.hic_pairs else '.'}\n")
+        out.write(f"ref_paf\t{args.ref_paf if args.ref_paf else '.'}\n")
         out.write(f"reviewed_plan\t{args.reviewed_plan if args.reviewed_plan else '.'}\n")
         out.write("\nParameters\n")
         out.write(f"apply\t{args.apply}\n")
@@ -994,6 +1168,10 @@ def write_run_summary(path, args, output_paths, plans, filled_records):
         out.write(f"min_gaf_mapq\t{args.min_gaf_mapq}\n")
         out.write(f"min_gaf_path_support\t{args.min_gaf_path_support}\n")
         out.write(f"min_hic_path_support\t{args.min_hic_path_support}\n")
+        out.write(f"min_ref_path_support\t{args.min_ref_path_support}\n")
+        out.write(f"min_ref_paf_mapq\t{args.min_ref_paf_mapq}\n")
+        out.write(f"min_ref_paf_idy\t{args.min_ref_paf_idy}\n")
+        out.write(f"include_secondary_ref_paf\t{args.include_secondary_ref_paf}\n")
         out.write("\nOutputs\n")
         for label, output_path in output_paths.items():
             out.write(f"{label}\t{output_path}\n")
@@ -1030,6 +1208,12 @@ def run(args):
         raise ValueError("--min-gaf-path-support must be at least 1")
     if args.min_hic_path_support < 1:
         raise ValueError("--min-hic-path-support must be at least 1")
+    if args.min_ref_path_support < 1:
+        raise ValueError("--min-ref-path-support must be at least 1")
+    if args.min_ref_paf_mapq < 0:
+        raise ValueError("--min-ref-paf-mapq must be zero or greater")
+    if args.min_ref_paf_idy < 0:
+        raise ValueError("--min-ref-paf-idy must be zero or greater")
 
     prefix = Path(args.output_prefix)
     if prefix.parent and str(prefix.parent) != ".":
@@ -1050,10 +1234,27 @@ def run(args):
     graph = read_gfa(args.gfa)
     gaf_records = read_gaf(args.gaf, args.min_gaf_mapq) if args.gaf else []
     hic_contacts = read_hic_pairs(args.hic_pairs) if args.hic_pairs else {}
+    ref_placements = (
+        read_ref_paf(
+            args.ref_paf,
+            min_identity=args.min_ref_paf_idy,
+            min_mapq=args.min_ref_paf_mapq,
+            include_secondary=args.include_secondary_ref_paf,
+        )
+        if args.ref_paf
+        else {}
+    )
     assignments = read_assignments(args.assignments)
     records = read_ordered_fasta(args.ordered_fasta)
     groups, unassigned = group_scaffold_members(records, assignments)
-    plans = build_fill_plans(groups, graph, args, gaf_records, hic_contacts)
+    plans = build_fill_plans(
+        groups,
+        graph,
+        args,
+        gaf_records,
+        hic_contacts,
+        ref_placements,
+    )
     if args.reviewed_plan:
         apply_reviewed_plan(plans, read_reviewed_plan(args.reviewed_plan))
 
@@ -1229,8 +1430,9 @@ FILL_REVIEW_HTML = r"""<!doctype html>
     const displayColumns = [
       "accept_fill", "scaffold", "left_contig", "right_contig", "fill_status",
       "graph_status", "path_nodes", "gaf_path_support", "gaf_best_alt_support",
-      "hic_path_support", "hic_best_alt_support", "fill_bp", "right_trim_bp",
-      "fallback_gap_bp", "reason", "fill_sequence"
+      "hic_path_support", "hic_best_alt_support", "ref_path_support",
+      "ref_best_alt_support", "fill_bp", "right_trim_bp", "fallback_gap_bp",
+      "reason", "fill_sequence"
     ];
     const els = {
       search: document.getElementById("search"),
