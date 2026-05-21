@@ -252,6 +252,7 @@ class FillTests(unittest.TestCase):
             data = review_html_data(review_html)
             self.assertEqual(data["schema"], "chromosort-fill-review-v1")
             self.assertIn("accept_fill", data["columns"])
+            self.assertIn("risk_flags", data["columns"])
             self.assertEqual(len(data["rows"]), 1)
             row = data["rows"][0]
             self.assertEqual(row["accept_fill"], "no")
@@ -345,6 +346,11 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["graph_status"], "ambiguous_paths")
             self.assertEqual(plan["fill_status"], "ambiguous_paths")
             self.assertEqual(plan["candidate_paths"], "2")
+            self.assertIn("branching", plan["risk_flags"])
+            self.assertIn("self_loop", plan["risk_flags"])
+            self.assertIn("left", plan["high_degree_nodes"])
+            self.assertIn("bridge_alt", plan["self_loop_nodes"])
+            self.assertGreater(int(plan["branch_complexity_score"]), 0)
             self.assertFalse(Path(str(prefix) + ".filled.fa").exists())
 
     def test_gaf_support_resolves_ambiguous_graph_paths(self):
@@ -469,6 +475,9 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["fill_status"], "fillable")
             self.assertEqual(plan["ref_path_support"], "8")
             self.assertEqual(plan["ref_best_alt_support"], "6")
+            self.assertIn("branching", plan["risk_flags"])
+            self.assertIn("high_degree", plan["risk_flags"])
+            self.assertEqual(plan["self_loop_nodes"], ".")
             self.assertEqual(plan["path_nodes"], "left+,bridge_good+,right+")
             self.assertEqual(plan["fill_sequence"], "GGGG")
             self.assertEqual(plan["applied"], "yes")

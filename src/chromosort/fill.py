@@ -52,6 +52,12 @@ class FillPlan:
     hic_best_alt_support: Optional[int] = None
     ref_path_support: Optional[int] = None
     ref_best_alt_support: Optional[int] = None
+    risk_flags: str = "."
+    branch_complexity_score: int = 0
+    high_degree_nodes: str = "."
+    self_loop_nodes: str = "."
+    unsequenced_nodes: str = "."
+    cycles_avoided: int = 0
     fill_sequence: str = ""
     fill_bp: int = 0
     right_trim_bp: int = 0
@@ -77,6 +83,12 @@ class GafPathRecord:
     query: str
     path: list
     mapq: int
+
+
+@dataclass(frozen=True)
+class GraphPathSearchResult:
+    paths: list
+    cycles_avoided: int = 0
 
 
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -519,6 +531,107 @@ def ref_path_supports(ref_placements, paths, left, right, scaffold_name):
     ]
 
 
+def ordered_unique(values):
+    seen = set()
+    ordered = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        ordered.append(value)
+    return ordered
+
+
+def join_values(values):
+    values = list(values)
+    return ",".join(values) if values else "."
+
+
+def graph_node_degree(graph, node):
+    return len(graph.incoming(node)) + len(graph.outgoing(node))
+
+
+def graph_node_has_self_loop(graph, node):
+    return any(edge.source == edge.target == node for edge in graph.outgoing(node))
+
+
+def risk_nodes_for_paths(paths):
+    return ordered_unique(
+        node
+        for path in paths
+        for node, _orientation in path_oriented_nodes(path)
+    )
+
+
+def support_risk_flags(gaf_supports, hic_supports, ref_supports, args):
+    flags = []
+    for label, supports, threshold in (
+        ("gaf", gaf_supports, args.min_gaf_path_support),
+        ("hic", hic_supports, args.min_hic_path_support),
+        ("ref_paf", ref_supports, args.min_ref_path_support),
+    ):
+        if not supports:
+            continue
+        best = max(supports)
+        if best < threshold:
+            flags.append(f"weak_{label}_support")
+        elif supports.count(best) > 1:
+            flags.append(f"tied_{label}_support")
+    return flags
+
+
+def path_risk_annotations(
+    graph,
+    paths,
+    candidate_paths,
+    cycles_avoided=0,
+    extra_flags=None,
+):
+    nodes = risk_nodes_for_paths(paths)
+    high_degree_nodes = [
+        node for node in nodes
+        if graph_node_degree(graph, node) > 2
+    ]
+    self_loop_nodes = [
+        node for node in nodes
+        if graph_node_has_self_loop(graph, node)
+    ]
+    unsequenced_nodes = [
+        node for node in nodes
+        if graph.nodes[node].sequence is None
+    ]
+
+    flags = []
+    if candidate_paths > 1:
+        flags.append("branching")
+    if high_degree_nodes:
+        flags.append("high_degree")
+    if self_loop_nodes:
+        flags.append("self_loop")
+    if unsequenced_nodes:
+        flags.append("unsequenced")
+    if cycles_avoided:
+        flags.append("cycles_avoided")
+    flags.extend(extra_flags or [])
+    flags = ordered_unique(flags)
+
+    branch_score = max(0, candidate_paths - 1)
+    branch_score += len(high_degree_nodes)
+    branch_score += 2 * len(self_loop_nodes)
+    branch_score += 2 * len(unsequenced_nodes)
+    branch_score += cycles_avoided
+    branch_score += len(extra_flags or [])
+
+    return {
+        "risk_flags": join_values(flags),
+        "branch_complexity_score": branch_score,
+        "high_degree_nodes": join_values(high_degree_nodes),
+        "self_loop_nodes": join_values(self_loop_nodes),
+        "unsequenced_nodes": join_values(unsequenced_nodes),
+        "cycles_avoided": cycles_avoided,
+    }
+
+
 def parse_review_accept(value, line_number):
     normalized = (value or "").strip().lower()
     if normalized in {"yes", "y", "true", "1", "accept", "accepted", "apply"}:
@@ -609,17 +722,18 @@ def enumerate_graph_paths(
     max_paths,
 ):
     if max_edges < 1 or max_paths < 1:
-        return []
+        return GraphPathSearchResult([])
 
     targets = graph_target_keys(right_node, right_orientation)
     if not targets:
-        return []
+        return GraphPathSearchResult([])
 
     queue = deque()
     for start in graph_start_keys(left_node, left_orientation):
         queue.append((start, [], {start}))
 
     paths = []
+    cycles_avoided = 0
     while queue and len(paths) < max_paths:
         (node, orientation), path, seen = queue.popleft()
         if len(path) >= max_edges:
@@ -627,6 +741,7 @@ def enumerate_graph_paths(
         for edge in graph.outgoing(node, orientation):
             next_key = edge.target_key
             if next_key in seen:
+                cycles_avoided += 1
                 continue
             next_path = path + [edge]
             if next_key in targets:
@@ -635,7 +750,7 @@ def enumerate_graph_paths(
                     break
                 continue
             queue.append((next_key, next_path, seen | {next_key}))
-    return paths
+    return GraphPathSearchResult(paths, cycles_avoided)
 
 
 def oriented_sequence(seq, orientation):
@@ -739,7 +854,7 @@ def plan_gap(
             reason=missing_status,
         )
 
-    paths = enumerate_graph_paths(
+    path_search = enumerate_graph_paths(
         graph,
         left_node,
         right_node,
@@ -748,7 +863,14 @@ def plan_gap(
         args.max_path_edges,
         args.max_candidate_paths,
     )
+    paths = path_search.paths
     if not paths:
+        risk = path_risk_annotations(
+            graph,
+            [],
+            0,
+            path_search.cycles_avoided,
+        )
         return FillPlan(
             scaffold=scaffold_name,
             left_contig=left.assignment.new_name,
@@ -768,6 +890,7 @@ def plan_gap(
             candidate_paths=0,
             fill_status="no_graph_path",
             reason="no_graph_path",
+            **risk,
         )
 
     supports = gaf_path_supports(gaf_records, paths) if gaf_records else []
@@ -807,6 +930,13 @@ def plan_gap(
         ]
         if len({choice for _label, choice in support_choices}) > 1:
             path = paths[0]
+            risk = path_risk_annotations(
+                graph,
+                paths,
+                len(paths),
+                path_search.cycles_avoided,
+                extra_flags=["conflicting_support"],
+            )
             selected_support, alt_support = selected_and_alt_support(supports, 0)
             selected_hic_support, alt_hic_support = selected_and_alt_support(
                 hic_supports,
@@ -841,9 +971,22 @@ def plan_gap(
                 ref_path_support=selected_ref_support,
                 ref_best_alt_support=alt_ref_support,
                 reason=support_conflict_reason(support_choices),
+                **risk,
             )
         if not support_choices:
             path = paths[0]
+            risk = path_risk_annotations(
+                graph,
+                paths,
+                len(paths),
+                path_search.cycles_avoided,
+                extra_flags=support_risk_flags(
+                    supports,
+                    hic_supports,
+                    ref_supports,
+                    args,
+                ),
+            )
             selected_support, alt_support = selected_and_alt_support(supports, 0)
             selected_hic_support, alt_hic_support = selected_and_alt_support(
                 hic_supports,
@@ -878,6 +1021,7 @@ def plan_gap(
                 ref_path_support=selected_ref_support,
                 ref_best_alt_support=alt_ref_support,
                 reason="multiple_candidate_paths",
+                **risk,
             )
         selected_index = support_choices[0][1]
         graph_status = support_graph_status(support_choices)
@@ -903,6 +1047,13 @@ def plan_gap(
         args.max_fill_bp,
     )
     fillable = fill_sequence is not None
+    risk = path_risk_annotations(
+        graph,
+        [path],
+        len(paths),
+        path_search.cycles_avoided,
+        extra_flags=[] if fillable else ["sequence_validation_failed"],
+    )
     return FillPlan(
         scaffold=scaffold_name,
         left_contig=left.assignment.new_name,
@@ -931,6 +1082,7 @@ def plan_gap(
         fill_bp=len(fill_sequence or ""),
         right_trim_bp=right_trim_bp,
         reason=reason,
+        **risk,
     )
 
 
@@ -1056,6 +1208,12 @@ def fill_plan_header():
         "hic_best_alt_support",
         "ref_path_support",
         "ref_best_alt_support",
+        "risk_flags",
+        "branch_complexity_score",
+        "high_degree_nodes",
+        "self_loop_nodes",
+        "unsequenced_nodes",
+        "cycles_avoided",
         "fill_status",
         "fill_bp",
         "right_trim_bp",
@@ -1090,6 +1248,12 @@ def fill_plan_row(plan, include_sequences):
         plan.hic_best_alt_support if plan.hic_best_alt_support is not None else ".",
         plan.ref_path_support if plan.ref_path_support is not None else ".",
         plan.ref_best_alt_support if plan.ref_best_alt_support is not None else ".",
+        plan.risk_flags,
+        plan.branch_complexity_score,
+        plan.high_degree_nodes,
+        plan.self_loop_nodes,
+        plan.unsequenced_nodes,
+        plan.cycles_avoided,
         plan.fill_status,
         plan.fill_bp,
         plan.right_trim_bp,
@@ -1431,8 +1595,10 @@ FILL_REVIEW_HTML = r"""<!doctype html>
       "accept_fill", "scaffold", "left_contig", "right_contig", "fill_status",
       "graph_status", "path_nodes", "gaf_path_support", "gaf_best_alt_support",
       "hic_path_support", "hic_best_alt_support", "ref_path_support",
-      "ref_best_alt_support", "fill_bp", "right_trim_bp", "fallback_gap_bp",
-      "reason", "fill_sequence"
+      "ref_best_alt_support", "risk_flags", "branch_complexity_score",
+      "high_degree_nodes", "self_loop_nodes", "unsequenced_nodes",
+      "cycles_avoided", "fill_bp", "right_trim_bp", "fallback_gap_bp", "reason",
+      "fill_sequence"
     ];
     const els = {
       search: document.getElementById("search"),

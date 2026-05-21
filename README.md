@@ -33,6 +33,8 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
   can use GAF long-read paths, Hi-C-like contact counts, and reference-placement
   PAF to resolve supported branches, and optionally applies only unambiguous,
   sequence-verified graph paths after review from TSV or HTML review artifacts.
+  Fill plans also report branch complexity, high-degree graph nodes, self-loop
+  nodes, unsequenced nodes, and support-risk flags for manual review.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
@@ -1565,12 +1567,15 @@ reference-placement PAF evidence, `chromo fill`:
    PAF support to resolve an otherwise ambiguous graph branch only when one
    candidate path has unique support above threshold and evidence sources do
    not conflict.
-6. Rejects missing nodes, disconnected flanks, unresolved ambiguous paths,
+6. Annotates candidate-path risk, including high-degree graph nodes, self-loop
+   nodes, unsequenced nodes, cycle guards, weak/tied/conflicting support, and a
+   branch-complexity score.
+7. Rejects missing nodes, disconnected flanks, unresolved ambiguous paths,
    unsequenced nodes, unknown or invalid overlaps, oversized fills, and flank
    sequence mismatches.
-7. Writes `<prefix>.fill_plan.tsv` for review with `accept_fill=no` by default
+8. Writes `<prefix>.fill_plan.tsv` for review with `accept_fill=no` by default
    and can write a self-contained HTML reviewer with `--review-html`.
-8. With `--apply`, writes `<prefix>.filled.fa`. Without `--reviewed-plan`, all
+9. With `--apply`, writes `<prefix>.filled.fa`. Without `--reviewed-plan`, all
    currently fillable paths are applied; with `--reviewed-plan`, only rows with
    `accept_fill=yes` are applied and other junctions fall back to inferred or
    fixed N gaps.
@@ -1631,7 +1636,7 @@ overlap. Unfilled junctions receive the inferred reference-space N gap, or
 
 | Output | Description |
 | --- | --- |
-| `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
+| `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
 | `--review-html` path | Optional self-contained HTML table for reviewing fill-plan rows and exporting a reviewed-plan TSV. |
 | `<prefix>.filled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
@@ -1755,6 +1760,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.18` | Added richer path-risk annotations to `chromo fill`. Fill plans and review HTML now report risk flags, branch-complexity score, high-degree graph nodes, self-loop nodes, unsequenced nodes, and cycle-guard counts so ambiguous or risky candidate paths are easier to triage. |
 | `0.2.17` | Added reference-placement PAF evidence to `chromo fill`. The new `--ref-paf` path scorer reports selected and best-alternate reference support, can conservatively resolve ambiguous branches when one candidate has unique expected-gap placement support, and conflicts with GAF or Hi-C support leave the gap unresolved. |
 | `0.2.16` | Expanded `chromo manual --gfa` review. Manual dashboards now include graph-neighborhood filtering, a selected-contig upstream/downstream neighbor panel, overlap/orientation details, and same-reference neighbor flags so branching graph context is easier to compare during manual curation. |
 | `0.2.15` | Added `chromo manual --gfa` graph context. Manual dashboards now embed per-contig GFA node evidence, graph complexity labels, degree/neighbor counts, coverage tags such as `RC:i`, and oriented neighbor summaries so manual breakpoint and ordering review can consider local assembly-graph structure. |
