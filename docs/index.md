@@ -7,7 +7,7 @@ description: User guide for ChromoSort.
 
 ChromoSort is a reference-guided assembly curation toolkit for sorting contigs, splitting reviewed chimeric contigs, making manual cuts, reviewing dot plots, scaffolding ordered contigs, applying reviewed graph-supported gap fills, and plotting existing whole-genome alignments.
 
-This documentation is organized as a user guide rather than one very long README. The archived longform README remains available for historical reference.
+This documentation is organized as a user guide for installing ChromoSort, preparing inputs, running common workflows, and reading command outputs.
 
 
 ## Start Here
@@ -37,7 +37,6 @@ This documentation is organized as a user guide rather than one very long README
 
 - [Current status and version history](https://rotheconrad.github.io/chromosort/status/)
 - [Contributing](https://rotheconrad.github.io/chromosort/contributing/)
-- [Archived longform README](https://rotheconrad.github.io/chromosort/archive/longform-readme/)
 
 ## Main Workflow
 

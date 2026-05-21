@@ -5,7 +5,7 @@ description: Overview of ChromoSort subcommands.
 
 # Command Reference
 
-ChromoSort exposes one top-level command, `chromo`, with seven subcommands. Each subcommand page includes the purpose, examples, outputs, key parameters, and reasoning copied from the longform README.
+ChromoSort exposes one top-level command, `chromo`, with seven subcommands. Each subcommand page includes the purpose, examples, outputs, key parameters, and reasoning behind the command.
 
 | Command | Use it when you need to |
 | --- | --- |

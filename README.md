@@ -6,23 +6,21 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
 
 | Command | Purpose |
 | --- | --- |
-| `chromo sort` | Assign assembly contigs to reference sequences, filter low-value overlaps, and write a reference-ordered FASTA. |
-| `chromo fix` | Split selected contigs, or all detected candidates, into reference-labeled pieces. |
-| `chromo cut` | Cut contigs at exact reviewed positions. |
-| `chromo manual` | Write a self-contained browser dashboard for dot-plot review and reproducible manual edits. |
-| `chromo plot` | Draw PDF/SVG/PNG dot plots from existing MUMmer coords or minimap2 PAF alignments. |
-| `chromo scaffold` | Join final sorted contigs into per-reference scaffold records with auditable gaps and optional overlap trimming. |
-| `chromo gapfill` | Plan and optionally apply reviewed graph-supported fills between adjacent sorted contigs. |
+| `chromo sort` | Assign assembly contigs to reference sequences, filter low-value overlaps, and write a reference-ordered FASTA ([docs](https://rotheconrad.github.io/chromosort/commands/sort/)). |
+| `chromo fix` | Split selected contigs, or all detected candidates, into reference-labeled pieces ([docs](https://rotheconrad.github.io/chromosort/commands/fix/)). |
+| `chromo cut` | Cut contigs at exact reviewed positions ([docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
+| `chromo manual` | Write a self-contained browser dashboard for dot-plot review and reproducible manual edits ([docs](https://rotheconrad.github.io/chromosort/commands/manual/)). |
+| `chromo plot` | Draw PDF/SVG/PNG dot plots from existing MUMmer coords or minimap2 PAF alignments ([docs](https://rotheconrad.github.io/chromosort/commands/plot/)). |
+| `chromo scaffold` | Join final sorted contigs into per-reference scaffold records with auditable gaps and optional overlap trimming ([docs](https://rotheconrad.github.io/chromosort/commands/scaffold/)). |
+| `chromo gapfill` | Plan and optionally apply reviewed graph-supported fills between adjacent sorted contigs ([docs](https://rotheconrad.github.io/chromosort/commands/gapfill/)). |
 
 ## Documentation
 
-The longform README has been split into a documentation site under [`docs/`](docs/index.md), using the same Jekyll/GitHub Pages mechanics as Panex Privus.
+Full documentation is available at <https://rotheconrad.github.io/chromosort/>.
 
-- Public docs: <https://rotheconrad.github.io/chromosort/>
-- Local docs entry point: [`docs/index.md`](docs/index.md)
-- Exact longform README snapshot: [`README.longform.md`](README.longform.md)
-- Rendered longform archive: [`docs/archive/longform-readme.md`](docs/archive/longform-readme.md)
-- Command reference: [`docs/commands/`](docs/commands/index.md)
+New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. Command-specific pages are linked in the table above.
+
+For interpreting results, see [Output Files](https://rotheconrad.github.io/chromosort/outputs/) and [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/).
 
 ## Quick Start
 
@@ -77,15 +75,6 @@ pixi run help
 pixi run test
 ```
 
-## Project Files
-
-- [`docs/installation.md`](docs/installation.md): mamba and Pixi setup.
-- [`docs/input-files.md`](docs/input-files.md): MUMmer, minimap2, GFA, GAF, and Hi-C-like inputs.
-- [`docs/workflows.md`](docs/workflows.md): quick start, overlap handling, and synthetic graph workflow.
-- [`docs/outputs.md`](docs/outputs.md): FASTA, TSV, HTML, plot, and run-summary outputs.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md): issue reports, development setup, tests, and PR expectations.
-- [`CITATION.cff`](CITATION.cff): citation metadata.
-
 ## Current Status
 
 Current version: `0.2.23`. Operational commands are `sort`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history.
@@ -102,10 +91,11 @@ Please use the GitHub issue tracker for bug reports, feature requests, and quest
 
 ChromoSort is released under the MIT License. See [`LICENSE`](LICENSE).
 
-## Funding
+## Funding Support
 
-Funding information has not yet been specified. Add grant numbers, institutional
-support, or project-specific funding statements here when they are available.
+This project is supported by the U.S. Department of Agriculture - Agricultural
+Research Service (USDA-ARS) - Genomics and Bioinformatics Research Unit (GBRU)
+through CRIS Project No. 6066-21310-006-000-D.
 
 ## Acknowledgements
 

@@ -80,9 +80,7 @@ nav:
     url: /troubleshooting/
   - title: Contributing
     url: /contributing/
-  - title: Archive
-    url: /archive/longform-readme/
-
 exclude:
   - dev/
+  - archive/
   - "*.txt"
