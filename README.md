@@ -6,13 +6,13 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
 
 | Command | Purpose |
 | --- | --- |
-| `chromo sort` | Assign assembly contigs to reference sequences, filter low-value overlaps, and write a reference-ordered FASTA ([docs](https://rotheconrad.github.io/chromosort/commands/sort/)). |
-| `chromo fix` | Split selected contigs, or all detected candidates, into reference-labeled pieces ([docs](https://rotheconrad.github.io/chromosort/commands/fix/)). |
-| `chromo cut` | Cut contigs at exact reviewed positions ([docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
-| `chromo manual` | Write a self-contained browser dashboard for dot-plot review and reproducible manual edits ([docs](https://rotheconrad.github.io/chromosort/commands/manual/)). |
-| `chromo plot` | Draw PDF/SVG/PNG dot plots from existing MUMmer coords or minimap2 PAF alignments ([docs](https://rotheconrad.github.io/chromosort/commands/plot/)). |
-| `chromo scaffold` | Join final sorted contigs into per-reference scaffold records with auditable gaps and optional overlap trimming ([docs](https://rotheconrad.github.io/chromosort/commands/scaffold/)). |
-| `chromo gapfill` | Plan and optionally apply reviewed graph-supported fills between adjacent sorted contigs ([docs](https://rotheconrad.github.io/chromosort/commands/gapfill/)). |
+| `chromo sort` | Assign contigs to the best-supported reference sequence from MUMmer coords or minimap2 PAF, merge alignment evidence, filter contained or low-value duplicate overlaps, protect likely split candidates, and write a reference-ordered FASTA with TSV decision reports ([sort docs](https://rotheconrad.github.io/chromosort/commands/sort/)). |
+| `chromo fix` | Split chimeric or structurally inconsistent contigs into reference-labeled pieces by scanning query-ordered alignment blocks, smoothing ordinary gaps, selecting eligible reference/orientation transitions, and writing a fixed full-assembly FASTA plus an audit report ([fix docs](https://rotheconrad.github.io/chromosort/commands/fix/)). |
+| `chromo cut` | Apply exact reviewed breakpoint edits when you already know the cut positions, replacing each requested contig with numbered pieces while copying uncut contigs unchanged and recording every emitted slice ([cut docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
+| `chromo manual` | Build a self-contained browser dashboard for dot-plot curation, contig removal/restoration, reordering, inversion, breakpoint staging, optional GFA neighborhood review, FASTA export, and reproducible recipe application ([manual docs](https://rotheconrad.github.io/chromosort/commands/manual/)). |
+| `chromo plot` | Draw whole-genome and per-reference dot plots from existing MUMmer coords or minimap2 PAF alignments, optionally ordered by a `chromo sort` assignment report, without re-running an aligner ([plot docs](https://rotheconrad.github.io/chromosort/commands/plot/)). |
+| `chromo scaffold` | Join the final sorted contigs into one scaffold FASTA record per assigned reference, infer or fix N-gap lengths, report overlaps and gap decisions, and optionally add report-only GFA junction evidence ([scaffold docs](https://rotheconrad.github.io/chromosort/commands/scaffold/)). |
+| `chromo gapfill` | Plan graph-supported fills between adjacent sorted contigs using GFA paths plus optional GAF, Hi-C-like, or reference-placement PAF evidence, then apply only fillable and reviewed paths while unresolved junctions fall back to N gaps ([gapfill docs](https://rotheconrad.github.io/chromosort/commands/gapfill/)). |
 
 ## Documentation
 
