@@ -24,42 +24,24 @@ chromo scaffold --help
 chromo gapfill --help
 ```
 
-Recommended order when raw dot plots show possible misjoined contigs:
+The sections below start after you have prepared a whole-genome alignment file
+with MUMmer coords or minimap2 PAF. See [Input Files]({{ '/input-files/' | relative_url }})
+for alignment commands and graph-related inputs.
 
-```bash
-# 1. Fix only reviewed/suspect raw contigs, or use --all to scan every contig.
-chromo fix \
-  --assembly-fasta assembly.fa \
-  --coords mummer/raw.coords \
-  --contigs suspect_contig_1 suspect_contig_2 \
-  --output-fasta results/sample.fixed.fa \
-  --report results/sample.fixed_contigs.tsv
+## Workflow 1: Reference-Order a Mostly Clean Assembly
 
-# 2. Re-align the fixed FASTA with MUMmer, then sort the fixed assembly.
-chromo sort \
-  --ref-fasta reference.fa \
-  --assembly-fasta results/sample.fixed.fa \
-  --coords mummer/fixed.coords \
-  --output-prefix results/sample.fixed \
-  --orient-to-reference
+Use this workflow when the assembly is already close to chromosome scale and
+raw dot plots do not show obvious contig-scale misjoins. The goal is to place
+contigs against the reference, write an ordered FASTA, inspect the placement,
+and optionally build one scaffold record per reference sequence.
 
-# 3. Plot from the existing coordinates; no new MUMmer run is needed.
-chromo plot \
-  --ref-fasta reference.fa \
-  --assembly-fasta results/sample.fixed.fa \
-  --coords mummer/fixed.coords \
-  --assignments results/sample.fixed.contig_assignments.tsv \
-  --output-prefix plots/sample.fixed \
-  --per-ref
-```
+Inputs:
 
-Running `chromo fix` before `chromo sort` is safest for suspected misjoins
-because sorting is a placement/filtering step, not a splitter. `chromo sort`
-now protects strong multi-reference split candidates by default, but reviewed
-raw-assembly fixing is still the cleaner workflow when the dot plot already
-shows which contigs need attention.
+- `reference.fa`
+- `assembly.fa`
+- one alignment file, such as `mummer/sample.coords` or `paf/sample.paf`
 
-Typical reference-ordering run:
+Run the placement step:
 
 ```bash
 chromo sort \
@@ -70,7 +52,7 @@ chromo sort \
   --orient-to-reference
 ```
 
-The same command accepts minimap2 PAF instead of MUMmer coords:
+The same workflow can use minimap2 PAF instead of MUMmer coords:
 
 ```bash
 chromo sort \
@@ -81,18 +63,102 @@ chromo sort \
   --orient-to-reference
 ```
 
-Typical chimeric-contig fixing run:
+Then plot the same alignment, using the assignment table to order the query
+axis by kept ChromoSort contigs:
+
+```bash
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix plots/sample \
+  --per-ref
+```
+
+If the ordered contigs look reasonable, make chromosome-scale scaffold records:
+
+```bash
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample
+```
+
+Review these outputs before treating the result as final:
+
+- `results/sample.contig_assignments.tsv`: placement status, overlap class, and
+  kept/discarded decisions for each contig.
+- `results/sample.match_report.tsv`: per-reference alignment support for each
+  contig.
+- `plots/sample.pdf` and per-reference plots: visual placement check.
+- `results/sample.scaffold_gaps.tsv`: inferred gaps, overlaps, and scaffold
+  overlap actions.
+
+## Workflow 2: Fix Misjoined Contigs Before Sorting
+
+Use this workflow when a raw dot plot shows contigs jumping between references,
+orientation blocks, or otherwise looking chimeric. In this case, fix the raw
+assembly first, then re-align the fixed FASTA and run `chromo sort` on the
+updated assembly. Sorting protects strong split candidates, but it is still a
+placement/filtering step, not a splitter.
+
+Start with a raw plot so you can choose suspect contigs:
+
+```bash
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/raw.coords \
+  --output-prefix plots/sample.raw \
+  --per-ref
+```
+
+Fix only reviewed contigs when you know which records are suspect:
 
 ```bash
 chromo fix \
   --assembly-fasta assembly.fa \
-  --coords mummer/sample.coords \
-  --contigs contig_04 contig_12 \
+  --coords mummer/raw.coords \
+  --contigs suspect_contig_1 suspect_contig_2 \
   --output-fasta results/sample.fixed.fa \
   --report results/sample.fixed_contigs.tsv
 ```
 
-Manual cut at reviewed positions:
+If you want ChromoSort to scan all contigs with the conservative planner:
+
+```bash
+chromo fix \
+  --assembly-fasta assembly.fa \
+  --coords mummer/raw.coords \
+  --all \
+  --output-fasta results/sample.fixed.fa \
+  --report results/sample.fixed_contigs.tsv
+```
+
+After writing `results/sample.fixed.fa`, re-run MUMmer or minimap2 against that
+fixed FASTA to create a fresh alignment, such as `mummer/fixed.coords`. Then
+sort and plot the fixed assembly:
+
+```bash
+chromo sort \
+  --ref-fasta reference.fa \
+  --assembly-fasta results/sample.fixed.fa \
+  --coords mummer/fixed.coords \
+  --output-prefix results/sample.fixed \
+  --orient-to-reference
+
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta results/sample.fixed.fa \
+  --coords mummer/fixed.coords \
+  --assignments results/sample.fixed.contig_assignments.tsv \
+  --output-prefix plots/sample.fixed \
+  --per-ref
+```
+
+When the breakpoint is already known from manual review, use an explicit cut
+instead of automatic split planning:
 
 ```bash
 chromo cut \
@@ -103,58 +169,92 @@ chromo cut \
   --report results/sample.cut_contigs.tsv
 ```
 
-Manual GUI review and editing:
+For difficult cases, generate a browser review dashboard and apply the exported
+recipe:
 
 ```bash
 chromo manual \
   --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
-  --coords mummer/sample.coords \
+  --coords mummer/raw.coords \
   --gfa assembly_graph.gfa \
   --output-html results/sample.manual.html \
   --suggested-output-fasta sample.manual.fa
-```
 
-Scan all contigs with the same conservative planner:
-
-```bash
-chromo fix \
+chromo manual apply \
   --assembly-fasta assembly.fa \
-  --coords mummer/sample.coords \
-  --all \
-  --output-fasta results/sample.fixed.fa \
-  --report results/sample.fixed_contigs.tsv
+  --recipe chromosort.manual.recipe.json \
+  --output-fasta results/sample.manual.fa \
+  --report results/sample.manual.tsv
 ```
 
-Typical scaffolding run after final sorting:
+Review these outputs before moving downstream:
+
+- `results/sample.fixed_contigs.tsv`: split status, emitted pieces, slice
+  coordinates, dominant references, orientations, and reasons.
+- `results/sample.fixed.fa`: the FASTA that must be re-aligned before sorting.
+- `plots/sample.fixed.*`: confirmation that the repaired contigs now place as
+  expected.
+
+## Workflow 3: Scaffold and Fill Graph-Supported Gaps
+
+Use this workflow after final sorting when you want one FASTA record per
+reference sequence and you have graph evidence that may explain gaps between
+adjacent sorted contigs. The default scaffold step reports graph context but
+does not insert graph sequence. The gapfill step plans graph-supported fills
+first, then applies only fillable paths, optionally after manual review.
+
+First scaffold the final sorted contigs and write graph-junction evidence:
 
 ```bash
 chromo scaffold \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
   --output-prefix results/sample
 ```
 
-Plan and apply reviewed graph-supported fills:
+Inspect `results/sample.graph_gaps.tsv` and `results/sample.scaffold_gaps.tsv`.
+If graph evidence supports candidate gaps, plan fills and write a review page:
 
 ```bash
-chromo gapfill \
-  --ordered-fasta results/sample.ordered.fa \
-  --assignments results/sample.contig_assignments.tsv \
-  --gfa assembly_graph.gfa \
-  --output-prefix results/sample.gapfill \
-  --review-html results/sample.gapfill.review.html
-
 chromo gapfill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
   --gaf reads_to_graph.gaf \
   --hic-pairs graph_contacts.tsv \
+  --ref-paf paf/graph_nodes_to_ref.paf \
+  --output-prefix results/sample.gapfill \
+  --review-html results/sample.gapfill.review.html \
+  --include-fill-sequences
+```
+
+Open `results/sample.gapfill.review.html`, review candidate paths, and export a
+reviewed TSV. Then apply only accepted fillable rows:
+
+```bash
+chromo gapfill \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --gaf reads_to_graph.gaf \
+  --hic-pairs graph_contacts.tsv \
+  --ref-paf paf/graph_nodes_to_ref.paf \
   --reviewed-plan chromosort.gapfill.reviewed_plan.tsv \
   --output-prefix results/sample.reviewed_gapfill \
   --apply
 ```
+
+Review these outputs before publishing a filled scaffold:
+
+- `results/sample.graph_gaps.tsv`: graph adjacency, missing graph nodes, direct
+  edges, and short paths at scaffold junctions.
+- `results/sample.gapfill.gapfill_plan.tsv`: candidate path status, support
+  counts, risk flags, fill length, right-trim bp, and apply status.
+- `results/sample.gapfill.review.html`: side-by-side review of candidate paths.
+- `results/sample.reviewed_gapfill.gapfilled.fa`: final FASTA after accepted
+  fills only.
 
 ## Handling Overlapping Contigs
 

@@ -44,6 +44,12 @@ nav:
     children:
       - title: Quick start
         url: /workflows/#quick-start
+      - title: Clean sort
+        url: /workflows/#workflow-1-reference-order-a-mostly-clean-assembly
+      - title: Fix misjoins
+        url: /workflows/#workflow-2-fix-misjoined-contigs-before-sorting
+      - title: Scaffold and gapfill
+        url: /workflows/#workflow-3-scaffold-and-fill-graph-supported-gaps
       - title: Overlaps
         url: /workflows/#handling-overlapping-contigs
       - title: Synthetic graph workflow
