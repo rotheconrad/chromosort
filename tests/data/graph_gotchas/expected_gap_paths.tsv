@@ -1,0 +1,6 @@
+scenario	left_node	right_node	expected_best_path	warning
+confident_gap_path	left	right	left+,bridge_good+,right+	.
+ambiguous_branch	left	right	left+,bridge_alt+,right+	weaker_support_than_bridge_good
+orientation_specific	right	reverse_only	right-,reverse_only-	orientation_specific
+disconnected_mapped_node	left	isolated	.	no_graph_path
+cycle_guard	bridge_alt	bridge_alt	bridge_alt+,bridge_alt-	cycle_depth_guard

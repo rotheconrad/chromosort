@@ -1,0 +1,5 @@
+read_confident_1	24	0	24	+	>left>bridge_good>right	24	0	24	24	24	60
+read_confident_2	24	0	24	+	>left>bridge_good>right	24	0	24	23	24	55
+read_alt_weak	24	0	24	+	>left>bridge_alt>right	24	0	24	20	24	35
+read_reverse_support	14	0	14	+	<right<reverse_only	14	0	14	13	14	50
+read_low_mapq_ignored	24	0	24	+	>left>bridge_alt>right	24	0	24	20	24	10

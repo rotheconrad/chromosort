@@ -1,0 +1,9 @@
+left	8	0	8	+	chr1	60	0	8	8	8	60
+bridge_good	8	0	8	+	chr1	60	18	26	8	8	60
+bridge_alt	8	0	8	+	chr1	60	18	26	6	8	25
+right	8	0	8	+	chr1	60	36	44	8	8	60
+reverse_only	6	0	6	-	chr1	60	44	50	6	6	60
+isolated	6	0	6	+	chr2	40	10	16	6	6	60
+repeat_shared	8	0	8	+	chr1	60	8	16	7	8	45
+repeat_shared	8	0	8	+	chr2	40	18	26	7	8	30	tp:A:S
+duplicate_fragment	4	0	4	+	chr1	60	4	8	4	4	20

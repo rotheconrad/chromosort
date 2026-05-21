@@ -1,0 +1,20 @@
+H	VN:Z:1.0
+S	left	AAAACCCC	LN:i:8	RC:i:20
+S	bridge_good	CCCCGGGG	LN:i:8	RC:i:18
+S	bridge_alt	CCCCTTTT	LN:i:8	RC:i:4
+S	right	GGGGTTTT	LN:i:8	RC:i:19
+S	reverse_only	ATGCAT	LN:i:6	RC:i:7
+S	isolated	TTTTGG	LN:i:6	RC:i:12
+S	repeat_shared	CCCCAAAA	LN:i:8	RC:i:30
+S	duplicate_fragment	CCCC	LN:i:4	RC:i:2
+S	unsequenced_gap_probe	*	LN:i:12
+L	left	+	bridge_good	+	4M
+L	bridge_good	+	right	+	4M
+L	left	+	bridge_alt	+	4M
+L	bridge_alt	+	right	+	2M
+L	bridge_alt	+	bridge_alt	-	1M
+L	right	-	reverse_only	-	3M
+L	left	-	reverse_only	+	0M
+L	repeat_shared	+	bridge_good	+	4M
+L	duplicate_fragment	+	bridge_good	+	2M
+L	unsequenced_gap_probe	+	right	+	*

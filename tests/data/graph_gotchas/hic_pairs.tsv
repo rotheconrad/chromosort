@@ -1,0 +1,8 @@
+left	bridge_good	25
+bridge_good	right	22
+left	bridge_alt	3
+bridge_alt	right	2
+right	reverse_only	8
+left	isolated	0
+repeat_shared	bridge_good	4
+duplicate_fragment	bridge_good	1

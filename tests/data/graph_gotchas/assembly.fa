@@ -1,0 +1,16 @@
+>left
+AAAACCCC
+>bridge_good
+CCCCGGGG
+>bridge_alt
+CCCCTTTT
+>right
+GGGGTTTT
+>reverse_only
+ATGCAT
+>isolated
+TTTTGG
+>repeat_shared
+CCCCAAAA
+>duplicate_fragment
+CCCC

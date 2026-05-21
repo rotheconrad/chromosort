@@ -1289,6 +1289,12 @@ The tests use tiny synthetic FASTA, coords, and PAF files under `tests/data`.
 They do not require running MUMmer or minimap2; both are included in the
 environment so users can generate real input files.
 
+The graph-aware development fixtures under `tests/data/graph_gotchas` include a
+small GFA, unitig-to-reference PAF, GraphAligner-like GAF, Hi-C-like pair table,
+and expected path labels. They are designed to exercise direct gap paths,
+ambiguous branches, orientation-specific links, disconnected mapped nodes,
+cycle guards, and repeat/duplicate warnings as graph evidence features are added.
+
 ## Citation
 
 If you use ChromoSort, cite this repository and cite MUMmer or minimap2 for the
@@ -1317,6 +1323,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.6` | Added the first graph-evidence foundation: a tested GFA parser for segment/link records, orientation-aware edge lookup helpers, overlap-CIGAR handling that preserves complex overlaps as non-trim lengths, and synthetic graph-gotcha fixtures with GFA, PAF, GAF, Hi-C-like, and expected-path files for future roadmap development. |
 | `0.2.5` | Added `chromo manual`, a self-contained HTML dashboard for manual dot-plot review, contig removal/restoration, order changes, breakpoints, inversions, scaffold labeling/export, FASTA downloads, recipe JSON export, and reproducible `chromo manual apply` recipe execution. |
 | `0.2.4` | Added `chromo cut` for exact reviewed breakpoint cuts, with repeatable `--cut CONTIG:POS[,POS...]`, single-contig `--contig/--pos`, batch `--cuts-file`, cut-piece FASTA output, and an audit TSV report. |
 | `0.2.3` | Added explicit terminal-overlap classification/rescue in `chromo sort`, richer scaffold overlap reporting, and `chromo scaffold --overlap-policy` modes for warn-only, reference-coordinate trimming, and sequence-confirmed trimming. |
