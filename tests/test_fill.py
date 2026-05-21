@@ -248,6 +248,141 @@ class FillTests(unittest.TestCase):
             records = read_fasta(Path(str(prefix) + ".filled.fa"))
             self.assertEqual(records["chr1"], "AAAACCCCGGGGTTTT")
 
+    def test_hic_support_resolves_ambiguous_graph_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered = tmp_path / "ordered.fa"
+            assignments = tmp_path / "assignments.tsv"
+            prefix = tmp_path / "hic_supported"
+
+            ordered.write_text(">chr1_left\nAAAACCCC\n>chr1_right\nGGGGTTTT\n")
+            write_assignments(
+                assignments,
+                [
+                    {
+                        "contig": "left",
+                        "kept": "yes",
+                        "new_name": "chr1_left",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": 1,
+                        "ref_start": 1,
+                        "ref_end": 8,
+                        "orientation": "+",
+                    },
+                    {
+                        "contig": "right",
+                        "kept": "yes",
+                        "new_name": "chr1_right",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": 2,
+                        "ref_start": 37,
+                        "ref_end": 44,
+                        "orientation": "+",
+                    },
+                ],
+            )
+
+            run_fill(
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(GRAPH_DATA / "unitigs.gfa"),
+                "--hic-pairs",
+                str(GRAPH_DATA / "hic_pairs.tsv"),
+                "--min-hic-path-support",
+                "40",
+                "--output-prefix",
+                str(prefix),
+                "--apply",
+                "--include-fill-sequences",
+                "--simple-headers",
+            )
+
+            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            self.assertEqual(plan["graph_status"], "hic_resolved_paths")
+            self.assertEqual(plan["fill_status"], "fillable")
+            self.assertEqual(plan["hic_path_support"], "47")
+            self.assertEqual(plan["hic_best_alt_support"], "5")
+            self.assertEqual(plan["path_nodes"], "left+,bridge_good+,right+")
+            self.assertEqual(plan["fill_sequence"], "GGGG")
+            self.assertEqual(plan["applied"], "yes")
+
+            records = read_fasta(Path(str(prefix) + ".filled.fa"))
+            self.assertEqual(records["chr1"], "AAAACCCCGGGGTTTT")
+
+    def test_conflicting_gaf_and_hic_support_remains_unresolved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered = tmp_path / "ordered.fa"
+            assignments = tmp_path / "assignments.tsv"
+            hic_pairs = tmp_path / "conflicting_hic.tsv"
+            prefix = tmp_path / "conflict"
+
+            ordered.write_text(">chr1_left\nAAAACCCC\n>chr1_right\nGGGGTTTT\n")
+            write_assignments(
+                assignments,
+                [
+                    {
+                        "contig": "left",
+                        "kept": "yes",
+                        "new_name": "chr1_left",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": 1,
+                        "ref_start": 1,
+                        "ref_end": 8,
+                        "orientation": "+",
+                    },
+                    {
+                        "contig": "right",
+                        "kept": "yes",
+                        "new_name": "chr1_right",
+                        "assigned_ref": "chr1",
+                        "order_in_ref": 2,
+                        "ref_start": 37,
+                        "ref_end": 44,
+                        "orientation": "+",
+                    },
+                ],
+            )
+            hic_pairs.write_text(
+                "node_a\tnode_b\tcount\n"
+                "left\tbridge_good\t1\n"
+                "bridge_good\tright\t1\n"
+                "left\tbridge_alt\t30\n"
+                "bridge_alt\tright\t25\n"
+            )
+
+            run_fill(
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(GRAPH_DATA / "unitigs.gfa"),
+                "--gaf",
+                str(GRAPH_DATA / "reads_to_graph.gaf"),
+                "--hic-pairs",
+                str(hic_pairs),
+                "--min-gaf-path-support",
+                "2",
+                "--min-hic-path-support",
+                "30",
+                "--output-prefix",
+                str(prefix),
+            )
+
+            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            self.assertEqual(plan["graph_status"], "ambiguous_paths")
+            self.assertEqual(plan["fill_status"], "ambiguous_paths")
+            self.assertEqual(plan["reason"], "conflicting_gaf_hic_support")
+            self.assertEqual(plan["gaf_path_support"], "2")
+            self.assertEqual(plan["gaf_best_alt_support"], "1")
+            self.assertEqual(plan["hic_path_support"], "2")
+            self.assertEqual(plan["hic_best_alt_support"], "55")
+            self.assertFalse(Path(str(prefix) + ".filled.fa").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
