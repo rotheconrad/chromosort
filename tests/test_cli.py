@@ -41,7 +41,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("cut", result.stdout)
         self.assertIn("manual", result.stdout)
         self.assertIn("scaffold", result.stdout)
-        self.assertIn("fill", result.stdout)
+        self.assertIn("gapfill", result.stdout)
         self.assertIn("plot", result.stdout)
 
     def test_subcommand_help_dispatches_to_full_commands(self):
@@ -51,7 +51,7 @@ class CliTests(unittest.TestCase):
         manual_help = run_cli("manual", "--help").stdout
         manual_apply_help = run_cli("manual", "apply", "--help").stdout
         scaffold_help = run_cli("scaffold", "--help").stdout
-        fill_help = run_cli("fill", "--help").stdout
+        gapfill_help = run_cli("gapfill", "--help").stdout
         plot_help = run_cli("plot", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
         self.assertIn("--paf", sort_help)
@@ -75,17 +75,17 @@ class CliTests(unittest.TestCase):
         self.assertIn("--gfa", scaffold_help)
         self.assertIn("--graph-overlap-policy", scaffold_help)
         self.assertIn("--graph-max-path-edges", scaffold_help)
-        self.assertIn("--apply", fill_help)
-        self.assertIn("--gaf", fill_help)
-        self.assertIn("--hic-pairs", fill_help)
-        self.assertIn("--ref-paf", fill_help)
-        self.assertIn("--reviewed-plan", fill_help)
-        self.assertIn("--review-html", fill_help)
-        self.assertIn("--max-path-edges", fill_help)
-        self.assertIn("--min-gaf-path-support", fill_help)
-        self.assertIn("--min-hic-path-support", fill_help)
-        self.assertIn("--min-ref-path-support", fill_help)
-        self.assertIn("--include-fill-sequences", fill_help)
+        self.assertIn("--apply", gapfill_help)
+        self.assertIn("--gaf", gapfill_help)
+        self.assertIn("--hic-pairs", gapfill_help)
+        self.assertIn("--ref-paf", gapfill_help)
+        self.assertIn("--reviewed-plan", gapfill_help)
+        self.assertIn("--review-html", gapfill_help)
+        self.assertIn("--max-path-edges", gapfill_help)
+        self.assertIn("--min-gaf-path-support", gapfill_help)
+        self.assertIn("--min-hic-path-support", gapfill_help)
+        self.assertIn("--min-ref-path-support", gapfill_help)
+        self.assertIn("--include-fill-sequences", gapfill_help)
         self.assertIn("--per-ref", plot_help)
         self.assertIn("--paf", plot_help)
         self.assertIn("--formats", plot_help)
@@ -124,6 +124,11 @@ class CliTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("use either --all or --contigs/--contigs-file", result.stderr)
+
+    def test_gapfill_replaces_old_fill_subcommand(self):
+        result = run_cli_raw("fill", "--help")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unknown command: fill", result.stderr)
 
     def test_graph_safety_flags_require_graph_input(self):
         sort_result = run_cli_raw(

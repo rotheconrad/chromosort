@@ -1,3 +1,3 @@
-"""Reference-order, fix, cut, manually edit, scaffold, fill, plot, and review."""
+"""Reference-order, fix, cut, manually edit, scaffold, gapfill, plot, and review."""
 
-__version__ = "0.2.22"
+__version__ = "0.2.23"

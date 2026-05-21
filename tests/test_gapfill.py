@@ -63,25 +63,25 @@ def read_fasta(path):
 
 def review_html_data(path):
     text = path.read_text()
-    start_marker = '<script id="chromosort-fill-review-data" type="application/json">'
+    start_marker = '<script id="chromosort-gapfill-review-data" type="application/json">'
     end_marker = "</script>"
     start = text.index(start_marker) + len(start_marker)
     end = text.index(end_marker, start)
     return json.loads(text[start:end])
 
 
-def run_fill(*args):
+def run_gapfill(*args):
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "src")
     subprocess.run(
-        [sys.executable, "-m", "chromosort.fill", *args],
+        [sys.executable, "-m", "chromosort.gapfill", *args],
         cwd=ROOT,
         check=True,
         env=env,
     )
 
 
-def write_unique_fill_fixture(tmp_path):
+def write_unique_gapfill_fixture(tmp_path):
     ordered = tmp_path / "ordered.fa"
     assignments = tmp_path / "assignments.tsv"
     graph = tmp_path / "graph.gfa"
@@ -123,14 +123,14 @@ def write_unique_fill_fixture(tmp_path):
     return ordered, assignments, graph
 
 
-class FillTests(unittest.TestCase):
-    def test_fill_applies_unique_sequence_path(self):
+class GapfillTests(unittest.TestCase):
+    def test_gapfill_applies_unique_sequence_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
+            ordered, assignments, graph = write_unique_gapfill_fixture(tmp_path)
             prefix = tmp_path / "filled"
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -144,7 +144,7 @@ class FillTests(unittest.TestCase):
                 "--simple-headers",
             )
 
-            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            plan = read_tsv(Path(str(prefix) + ".gapfill_plan.tsv"))[0]
             self.assertEqual(plan["fill_status"], "fillable")
             self.assertEqual(plan["path_nodes"], "left+,gapper+,right+")
             self.assertEqual(plan["fill_sequence"], "GGGGTT")
@@ -152,18 +152,18 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["accept_fill"], "no")
             self.assertEqual(plan["applied"], "yes")
 
-            records = read_fasta(Path(str(prefix) + ".filled.fa"))
+            records = read_fasta(Path(str(prefix) + ".gapfilled.fa"))
             self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
 
-    def test_reviewed_plan_controls_graph_fill_application(self):
+    def test_reviewed_plan_controls_graph_gapfill_application(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
+            ordered, assignments, graph = write_unique_gapfill_fixture(tmp_path)
             plan_prefix = tmp_path / "planned"
             accepted_plan = tmp_path / "accepted_plan.tsv"
             rejected_plan = tmp_path / "rejected_plan.tsv"
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -174,14 +174,14 @@ class FillTests(unittest.TestCase):
                 str(plan_prefix),
                 "--include-fill-sequences",
             )
-            rows = read_tsv(Path(str(plan_prefix) + ".fill_plan.tsv"))
+            rows = read_tsv(Path(str(plan_prefix) + ".gapfill_plan.tsv"))
             self.assertEqual(rows[0]["fill_status"], "fillable")
             self.assertEqual(rows[0]["accept_fill"], "no")
 
             rows[0]["accept_fill"] = "yes"
             write_tsv(accepted_plan, rows)
             accepted_prefix = tmp_path / "accepted"
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -196,16 +196,16 @@ class FillTests(unittest.TestCase):
                 "--simple-headers",
             )
 
-            accepted_rows = read_tsv(Path(str(accepted_prefix) + ".fill_plan.tsv"))
+            accepted_rows = read_tsv(Path(str(accepted_prefix) + ".gapfill_plan.tsv"))
             self.assertEqual(accepted_rows[0]["accept_fill"], "yes")
             self.assertEqual(accepted_rows[0]["applied"], "yes")
-            records = read_fasta(Path(str(accepted_prefix) + ".filled.fa"))
+            records = read_fasta(Path(str(accepted_prefix) + ".gapfilled.fa"))
             self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
 
             rows[0]["accept_fill"] = "no"
             write_tsv(rejected_plan, rows)
             rejected_prefix = tmp_path / "rejected"
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -220,20 +220,20 @@ class FillTests(unittest.TestCase):
                 "--simple-headers",
             )
 
-            rejected_rows = read_tsv(Path(str(rejected_prefix) + ".fill_plan.tsv"))
+            rejected_rows = read_tsv(Path(str(rejected_prefix) + ".gapfill_plan.tsv"))
             self.assertEqual(rejected_rows[0]["accept_fill"], "no")
             self.assertEqual(rejected_rows[0]["applied"], "no")
-            records = read_fasta(Path(str(rejected_prefix) + ".filled.fa"))
+            records = read_fasta(Path(str(rejected_prefix) + ".gapfilled.fa"))
             self.assertEqual(records["chr1"], "AAAACC" + "N" * 14 + "TTCCCC")
 
-    def test_review_html_embeds_fill_plan_rows(self):
+    def test_review_html_embeds_gapfill_plan_rows(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
+            ordered, assignments, graph = write_unique_gapfill_fixture(tmp_path)
             prefix = tmp_path / "planned"
-            review_html = tmp_path / "fill_review.html"
+            review_html = tmp_path / "gapfill_review.html"
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -250,7 +250,7 @@ class FillTests(unittest.TestCase):
             self.assertTrue(review_html.exists())
             self.assertIn("Export reviewed TSV", review_html.read_text())
             data = review_html_data(review_html)
-            self.assertEqual(data["schema"], "chromosort-fill-review-v1")
+            self.assertEqual(data["schema"], "chromosort-gapfill-review-v1")
             self.assertIn("accept_fill", data["columns"])
             self.assertIn("risk_flags", data["columns"])
             self.assertEqual(len(data["rows"]), 1)
@@ -263,11 +263,11 @@ class FillTests(unittest.TestCase):
     def test_reviewed_plan_rejects_stale_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
+            ordered, assignments, graph = write_unique_gapfill_fixture(tmp_path)
             plan_prefix = tmp_path / "planned"
             reviewed_plan = tmp_path / "reviewed_plan.tsv"
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -277,13 +277,13 @@ class FillTests(unittest.TestCase):
                 "--output-prefix",
                 str(plan_prefix),
             )
-            rows = read_tsv(Path(str(plan_prefix) + ".fill_plan.tsv"))
+            rows = read_tsv(Path(str(plan_prefix) + ".gapfill_plan.tsv"))
             rows[0]["accept_fill"] = "yes"
             rows[0]["path_nodes"] = "left+,stale+,right+"
             write_tsv(reviewed_plan, rows)
 
             with self.assertRaises(subprocess.CalledProcessError):
-                run_fill(
+                run_gapfill(
                     "--ordered-fasta",
                     str(ordered),
                     "--assignments",
@@ -297,7 +297,7 @@ class FillTests(unittest.TestCase):
                     "--apply",
                 )
 
-    def test_fill_refuses_ambiguous_graph_paths(self):
+    def test_gapfill_refuses_ambiguous_graph_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             ordered = tmp_path / "ordered.fa"
@@ -331,7 +331,7 @@ class FillTests(unittest.TestCase):
                 ],
             )
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -342,7 +342,7 @@ class FillTests(unittest.TestCase):
                 str(prefix),
             )
 
-            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            plan = read_tsv(Path(str(prefix) + ".gapfill_plan.tsv"))[0]
             self.assertEqual(plan["graph_status"], "ambiguous_paths")
             self.assertEqual(plan["fill_status"], "ambiguous_paths")
             self.assertEqual(plan["candidate_paths"], "2")
@@ -351,7 +351,7 @@ class FillTests(unittest.TestCase):
             self.assertIn("left", plan["high_degree_nodes"])
             self.assertIn("bridge_alt", plan["self_loop_nodes"])
             self.assertGreater(int(plan["branch_complexity_score"]), 0)
-            self.assertFalse(Path(str(prefix) + ".filled.fa").exists())
+            self.assertFalse(Path(str(prefix) + ".gapfilled.fa").exists())
 
     def test_gaf_support_resolves_ambiguous_graph_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -387,7 +387,7 @@ class FillTests(unittest.TestCase):
                 ],
             )
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -405,7 +405,7 @@ class FillTests(unittest.TestCase):
                 "--simple-headers",
             )
 
-            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            plan = read_tsv(Path(str(prefix) + ".gapfill_plan.tsv"))[0]
             self.assertEqual(plan["graph_status"], "gaf_resolved_paths")
             self.assertEqual(plan["fill_status"], "fillable")
             self.assertEqual(plan["gaf_path_support"], "2")
@@ -415,18 +415,18 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["right_trim_bp"], "4")
             self.assertEqual(plan["applied"], "yes")
 
-            records = read_fasta(Path(str(prefix) + ".filled.fa"))
+            records = read_fasta(Path(str(prefix) + ".gapfilled.fa"))
             self.assertEqual(records["chr1"], "AAAACCCCGGGGTTTT")
 
     def test_ref_paf_support_resolves_ambiguous_graph_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            ordered = GRAPH_DATA / "fill_ordered.fa"
-            assignments = GRAPH_DATA / "fill_assignments.tsv"
+            ordered = GRAPH_DATA / "gapfill_ordered.fa"
+            assignments = GRAPH_DATA / "gapfill_assignments.tsv"
             prefix = tmp_path / "ref_supported"
             review_html = tmp_path / "ref_supported.review.html"
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -446,7 +446,7 @@ class FillTests(unittest.TestCase):
                 "--simple-headers",
             )
 
-            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            plan = read_tsv(Path(str(prefix) + ".gapfill_plan.tsv"))[0]
             self.assertEqual(plan["graph_status"], "ref_paf_resolved_paths")
             self.assertEqual(plan["fill_status"], "fillable")
             self.assertEqual(plan["ref_path_support"], "8")
@@ -458,7 +458,7 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["fill_sequence"], "GGGG")
             self.assertEqual(plan["applied"], "yes")
 
-            records = read_fasta(Path(str(prefix) + ".filled.fa"))
+            records = read_fasta(Path(str(prefix) + ".gapfilled.fa"))
             self.assertEqual(records["chr1"], "AAAACCCCGGGGTTTT")
             self.assertIn("Candidate path comparison", review_html.read_text())
             review_data = review_html_data(review_html)
@@ -504,7 +504,7 @@ class FillTests(unittest.TestCase):
                 ],
             )
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -522,7 +522,7 @@ class FillTests(unittest.TestCase):
                 "--simple-headers",
             )
 
-            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            plan = read_tsv(Path(str(prefix) + ".gapfill_plan.tsv"))[0]
             self.assertEqual(plan["graph_status"], "hic_resolved_paths")
             self.assertEqual(plan["fill_status"], "fillable")
             self.assertEqual(plan["hic_path_support"], "47")
@@ -531,7 +531,7 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["fill_sequence"], "GGGG")
             self.assertEqual(plan["applied"], "yes")
 
-            records = read_fasta(Path(str(prefix) + ".filled.fa"))
+            records = read_fasta(Path(str(prefix) + ".gapfilled.fa"))
             self.assertEqual(records["chr1"], "AAAACCCCGGGGTTTT")
 
     def test_conflicting_gaf_and_hic_support_remains_unresolved(self):
@@ -576,7 +576,7 @@ class FillTests(unittest.TestCase):
                 "bridge_alt\tright\t25\n"
             )
 
-            run_fill(
+            run_gapfill(
                 "--ordered-fasta",
                 str(ordered),
                 "--assignments",
@@ -595,7 +595,7 @@ class FillTests(unittest.TestCase):
                 str(prefix),
             )
 
-            plan = read_tsv(Path(str(prefix) + ".fill_plan.tsv"))[0]
+            plan = read_tsv(Path(str(prefix) + ".gapfill_plan.tsv"))[0]
             self.assertEqual(plan["graph_status"], "ambiguous_paths")
             self.assertEqual(plan["fill_status"], "ambiguous_paths")
             self.assertEqual(plan["reason"], "conflicting_gaf_hic_support")
@@ -603,7 +603,7 @@ class FillTests(unittest.TestCase):
             self.assertEqual(plan["gaf_best_alt_support"], "1")
             self.assertEqual(plan["hic_path_support"], "2")
             self.assertEqual(plan["hic_best_alt_support"], "55")
-            self.assertFalse(Path(str(prefix) + ".filled.fa").exists())
+            self.assertFalse(Path(str(prefix) + ".gapfilled.fa").exists())
 
 
 if __name__ == "__main__":

@@ -33,18 +33,18 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
   graph evidence for adjacent scaffold junctions. Its graph-overlap policy is
   report-only by default, with opt-in warnings or narrow graph-confirmed
   terminal-overlap trimming.
-- `chromo fill` plans graph-supported fills between adjacent sorted contigs,
+- `chromo gapfill` plans graph-supported fills between adjacent sorted contigs,
   can use GAF long-read paths, Hi-C-like contact counts, and reference-placement
   PAF to resolve supported branches, and optionally applies only unambiguous,
   sequence-verified graph paths after review from TSV or HTML review artifacts.
-  Fill plans also report branch complexity, high-degree graph nodes, self-loop
+  Gapfill plans also report branch complexity, high-degree graph nodes, self-loop
   nodes, unsequenced nodes, and support-risk flags for manual review.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
 
 The sorting, fixing, plotting, and manual dashboard workflows use standard
-MUMmer `show-coords` output or minimap2 PAF. Graph evidence and filling use
+MUMmer `show-coords` output or minimap2 PAF. Graph evidence and gap filling use
 GFA, optional GAF, and optional Hi-C-like contact files from assembly-graph
 workflows. Manual cuts do not
 require alignments. These commands are designed for reuse across species and genome
@@ -52,8 +52,8 @@ assembly projects. ChromoSort does not polish sequence, call variants, or force
 contigs to match a reference. It keeps full sequence pieces and writes
 TSV/plot/recipe reports so each keep, reject, split, manual edit, plot, or
 scaffold-gap decision is auditable. Graph-aware sequence changes are limited to
-`chromo fill --apply`, which refuses ambiguous paths, missing sequence, unknown
-overlaps, flank sequence mismatches, and stale reviewed fill-plan paths.
+`chromo gapfill --apply`, which refuses ambiguous paths, missing sequence, unknown
+overlaps, flank sequence mismatches, and stale reviewed gapfill-plan paths.
 
 ## Table of Contents
 
@@ -108,13 +108,13 @@ overlaps, flank sequence mismatches, and stale reviewed fill-plan paths.
   - [`chromo scaffold` Outputs](#chromo-scaffold-outputs)
   - [`chromo scaffold` Parameters](#chromo-scaffold-parameters)
   - [Reasoning Behind `chromo scaffold`](#reasoning-behind-chromo-scaffold)
-- [chromo fill](#chromo-fill)
-  - [What `chromo fill` Does](#what-chromo-fill-does)
+- [chromo gapfill](#chromo-gapfill)
+  - [What `chromo gapfill` Does](#what-chromo-gapfill-does)
   - [Plan Graph Fills](#plan-graph-fills)
   - [Apply Reviewed Graph Fills](#apply-reviewed-graph-fills)
-  - [`chromo fill` Outputs](#chromo-fill-outputs)
-  - [`chromo fill` Parameters](#chromo-fill-parameters)
-  - [Reasoning Behind `chromo fill`](#reasoning-behind-chromo-fill)
+  - [`chromo gapfill` Outputs](#chromo-gapfill-outputs)
+  - [`chromo gapfill` Parameters](#chromo-gapfill-parameters)
+  - [Reasoning Behind `chromo gapfill`](#reasoning-behind-chromo-gapfill)
 - [Synthetic Graph Workflow](#synthetic-graph-workflow)
 - [Development](#development)
 - [Citation](#citation)
@@ -139,7 +139,7 @@ chromo cut --help
 chromo manual --help
 chromo plot --help
 chromo scaffold --help
-chromo fill --help
+chromo gapfill --help
 ```
 
 Recommended order when raw dot plots show possible misjoined contigs:
@@ -256,21 +256,21 @@ chromo scaffold \
 Plan and apply reviewed graph-supported fills:
 
 ```bash
-chromo fill \
+chromo gapfill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
-  --output-prefix results/sample.fill \
-  --review-html results/sample.fill.review.html
+  --output-prefix results/sample.gapfill \
+  --review-html results/sample.gapfill.review.html
 
-chromo fill \
+chromo gapfill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
   --gaf reads_to_graph.gaf \
   --hic-pairs graph_contacts.tsv \
-  --reviewed-plan chromosort.fill.reviewed_plan.tsv \
-  --output-prefix results/sample.reviewed_fill \
+  --reviewed-plan chromosort.gapfill.reviewed_plan.tsv \
+  --output-prefix results/sample.reviewed_gapfill \
   --apply
 ```
 
@@ -358,15 +358,15 @@ The environment installs:
 - pytest for the test suite
 - ChromoSort in editable mode
 
-Legacy command aliases are retained for compatibility:
+Additional console entry points are retained for compatibility:
 
 - `chromosort` is equivalent to `chromo sort`
 - `chromosort-fix-contigs` is equivalent to `chromo fix`
 - `chromosort-scaffold` is equivalent to `chromo scaffold`
-- `chromosort-fill` is equivalent to `chromo fill`
+- `chromosort-gapfill` is equivalent to `chromo gapfill`
 
 New workflows should use `chromo sort`, `chromo fix`, `chromo cut`,
-`chromo manual`, `chromo scaffold`, `chromo fill`, and `chromo plot`.
+`chromo manual`, `chromo scaffold`, `chromo gapfill`, and `chromo plot`.
 
 ## Installation With Pixi
 
@@ -498,14 +498,14 @@ set. Use `--min-mapq` to ignore low-MAPQ PAF rows.
 Graph-aware ChromoSort commands use these graph-related evidence files:
 
 - GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
-  `chromo fix --gfa`, `chromo scaffold --gfa`, and `chromo fill --gfa`.
+  `chromo fix --gfa`, `chromo scaffold --gfa`, and `chromo gapfill --gfa`.
 - reference-to-assembly PAF: the same minimap2 alignment format used by
-  `chromo sort`, `chromo fix`, `chromo manual`, `chromo fill --ref-paf`, and
+  `chromo sort`, `chromo fix`, `chromo manual`, `chromo gapfill --ref-paf`, and
   `chromo plot`.
-- GAF: optional read-to-graph alignments used by `chromo fill --gaf` to resolve
+- GAF: optional read-to-graph alignments used by `chromo gapfill --gaf` to resolve
   otherwise ambiguous graph paths.
 - Hi-C pairs: optional graph-node contact counts used by
-  `chromo fill --hic-pairs` as an additional conservative branch-support
+  `chromo gapfill --hic-pairs` as an additional conservative branch-support
   signal.
 
 ### Where to Find the GFA
@@ -524,12 +524,12 @@ sequences.
 For graph review, use the graph closest to the FASTA being sorted or filled:
 
 ```text
-assembly.fa              # FASTA passed to chromo sort/fix/fill
+assembly.fa              # FASTA passed to chromo sort/fix/gapfill
 assembly_graph.gfa       # GFA whose S records match assembly.fa sequence IDs
 ```
 
 ChromoSort currently reads GFA `S` segment records and `L` link records. Segment
-sequences are required only when `chromo fill --apply` may insert graph
+sequences are required only when `chromo gapfill --apply` may insert graph
 sequence. Report-only graph evidence can still use segments with `*` sequence
 fields when lengths are provided with `LN:i`.
 
@@ -564,10 +564,10 @@ chromo manual --ref-fasta reference.fa --assembly-fasta assembly.fa \
 chromo plot --ref-fasta reference.fa --assembly-fasta assembly.fa \
   --paf paf/sample.ref_vs_asm.paf --output-prefix plots/sample
 
-chromo fill --ordered-fasta results/sample.ordered.fa \
+chromo gapfill --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa --ref-paf paf/sample.ref_vs_asm.paf \
-  --output-prefix results/sample.fill
+  --output-prefix results/sample.gapfill
 ```
 
 If you run `chromo fix` and create a new fixed FASTA, re-align the fixed FASTA
@@ -580,12 +580,12 @@ minimap2 -x asm5 -t 16 --secondary=no reference.fa results/sample.fixed.fa \
 
 The original PAF explains the raw assembly; the fixed PAF explains the edited
 assembly. Do not mix a fixed FASTA with an old raw-assembly PAF unless you are
-only doing a very specific manual comparison. For `chromo fill --ref-paf`, use
+only doing a very specific manual comparison. For `chromo gapfill --ref-paf`, use
 the PAF whose query names still match the GFA segment names being evaluated.
 
 ### Creating GAF Read-to-Graph Alignments
 
-GAF is a graph-alignment format. ChromoSort uses it in `chromo fill --gaf` as
+GAF is a graph-alignment format. ChromoSort uses it in `chromo gapfill --gaf` as
 optional read-path evidence for candidate graph fills. A typical source is a
 long-read-to-GFA alignment from a graph aligner:
 
@@ -597,7 +597,7 @@ GraphAligner \
 ```
 
 `GraphAligner` is an optional external tool; it is not needed for the core
-sorting/fixing/scaffolding workflow. In the current `chromo fill` implementation,
+sorting/fixing/scaffolding workflow. In the current `chromo gapfill` implementation,
 GAF is used as path support only. ChromoSort reads the query name, path string,
 and MAPQ columns, filters with `--min-gaf-mapq`, and counts how many read paths
 contain each candidate graph path. If one candidate path has unique support
@@ -606,7 +606,7 @@ GFA branch. Tied, weak, or absent support keeps the fill unresolved for review.
 
 ### Optional Hi-C Pair Evidence
 
-`chromo fill --hic-pairs` accepts a simple tab-delimited graph-node contact
+`chromo gapfill --hic-pairs` accepts a simple tab-delimited graph-node contact
 table:
 
 ```text
@@ -1606,16 +1606,16 @@ graph, or disconnected within the configured search depth. It does not fill
 gaps, trim sequence, or reorder contigs. Those operations remain explicit
 review steps.
 
-## chromo fill
+## chromo gapfill
 
-Use `chromo fill` after final sorting and manual review when a GFA graph gives a
+Use `chromo gapfill` after final sorting and manual review when a GFA graph gives a
 simple sequence path between adjacent sorted contigs.
 
-### What `chromo fill` Does
+### What `chromo gapfill` Does
 
 Given a final `chromo sort` ordered FASTA, the matching assignment report, a
 GFA assembly graph, and optional GAF graph alignments, Hi-C pair evidence, or
-reference-placement PAF evidence, `chromo fill`:
+reference-placement PAF evidence, `chromo gapfill`:
 
 1. Groups retained contigs by assigned reference sequence.
 2. Looks at adjacent contig pairs in sorted order.
@@ -1631,9 +1631,9 @@ reference-placement PAF evidence, `chromo fill`:
 7. Rejects missing nodes, disconnected flanks, unresolved ambiguous paths,
    unsequenced nodes, unknown or invalid overlaps, oversized fills, and flank
    sequence mismatches.
-8. Writes `<prefix>.fill_plan.tsv` for review with `accept_fill=no` by default
+8. Writes `<prefix>.gapfill_plan.tsv` for review with `accept_fill=no` by default
    and can write a self-contained HTML reviewer with `--review-html`.
-9. With `--apply`, writes `<prefix>.filled.fa`. Without `--reviewed-plan`, all
+9. With `--apply`, writes `<prefix>.gapfilled.fa`. Without `--reviewed-plan`, all
    currently fillable paths are applied; with `--reviewed-plan`, only rows with
    `accept_fill=yes` are applied and other junctions fall back to inferred or
    fixed N gaps.
@@ -1641,16 +1641,16 @@ reference-placement PAF evidence, `chromo fill`:
 ### Plan Graph Fills
 
 ```bash
-chromo fill \
+chromo gapfill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
   --ref-paf paf/sample.ref_vs_asm.paf \
-  --output-prefix results/sample.fill \
-  --review-html results/sample.fill.review.html
+  --output-prefix results/sample.gapfill \
+  --review-html results/sample.gapfill.review.html
 ```
 
-Planning mode writes the fill plan but does not create a FASTA. Add
+Planning mode writes the gapfill plan but does not create a FASTA. Add
 `--include-fill-sequences` when you want short candidate sequences embedded in
 the TSV for manual review. To make application explicitly reviewed, edit the
 `accept_fill` column from `no` to `yes` only for rows you want to apply, then
@@ -1662,15 +1662,15 @@ reviewed-plan TSV with the same columns.
 ### Apply Reviewed Graph Fills
 
 ```bash
-chromo fill \
+chromo gapfill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
   --ref-paf paf/sample.ref_vs_asm.paf \
   --gaf reads_to_graph.gaf \
   --hic-pairs graph_contacts.tsv \
-  --reviewed-plan chromosort.fill.reviewed_plan.tsv \
-  --output-prefix results/sample.reviewed_fill \
+  --reviewed-plan chromosort.gapfill.reviewed_plan.tsv \
+  --output-prefix results/sample.reviewed_gapfill \
   --apply
 ```
 
@@ -1691,16 +1691,16 @@ overlap so the joined sequence follows the graph path without duplicating the
 overlap. Unfilled junctions receive the inferred reference-space N gap, or
 `--fixed-gap-bp` when provided.
 
-### `chromo fill` Outputs
+### `chromo gapfill` Outputs
 
 | Output | Description |
 | --- | --- |
-| `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
-| `--review-html` path | Optional self-contained HTML table for reviewing fill-plan rows, comparing candidate paths, and exporting a reviewed-plan TSV. |
-| `<prefix>.filled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
+| `<prefix>.gapfill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
+| `--review-html` path | Optional self-contained HTML table for reviewing gapfill-plan rows, comparing candidate paths, and exporting a reviewed-plan TSV. |
+| `<prefix>.gapfilled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
 
-### `chromo fill` Parameters
+### `chromo gapfill` Parameters
 
 | Parameter | Default | Meaning |
 | --- | ---: | --- |
@@ -1710,10 +1710,10 @@ overlap. Unfilled junctions receive the inferred reference-space N gap, or
 | `--gaf` | none | Optional GAF graph alignments used to resolve otherwise ambiguous candidate graph paths. |
 | `--hic-pairs` | none | Optional TSV of graph-node contact counts with `node_a`, `node_b`, and `count` columns. |
 | `--ref-paf` | none | Optional reference-to-assembly PAF used to score intermediate graph nodes against the expected reference-space gap. |
-| `--output-prefix` | required | Prefix for fill plan, run summary, and optional filled FASTA. |
-| `--apply` | off | Write `<prefix>.filled.fa` using only accepted graph paths. |
-| `--reviewed-plan` | none | Optional edited fill plan TSV. With `--apply`, only rows with `accept_fill=yes` are applied after the current path is rechecked. |
-| `--review-html` | none | Optional self-contained HTML review dashboard for the fill plan. |
+| `--output-prefix` | required | Prefix for gapfill plan, run summary, and optional gapfilled FASTA. |
+| `--apply` | off | Write `<prefix>.gapfilled.fa` using only accepted graph paths. |
+| `--reviewed-plan` | none | Optional edited gapfill plan TSV. With `--apply`, only rows with `accept_fill=yes` are applied after the current path is rechecked. |
+| `--review-html` | none | Optional self-contained HTML review dashboard for the gapfill plan. |
 | `--fixed-gap-bp` | none | Use this many Ns for unresolved gaps in `--apply` output instead of inferred reference-space gaps. |
 | `--max-path-edges` | `4` | Maximum GFA link depth searched between adjacent sorted contigs. |
 | `--max-candidate-paths` | `2` | Stop path enumeration after this many candidates. The default distinguishes unique from ambiguous paths. |
@@ -1726,19 +1726,19 @@ overlap. Unfilled junctions receive the inferred reference-space N gap, or
 | `--include-secondary-ref-paf` | off | Include secondary PAF rows marked `tp:A:S` when reading `--ref-paf`. |
 | `--max-fill-bp` | `1000000` | Maximum inserted graph sequence allowed for one fill. Set negative to disable. |
 | `--include-fill-sequences` | off | Include candidate fill sequences in the TSV plan. |
-| `--simple-headers` | off | Write filled FASTA headers containing only the scaffold ID. |
+| `--simple-headers` | off | Write gapfilled FASTA headers containing only the scaffold ID. |
 
-### Reasoning Behind `chromo fill`
+### Reasoning Behind `chromo gapfill`
 
 #### Filling Is Explicit
 
-`chromo scaffold --gfa` remains report-only. `chromo fill` is the explicit
+`chromo scaffold --gfa` remains report-only. `chromo gapfill` is the explicit
 sequence-changing command, and it only changes sequence when `--apply` is set.
 This keeps evidence review separate from FASTA construction.
 
 #### Reviewed Plan Gate
 
-For strict reviewed application, run `chromo fill` once in planning mode, edit
+For strict reviewed application, run `chromo gapfill` once in planning mode, edit
 `accept_fill` to `yes` only for approved rows, then rerun with `--apply` and
 `--reviewed-plan`. ChromoSort recomputes the graph path and validates the
 accepted row before applying it. Accepted rows whose current `path_nodes` or
@@ -1749,7 +1749,7 @@ file to pass to `--reviewed-plan`.
 #### Unique Paths Or Unique Evidence
 
 Assembly graphs often contain repeats, bubbles, and alternate paths. If more
-than one candidate path is found within the search limit, `chromo fill` usually
+than one candidate path is found within the search limit, `chromo gapfill` usually
 marks the junction `ambiguous_paths` and falls back to Ns in applied output. GAF
 read paths and Hi-C contacts are supported tie-breakers: an ambiguous branch can
 be resolved only when one candidate has unique support above the configured
@@ -1801,24 +1801,24 @@ neighbors. The scaffold graph report at
 `results/graph_gotchas/scaffold.graph_gaps.tsv` shows report-only GFA context
 for adjacent sorted contigs.
 
-For a focused gap-fill example, the fixture includes `fill_ordered.fa` and
-`fill_assignments.tsv`, a two-flank chr1 case where `bridge_good` and
+For a focused gap-fill example, the fixture includes `gapfill_ordered.fa` and
+`gapfill_assignments.tsv`, a two-flank chr1 case where `bridge_good` and
 `bridge_alt` are both possible graph paths:
 
 ```bash
-chromo fill \
-  --ordered-fasta "$DATA/fill_ordered.fa" \
-  --assignments "$DATA/fill_assignments.tsv" \
+chromo gapfill \
+  --ordered-fasta "$DATA/gapfill_ordered.fa" \
+  --assignments "$DATA/gapfill_assignments.tsv" \
   --gfa "$DATA/unitigs.gfa" \
   --ref-paf "$DATA/unitig_to_ref.paf" \
   --gaf "$DATA/reads_to_graph.gaf" \
   --hic-pairs "$DATA/hic_pairs.tsv" \
-  --output-prefix results/graph_gotchas/fill \
+  --output-prefix results/graph_gotchas/gapfill \
   --include-fill-sequences \
-  --review-html results/graph_gotchas/fill.review.html
+  --review-html results/graph_gotchas/gapfill.review.html
 ```
 
-The fill plan should mark `left+,bridge_good+,right+` as fillable, while the
+The gapfill plan should mark `left+,bridge_good+,right+` as fillable, while the
 review HTML shows both candidate paths side by side with PAF, GAF, Hi-C, and
 risk annotations. After reviewing the HTML, export a reviewed TSV, or script the
 expected toy approval:
@@ -1827,8 +1827,8 @@ expected toy approval:
 python - <<'PY'
 import csv
 
-src = "results/graph_gotchas/fill.fill_plan.tsv"
-dst = "results/graph_gotchas/fill.reviewed_plan.tsv"
+src = "results/graph_gotchas/gapfill.gapfill_plan.tsv"
+dst = "results/graph_gotchas/gapfill.reviewed_plan.tsv"
 
 with open(src, newline="") as fh:
     reader = csv.DictReader(fh, delimiter="\t")
@@ -1849,20 +1849,20 @@ with open(dst, "w", newline="") as fh:
     writer.writerows(rows)
 PY
 
-chromo fill \
-  --ordered-fasta "$DATA/fill_ordered.fa" \
-  --assignments "$DATA/fill_assignments.tsv" \
+chromo gapfill \
+  --ordered-fasta "$DATA/gapfill_ordered.fa" \
+  --assignments "$DATA/gapfill_assignments.tsv" \
   --gfa "$DATA/unitigs.gfa" \
   --ref-paf "$DATA/unitig_to_ref.paf" \
   --gaf "$DATA/reads_to_graph.gaf" \
   --hic-pairs "$DATA/hic_pairs.tsv" \
-  --reviewed-plan results/graph_gotchas/fill.reviewed_plan.tsv \
-  --output-prefix results/graph_gotchas/fill.reviewed \
+  --reviewed-plan results/graph_gotchas/gapfill.reviewed_plan.tsv \
+  --output-prefix results/graph_gotchas/gapfill.reviewed \
   --apply \
   --simple-headers
 ```
 
-The reviewed fill FASTA should contain chr1 with the graph-supported bridge
+The reviewed gapfilled FASTA should contain chr1 with the graph-supported bridge
 inserted and the right flank overlap trimmed.
 
 ## Development
@@ -1888,7 +1888,7 @@ small GFA, unitig-to-reference PAF, GraphAligner-like GAF, Hi-C-like pair table,
 and expected path labels. They are designed to exercise direct gap paths,
 ambiguous branches, orientation-specific links, disconnected mapped nodes,
 cycle guards, and repeat/duplicate warnings as graph evidence features are added.
-The `chromo fill` tests add a minimal unique-path fill case, reuse the
+The `chromo gapfill` tests add a minimal unique-path fill case, reuse the
 ambiguous graph branch fixture to make sure graph fills are not guessed, and
 use the GAF and Hi-C fixtures to confirm evidence can resolve a branch only
 when the supported path is unique.
@@ -1921,21 +1921,22 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.23` | Renamed the graph gap-filling command from `chromo fill` to `chromo gapfill`, moved the package entry point to `chromosort.gapfill`, replaced the package script with `chromosort-gapfill`, and updated gapfill output names to `<prefix>.gapfill_plan.tsv` and `<prefix>.gapfilled.fa`. |
 | `0.2.22` | Added Pixi installation support with `pixi.toml`, plus README figure assets and captions for `chromo manual` graph review and `chromo plot` whole-genome/per-reference examples. |
 | `0.2.21` | Added graph-aware safety policies. `chromo sort` and `chromo fix` now have warning-only `--graph-guard` checks, while `chromo scaffold --graph-overlap-policy report|warn|confirm` keeps graph evidence report-only by default and only lets direct oriented GFA links confirm narrow terminal-overlap trimming when explicitly requested. |
-| `0.2.20` | Added an end-to-end synthetic graph workflow to the README and shipped focused fill walkthrough inputs. The tutorial runs sort/manual/scaffold/fill with the graph-gotcha GFA, PAF, GAF, Hi-C-like contacts, review HTML, reviewed-plan TSV, and reviewed fill application. |
-| `0.2.19` | Improved `chromo fill --review-html` candidate comparison. Review dashboards now embed per-candidate path rows with path nodes, support scores, validation status, fill length, trim length, risk flags, and optional fill sequence so reviewers can compare ambiguous branches directly before exporting a reviewed plan. |
-| `0.2.18` | Added richer path-risk annotations to `chromo fill`. Fill plans and review HTML now report risk flags, branch-complexity score, high-degree graph nodes, self-loop nodes, unsequenced nodes, and cycle-guard counts so ambiguous or risky candidate paths are easier to triage. |
-| `0.2.17` | Added reference-placement PAF evidence to `chromo fill`. The new `--ref-paf` path scorer reports selected and best-alternate reference support, can conservatively resolve ambiguous branches when one candidate has unique expected-gap placement support, and conflicts with GAF or Hi-C support leave the gap unresolved. |
+| `0.2.20` | Added an end-to-end synthetic graph workflow to the README and shipped focused gapfill walkthrough inputs. The tutorial runs sort/manual/scaffold/gapfill with the graph-gotcha GFA, PAF, GAF, Hi-C-like contacts, review HTML, reviewed-plan TSV, and reviewed gapfill application. |
+| `0.2.19` | Improved `chromo gapfill --review-html` candidate comparison. Review dashboards now embed per-candidate path rows with path nodes, support scores, validation status, fill length, trim length, risk flags, and optional fill sequence so reviewers can compare ambiguous branches directly before exporting a reviewed plan. |
+| `0.2.18` | Added richer path-risk annotations to `chromo gapfill`. Gapfill plans and review HTML now report risk flags, branch-complexity score, high-degree graph nodes, self-loop nodes, unsequenced nodes, and cycle-guard counts so ambiguous or risky candidate paths are easier to triage. |
+| `0.2.17` | Added reference-placement PAF evidence to `chromo gapfill`. The new `--ref-paf` path scorer reports selected and best-alternate reference support, can conservatively resolve ambiguous branches when one candidate has unique expected-gap placement support, and conflicts with GAF or Hi-C support leave the gap unresolved. |
 | `0.2.16` | Expanded `chromo manual --gfa` review. Manual dashboards now include graph-neighborhood filtering, a selected-contig upstream/downstream neighbor panel, overlap/orientation details, and same-reference neighbor flags so branching graph context is easier to compare during manual curation. |
 | `0.2.15` | Added `chromo manual --gfa` graph context. Manual dashboards now embed per-contig GFA node evidence, graph complexity labels, degree/neighbor counts, coverage tags such as `RC:i`, and oriented neighbor summaries so manual breakpoint and ordering review can consider local assembly-graph structure. |
-| `0.2.14` | Added `chromo fill --review-html`, a self-contained HTML review table for fill plans. It embeds the same TSV columns, supports filtering and accepted-fill toggles, and exports a reviewed-plan TSV for `--reviewed-plan`; the TSV and HTML writers now share one row-generation path. |
-| `0.2.13` | Added reviewed fill-plan application for `chromo fill`. Planning output now includes an editable `accept_fill` column, and `--reviewed-plan` makes `--apply` fill only accepted rows after rechecking the current scaffold, contig pair, path nodes, and fillability; rejected or unaccepted rows fall back to N gaps. |
-| `0.2.12` | Added optional Hi-C pair support to `chromo fill`. Fill plans now report Hi-C path support and best alternate support, and otherwise ambiguous graph branches can be resolved when one candidate has unique summed contact support at or above `--min-hic-path-support`; conflicting GAF and Hi-C support leaves the junction unresolved. |
-| `0.2.11` | Expanded the input-file documentation with a dedicated graph-input section describing where to find matching GFA files, which reference-to-assembly PAF files to keep for raw and fixed FASTAs, and how optional GAF read-to-graph alignments are used by `chromo fill`. |
-| `0.2.10` | Added optional GAF read-path evidence to `chromo fill`. Fill plans now report GAF support counts, and otherwise ambiguous graph branches can be resolved when one candidate path has unique support after `--min-gaf-mapq` filtering and meets `--min-gaf-path-support`; weak, tied, or missing support still leaves the junction unresolved. |
-| `0.2.9` | Added `chromo fill`, a conservative graph-gap planning and optional application command. It writes `<prefix>.fill_plan.tsv`, refuses ambiguous or unverifiable GFA paths, applies sequence only with `--apply`, trims the right flank by the final graph overlap when filling, and falls back to inferred or fixed N gaps for unresolved junctions. |
-| `0.2.8` | Added report-only `--gfa` graph context to `chromo sort` and `chromo fix`. Sorting now writes `<prefix>.graph_assignments.tsv` with resolved graph nodes, node degree/self-loop evidence, and direct links to overlap-best contigs; fixing now writes a graph context table beside the split report so reviewed contigs can be checked against the assembly graph before fill workflows. |
+| `0.2.14` | Added `chromo gapfill --review-html`, a self-contained HTML review table for gapfill plans. It embeds the same TSV columns, supports filtering and accepted-fill toggles, and exports a reviewed-plan TSV for `--reviewed-plan`; the TSV and HTML writers now share one row-generation path. |
+| `0.2.13` | Added reviewed gapfill-plan application for `chromo gapfill`. Planning output now includes an editable `accept_fill` column, and `--reviewed-plan` makes `--apply` fill only accepted rows after rechecking the current scaffold, contig pair, path nodes, and fillability; rejected or unaccepted rows fall back to N gaps. |
+| `0.2.12` | Added optional Hi-C pair support to `chromo gapfill`. Gapfill plans now report Hi-C path support and best alternate support, and otherwise ambiguous graph branches can be resolved when one candidate has unique summed contact support at or above `--min-hic-path-support`; conflicting GAF and Hi-C support leaves the junction unresolved. |
+| `0.2.11` | Expanded the input-file documentation with a dedicated graph-input section describing where to find matching GFA files, which reference-to-assembly PAF files to keep for raw and fixed FASTAs, and how optional GAF read-to-graph alignments are used by `chromo gapfill`. |
+| `0.2.10` | Added optional GAF read-path evidence to `chromo gapfill`. Gapfill plans now report GAF support counts, and otherwise ambiguous graph branches can be resolved when one candidate path has unique support after `--min-gaf-mapq` filtering and meets `--min-gaf-path-support`; weak, tied, or missing support still leaves the junction unresolved. |
+| `0.2.9` | Added `chromo gapfill`, a conservative graph-gap planning and optional application command. It writes `<prefix>.gapfill_plan.tsv`, refuses ambiguous or unverifiable GFA paths, applies sequence only with `--apply`, trims the right flank by the final graph overlap when filling, and falls back to inferred or fixed N gaps for unresolved junctions. |
+| `0.2.8` | Added report-only `--gfa` graph context to `chromo sort` and `chromo fix`. Sorting now writes `<prefix>.graph_assignments.tsv` with resolved graph nodes, node degree/self-loop evidence, and direct links to overlap-best contigs; fixing now writes a graph context table beside the split report so reviewed contigs can be checked against the assembly graph before gapfill workflows. |
 | `0.2.7` | Added `chromo scaffold --gfa` report-only graph evidence. When a GFA is provided, scaffolding now writes `<prefix>.graph_gaps.tsv` with resolved graph nodes, orientation-aware direct links, link overlap bp, short explicit GFA paths up to `--graph-max-path-edges`, intermediate candidate nodes, and missing/no-path statuses without changing FASTA output. |
 | `0.2.6` | Added the first graph-evidence foundation: a tested GFA parser for segment/link records, orientation-aware edge lookup helpers, overlap-CIGAR handling that preserves complex overlaps as non-trim lengths, and synthetic graph-gotcha fixtures with GFA, PAF, GAF, Hi-C-like, and expected-path files for future roadmap development. |
 | `0.2.5` | Added `chromo manual`, a self-contained HTML dashboard for manual dot-plot review, contig removal/restoration, order changes, breakpoints, inversions, scaffold labeling/export, FASTA downloads, recipe JSON export, and reproducible `chromo manual apply` recipe execution. |

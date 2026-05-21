@@ -96,7 +96,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
     ap = argparse.ArgumentParser(
         prog=prog,
         description=(
-            "Plan graph-supported fills between adjacent ChromoSort sorted "
+            "Plan graph-supported gap fills between adjacent ChromoSort sorted "
             "contigs, and optionally apply only unambiguous sequence paths."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -149,21 +149,21 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--output-prefix",
         required=True,
         help=(
-            "Output prefix. Writes <prefix>.fill_plan.tsv and "
+            "Output prefix. Writes <prefix>.gapfill_plan.tsv and "
             "<prefix>.run_summary.txt; with --apply also writes "
-            "<prefix>.filled.fa."
+            "<prefix>.gapfilled.fa."
         ),
     )
     ap.add_argument(
         "--apply",
         action="store_true",
-        help="Write <prefix>.filled.fa using only fillable graph paths.",
+        help="Write <prefix>.gapfilled.fa using only fillable graph paths.",
     )
     ap.add_argument(
         "--reviewed-plan",
         default=None,
         help=(
-            "Optional edited fill plan TSV. When provided with --apply, only "
+            "Optional edited gapfill plan TSV. When provided with --apply, only "
             "rows with accept_fill=yes are applied after the current graph "
             "path is rechecked."
         ),
@@ -172,7 +172,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--review-html",
         default=None,
         help=(
-            "Optional self-contained HTML review dashboard for the fill plan. "
+            "Optional self-contained HTML review dashboard for the gapfill plan. "
             "The dashboard can export an edited reviewed-plan TSV."
         ),
     )
@@ -264,7 +264,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
     ap.add_argument(
         "--simple-headers",
         action="store_true",
-        help="Write filled FASTA headers containing only the scaffold ID.",
+        help="Write gapfilled FASTA headers containing only the scaffold ID.",
     )
     return ap.parse_args(argv)
 
@@ -716,7 +716,7 @@ def read_reviewed_plan(path):
         missing = sorted(required - fieldnames)
         if missing:
             raise ValueError(
-                "Reviewed fill plan is missing required column(s): "
+                "Reviewed gapfill plan is missing required column(s): "
                 + ", ".join(missing)
             )
         for line_number, row in enumerate(reader, start=2):
@@ -1427,13 +1427,13 @@ def json_for_script(value):
 
 def write_review_html(path, plans, include_sequences):
     data = {
-        "schema": "chromosort-fill-review-v1",
+        "schema": "chromosort-gapfill-review-v1",
         "columns": fill_plan_header(),
         "candidateColumns": candidate_detail_columns(),
         "rows": [fill_plan_review_dict(plan, include_sequences) for plan in plans],
     }
-    html_text = FILL_REVIEW_HTML.replace(
-        "__CHROMOSORT_FILL_REVIEW_DATA__",
+    html_text = GAPFILL_REVIEW_HTML.replace(
+        "__CHROMOSORT_GAPFILL_REVIEW_DATA__",
         json_for_script(data),
     )
     with open(path, "w") as out:
@@ -1451,7 +1451,7 @@ def write_run_summary(path, args, output_paths, plans, filled_records):
     fillable = sum(1 for plan in plans if plan.fill_status == "fillable")
     applied = sum(1 for plan in plans if plan.applied)
     with open(path, "w") as out:
-        out.write("chromo fill\n")
+        out.write("chromo gapfill\n")
         out.write("\nInputs\n")
         out.write(f"ordered_fasta\t{args.ordered_fasta}\n")
         out.write(f"assignments\t{args.assignments}\n")
@@ -1521,11 +1521,11 @@ def run(args):
         prefix.parent.mkdir(parents=True, exist_ok=True)
 
     output_paths = {
-        "fill_plan": Path(str(prefix) + ".fill_plan.tsv"),
+        "fill_plan": Path(str(prefix) + ".gapfill_plan.tsv"),
         "run_summary": Path(str(prefix) + ".run_summary.txt"),
     }
     if args.apply:
-        output_paths["filled_fasta"] = Path(str(prefix) + ".filled.fa")
+        output_paths["filled_fasta"] = Path(str(prefix) + ".gapfilled.fa")
     if args.review_html:
         output_paths["review_html"] = Path(args.review_html)
     for output_path in output_paths.values():
@@ -1572,19 +1572,19 @@ def run(args):
     sys.stderr.write(f"Planned {len(plans)} graph gap fill(s).\n")
     for status, count in sorted(status_counts(plans).items()):
         sys.stderr.write(f"  {status}: {count}\n")
-    sys.stderr.write(f"Wrote fill plan: {output_paths['fill_plan']}\n")
+    sys.stderr.write(f"Wrote gapfill plan: {output_paths['fill_plan']}\n")
     if args.review_html:
         sys.stderr.write(f"Wrote review HTML: {output_paths['review_html']}\n")
     if args.apply:
-        sys.stderr.write(f"Wrote filled FASTA: {output_paths['filled_fasta']}\n")
+        sys.stderr.write(f"Wrote gapfilled FASTA: {output_paths['filled_fasta']}\n")
 
 
-FILL_REVIEW_HTML = r"""<!doctype html>
+GAPFILL_REVIEW_HTML = r"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChromoSort Fill Review</title>
+  <title>ChromoSort Gapfill Review</title>
   <style>
     :root {
       color-scheme: light;
@@ -1733,7 +1733,7 @@ FILL_REVIEW_HTML = r"""<!doctype html>
 </head>
 <body>
   <header>
-    <h1>ChromoSort Fill Review</h1>
+    <h1>ChromoSort Gapfill Review</h1>
   </header>
   <main>
     <div class="toolbar">
@@ -1749,9 +1749,9 @@ FILL_REVIEW_HTML = r"""<!doctype html>
       </table>
     </div>
   </main>
-  <script id="chromosort-fill-review-data" type="application/json">__CHROMOSORT_FILL_REVIEW_DATA__</script>
+  <script id="chromosort-gapfill-review-data" type="application/json">__CHROMOSORT_GAPFILL_REVIEW_DATA__</script>
   <script>
-    const data = JSON.parse(document.getElementById("chromosort-fill-review-data").textContent);
+    const data = JSON.parse(document.getElementById("chromosort-gapfill-review-data").textContent);
     const rows = data.rows.map(row => ({...row}));
     const columns = data.columns;
     const candidateColumns = data.candidateColumns || [];
@@ -1922,7 +1922,7 @@ FILL_REVIEW_HTML = r"""<!doctype html>
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "chromosort.fill.reviewed_plan.tsv";
+      link.download = "chromosort.gapfill.reviewed_plan.tsv";
       document.body.appendChild(link);
       link.click();
       link.remove();
