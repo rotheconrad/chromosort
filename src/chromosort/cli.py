@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from . import cut, fix_contigs, manual, plot, reference_order, scaffold
+from . import cut, fill, fix_contigs, manual, plot, reference_order, scaffold
 
 
 def main(argv=None):
@@ -13,14 +13,14 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="chromo",
         description=(
-            "Reference-order, fix, cut, manually edit, scaffold, plot, and "
+            "Reference-order, fix, cut, manually edit, scaffold, fill, plot, and "
             "review genome assembly contigs."
         ),
     )
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["sort", "fix", "cut", "manual", "scaffold", "plot"],
+        choices=["sort", "fix", "cut", "manual", "scaffold", "fill", "plot"],
         help="Subcommand to run.",
     )
 
@@ -40,6 +40,8 @@ def main(argv=None):
         manual.main(remaining, prog="chromo manual")
     elif command == "scaffold":
         scaffold.main(remaining, prog="chromo scaffold")
+    elif command == "fill":
+        fill.main(remaining, prog="chromo fill")
     elif command == "plot":
         plot.main(remaining, prog="chromo plot")
     else:

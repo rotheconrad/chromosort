@@ -41,6 +41,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("cut", result.stdout)
         self.assertIn("manual", result.stdout)
         self.assertIn("scaffold", result.stdout)
+        self.assertIn("fill", result.stdout)
         self.assertIn("plot", result.stdout)
 
     def test_subcommand_help_dispatches_to_full_commands(self):
@@ -50,6 +51,7 @@ class CliTests(unittest.TestCase):
         manual_help = run_cli("manual", "--help").stdout
         manual_apply_help = run_cli("manual", "apply", "--help").stdout
         scaffold_help = run_cli("scaffold", "--help").stdout
+        fill_help = run_cli("fill", "--help").stdout
         plot_help = run_cli("plot", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
         self.assertIn("--paf", sort_help)
@@ -69,6 +71,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--gfa", scaffold_help)
         self.assertIn("--graph-max-path-edges", scaffold_help)
+        self.assertIn("--apply", fill_help)
+        self.assertIn("--max-path-edges", fill_help)
+        self.assertIn("--include-fill-sequences", fill_help)
         self.assertIn("--per-ref", plot_help)
         self.assertIn("--paf", plot_help)
         self.assertIn("--formats", plot_help)
