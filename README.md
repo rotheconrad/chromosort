@@ -969,9 +969,11 @@ When `--gfa` is provided, the manual dashboard embeds per-contig graph context
 beside the dot plot review. Contig badges and details show whether the matching
 GFA node is present, whether its local neighborhood is simple, branching, or
 self-looped, node coverage tags such as `RC:i`, in/out degree, neighbor count,
-and oriented neighboring nodes. This borrows the useful graph-inspection idea
-from Gap-Graph while keeping ChromoSort's sequence-changing actions explicit in
-the manual recipe.
+and oriented neighboring nodes. The selected-contig detail panel also shows
+immediate upstream/downstream graph neighbors, link orientation, overlap
+lengths, and whether each neighbor is aligned to the same best reference. This
+borrows the useful graph-inspection idea from Gap-Graph while keeping
+ChromoSort's sequence-changing actions explicit in the manual recipe.
 
 For large genomes, the dashboard embeds alignment metadata but not full FASTA
 sequences by default. Open the HTML file in a browser, load the original
@@ -995,6 +997,8 @@ The manual dashboard provides:
 - A reference-ordered contig/piece list with every contig retained initially.
 - A per-contig dot plot. Forward alignments are blue; reverse alignments are red.
 - Optional GFA node badges and neighbor details when generated with `--gfa`.
+- A graph filter for `simple`, `branching`, `self_loop`, and `missing` graph
+  neighborhoods, plus a read-only neighborhood panel for the selected contig.
 - A click-to-stage breakpoint position from the selected contig dot plot.
 - Buttons to remove/restore a contig or piece, move it up/down, invert it, and
   add a breakpoint.
@@ -1733,6 +1737,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.16` | Expanded `chromo manual --gfa` review. Manual dashboards now include graph-neighborhood filtering, a selected-contig upstream/downstream neighbor panel, overlap/orientation details, and same-reference neighbor flags so branching graph context is easier to compare during manual curation. |
 | `0.2.15` | Added `chromo manual --gfa` graph context. Manual dashboards now embed per-contig GFA node evidence, graph complexity labels, degree/neighbor counts, coverage tags such as `RC:i`, and oriented neighbor summaries so manual breakpoint and ordering review can consider local assembly-graph structure. |
 | `0.2.14` | Added `chromo fill --review-html`, a self-contained HTML review table for fill plans. It embeds the same TSV columns, supports filtering and accepted-fill toggles, and exports a reviewed-plan TSV for `--reviewed-plan`; the TSV and HTML writers now share one row-generation path. |
 | `0.2.13` | Added reviewed fill-plan application for `chromo fill`. Planning output now includes an editable `accept_fill` column, and `--reviewed-plan` makes `--apply` fill only accepted rows after rechecking the current scaffold, contig pair, path nodes, and fillability; rejected or unaccepted rows fall back to N gaps. |

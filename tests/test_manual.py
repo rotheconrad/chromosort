@@ -156,6 +156,9 @@ class ManualTests(unittest.TestCase):
             data = html_data(output_html)
 
             self.assertIn("Graph present", text)
+            self.assertIn("Graph filter", text)
+            self.assertIn("graphPanel", text)
+            self.assertIn("same ref", text)
             self.assertEqual(data["inputs"]["gfa"], str(GRAPH_DATA / "unitigs.gfa"))
             self.assertEqual(data["stats"]["graphContigsPresent"], 8)
             self.assertEqual(data["stats"]["graphBranchingContigs"], 5)
@@ -172,6 +175,14 @@ class ManualTests(unittest.TestCase):
                 sorted(edge["otherNode"] for edge in graph_by_name["left"]["outgoing"]),
                 ["bridge_alt", "bridge_good", "reverse_only"],
             )
+            left_outgoing = {
+                edge["otherNode"]: edge
+                for edge in graph_by_name["left"]["outgoing"]
+            }
+            self.assertTrue(left_outgoing["bridge_good"]["sameBestRef"])
+            self.assertEqual(left_outgoing["bridge_good"]["otherBestRef"], "chr1")
+            self.assertTrue(left_outgoing["bridge_alt"]["sameBestRef"])
+            self.assertTrue(left_outgoing["reverse_only"]["otherAligned"])
             self.assertEqual(graph_by_name["isolated"]["graphComplexity"], "simple")
             self.assertTrue(graph_by_name["bridge_alt"]["graphSelfLoop"])
 

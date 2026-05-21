@@ -387,6 +387,22 @@ def build_query_items(query_records, best_matches, all_matches, ref_rank, graph_
     return ordered
 
 
+def annotate_graph_neighbor_alignment(query_items):
+    by_name = {item["name"]: item for item in query_items}
+    for item in query_items:
+        graph = item.get("graph")
+        if not graph:
+            continue
+        item_ref = item.get("bestRef")
+        for direction in ("incoming", "outgoing"):
+            for edge in graph.get(direction, []):
+                neighbor = by_name.get(edge.get("otherNode"))
+                neighbor_ref = neighbor.get("bestRef") if neighbor else None
+                edge["otherAligned"] = bool(neighbor and neighbor.get("aligned"))
+                edge["otherBestRef"] = neighbor_ref
+                edge["sameBestRef"] = bool(item_ref and neighbor_ref == item_ref)
+
+
 def build_initial_pieces(query_items):
     pieces = []
     for index, item in enumerate(query_items, start=1):
@@ -434,6 +450,7 @@ def build_dashboard_data(args):
         ref_rank,
         graph_context,
     )
+    annotate_graph_neighbor_alignment(query_items)
     segments, skipped = load_dashboard_segments(args, ref_by_name, query_by_name)
     if skipped_unknown_query:
         skipped["unknown_query_in_metrics"] = skipped_unknown_query
@@ -824,6 +841,10 @@ input[type="file"] {
   flex: 1 1 140px;
   min-width: 120px;
 }
+#graphFilter {
+  flex: 0 1 150px;
+  min-width: 132px;
+}
 .stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -948,6 +969,58 @@ input[type="file"] {
   grid-template-columns: repeat(5, minmax(100px, 1fr));
   gap: 8px;
 }
+.graph-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.graph-panel.hidden { display: none; }
+.graph-panel-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+.graph-neighbor-list {
+  display: grid;
+  gap: 6px;
+}
+.graph-neighbor-row {
+  display: grid;
+  grid-template-columns: auto minmax(110px, 1fr) minmax(140px, 1.3fr) auto auto;
+  gap: 6px;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 7px;
+  border: 1px solid #e5e7eb;
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12px;
+}
+.graph-neighbor-row.incoming { border-left-color: var(--blue); }
+.graph-neighbor-row.outgoing { border-left-color: var(--focus); }
+.graph-neighbor-row span, .graph-neighbor-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.graph-side {
+  color: var(--muted);
+  font-weight: 650;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.graph-note {
+  color: var(--muted);
+  font-size: 12px;
+}
 label {
   display: grid;
   gap: 4px;
@@ -977,6 +1050,9 @@ label input, label select {
   .sidebar { border-right: 0; border-bottom: 1px solid var(--line); max-height: 45vh; }
   .workspace { min-height: 650px; }
   .field-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+  .graph-neighbor-row { grid-template-columns: auto minmax(100px, 1fr); }
+  .graph-neighbor-row span:nth-child(3),
+  .graph-neighbor-row span:nth-child(4) { display: none; }
 }
 </style>
 </head>
@@ -995,6 +1071,13 @@ label input, label select {
   <aside class="sidebar">
     <div class="side-tools">
       <input id="search" type="text" placeholder="Search contigs">
+      <select id="graphFilter" aria-label="Graph filter">
+        <option value="">All graph</option>
+        <option value="simple">simple</option>
+        <option value="branching">branching</option>
+        <option value="self_loop">self_loop</option>
+        <option value="missing">missing</option>
+      </select>
       <button id="removeUnaligned">Remove unaligned</button>
       <button id="restoreAll">Restore all</button>
     </div>
@@ -1026,6 +1109,7 @@ label input, label select {
         <label>FASTA file<input id="fastaFile" type="file" accept=".fa,.fasta,.fna,.txt"></label>
         <label>Recipe file<input id="recipeFile" type="file" accept=".json"></label>
       </div>
+      <div class="graph-panel hidden" id="graphPanel"></div>
       <div class="detail-tools">
         <button id="addCut">Add breakpoint</button>
         <label><input id="scaffoldMode" type="checkbox"> Scaffold export</label>
@@ -1057,10 +1141,12 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     datasetLabel: document.getElementById("datasetLabel"),
     stats: document.getElementById("stats"),
     search: document.getElementById("search"),
+    graphFilter: document.getElementById("graphFilter"),
     pieceList: document.getElementById("pieceList"),
     selectedName: document.getElementById("selectedName"),
     selectedMeta: document.getElementById("selectedMeta"),
     selectedGraph: document.getElementById("selectedGraph"),
+    graphPanel: document.getElementById("graphPanel"),
     dotplot: document.getElementById("dotplot"),
     status: document.getElementById("status"),
     cutPos: document.getElementById("cutPos"),
@@ -1144,6 +1230,70 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     return pieces.join(" | ");
   }
 
+  function graphFilterValue(graph) {
+    if (!graph) return "missing";
+    return graph.graphComplexity || "missing";
+  }
+
+  function graphNeighborBadge(edge) {
+    if (edge.sameBestRef) return '<span class="badge green">same ref</span>';
+    if (edge.otherAligned) {
+      return `<span class="badge blue">${escapeHtml(edge.otherBestRef || "aligned")}</span>`;
+    }
+    return '<span class="badge amber">not placed</span>';
+  }
+
+  function graphNeighborRow(edge) {
+    const isIncoming = edge.direction === "incoming";
+    const side = isIncoming ? "upstream" : "downstream";
+    const overlap = edge.overlapBp === null || edge.overlapBp === undefined
+      ? (edge.overlap || ".")
+      : edge.overlapBp + " bp";
+    const orientedNode = String(edge.otherNode || ".") + String(edge.otherOrientation || "");
+    const link = String(edge.source || ".") + String(edge.sourceOrientation || "") +
+      " -> " + String(edge.target || ".") + String(edge.targetOrientation || "");
+    return `<div class="graph-neighbor-row ${isIncoming ? "incoming" : "outgoing"}">
+      <span class="graph-side">${side}</span>
+      <strong title="${escapeHtml(orientedNode)}">${escapeHtml(orientedNode)}</strong>
+      <span title="${escapeHtml(link)}">${escapeHtml(link)}</span>
+      <span title="${escapeHtml(overlap)}">${escapeHtml(overlap)}</span>
+      ${graphNeighborBadge(edge)}
+    </div>`;
+  }
+
+  function renderGraphPanel(q, graph) {
+    if (!els.graphPanel) return;
+    if (!graph) {
+      els.graphPanel.classList.add("hidden");
+      els.graphPanel.innerHTML = "";
+      return;
+    }
+    els.graphPanel.classList.remove("hidden");
+    if (graph.graphNodeStatus !== "present") {
+      els.graphPanel.innerHTML = `<div class="graph-panel-title">
+        Graph neighborhood <span class="badge red">missing</span>
+      </div>
+      <div class="graph-note">This contig was not found as an S node in the supplied GFA.</div>`;
+      return;
+    }
+    const graphClass = graphBadgeClass(graph);
+    const neighborRows = [
+      ...(graph.incoming || []),
+      ...(graph.outgoing || [])
+    ].map(graphNeighborRow);
+    const rows = neighborRows.length
+      ? neighborRows.join("")
+      : '<div class="graph-note">No immediate incoming or outgoing GFA neighbors.</div>';
+    const refLabel = q && q.bestRef ? "best ref " + q.bestRef : "unaligned";
+    els.graphPanel.innerHTML = `<div class="graph-panel-title">
+      Graph neighborhood
+      <span class="badge ${graphClass}">${escapeHtml(graph.graphComplexity || "unknown")}</span>
+      <span class="badge">${escapeHtml(refLabel)}</span>
+      <span class="badge">in/out ${graph.graphInDegree}/${graph.graphOutDegree}</span>
+    </div>
+    <div class="graph-neighbor-list">${rows}</div>`;
+  }
+
   function renderStats() {
     const active = pieces.filter(p => !p.removed);
     const removed = pieces.length - active.length;
@@ -1168,10 +1318,12 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
 
   function renderList() {
     const needle = els.search.value.trim().toLowerCase();
+    const graphFilter = els.graphFilter ? els.graphFilter.value : "";
     const rows = pieces.filter(piece => {
-      if (!needle) return true;
       const q = queriesByName.get(piece.source) || {};
       const graph = q.graph || {};
+      if (graphFilter && graphFilterValue(graph) !== graphFilter) return false;
+      if (!needle) return true;
       return [
         piece.name,
         piece.source,
@@ -1210,6 +1362,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       els.selectedName.textContent = "No contig selected";
       els.selectedMeta.textContent = "";
       els.selectedGraph.textContent = "";
+      renderGraphPanel(null, null);
       return;
     }
     const q = queriesByName.get(piece.source) || {};
@@ -1222,6 +1375,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       q.queryCov ? "query cov " + (q.queryCov * 100).toFixed(1) + "%" : ""
     ].filter(Boolean).join(" | ");
     els.selectedGraph.textContent = graphDetail(graph);
+    renderGraphPanel(q, graph);
     els.cutPos.value = "";
     els.cutPos.min = String(piece.start);
     els.cutPos.max = String(piece.end - 1);
@@ -1602,7 +1756,9 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
   }
 
   els.datasetLabel.textContent = `${data.inputs.assemblyFasta} against ${data.inputs.refFasta}`;
+  if (!data.inputs.gfa && els.graphFilter) els.graphFilter.disabled = true;
   els.search.addEventListener("input", renderList);
+  els.graphFilter.addEventListener("change", renderList);
   document.getElementById("moveUp").addEventListener("click", () => moveSelected(-1));
   document.getElementById("moveDown").addEventListener("click", () => moveSelected(1));
   document.getElementById("invert").addEventListener("click", invertSelected);
