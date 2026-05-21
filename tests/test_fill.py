@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import subprocess
 import sys
@@ -58,6 +59,15 @@ def read_fasta(path):
         if name is not None:
             records[name] = "".join(parts)
     return records
+
+
+def review_html_data(path):
+    text = path.read_text()
+    start_marker = '<script id="chromosort-fill-review-data" type="application/json">'
+    end_marker = "</script>"
+    start = text.index(start_marker) + len(start_marker)
+    end = text.index(end_marker, start)
+    return json.loads(text[start:end])
 
 
 def run_fill(*args):
@@ -215,6 +225,39 @@ class FillTests(unittest.TestCase):
             self.assertEqual(rejected_rows[0]["applied"], "no")
             records = read_fasta(Path(str(rejected_prefix) + ".filled.fa"))
             self.assertEqual(records["chr1"], "AAAACC" + "N" * 14 + "TTCCCC")
+
+    def test_review_html_embeds_fill_plan_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered, assignments, graph = write_unique_fill_fixture(tmp_path)
+            prefix = tmp_path / "planned"
+            review_html = tmp_path / "fill_review.html"
+
+            run_fill(
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--output-prefix",
+                str(prefix),
+                "--include-fill-sequences",
+                "--review-html",
+                str(review_html),
+            )
+
+            self.assertTrue(review_html.exists())
+            self.assertIn("Export reviewed TSV", review_html.read_text())
+            data = review_html_data(review_html)
+            self.assertEqual(data["schema"], "chromosort-fill-review-v1")
+            self.assertIn("accept_fill", data["columns"])
+            self.assertEqual(len(data["rows"]), 1)
+            row = data["rows"][0]
+            self.assertEqual(row["accept_fill"], "no")
+            self.assertEqual(row["fill_status"], "fillable")
+            self.assertEqual(row["path_nodes"], "left+,gapper+,right+")
+            self.assertEqual(row["fill_sequence"], "GGGGTT")
 
     def test_reviewed_plan_rejects_stale_path(self):
         with tempfile.TemporaryDirectory() as tmp:

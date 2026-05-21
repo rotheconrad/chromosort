@@ -31,7 +31,7 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
 - `chromo fill` plans graph-supported fills between adjacent sorted contigs,
   can use GAF long-read paths and Hi-C-like contact counts to resolve supported
   branches, and optionally applies only unambiguous, sequence-verified graph
-  paths after review.
+  paths after review from TSV or HTML review artifacts.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
   reviewed without re-running an aligner just to make a plot.
@@ -250,7 +250,8 @@ chromo fill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
-  --output-prefix results/sample.fill
+  --output-prefix results/sample.fill \
+  --review-html results/sample.fill.review.html
 
 chromo fill \
   --ordered-fasta results/sample.ordered.fa \
@@ -258,7 +259,7 @@ chromo fill \
   --gfa assembly_graph.gfa \
   --gaf reads_to_graph.gaf \
   --hic-pairs graph_contacts.tsv \
-  --reviewed-plan results/sample.fill.fill_plan.tsv \
+  --reviewed-plan chromosort.fill.reviewed_plan.tsv \
   --output-prefix results/sample.reviewed_fill \
   --apply
 ```
@@ -1542,7 +1543,8 @@ GFA assembly graph, and optional GAF graph alignments or Hi-C pair evidence,
 6. Rejects missing nodes, disconnected flanks, unresolved ambiguous paths,
    unsequenced nodes, unknown or invalid overlaps, oversized fills, and flank
    sequence mismatches.
-7. Writes `<prefix>.fill_plan.tsv` for review with `accept_fill=no` by default.
+7. Writes `<prefix>.fill_plan.tsv` for review with `accept_fill=no` by default
+   and can write a self-contained HTML reviewer with `--review-html`.
 8. With `--apply`, writes `<prefix>.filled.fa`. Without `--reviewed-plan`, all
    currently fillable paths are applied; with `--reviewed-plan`, only rows with
    `accept_fill=yes` are applied and other junctions fall back to inferred or
@@ -1555,14 +1557,17 @@ chromo fill \
   --ordered-fasta results/sample.ordered.fa \
   --assignments results/sample.contig_assignments.tsv \
   --gfa assembly_graph.gfa \
-  --output-prefix results/sample.fill
+  --output-prefix results/sample.fill \
+  --review-html results/sample.fill.review.html
 ```
 
 Planning mode writes the fill plan but does not create a FASTA. Add
 `--include-fill-sequences` when you want short candidate sequences embedded in
 the TSV for manual review. To make application explicitly reviewed, edit the
 `accept_fill` column from `no` to `yes` only for rows you want to apply, then
-pass that edited table back with `--reviewed-plan`.
+pass that edited table back with `--reviewed-plan`. When `--review-html` is
+provided, the HTML table can filter rows, toggle accepted fillable paths, and
+export a reviewed-plan TSV with the same columns.
 
 ### Apply Reviewed Graph Fills
 
@@ -1573,7 +1578,7 @@ chromo fill \
   --gfa assembly_graph.gfa \
   --gaf reads_to_graph.gaf \
   --hic-pairs graph_contacts.tsv \
-  --reviewed-plan results/sample.fill.fill_plan.tsv \
+  --reviewed-plan chromosort.fill.reviewed_plan.tsv \
   --output-prefix results/sample.reviewed_fill \
   --apply
 ```
@@ -1597,6 +1602,7 @@ receive the inferred reference-space N gap, or `--fixed-gap-bp` when provided.
 | Output | Description |
 | --- | --- |
 | `<prefix>.fill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF and Hi-C support counts, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
+| `--review-html` path | Optional self-contained HTML table for reviewing fill-plan rows and exporting a reviewed-plan TSV. |
 | `<prefix>.filled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
 
@@ -1612,6 +1618,7 @@ receive the inferred reference-space N gap, or `--fixed-gap-bp` when provided.
 | `--output-prefix` | required | Prefix for fill plan, run summary, and optional filled FASTA. |
 | `--apply` | off | Write `<prefix>.filled.fa` using only accepted graph paths. |
 | `--reviewed-plan` | none | Optional edited fill plan TSV. With `--apply`, only rows with `accept_fill=yes` are applied after the current path is rechecked. |
+| `--review-html` | none | Optional self-contained HTML review dashboard for the fill plan. |
 | `--fixed-gap-bp` | none | Use this many Ns for unresolved gaps in `--apply` output instead of inferred reference-space gaps. |
 | `--max-path-edges` | `4` | Maximum GFA link depth searched between adjacent sorted contigs. |
 | `--max-candidate-paths` | `2` | Stop path enumeration after this many candidates. The default distinguishes unique from ambiguous paths. |
@@ -1636,7 +1643,9 @@ For strict reviewed application, run `chromo fill` once in planning mode, edit
 `accept_fill` to `yes` only for approved rows, then rerun with `--apply` and
 `--reviewed-plan`. ChromoSort recomputes the graph path and validates the
 accepted row before applying it. Accepted rows whose current `path_nodes` or
-fillable status no longer match are rejected with an error.
+fillable status no longer match are rejected with an error. `--review-html`
+writes a browser-based table for the same review step; its exported TSV is the
+file to pass to `--reviewed-plan`.
 
 #### Unique Paths Or Unique Evidence
 
@@ -1711,6 +1720,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.2.14` | Added `chromo fill --review-html`, a self-contained HTML review table for fill plans. It embeds the same TSV columns, supports filtering and accepted-fill toggles, and exports a reviewed-plan TSV for `--reviewed-plan`; the TSV and HTML writers now share one row-generation path. |
 | `0.2.13` | Added reviewed fill-plan application for `chromo fill`. Planning output now includes an editable `accept_fill` column, and `--reviewed-plan` makes `--apply` fill only accepted rows after rechecking the current scaffold, contig pair, path nodes, and fillability; rejected or unaccepted rows fall back to N gaps. |
 | `0.2.12` | Added optional Hi-C pair support to `chromo fill`. Fill plans now report Hi-C path support and best alternate support, and otherwise ambiguous graph branches can be resolved when one candidate has unique summed contact support at or above `--min-hic-path-support`; conflicting GAF and Hi-C support leaves the junction unresolved. |
 | `0.2.11` | Expanded the input-file documentation with a dedicated graph-input section describing where to find matching GFA files, which reference-to-assembly PAF files to keep for raw and fixed FASTAs, and how optional GAF read-to-graph alignments are used by `chromo fill`. |

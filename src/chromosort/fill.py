@@ -3,6 +3,7 @@
 
 import argparse
 import csv
+import json
 import sys
 from collections import defaultdict, deque
 from dataclasses import dataclass
@@ -141,6 +142,14 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
             "Optional edited fill plan TSV. When provided with --apply, only "
             "rows with accept_fill=yes are applied after the current graph "
             "path is rechecked."
+        ),
+    )
+    ap.add_argument(
+        "--review-html",
+        default=None,
+        help=(
+            "Optional self-contained HTML review dashboard for the fill plan. "
+            "The dashboard can export an edited reviewed-plan TSV."
         ),
     )
     ap.add_argument(
@@ -854,8 +863,8 @@ def build_filled_scaffolds(groups, unassigned, plans, args):
     return records
 
 
-def write_fill_plan(path, plans, include_sequences):
-    header = [
+def fill_plan_header():
+    return [
         "scaffold",
         "left_contig",
         "right_contig",
@@ -884,39 +893,77 @@ def write_fill_plan(path, plans, include_sequences):
         "reason",
         "fill_sequence",
     ]
+
+
+def fill_plan_row(plan, include_sequences):
+    return [
+        plan.scaffold,
+        plan.left_contig,
+        plan.right_contig,
+        plan.left_graph_node,
+        plan.right_graph_node,
+        plan.left_orientation,
+        plan.right_orientation,
+        plan.raw_inferred_gap_bp,
+        plan.fallback_gap_bp,
+        plan.overlap_bp,
+        plan.overlap_class,
+        plan.graph_status,
+        plan.path_edges if plan.path_edges is not None else ".",
+        plan.path_nodes,
+        plan.intermediate_nodes,
+        plan.candidate_paths,
+        plan.gaf_path_support if plan.gaf_path_support is not None else ".",
+        plan.gaf_best_alt_support if plan.gaf_best_alt_support is not None else ".",
+        plan.hic_path_support if plan.hic_path_support is not None else ".",
+        plan.hic_best_alt_support if plan.hic_best_alt_support is not None else ".",
+        plan.fill_status,
+        plan.fill_bp,
+        plan.right_trim_bp,
+        "yes" if plan.accept_fill else "no",
+        "yes" if plan.applied else "no",
+        plan.reason,
+        plan.fill_sequence if include_sequences and plan.fill_sequence else ".",
+    ]
+
+
+def fill_plan_dict(plan, include_sequences):
+    return {
+        column: str(value)
+        for column, value in zip(fill_plan_header(), fill_plan_row(plan, include_sequences))
+    }
+
+
+def write_fill_plan(path, plans, include_sequences):
+    header = fill_plan_header()
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for plan in plans:
-            row = [
-                plan.scaffold,
-                plan.left_contig,
-                plan.right_contig,
-                plan.left_graph_node,
-                plan.right_graph_node,
-                plan.left_orientation,
-                plan.right_orientation,
-                plan.raw_inferred_gap_bp,
-                plan.fallback_gap_bp,
-                plan.overlap_bp,
-                plan.overlap_class,
-                plan.graph_status,
-                plan.path_edges if plan.path_edges is not None else ".",
-                plan.path_nodes,
-                plan.intermediate_nodes,
-                plan.candidate_paths,
-                plan.gaf_path_support if plan.gaf_path_support is not None else ".",
-                plan.gaf_best_alt_support if plan.gaf_best_alt_support is not None else ".",
-                plan.hic_path_support if plan.hic_path_support is not None else ".",
-                plan.hic_best_alt_support if plan.hic_best_alt_support is not None else ".",
-                plan.fill_status,
-                plan.fill_bp,
-                plan.right_trim_bp,
-                "yes" if plan.accept_fill else "no",
-                "yes" if plan.applied else "no",
-                plan.reason,
-                plan.fill_sequence if include_sequences and plan.fill_sequence else ".",
-            ]
+            row = fill_plan_row(plan, include_sequences)
             out.write("\t".join(str(item) for item in row) + "\n")
+
+
+def json_for_script(value):
+    return (
+        json.dumps(value, sort_keys=True)
+        .replace("&", "\\u0026")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+    )
+
+
+def write_review_html(path, plans, include_sequences):
+    data = {
+        "schema": "chromosort-fill-review-v1",
+        "columns": fill_plan_header(),
+        "rows": [fill_plan_dict(plan, include_sequences) for plan in plans],
+    }
+    html_text = FILL_REVIEW_HTML.replace(
+        "__CHROMOSORT_FILL_REVIEW_DATA__",
+        json_for_script(data),
+    )
+    with open(path, "w") as out:
+        out.write(html_text)
 
 
 def write_filled_fasta(path, records, simple_headers):
@@ -994,6 +1041,8 @@ def run(args):
     }
     if args.apply:
         output_paths["filled_fasta"] = Path(str(prefix) + ".filled.fa")
+    if args.review_html:
+        output_paths["review_html"] = Path(args.review_html)
     for output_path in output_paths.values():
         if output_path.parent and str(output_path.parent) != ".":
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1014,14 +1063,302 @@ def run(args):
         write_filled_fasta(output_paths["filled_fasta"], filled_records, args.simple_headers)
 
     write_fill_plan(output_paths["fill_plan"], plans, args.include_fill_sequences)
+    if args.review_html:
+        write_review_html(output_paths["review_html"], plans, args.include_fill_sequences)
     write_run_summary(output_paths["run_summary"], args, output_paths, plans, filled_records)
 
     sys.stderr.write(f"Planned {len(plans)} graph gap fill(s).\n")
     for status, count in sorted(status_counts(plans).items()):
         sys.stderr.write(f"  {status}: {count}\n")
     sys.stderr.write(f"Wrote fill plan: {output_paths['fill_plan']}\n")
+    if args.review_html:
+        sys.stderr.write(f"Wrote review HTML: {output_paths['review_html']}\n")
     if args.apply:
         sys.stderr.write(f"Wrote filled FASTA: {output_paths['filled_fasta']}\n")
+
+
+FILL_REVIEW_HTML = r"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChromoSort Fill Review</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --border: #cbd5e1;
+      --ink: #111827;
+      --muted: #64748b;
+      --panel: #f8fafc;
+      --accent: #0f766e;
+      --warn: #b45309;
+      --bad: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #ffffff;
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+    main { padding: 18px 24px 28px; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+    label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    input[type="search"], select {
+      min-width: 190px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: #ffffff;
+      font: inherit;
+    }
+    button {
+      border: 1px solid #0f766e;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #ffffff;
+      background: var(--accent);
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    button:hover { background: #115e59; }
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .summary span {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      min-width: 1320px;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td.path, td.sequence {
+      max-width: 360px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status-fillable { color: var(--accent); font-weight: 700; }
+    .status-ambiguous_paths { color: var(--warn); font-weight: 700; }
+    .status-no_graph_path,
+    .status-missing_node,
+    .status-left_flank_sequence_mismatch,
+    .status-right_flank_sequence_mismatch { color: var(--bad); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ChromoSort Fill Review</h1>
+  </header>
+  <main>
+    <div class="toolbar">
+      <label>Search<input id="search" type="search"></label>
+      <label>Status<select id="status"></select></label>
+      <button id="export">Export reviewed TSV</button>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="table-wrap">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+  <script id="chromosort-fill-review-data" type="application/json">__CHROMOSORT_FILL_REVIEW_DATA__</script>
+  <script>
+    const data = JSON.parse(document.getElementById("chromosort-fill-review-data").textContent);
+    const rows = data.rows.map(row => ({...row}));
+    const columns = data.columns;
+    const displayColumns = [
+      "accept_fill", "scaffold", "left_contig", "right_contig", "fill_status",
+      "graph_status", "path_nodes", "gaf_path_support", "gaf_best_alt_support",
+      "hic_path_support", "hic_best_alt_support", "fill_bp", "right_trim_bp",
+      "fallback_gap_bp", "reason", "fill_sequence"
+    ];
+    const els = {
+      search: document.getElementById("search"),
+      status: document.getElementById("status"),
+      export: document.getElementById("export"),
+      summary: document.getElementById("summary"),
+      thead: document.getElementById("thead"),
+      tbody: document.getElementById("tbody")
+    };
+
+    function cls(value) {
+      return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+    }
+
+    function tsvCell(value) {
+      return String(value ?? ".").replace(/[\t\r\n]+/g, " ");
+    }
+
+    function statusOptions() {
+      const statuses = Array.from(new Set(rows.map(row => row.fill_status))).sort();
+      els.status.replaceChildren();
+      const all = document.createElement("option");
+      all.value = "";
+      all.textContent = "All";
+      els.status.appendChild(all);
+      for (const status of statuses) {
+        const option = document.createElement("option");
+        option.value = status;
+        option.textContent = status;
+        els.status.appendChild(option);
+      }
+    }
+
+    function visibleRows() {
+      const needle = els.search.value.trim().toLowerCase();
+      const status = els.status.value;
+      return rows.filter(row => {
+        if (status && row.fill_status !== status) return false;
+        if (!needle) return true;
+        return displayColumns.some(column => String(row[column] || "").toLowerCase().includes(needle));
+      });
+    }
+
+    function renderSummary() {
+      const fillable = rows.filter(row => row.fill_status === "fillable").length;
+      const accepted = rows.filter(row => row.accept_fill === "yes").length;
+      const applied = rows.filter(row => row.applied === "yes").length;
+      const visible = visibleRows().length;
+      const items = [
+        `${rows.length} planned`,
+        `${visible} visible`,
+        `${fillable} fillable`,
+        `${accepted} accepted`,
+        `${applied} applied`
+      ];
+      els.summary.replaceChildren();
+      for (const item of items) {
+        const node = document.createElement("span");
+        node.textContent = item;
+        els.summary.appendChild(node);
+      }
+    }
+
+    function renderHeader() {
+      const tr = document.createElement("tr");
+      for (const column of displayColumns) {
+        const th = document.createElement("th");
+        th.textContent = column;
+        tr.appendChild(th);
+      }
+      els.thead.replaceChildren(tr);
+    }
+
+    function renderTable() {
+      els.tbody.replaceChildren();
+      for (const row of visibleRows()) {
+        const tr = document.createElement("tr");
+        for (const column of displayColumns) {
+          const td = document.createElement("td");
+          if (column === "accept_fill") {
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = row.accept_fill === "yes";
+            checkbox.disabled = row.fill_status !== "fillable";
+            checkbox.addEventListener("change", () => {
+              row.accept_fill = checkbox.checked ? "yes" : "no";
+              renderSummary();
+            });
+            td.appendChild(checkbox);
+          } else {
+            td.textContent = row[column] ?? ".";
+          }
+          if (column === "fill_status") td.className = `status-${cls(row.fill_status)}`;
+          if (column === "path_nodes") td.className = "path";
+          if (column === "fill_sequence") td.className = "sequence";
+          tr.appendChild(td);
+        }
+        els.tbody.appendChild(tr);
+      }
+      renderSummary();
+    }
+
+    function exportTsv() {
+      const lines = [columns.join("\t")];
+      for (const row of rows) {
+        lines.push(columns.map(column => tsvCell(row[column])).join("\t"));
+      }
+      const blob = new Blob([lines.join("\n") + "\n"], {type: "text/tab-separated-values"});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "chromosort.fill.reviewed_plan.tsv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    statusOptions();
+    renderHeader();
+    renderTable();
+    els.search.addEventListener("input", renderTable);
+    els.status.addEventListener("change", renderTable);
+    els.export.addEventListener("click", exportTsv);
+  </script>
+</body>
+</html>
+"""
 
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
