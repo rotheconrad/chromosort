@@ -76,6 +76,38 @@ chromo sort \
 | `<prefix>.graph_assignments.tsv` | Optional report-only graph evidence for assignment and duplicate-overlap decisions when `--gfa` is provided. |
 | `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, and status counts. |
 
+### Example `chromo sort` Output
+
+**Table 1. Example `contig_assignments.tsv` rows.** Selected columns from the
+synthetic fixture show the main status classes: kept contigs, a duplicate
+overlap, and an unaligned contig.
+
+| contig | status | kept | new_name | assigned_ref | query_cov | avg_identity | overlap_class |
+| --- | --- | --- | --- | --- | ---: | ---: | --- |
+| `contigA` | `kept` | `yes` | `chr1_contigA` | `chr1` | `1.0000` | `99.000` | `.` |
+| `contigB` | `kept` | `yes` | `chr1_contigB` | `chr1` | `1.0000` | `98.500` | `.` |
+| `contigDup` | `duplicate_overlap` | `no` | `.` | `chr1` | `1.0000` | `99.000` | `contained_overlap` |
+| `contigNo` | `no_alignment` | `no` | `.` | `.` | `0.0000` | `0.000` | `.` |
+
+**Table 2. Example `chromosome_summary.tsv` rows.** The summary table groups
+retained contigs by reference and records the covered reference span.
+
+| ref | ref_length | kept_contigs | covered_ref_bp | ref_cov | ordered_new_names |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `chr1` | `120` | `2` | `120` | `1.0000` | `chr1_contigA,chr1_contigB` |
+| `chr2` | `100` | `1` | `60` | `0.6000` | `chr2_contigC` |
+
+**Listing 1. Example ordered FASTA headers.** Headers retain the original contig
+name, assigned reference interval, orientation, query coverage, and mean
+identity used for audit.
+
+```text
+>chr1_contigA original=contigA ref=chr1 ref_start=1 ref_end=80 orientation=+ reverse_complemented=no query_cov=1.0000 avg_identity=99.000
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+>chr2_contigC original=contigC ref=chr2 ref_start=10 ref_end=69 orientation=- reverse_complemented=yes query_cov=1.0000 avg_identity=97.000
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+```
+
 ## `chromo sort` Parameters
 
 | Parameter | Default | Meaning |

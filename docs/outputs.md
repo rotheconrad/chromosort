@@ -9,6 +9,10 @@ Most ChromoSort commands write both sequence files and audit tables. The FASTA o
 
 ## Command Outputs
 
+**Table 1. ChromoSort command output map.** Use this as a quick index; each
+command page includes captioned examples of representative output rows, FASTA
+headers, plots, or review dashboards.
+
 | Command | Primary outputs |
 | --- | --- |
 | [`chromo sort`](https://rotheconrad.github.io/chromosort/commands/sort/) | `<prefix>.ordered.fa`, `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv`, optional `<prefix>.graph_assignments.tsv`, and `<prefix>.run_summary.txt`. |

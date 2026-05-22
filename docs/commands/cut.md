@@ -67,6 +67,31 @@ Cut pieces are named `CONTIG_cut001`, `CONTIG_cut002`, and so on by default.
 Change the inserted text with `--name-separator`, or use `--simple-headers` to
 write only the new FASTA IDs in cut-piece headers.
 
+### Example `chromo cut` Output
+
+**Table 1. Example cut report rows.** Cutting `contigA` after bases 20 and 50
+emits three adjacent slices and records the complete cut set on each row.
+
+| original_contig | new_contig | part_index | slice_start | slice_end | piece_bp | cut_after_positions |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| `contigA` | `contigA_cut001` | `1` | `1` | `20` | `20` | `20,50` |
+| `contigA` | `contigA_cut002` | `2` | `21` | `50` | `30` | `20,50` |
+| `contigA` | `contigA_cut003` | `3` | `51` | `80` | `30` | `20,50` |
+
+**Listing 1. Example cut FASTA records.** Requested contigs are replaced by cut
+pieces; unrequested contigs are copied through unchanged.
+
+```text
+>contigA_cut001
+AAAAAAAAAAAAAAAAAAAA
+>contigA_cut002
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+>contigA_cut003
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+>contigB
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+```
+
 ## `chromo cut` Parameters
 
 | Parameter | Default | Meaning |

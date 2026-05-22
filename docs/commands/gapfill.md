@@ -97,6 +97,26 @@ overlap. Unfilled junctions receive the inferred reference-space N gap, or
 | `<prefix>.gapfilled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
 
+### Example `chromo gapfill` Output
+
+**Table 1. Example `gapfill_plan.tsv` row.** Selected columns from a graph fixture
+show a junction resolved by reference-placement PAF support. The default
+`accept_fill=no` makes planning review explicit before strict reviewed
+application.
+
+| scaffold | left_contig | right_contig | graph_status | path_nodes | candidate_paths | ref_path_support | ref_best_alt_support | risk_flags | fill_status | fill_bp | right_trim_bp | accept_fill | applied |
+| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | ---: | ---: | --- | --- |
+| `chr1` | `chr1_left` | `chr1_right` | `ref_paf_resolved_paths` | `left+,bridge_good+,right+` | `2` | `8` | `6` | `branching,high_degree` | `fillable` | `4` | `4` | `no` | `no` |
+
+**Listing 1. Example applied gapfilled FASTA output.** With `--apply`, fillable
+paths insert graph sequence and trim the right flank by the terminal GFA
+overlap; unresolved junctions use fallback N gaps.
+
+```text
+>chr1 contigs=2 filled_gaps=1 fallback_gaps=0 fill_bp=4 fallback_gap_bp=0 trimmed_bp=4
+AAAACCCCGGGGTTTT
+```
+
 ## `chromo gapfill` Parameters
 
 | Parameter | Default | Meaning |

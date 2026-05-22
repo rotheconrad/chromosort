@@ -118,6 +118,34 @@ missing nodes, orientation mismatches, and indirect paths remain report-only.
 | `<prefix>.scaffold_summary.tsv` | One row per scaffold with contig count, scaffold length, sequence bp, gap bp, overlap totals, trimming totals, and ordered contig list. |
 | `<prefix>.run_summary.txt` | Inputs, gap model, output paths, and total scaffold counts. |
 
+### Example `chromo scaffold` Output
+
+**Table 1. Example `scaffold_gaps.tsv` row.** The gap report records the flanking
+contigs, inferred reference-space gap, FASTA gap actually written, overlap
+classification, and overlap policy action.
+
+| scaffold | left_contig | right_contig | raw_inferred_gap_bp | gap_bp | gap_mode | overlap_class | overlap_action |
+| --- | --- | --- | ---: | ---: | --- | --- | --- |
+| `chr1` | `chr1_contigA` | `chr1_contigB` | `5` | `5` | `inferred` | `no_overlap` | `none` |
+
+**Table 2. Example `scaffold_summary.tsv` rows.** The summary table gives one
+row per emitted scaffold record.
+
+| scaffold | contigs | scaffold_bp | sequence_bp | gap_bp | gaps | ordered_contigs |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `chr1` | `2` | `12` | `7` | `5` | `1` | `chr1_contigA,chr1_contigB` |
+| `chr2` | `1` | `2` | `2` | `0` | `0` | `chr2_contigC` |
+
+**Listing 1. Example scaffold FASTA output.** Scaffold headers summarize the
+number of source contigs, sequence bases, gap bases, and gap mode.
+
+```text
+>chr1 contigs=2 sequence_bp=7 gap_bp=5 gap_mode=inferred
+AAAANNNNNTTT
+>chr2 contigs=1 sequence_bp=2 gap_bp=0 gap_mode=inferred
+GG
+```
+
 ## `chromo scaffold` Parameters
 
 | Parameter | Default | Meaning |

@@ -103,6 +103,29 @@ decision. Candidates that contain discordant blocks but are not cut by
 breakpoint smoothing are reported as `not_split_smooth`. Candidates rejected by
 the per-contig breakpoint cap are reported as `not_split_too_many_breakpoints`.
 
+### Example `chromo fix` Output
+
+**Table 1. Example split report rows.** Selected columns from a sensitive-mode
+fixture show how one source contig can become multiple reference-labeled pieces.
+
+| original_contig | status | new_contig | part_index | dominant_ref | slice_start | slice_end | piece_bp | orientation |
+| --- | --- | --- | ---: | --- | ---: | ---: | ---: | --- |
+| `contig_04` | `split` | `chrom02-contig_04-a` | `1` | `chrom02` | `1` | `20` | `20` | `+` |
+| `contig_04` | `split` | `chrom07-contig_04-b` | `2` | `chrom07` | `21` | `40` | `20` | `+` |
+| `contig_12` | `split` | `chrom04-contig_12-a` | `1` | `chrom04` | `1` | `5` | `5` | `+` |
+| `contig_12` | `split` | `chrom05-contig_12-b` | `2` | `chrom05` | `6` | `35` | `30` | `+` |
+
+**Listing 1. Example fixed FASTA records.** Split-piece FASTA headers carry the
+original contig, slice interval, alignment interval, and orientation so the edit
+can be audited after the sequence file leaves ChromoSort.
+
+```text
+>chrom02-contig_04-a original=contig_04 ref=chrom02 slice=1-20 alignment=1-20 orientation=+ reverse_complemented=no avg_identity=100.000
+AAAAAAAAAAAAAAAAAAAA
+>chrom07-contig_04-b original=contig_04 ref=chrom07 slice=21-40 alignment=21-40 orientation=+ reverse_complemented=no avg_identity=100.000
+CCCCCCCCCCCCCCCCCCCC
+```
+
 ## `chromo fix` Naming
 
 Split pieces are named:
