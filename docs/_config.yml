@@ -81,6 +81,21 @@ nav:
         url: /commands/gapfill/
   - title: Outputs
     url: /outputs/
+    children:
+      - title: sort outputs
+        url: /outputs/#chromo-sort-outputs
+      - title: fix outputs
+        url: /outputs/#chromo-fix-outputs
+      - title: cut outputs
+        url: /outputs/#chromo-cut-outputs
+      - title: manual outputs
+        url: /outputs/#chromo-manual-outputs
+      - title: plot outputs
+        url: /outputs/#chromo-plot-outputs
+      - title: scaffold outputs
+        url: /outputs/#chromo-scaffold-outputs
+      - title: gapfill outputs
+        url: /outputs/#chromo-gapfill-outputs
   - title: Architecture
     url: /architecture/
   - title: Status
