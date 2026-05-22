@@ -98,6 +98,33 @@ nav:
         url: /outputs/#chromo-gapfill-outputs
   - title: Architecture
     url: /architecture/
+    children:
+      - title: Design principles
+        url: /architecture/#design-principles
+      - title: System map
+        url: /architecture/#system-map
+      - title: Commands/APIs
+        url: /architecture/#commandapi-responsibilities
+      - title: Data model
+        url: /architecture/#formal-data-model
+      - title: Algorithms
+        url: /architecture/#core-algorithms
+      - title: Decisions
+        url: /architecture/#evidence-scoring-ranking-or-decision-logic
+      - title: Construction logic
+        url: /architecture/#region-window-graph-or-table-construction-logic
+      - title: Reconciliation
+        url: /architecture/#cross-source-or-multi-stage-reconciliation
+      - title: Implementation
+        url: /architecture/#implementation-architecture
+      - title: Complexity
+        url: /architecture/#complexity-and-scaling
+      - title: Validation
+        url: /architecture/#validation-strategy
+      - title: Limitations
+        url: /architecture/#non-goals-and-limitations
+      - title: Reading guide
+        url: /architecture/#reviewers-reading-guide
   - title: Status
     url: /status/
     children:
