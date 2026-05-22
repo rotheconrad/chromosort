@@ -1,0 +1,68 @@
+{% set name = "chromosort" %}
+{% set version = "0.2.23" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/rotheconrad/chromosort/archive/refs/tags/v{{ version }}.tar.gz
+  sha256: df0141aa3ece38ce2e6312848c3d403afd1f9bc8e9306b728f50a9bf004376a2
+
+build:
+  noarch: python
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  entry_points:
+    - chromo = chromosort.cli:main
+    - chromosort = chromosort.reference_order:main
+    - chromosort-fix-contigs = chromosort.fix_contigs:main
+    - chromosort-scaffold = chromosort.scaffold:main
+    - chromosort-gapfill = chromosort.gapfill:main
+
+requirements:
+  host:
+    - python >=3.9
+    - pip
+    - setuptools >=68
+    - wheel
+  run:
+    - python >=3.9
+    - pillow >=9
+    - minimap2
+    - mummer4
+
+test:
+  imports:
+    - chromosort
+  commands:
+    - chromo --help
+    - chromo sort --help
+    - chromo fix --help
+    - chromo cut --help
+    - chromo manual --help
+    - chromo plot --help
+    - chromo scaffold --help
+    - chromo gapfill --help
+    - chromosort --help
+    - chromosort-fix-contigs --help
+    - chromosort-scaffold --help
+    - chromosort-gapfill --help
+
+about:
+  home: https://github.com/rotheconrad/chromosort
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: Reference-guided genome assembly curation utilities.
+  description: |
+    ChromoSort provides reference-guided genome assembly utilities for sorting
+    contigs, splitting reviewed chimeric contigs, cutting exact breakpoints,
+    manual dot-plot review, plotting alignments, scaffolding final ordered
+    contigs, and applying reviewed graph-supported gap fills.
+  dev_url: https://github.com/rotheconrad/chromosort
+  doc_url: https://rotheconrad.github.io/chromosort/
+
+extra:
+  recipe-maintainers:
+    - rotheconrad
