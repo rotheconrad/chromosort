@@ -25,17 +25,7 @@ The environment installs:
 - MUMmer 4 (`nucmer`, `delta-filter`, `show-coords`)
 - Pillow for optional PNG plot output
 - pytest for the test suite
-- ChromoSort in editable mode
-
-Additional console entry points are retained for compatibility:
-
-- `chromosort` is equivalent to `chromo sort`
-- `chromosort-fix-contigs` is equivalent to `chromo fix`
-- `chromosort-scaffold` is equivalent to `chromo scaffold`
-- `chromosort-gapfill` is equivalent to `chromo gapfill`
-
-New workflows should use `chromo sort`, `chromo fix`, `chromo cut`,
-`chromo manual`, `chromo scaffold`, `chromo gapfill`, and `chromo plot`.
+- ChromoSort command-line tools
 
 ## Installation With Pixi
 
@@ -52,8 +42,17 @@ pixi run test
 ```
 
 The Pixi environment uses the same conda-forge/bioconda stack as
-`environment.yml`, including Python, minimap2, MUMmer 4, Pillow, pytest, and an
-editable install of the local ChromoSort package.
+`environment.yml`, including Python, minimap2, MUMmer 4, Pillow, pytest, and
+the ChromoSort command-line tools.
+
+## Why Pillow Is Included
+
+`chromo plot` writes PDF and SVG plots directly. PNG output is different because
+it is a raster image format, so ChromoSort uses Pillow when `--formats png` is
+requested. This keeps PNG export inside Python and avoids requiring separate
+system renderers such as Cairo, ImageMagick, browser engines, or SVG-to-PNG
+conversion tools. Pillow is not used by the sorting, fixing, scaffolding, or
+gap-filling algorithms.
 
 ## Verify the Install
 

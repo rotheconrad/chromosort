@@ -28,6 +28,8 @@ nav:
         url: /installation/#installation-with-mamba
       - title: Pixi
         url: /installation/#installation-with-pixi
+      - title: PNG output
+        url: /installation/#why-pillow-is-included
       - title: Verify
         url: /installation/#verify-the-install
   - title: Input Files
