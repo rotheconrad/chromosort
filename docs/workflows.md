@@ -25,8 +25,12 @@ chromo gapfill --help
 ```
 
 The sections below start after you have prepared a whole-genome alignment file
-with MUMmer coords or minimap2 PAF. See [Input Files]({{ '/input-files/' | relative_url }})
-for alignment commands and graph-related inputs.
+with
+[MUMmer coords]({{ '/input-files/' | relative_url }}#creating-input-files-with-mummer)
+or
+[minimap2 PAF]({{ '/input-files/' | relative_url }}#creating-input-files-with-minimap2).
+See [Input Files]({{ '/input-files/' | relative_url }}) for alignment commands
+and graph-related inputs.
 
 ## Workflow 1: Reference-Order a Mostly Clean Assembly
 
@@ -39,7 +43,11 @@ Inputs:
 
 - `reference.fa`
 - `assembly.fa`
-- one alignment file, such as `mummer/sample.coords` or `paf/sample.paf`
+- one alignment file, such as `mummer/sample.coords` or `paf/sample.paf`.
+  If you still need to make it, see the Input Files recipes for
+  [MUMmer coords]({{ '/input-files/' | relative_url }}#creating-input-files-with-mummer)
+  or
+  [minimap2 PAF]({{ '/input-files/' | relative_url }}#creating-input-files-with-minimap2).
 
 Run the placement step:
 
@@ -136,9 +144,12 @@ chromo fix \
   --report results/sample.fixed_contigs.tsv
 ```
 
-After writing `results/sample.fixed.fa`, re-run MUMmer or minimap2 against that
-fixed FASTA to create a fresh alignment, such as `mummer/fixed.coords`. Then
-sort and plot the fixed assembly:
+After writing `results/sample.fixed.fa`, re-run
+[MUMmer]({{ '/input-files/' | relative_url }}#creating-input-files-with-mummer)
+or
+[minimap2]({{ '/input-files/' | relative_url }}#creating-input-files-with-minimap2)
+against that fixed FASTA to create a fresh alignment, such as
+`mummer/fixed.coords` or `paf/fixed.paf`. Then sort and plot the fixed assembly:
 
 ```bash
 chromo sort \
@@ -215,7 +226,10 @@ chromo scaffold \
 ```
 
 Inspect `results/sample.graph_gaps.tsv` and `results/sample.scaffold_gaps.tsv`.
-If graph evidence supports candidate gaps, plan fills and write a review page:
+If graph evidence supports candidate gaps, plan fills and write a review page.
+For the `--ref-paf` evidence file, see the Input Files notes on
+[which PAF files to keep]({{ '/input-files/' | relative_url }}#which-paf-files-to-keep)
+so the PAF query names match the graph nodes being scored.
 
 ```bash
 chromo gapfill \
@@ -323,7 +337,8 @@ make the intervention deliberate when a reviewed dataset needs it.
 The repo ships a tiny graph-aware fixture under `tests/data/graph_gotchas`.
 It is intentionally small enough to inspect by eye, but it exercises the same
 file types used in real graph-aware ChromoSort runs: FASTA, PAF, GFA, GAF, and
-Hi-C-like contact counts.
+Hi-C-like contact counts. The same file-type expectations are summarized on the
+[Input Files]({{ '/input-files/' | relative_url }}#graph-input-files) page.
 
 ```bash
 mkdir -p results/graph_gotchas
