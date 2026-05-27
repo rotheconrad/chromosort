@@ -16,6 +16,7 @@ build:
   entry_points:
     - chromo = chromosort.cli:main
     - chromosort = chromosort.reference_order:main
+    - chromosort-clean = chromosort.clean:main
     - chromosort-fix-contigs = chromosort.fix_contigs:main
     - chromosort-scaffold = chromosort.scaffold:main
     - chromosort-gapfill = chromosort.gapfill:main
@@ -38,6 +39,7 @@ test:
   commands:
     - chromo --help
     - chromo sort --help
+    - chromo clean --help
     - chromo fix --help
     - chromo cut --help
     - chromo manual --help
@@ -45,6 +47,7 @@ test:
     - chromo scaffold --help
     - chromo gapfill --help
     - chromosort --help
+    - chromosort-clean --help
     - chromosort-fix-contigs --help
     - chromosort-scaffold --help
     - chromosort-gapfill --help
@@ -57,9 +60,10 @@ about:
   summary: Reference-guided genome assembly curation utilities.
   description: |
     ChromoSort provides reference-guided genome assembly utilities for sorting
-    contigs, splitting reviewed chimeric contigs, cutting exact breakpoints,
-    manual dot-plot review, plotting alignments, scaffolding final ordered
-    contigs, and applying reviewed graph-supported gap fills.
+    contigs, conservatively cleaning mostly-correct assemblies, splitting
+    reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot
+    review, plotting alignments, scaffolding final ordered contigs, and
+    applying reviewed graph-supported gap fills.
   dev_url: https://github.com/rotheconrad/chromosort
   doc_url: https://rotheconrad.github.io/chromosort/
 

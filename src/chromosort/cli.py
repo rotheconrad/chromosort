@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from . import cut, fix_contigs, gapfill, manual, plot, reference_order, scaffold
+from . import clean, cut, fix_contigs, gapfill, manual, plot, reference_order, scaffold
 
 
 def main(argv=None):
@@ -13,14 +13,23 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="chromo",
         description=(
-            "Reference-order, fix, cut, manually edit, scaffold, gapfill, plot, and "
-            "review genome assembly contigs."
+            "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, "
+            "plot, and review genome assembly contigs."
         ),
     )
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["sort", "fix", "cut", "manual", "scaffold", "gapfill", "plot"],
+        choices=[
+            "sort",
+            "clean",
+            "fix",
+            "cut",
+            "manual",
+            "scaffold",
+            "gapfill",
+            "plot",
+        ],
         help="Subcommand to run.",
     )
 
@@ -32,6 +41,8 @@ def main(argv=None):
     remaining = argv[1:]
     if command == "sort":
         reference_order.main(remaining, prog="chromo sort")
+    elif command == "clean":
+        clean.main(remaining, prog="chromo clean")
     elif command == "fix":
         fix_contigs.main(remaining, prog="chromo fix")
     elif command == "cut":

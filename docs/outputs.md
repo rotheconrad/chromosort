@@ -18,6 +18,7 @@ command-specific output sections below.
 | Command | Primary outputs |
 | --- | --- |
 | [`chromo sort`](#chromo-sort-outputs) | `<prefix>.ordered.fa`, `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv`, optional `<prefix>.graph_assignments.tsv`, and `<prefix>.run_summary.txt`. |
+| [`chromo clean`](#chromo-clean-outputs) | `<prefix>.clean.fa`, initial-sort reports, `<prefix>.fix_targets.txt`, `<prefix>.fix_report.tsv`, `<prefix>.clean_contigs.tsv`, `<prefix>.clean_chromosome_summary.tsv`, optional discarded FASTA, and `<prefix>.run_summary.txt`. |
 | [`chromo fix`](#chromo-fix-outputs) | Reviewed fixed FASTA at `--output-fasta`, split report at `--report`, and optional graph report. |
 | [`chromo cut`](#chromo-cut-outputs) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
 | [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
@@ -66,6 +67,36 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 >chr2_contigC original=contigC ref=chr2 ref_start=10 ref_end=69 orientation=- reverse_complemented=yes query_cov=1.0000 avg_identity=97.000
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 ```
+
+## `chromo clean` Outputs
+
+Use `chromo clean` outputs to inspect the full conservative cleanup decision:
+which raw contigs were discarded by sort logic, which retained contigs were
+selected for fix planning, which split plans were accepted or rejected, and what
+records were emitted into the cleaned FASTA.
+
+| Output | Description |
+| --- | --- |
+| `<prefix>.clean.fa` | Cleaned FASTA with retained unsplit contigs and accepted split pieces, oriented if requested and ordered by reference placement. |
+| `<prefix>.initial_sort.contig_assignments.tsv` | Initial raw-contig sort assignment report. |
+| `<prefix>.initial_sort.contig_ref_matches.tsv` | Initial raw-contig per-reference match report. |
+| `<prefix>.initial_sort.chromosome_summary.tsv` | Initial sort chromosome summary. |
+| `<prefix>.fix_targets.txt` | Original raw contig IDs selected for fix planning. |
+| `<prefix>.fix_report.tsv` | `chromo fix`-style report for selected retained contigs. |
+| `<prefix>.clean_contigs.tsv` | Unified row-level audit table for discarded contigs, retained unsplit contigs, and split pieces. |
+| `<prefix>.clean_chromosome_summary.tsv` | Final cleaned-record summary grouped by reference sequence. |
+| `<prefix>.run_summary.txt` | Inputs, outputs, sort/fix/clean status counts, and a reminder to re-align the cleaned FASTA for validation. |
+| `--discarded-fasta` path | Optional FASTA containing raw contigs discarded by sort filtering. |
+
+**Example `clean_contigs.tsv` rows.** Selected columns show a discarded raw
+contig, two emitted split pieces, and one retained unsplit contig.
+
+| source_contig | clean_status | clean_name | sort_status | fix_selected | fix_status | dominant_ref |
+| --- | --- | --- | --- | --- | --- | --- |
+| `contig_01` | `discarded_no_alignment` | `.` | `no_alignment` | `no` | `.` | `.` |
+| `contig_04` | `kept_split_piece` | `chrom02_contig_04_a` | `kept_split_candidate` | `yes` | `split` | `chrom02` |
+| `contig_04` | `kept_split_piece` | `chrom07_contig_04_b` | `kept_split_candidate` | `yes` | `split` | `chrom07` |
+| `contig_inv_mid` | `not_split_single_target` | `chrom06_contig_inv_mid` | `kept` | `yes` | `not_split_single_target` | `chrom06` |
 
 ## `chromo fix` Outputs
 

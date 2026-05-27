@@ -1,11 +1,11 @@
 # ChromoSort
 
-Reference-guided genome assembly utilities for sorting contigs, splitting
-selected contigs or all detected chimeric contigs, reviewing assembly-graph
-evidence, scaffolding final ordered contigs with N gaps, and applying reviewed
-graph-supported gap fills.
+Reference-guided genome assembly utilities for sorting contigs, conservatively
+cleaning mostly-correct assemblies, splitting selected contigs or all detected
+chimeric contigs, reviewing assembly-graph evidence, scaffolding final ordered
+contigs with N gaps, and applying reviewed graph-supported gap fills.
 
-ChromoSort provides one command, `chromo`, with seven subcommands:
+ChromoSort provides one command, `chromo`, with eight subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
   low-value duplicate overlaps, labels and can rescue terminal overlaps,
@@ -13,6 +13,9 @@ ChromoSort provides one command, `chromo`, with seven subcommands:
   reference-ordered FASTA. With `--gfa`, it also writes report-only graph
   evidence for assignment and overlap decisions; `--graph-guard` adds
   warning-only checks for graph-supported overlap conflicts.
+- `chromo clean` applies sort-style filtering to raw contigs, conservatively
+  fixes retained raw contigs, orients and orders the emitted records, and writes
+  a cleaned FASTA plus audit reports for mostly-correct assemblies.
 - `chromo fix` splits contigs with chromosome transitions or reviewed inversion
   blocks into reference-labeled pieces. Use `--contigs` to inspect a reviewed
   subset or `--all` to scan every contig; both scopes use the same `--mode`
@@ -134,6 +137,7 @@ mamba activate chromosort
 
 chromo --help
 chromo sort --help
+chromo clean --help
 chromo fix --help
 chromo cut --help
 chromo manual --help
@@ -361,12 +365,14 @@ The environment installs:
 Additional console entry points are retained for compatibility:
 
 - `chromosort` is equivalent to `chromo sort`
+- `chromosort-clean` is equivalent to `chromo clean`
 - `chromosort-fix-contigs` is equivalent to `chromo fix`
 - `chromosort-scaffold` is equivalent to `chromo scaffold`
 - `chromosort-gapfill` is equivalent to `chromo gapfill`
 
-New workflows should use `chromo sort`, `chromo fix`, `chromo cut`,
-`chromo manual`, `chromo scaffold`, `chromo gapfill`, and `chromo plot`.
+New workflows should use `chromo sort`, `chromo clean`, `chromo fix`,
+`chromo cut`, `chromo manual`, `chromo scaffold`, `chromo gapfill`, and
+`chromo plot`.
 
 ## Installation With Pixi
 
@@ -1921,6 +1927,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| Unreleased | Added `chromo clean`, a conservative cleanup command for mostly-correct assemblies that combines sort-style filtering with fix-style conservative splitting on retained raw contigs, then writes `<prefix>.clean.fa` plus initial-sort, fix, clean, and run-summary reports. |
 | `0.2.23` | Renamed the graph gap-filling command from `chromo fill` to `chromo gapfill`, moved the package entry point to `chromosort.gapfill`, replaced the package script with `chromosort-gapfill`, and updated gapfill output names to `<prefix>.gapfill_plan.tsv` and `<prefix>.gapfilled.fa`. |
 | `0.2.22` | Added Pixi installation support with `pixi.toml`, plus README figure assets and captions for `chromo manual` graph review and `chromo plot` whole-genome/per-reference examples. |
 | `0.2.21` | Added graph-aware safety policies. `chromo sort` and `chromo fix` now have warning-only `--graph-guard` checks, while `chromo scaffold --graph-overlap-policy report|warn|confirm` keeps graph evidence report-only by default and only lets direct oriented GFA links confirm narrow terminal-overlap trimming when explicitly requested. |

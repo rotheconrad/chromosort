@@ -37,12 +37,13 @@ By default ChromoSort skips secondary PAF rows marked `tp:A:S`. Add `--include-s
 
 ## Edited FASTA Does Not Match Old Alignments
 
-After `chromo sort` writes `ordered.fa`, `chromo fix` writes `fixed.fa`,
-`chromo cut` writes a cut FASTA, `chromo manual apply` writes a manual FASTA, or
-`chromo scaffold` writes scaffold records, re-align the edited FASTA before
-running another alignment-dependent command on that edited FASTA. Old raw
-assembly alignments usually do not describe the edited sequence names,
-membership, orientation, or coordinates.
+After `chromo sort` writes `ordered.fa`, `chromo clean` writes `clean.fa`,
+`chromo fix` writes `fixed.fa`, `chromo cut` writes a cut FASTA,
+`chromo manual apply` writes a manual FASTA, or `chromo scaffold` writes
+scaffold records, re-align the edited FASTA before running another
+alignment-dependent command on that edited FASTA. Old raw assembly alignments
+usually do not describe the edited sequence names, membership, orientation, or
+coordinates.
 
 It is fine to reuse raw coords or PAF for another decision about the same raw
 assembly, such as running `chromo fix --assembly-fasta raw.fa --coords
@@ -55,7 +56,8 @@ raw.coords`. It is not safe to run that same `raw.coords` against
 `chromo plot --assignments` draws the original alignment rows and uses a
 `chromo sort` assignment table to order the query axis. This is useful for
 reviewing sort decisions. It does not validate `ordered.fa`, `fixed.fa`, or a
-manual FASTA unless the coords or PAF were generated from that exact FASTA.
+manual FASTA unless the coords or PAF were generated from that exact FASTA. The
+same rule applies to `clean.fa` from `chromo clean`.
 
 ## GFA Nodes Are Reported Missing
 

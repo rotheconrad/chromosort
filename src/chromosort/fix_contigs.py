@@ -58,6 +58,8 @@ class SplitPiece:
     new_name: str
     part_index: int
     ref: str
+    ref_start: int
+    ref_end: int
     slice_start: int
     slice_end: int
     align_start: int
@@ -822,6 +824,8 @@ def pieces_from_ordered_blocks(contig, seq_len, blocks, boundaries, args):
                 new_name=piece_name(block.ref, contig, index, args.name_separator),
                 part_index=index + 1,
                 ref=block.ref,
+                ref_start=block.ref_start,
+                ref_end=block.ref_end,
                 slice_start=start,
                 slice_end=end,
                 align_start=block.query_start,

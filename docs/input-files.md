@@ -15,6 +15,7 @@ same FASTA records used by the command you are running.
 | Goal | Required inputs | Optional inputs |
 | --- | --- | --- |
 | Sort contigs with `chromo sort` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA for report-only graph context, FASTA indexes |
+| Clean mostly-correct assemblies with `chromo clean` | Reference FASTA, raw assembly FASTA, and either MUMmer coords or minimap2 PAF from that raw assembly | FASTA indexes, optional fix-target list |
 | Fix chimeric contigs with `chromo fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for report-only graph context |
 | Cut reviewed coordinates with `chromo cut` | Assembly FASTA and explicit cut positions | Assembly FAI |
 | Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, FASTA indexes, embedded sequences |
@@ -33,8 +34,8 @@ between FASTA, alignments, reports, and graph files.
 
 - Reference names in coords or PAF must match records in `--ref-fasta`.
 - Query names in coords or PAF must match records in `--assembly-fasta`.
-- If you run `chromo fix`, `chromo cut`, or `chromo manual apply`, re-align the
-  new FASTA before running downstream alignment-dependent commands.
+- If you run `chromo clean`, `chromo fix`, `chromo cut`, or `chromo manual apply`,
+  re-align the new FASTA before running downstream alignment-dependent commands.
 - GFA `S` record names should match the assembly FASTA records used for graph
   review. For scaffold and gapfill, ChromoSort also tries ChromoSort `new_name`
   values from the assignment report when resolving graph nodes.
@@ -66,6 +67,7 @@ splits, cuts, reverse-complements, renames, scaffolds, or manually exports
 records, including:
 
 - `chromo sort` when you want to operate on `<prefix>.ordered.fa`.
+- `chromo clean` when you want to validate or continue from `<prefix>.clean.fa`.
 - `chromo fix` when you want to operate on `fixed.fa`.
 - `chromo cut` when you want to operate on the cut FASTA.
 - `chromo manual apply` or browser FASTA export when you want to validate or

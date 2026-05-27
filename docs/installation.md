@@ -59,6 +59,7 @@ gap-filling algorithms.
 ```bash
 chromo --help
 chromo sort --help
+chromo clean --help
 chromo fix --help
 chromo cut --help
 chromo manual --help

@@ -16,6 +16,7 @@ mamba activate chromosort
 
 chromo --help
 chromo sort --help
+chromo clean --help
 chromo fix --help
 chromo cut --help
 chromo manual --help
@@ -248,57 +249,63 @@ Review these outputs before moving downstream:
 - `plots/sample.fixed.*`: confirmation that the repaired contigs now place as
   expected.
 
-## Workflow 2b: Sort-Guided Fixing Of A Mostly Clean Assembly
+## Workflow 2b: Clean A Mostly Correct Assembly
 
 Use this workflow when the assembly is generally good, but you want
 reference-guided cleanup to remove short unaligned or redundant contigs and to
 surface one or a few candidate misjoins. This is often useful for HiFiASM
 assemblies with strong chromosome-scale contigs plus small fragments.
 
-First sort the raw assembly:
+Run `chromo clean` on the raw assembly and raw alignment evidence:
 
 ```bash
-chromo sort \
+chromo clean \
   --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
   --coords mummer/raw.coords \
-  --output-prefix results/sample.raw_sort \
+  --output-prefix results/sample \
   --orient-to-reference \
-  --discarded-fasta results/sample.raw_sort.discarded.fa
+  --discarded-fasta results/sample.discarded.fa
 ```
 
-Review `results/sample.raw_sort.contig_assignments.tsv`, especially:
+By default, `chromo clean` first applies `chromo sort` assignment and
+duplicate-overlap filtering, discards raw contigs that fail that step, runs the
+conservative `chromo fix` planner on retained raw contigs, then orients and
+orders the emitted unsplit contigs and split pieces.
 
-- `status`
-- `kept`
-- `split_candidate`
-- `split_candidate_refs`
-- `second_ref`
-- `overlap_class`
+Review these outputs:
 
-Then fix only the original raw contigs that you want to inspect. The
-`--contigs-file` should contain original contig IDs from the assignment report,
-not renamed `ordered.fa` IDs:
+- `results/sample.clean.fa`: retained unsplit contigs and accepted split
+  pieces, oriented and ordered if requested.
+- `results/sample.initial_sort.contig_assignments.tsv`: raw-contig sort
+  status, overlap class, and split-candidate flags.
+- `results/sample.fix_targets.txt`: original raw contigs inspected by the
+  fix planner.
+- `results/sample.fix_report.tsv`: split and not-split decisions for
+  retained fix targets.
+- `results/sample.clean_contigs.tsv`: unified final audit table.
+
+If you want the fix planner to inspect only contigs that the initial sort step
+flags as possible split candidates, use:
 
 ```bash
-awk -F'\t' '
-  NR==1 {for (i=1; i<=NF; i++) h[$i]=i; next}
-  $(h["kept"])=="yes" && $(h["split_candidate"])=="yes" {print $(h["contig"])}
-' results/sample.raw_sort.contig_assignments.tsv \
-  > results/sample.fix_targets.txt
-
-chromo fix \
+chromo clean \
+  --ref-fasta reference.fa \
   --assembly-fasta assembly.fa \
   --coords mummer/raw.coords \
-  --contigs-file results/sample.fix_targets.txt \
-  --mode conservative \
-  --output-fasta results/sample.fixed.fa \
-  --report results/sample.fixed_contigs.tsv
+  --output-prefix results/sample.candidates \
+  --fix-scope split-candidates
 ```
 
-After fixing, re-align `results/sample.fixed.fa`, then sort and plot the fixed
-FASTA from the fixed alignment. Do not run `chromo fix` on
-`results/sample.raw_sort.ordered.fa` with `mummer/raw.coords`.
+After cleaning, re-align `results/sample.clean.fa` and make final
+validation plots from that clean-FASTA alignment. `chromo clean` uses raw
+alignment evidence to make cleanup decisions; it does not create a fresh
+alignment of the cleaned FASTA.
+
+The equivalent step-by-step workflow is: run `chromo sort` on the raw assembly,
+select original raw contig IDs from the assignment report, run `chromo fix` on
+the same raw assembly with the same raw coords or PAF, then re-align the fixed
+FASTA before final sorting and plotting.
 
 ## Workflow 3: Scaffold and Fill Graph-Supported Gaps
 

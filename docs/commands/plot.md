@@ -17,8 +17,9 @@ assignment report can reorder the query axis by kept sorted contigs, but it does
 not make a new alignment of `<prefix>.ordered.fa`.
 
 After any FASTA-changing step, such as `chromo sort` outputting
-`ordered.fa`, `chromo fix` outputting `fixed.fa`, `chromo cut`, `chromo manual`
-export, or `chromo scaffold`, re-run MUMmer or minimap2 before using
+`ordered.fa`, `chromo clean` outputting `clean.fa`, `chromo fix` outputting
+`fixed.fa`, `chromo cut`, `chromo manual` export, or `chromo scaffold`, re-run
+MUMmer or minimap2 before using
 `chromo plot` to validate that changed FASTA.
 
 ## Run `chromo plot`

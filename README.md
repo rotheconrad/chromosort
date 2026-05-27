@@ -1,12 +1,13 @@
 # ChromoSort
 
-Reference-guided genome assembly utilities for sorting contigs, splitting reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot review, plotting alignments, scaffolding final ordered contigs, and applying reviewed graph-supported gap fills.
+Reference-guided genome assembly utilities for sorting contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot review, plotting alignments, scaffolding final ordered contigs, and applying reviewed graph-supported gap fills.
 
-ChromoSort provides one command, `chromo`, with seven subcommands:
+ChromoSort provides one command, `chromo`, with eight subcommands:
 
 | Command | Purpose |
 | --- | --- |
 | `chromo sort` | Assign contigs to the best-supported reference sequence from MUMmer coords or minimap2 PAF, merge alignment evidence, filter contained or low-value duplicate overlaps, protect likely split candidates, and write a reference-ordered FASTA with TSV decision reports ([sort docs](https://rotheconrad.github.io/chromosort/commands/sort/)). |
+| `chromo clean` | Apply sort-style filtering to raw contigs, conservatively fix retained contigs, orient/order the emitted records, and write a cleaned FASTA plus audit reports for mostly-correct assemblies ([clean docs](https://rotheconrad.github.io/chromosort/commands/clean/)). |
 | `chromo fix` | Split chimeric or structurally inconsistent contigs into reference-labeled pieces by scanning query-ordered alignment blocks, smoothing ordinary gaps, selecting eligible reference/orientation transitions, and writing a fixed full-assembly FASTA plus an audit report ([fix docs](https://rotheconrad.github.io/chromosort/commands/fix/)). |
 | `chromo cut` | Apply exact reviewed breakpoint edits when you already know the cut positions, replacing each requested contig with numbered pieces while copying uncut contigs unchanged and recording every emitted slice ([cut docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
 | `chromo manual` | Build a self-contained browser dashboard for dot-plot curation, contig removal/restoration, reordering, inversion, breakpoint staging, optional GFA neighborhood review, FASTA export, and reproducible recipe application ([manual docs](https://rotheconrad.github.io/chromosort/commands/manual/)). |
@@ -55,6 +56,21 @@ mamba activate chromosort
 
 chromo --help
 chromo sort --help
+chromo clean --help
+```
+
+Typical conservative cleanup workflow for a mostly-correct assembly:
+
+```bash
+chromo clean \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/raw.coords \
+  --output-prefix results/sample \
+  --orient-to-reference \
+  --discarded-fasta results/sample.discarded.fa
+
+# Re-align results/sample.clean.fa before final validation plots.
 ```
 
 Typical reviewed workflow, with re-alignment after FASTA edits:
@@ -101,7 +117,7 @@ pixi run test
 
 ## Current Status
 
-Current version: `0.2.23`. Operational commands are `sort`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history.
+Current version: `0.2.23`. Operational commands are `sort`, `clean`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history.
 
 ## Citation
 
@@ -132,6 +148,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| Unreleased | Added `chromo clean`, a conservative cleanup command for mostly-correct assemblies that combines sort-style filtering with fix-style conservative splitting on retained raw contigs, then writes `<prefix>.clean.fa` plus initial-sort, fix, clean, and run-summary reports. |
 | `0.2.23` | Renamed the graph gap-filling command from `chromo fill` to `chromo gapfill`, moved the package entry point to `chromosort.gapfill`, replaced the package script with `chromosort-gapfill`, and updated gapfill output names to `<prefix>.gapfill_plan.tsv` and `<prefix>.gapfilled.fa`. |
 | `0.2.22` | Added Pixi installation support with `pixi.toml`, plus README figure assets and captions for `chromo manual` graph review and `chromo plot` whole-genome/per-reference examples. |
 | `0.2.21` | Added graph-aware safety policies. `chromo sort` and `chromo fix` now have warning-only `--graph-guard` checks, while `chromo scaffold --graph-overlap-policy report|warn|confirm` keeps graph evidence report-only by default and only lets direct oriented GFA links confirm narrow terminal-overlap trimming when explicitly requested. |

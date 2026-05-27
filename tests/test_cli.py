@@ -37,6 +37,7 @@ class CliTests(unittest.TestCase):
     def test_top_level_help_lists_subcommands(self):
         result = run_cli("--help")
         self.assertIn("sort", result.stdout)
+        self.assertIn("clean", result.stdout)
         self.assertIn("fix", result.stdout)
         self.assertIn("cut", result.stdout)
         self.assertIn("manual", result.stdout)
@@ -46,6 +47,7 @@ class CliTests(unittest.TestCase):
 
     def test_subcommand_help_dispatches_to_full_commands(self):
         sort_help = run_cli("sort", "--help").stdout
+        clean_help = run_cli("clean", "--help").stdout
         fix_help = run_cli("fix", "--help").stdout
         cut_help = run_cli("cut", "--help").stdout
         manual_help = run_cli("manual", "--help").stdout
@@ -57,6 +59,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("--paf", sort_help)
         self.assertIn("--gfa", sort_help)
         self.assertIn("--graph-guard", sort_help)
+        self.assertIn("--fix-scope", clean_help)
+        self.assertIn("--fix-mode", clean_help)
+        self.assertIn("--discarded-fasta", clean_help)
         self.assertIn("--all", fix_help)
         self.assertIn("--mode", fix_help)
         self.assertNotIn("--auto", fix_help)

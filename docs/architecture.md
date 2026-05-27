@@ -24,7 +24,8 @@ it makes sequence-changing steps depend on documented inputs and reports.
 1. **Evidence first, sequence edits second.** Alignment metrics, graph context,
    gap decisions, and manual-review choices are written as reports. Sequence
    changes occur only in commands whose purpose is to write a new FASTA:
-   `fix`, `cut`, `manual apply`, `scaffold`, `sort`, and `gapfill --apply`.
+   `sort`, `clean`, `fix`, `cut`, `manual apply`, `scaffold`, and
+   `gapfill --apply`.
 
 2. **Conservative defaults.** The default behavior favors retaining ambiguous
    evidence for review over making irreversible edits. Examples include
@@ -85,12 +86,13 @@ manual inputs, re-align edited FASTA records, and resume with later commands.
 
 The public command surface is the `chromo` dispatcher in
 `src/chromosort/cli.py`. `pyproject.toml` also exposes compatibility scripts:
-`chromosort`, `chromosort-fix-contigs`, `chromosort-scaffold`, and
-`chromosort-gapfill`.
+`chromosort`, `chromosort-clean`, `chromosort-fix-contigs`,
+`chromosort-scaffold`, and `chromosort-gapfill`.
 
 | Command/API | Primary module | Main inputs | User-facing responsibility | Sequence-changing behavior |
 | --- | --- | --- | --- | --- |
 | `chromo sort` | `reference_order.py` | Reference FASTA, assembly FASTA, coords or PAF, optional GFA | Assign contigs to reference sequences, classify low-confidence and duplicate-overlap records, order kept contigs by reference position, and write match/assignment summaries. | Writes an ordered FASTA for kept contigs. Optionally reverse-complements records with `--orient-to-reference`. |
+| `chromo clean` | `clean.py` | Reference FASTA, raw assembly FASTA, coords or PAF | Apply sort assignment/filtering to raw contigs, select retained raw contigs for conservative fix planning, reconcile retained unsplit contigs and split pieces, and write unified audit reports. | Writes a cleaned FASTA. Optionally reverse-complements emitted records with `--orient-to-reference`. |
 | `chromo fix` | `fix_contigs.py` | Assembly FASTA, coords or PAF, selected contigs or `--all`, optional GFA | Detect and split selected chimeric contigs into reference-labeled pieces using mode-specific breakpoint planning. | Writes a fixed FASTA and split report. Optionally writes only pieces and/or reverse-complements pieces. |
 | `chromo cut` | `cut.py` | Assembly FASTA plus explicit cut positions | Apply reviewed 1-based cut positions and report emitted pieces. | Writes a cut FASTA. No cut is inferred from alignments. |
 | `chromo manual` | `manual.py` | Reference FASTA, assembly FASTA, coords or PAF, optional GFA | Build a self-contained review dashboard with alignment, contig, graph, and initial piece information. | Does not change FASTA. |

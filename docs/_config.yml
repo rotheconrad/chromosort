@@ -62,8 +62,8 @@ nav:
         url: /workflows/#workflow-1-reference-order-a-mostly-clean-assembly
       - title: Fix misjoins
         url: /workflows/#workflow-2-fix-misjoined-contigs-before-sorting
-      - title: Sort-guided fixing
-        url: /workflows/#workflow-2b-sort-guided-fixing-of-a-mostly-clean-assembly
+      - title: Clean assemblies
+        url: /workflows/#workflow-2b-clean-a-mostly-correct-assembly
       - title: Scaffold and gapfill
         url: /workflows/#workflow-3-scaffold-and-fill-graph-supported-gaps
       - title: Overlaps
@@ -75,6 +75,8 @@ nav:
     children:
       - title: sort
         url: /commands/sort/
+      - title: clean
+        url: /commands/clean/
       - title: fix
         url: /commands/fix/
       - title: cut
@@ -92,6 +94,8 @@ nav:
     children:
       - title: sort outputs
         url: /outputs/#chromo-sort-outputs
+      - title: clean outputs
+        url: /outputs/#chromo-clean-outputs
       - title: fix outputs
         url: /outputs/#chromo-fix-outputs
       - title: cut outputs
@@ -138,8 +142,6 @@ nav:
     children:
       - title: Works now
         url: /status/#what-works-now
-      - title: Roadmap proposals
-        url: /status/#roadmap-proposals
       - title: Version history
         url: /status/#version-history
   - title: Troubleshooting

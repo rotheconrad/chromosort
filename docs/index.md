@@ -5,7 +5,7 @@ description: User guide for ChromoSort.
 
 # ChromoSort Documentation
 
-ChromoSort is a reference-guided assembly curation toolkit for sorting contigs, splitting reviewed chimeric contigs, making manual cuts, reviewing dot plots, scaffolding ordered contigs, applying reviewed graph-supported gap fills, and plotting existing whole-genome alignments.
+ChromoSort is a reference-guided assembly curation toolkit for sorting contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed chimeric contigs, making manual cuts, reviewing dot plots, scaffolding ordered contigs, applying reviewed graph-supported gap fills, and plotting existing whole-genome alignments.
 
 This documentation is organized as a user guide for installing ChromoSort, preparing inputs, running common workflows, and reading command outputs.
 
@@ -25,6 +25,7 @@ before they are used as inputs to another alignment-dependent command.
 ## Commands
 
 - [chromo sort](https://rotheconrad.github.io/chromosort/commands/sort/)
+- [chromo clean](https://rotheconrad.github.io/chromosort/commands/clean/)
 - [chromo fix](https://rotheconrad.github.io/chromosort/commands/fix/)
 - [chromo cut](https://rotheconrad.github.io/chromosort/commands/cut/)
 - [chromo manual](https://rotheconrad.github.io/chromosort/commands/manual/)
@@ -41,17 +42,19 @@ before they are used as inputs to another alignment-dependent command.
 ## Project Information
 
 - [Current status and version history](https://rotheconrad.github.io/chromosort/status/)
-- [Roadmap proposal: chromo clean](https://rotheconrad.github.io/chromosort/proposals/chromo-clean/)
 - [Contributing](https://rotheconrad.github.io/chromosort/contributing/)
 
 ## Main Workflow
 
 1. Generate MUMmer `show-coords` or minimap2 PAF alignments between the reference and assembly.
-2. Use `chromo plot` and, when helpful, `chromo manual` to inspect suspicious contigs.
-3. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
-4. Re-align the fixed assembly.
-5. Use `chromo sort` to assign, filter, orient, and order contigs.
-6. Re-align again if a later command should operate on `ordered.fa` rather than
+2. For mostly-correct assemblies, use `chromo clean` for conservative
+   sort-filter-fix cleanup, then re-align the cleaned FASTA.
+3. For more complex cases, use `chromo plot` and, when helpful, `chromo manual`
+   to inspect suspicious contigs.
+4. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
+5. Re-align the fixed assembly.
+6. Use `chromo sort` to assign, filter, orient, and order contigs.
+7. Re-align again if a later command should operate on `ordered.fa` rather than
    on the original assembly and its assignment report.
-7. Use `chromo scaffold` to build one scaffold per reference sequence.
-8. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.
+8. Use `chromo scaffold` to build one scaffold per reference sequence.
+9. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.
