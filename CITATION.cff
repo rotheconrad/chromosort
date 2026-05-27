@@ -4,14 +4,14 @@ type: software
 title: "ChromoSort"
 abstract: >-
   ChromoSort is a reference-guided genome assembly curation toolkit for sorting
-  contigs, splitting reviewed chimeric contigs, making manual cuts, reviewing
-  dot plots, scaffolding final ordered contigs, and applying reviewed
-  graph-supported gap fills from MUMmer, minimap2, GFA, GAF, and Hi-C-like
-  evidence.
+  contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed
+  chimeric contigs, making manual cuts, reviewing dot plots, scaffolding final
+  ordered contigs, and applying reviewed graph-supported gap fills from MUMmer,
+  minimap2, GFA, GAF, and Hi-C-like evidence.
 authors:
   - family-names: Roth
     given-names: Conrad
-version: "0.2.23"
+version: "0.2.24"
 url: "https://github.com/rotheconrad/chromosort"
 repository-code: "https://github.com/rotheconrad/chromosort"
 license: MIT
