@@ -8,6 +8,13 @@ description: Usage, outputs, parameters, and reasoning for chromo sort.
 Use `chromo sort` when the goal is to find the best matched assembly contigs for
 each reference chromosome and write them in reference order.
 
+The coords or PAF file must describe the same assembly FASTA passed to
+`--assembly-fasta`. If you later want to use `<prefix>.ordered.fa` as the input
+FASTA for `chromo fix`, `chromo plot`, or another alignment-dependent command,
+re-run MUMmer or minimap2 against `<prefix>.ordered.fa` first. The original
+alignment remains valid for reviewing the original assembly and for
+`chromo plot --assignments`, but it is not a new alignment of the ordered FASTA.
+
 ## What `chromo sort` Does
 
 Given a reference FASTA, assembly FASTA, and MUMmer coords or minimap2 PAF file,

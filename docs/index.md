@@ -9,6 +9,11 @@ ChromoSort is a reference-guided assembly curation toolkit for sorting contigs, 
 
 This documentation is organized as a user guide for installing ChromoSort, preparing inputs, running common workflows, and reading command outputs.
 
+The most important workflow rule is that alignment evidence matches one exact
+FASTA pair. MUMmer coords or minimap2 PAF generated from `raw.fa` can support
+multiple decisions about `raw.fa`, but edited outputs such as `ordered.fa`,
+`fixed.fa`, manual FASTA exports, and scaffold FASTAs need fresh alignments
+before they are used as inputs to another alignment-dependent command.
 
 ## Start Here
 
@@ -36,6 +41,7 @@ This documentation is organized as a user guide for installing ChromoSort, prepa
 ## Project Information
 
 - [Current status and version history](https://rotheconrad.github.io/chromosort/status/)
+- [Roadmap proposal: chromo clean](https://rotheconrad.github.io/chromosort/proposals/chromo-clean/)
 - [Contributing](https://rotheconrad.github.io/chromosort/contributing/)
 
 ## Main Workflow
@@ -45,5 +51,7 @@ This documentation is organized as a user guide for installing ChromoSort, prepa
 3. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
 4. Re-align the fixed assembly.
 5. Use `chromo sort` to assign, filter, orient, and order contigs.
-6. Use `chromo scaffold` to build one scaffold per reference sequence.
-7. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.
+6. Re-align again if a later command should operate on `ordered.fa` rather than
+   on the original assembly and its assignment report.
+7. Use `chromo scaffold` to build one scaffold per reference sequence.
+8. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.

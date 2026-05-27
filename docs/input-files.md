@@ -48,6 +48,37 @@ For commands that expose `--ref-fai` or `--assembly-fai`, FASTA indexes are
 optional. ChromoSort uses `<fasta>.fai` when present and otherwise scans the
 FASTA length directly. The index must describe the exact FASTA file being used.
 
+## FASTA And Alignment Compatibility
+
+A MUMmer coords file or minimap2 PAF file is tied to the exact reference FASTA
+and assembly FASTA that produced it. The sequence IDs and coordinates in that
+alignment do not automatically follow later FASTA edits.
+
+You can reuse an alignment file for multiple decisions about the same assembly
+FASTA. For example, if `raw.coords` was generated from `raw.fa`, it can support
+both a first-pass `chromo sort --assembly-fasta raw.fa` and a later
+`chromo fix --assembly-fasta raw.fa` on reviewed or automatically detected
+contigs from that same raw assembly.
+
+Re-run MUMmer or minimap2 before using a changed FASTA as the assembly input to
+another alignment-dependent command. This applies after any step that removes,
+splits, cuts, reverse-complements, renames, scaffolds, or manually exports
+records, including:
+
+- `chromo sort` when you want to operate on `<prefix>.ordered.fa`.
+- `chromo fix` when you want to operate on `fixed.fa`.
+- `chromo cut` when you want to operate on the cut FASTA.
+- `chromo manual apply` or browser FASTA export when you want to validate or
+  continue with the manually edited FASTA.
+- `chromo scaffold` when later evidence should describe scaffold records rather
+  than the pre-scaffold contigs.
+
+`chromo plot --assignments` is the main exception to "changed FASTA means
+changed alignment" expectations. It still plots the original coords or PAF
+rows, but uses a `chromo sort` assignment report to order the query axis by kept
+sorted contigs. This is useful for reviewing sort decisions without re-running
+an aligner. It is not a fresh alignment of `<prefix>.ordered.fa`.
+
 ## File Format Contracts
 
 ### FASTA and FAI

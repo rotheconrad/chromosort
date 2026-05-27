@@ -39,6 +39,8 @@ nav:
         url: /input-files/#input-sets-by-task
       - title: Name matching
         url: /input-files/#name-matching-rules
+      - title: FASTA/alignment compatibility
+        url: /input-files/#fasta-and-alignment-compatibility
       - title: Format contracts
         url: /input-files/#file-format-contracts
       - title: MUMmer
@@ -54,10 +56,14 @@ nav:
     children:
       - title: Quick start
         url: /workflows/#quick-start
+      - title: FASTA/alignment rule
+        url: /workflows/#the-fastaalignment-rule
       - title: Clean sort
         url: /workflows/#workflow-1-reference-order-a-mostly-clean-assembly
       - title: Fix misjoins
         url: /workflows/#workflow-2-fix-misjoined-contigs-before-sorting
+      - title: Sort-guided fixing
+        url: /workflows/#workflow-2b-sort-guided-fixing-of-a-mostly-clean-assembly
       - title: Scaffold and gapfill
         url: /workflows/#workflow-3-scaffold-and-fill-graph-supported-gaps
       - title: Overlaps
@@ -132,6 +138,8 @@ nav:
     children:
       - title: Works now
         url: /status/#what-works-now
+      - title: Roadmap proposals
+        url: /status/#roadmap-proposals
       - title: Version history
         url: /status/#version-history
   - title: Troubleshooting

@@ -10,6 +10,17 @@ and want a visual check without running `mummerplot` or re-aligning only for
 the plot. It writes PDF by default and can also write SVG or PNG. Forward-strand
 alignments are blue and reverse-strand alignments are red.
 
+`chromo plot` never runs MUMmer or minimap2. It draws the alignment rows you
+give it. If those rows were generated from `raw.fa`, the plot still describes
+`raw.fa`, even when you also provide a `chromo sort` assignment report. The
+assignment report can reorder the query axis by kept sorted contigs, but it does
+not make a new alignment of `<prefix>.ordered.fa`.
+
+After any FASTA-changing step, such as `chromo sort` outputting
+`ordered.fa`, `chromo fix` outputting `fixed.fa`, `chromo cut`, `chromo manual`
+export, or `chromo scaffold`, re-run MUMmer or minimap2 before using
+`chromo plot` to validate that changed FASTA.
+
 ## Run `chromo plot`
 
 Whole-genome plot from MUMmer coords:
@@ -40,7 +51,9 @@ chromo plot \
 
 When `--assignments` is provided, the query axis is ordered by the kept contigs
 in the assignment report. This is useful for reviewing a sorted ChromoSort
-order from the same alignment file that powered the sort.
+order from the same alignment file that powered the sort. It is not equivalent
+to plotting the `ordered.fa` output; align `ordered.fa` separately if you want
+the plot to reflect the edited FASTA records.
 
 ## `chromo plot` Outputs
 

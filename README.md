@@ -22,6 +22,28 @@ New users should start with [Installation](https://rotheconrad.github.io/chromos
 
 For interpreting results, see [Output Files](https://rotheconrad.github.io/chromosort/outputs/) and [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/).
 
+## Alignment Evidence Matches One FASTA
+
+MUMmer coords and minimap2 PAF files describe one exact reference FASTA and one
+exact assembly FASTA. If a ChromoSort step writes a changed FASTA by removing
+records, splitting contigs, cutting contigs, reverse-complementing records,
+renaming records, or scaffolding records, re-run MUMmer or minimap2 before using
+that changed FASTA as the assembly input to another alignment-dependent command.
+
+You can reuse the original coords or PAF to make decisions about the original
+assembly. For example, run `chromo sort` on `raw.fa`, inspect
+`split_candidate=yes` rows, then run `chromo fix` on that same `raw.fa` with the
+same raw alignment file. You should not run `chromo fix` on
+`sample.ordered.fa` from `chromo sort` with coords that were generated from
+`raw.fa`.
+
+`chromo plot --assignments` is also an important special case: it plots the
+original alignment rows while ordering the query axis by a `chromo sort`
+assignment report. This is useful for reviewing sort decisions without
+re-aligning, but it is not a new alignment of the edited FASTA. To validate
+`ordered.fa`, `fixed.fa`, or a manual-export FASTA, generate fresh coords or PAF
+for that exact FASTA.
+
 ## Quick Start
 
 ```bash
@@ -35,7 +57,7 @@ chromo --help
 chromo sort --help
 ```
 
-Typical reviewed workflow:
+Typical reviewed workflow, with re-alignment after FASTA edits:
 
 ```bash
 # 1. Fix reviewed/suspect raw contigs.
@@ -46,7 +68,9 @@ chromo fix \
   --output-fasta results/sample.fixed.fa \
   --report results/sample.fixed_contigs.tsv
 
-# 2. Re-align the fixed FASTA, then sort.
+# 2. Re-align results/sample.fixed.fa with MUMmer or minimap2.
+
+# 3. Sort the fixed FASTA with the fixed-FASTA alignment.
 chromo sort \
   --ref-fasta reference.fa \
   --assembly-fasta results/sample.fixed.fa \
@@ -54,7 +78,7 @@ chromo sort \
   --output-prefix results/sample.fixed \
   --orient-to-reference
 
-# 3. Plot from the same alignment file for visual review.
+# 4. Plot from the same fixed-FASTA alignment for visual review.
 chromo plot \
   --ref-fasta reference.fa \
   --assembly-fasta results/sample.fixed.fa \

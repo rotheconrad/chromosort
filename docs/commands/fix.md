@@ -8,6 +8,14 @@ description: Usage, outputs, parameters, and reasoning for chromo fix.
 Use `chromo fix` when the goal is to split chimeric or structurally inconsistent
 assembly contigs into reference-labeled pieces.
 
+The coords or PAF file must describe the same assembly FASTA passed to
+`--assembly-fasta`. It is valid to inspect `chromo sort` reports from `raw.fa`
+and then run `chromo fix --assembly-fasta raw.fa --coords raw.coords` on selected
+original contigs. It is not valid to run `chromo fix` on `sample.ordered.fa`
+with coords or PAF that were generated from `raw.fa`. After `chromo fix` writes
+`fixed.fa`, re-run MUMmer or minimap2 before sorting or plotting that fixed
+FASTA.
+
 ## What `chromo fix` Does
 
 For each selected contig, `chromo fix`:

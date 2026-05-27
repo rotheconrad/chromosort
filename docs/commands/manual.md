@@ -15,6 +15,14 @@ The dashboard starts with every assembly contig present. Aligned contigs are
 ordered by reference FASTA order and reference coordinate. Unaligned contigs are
 kept at the end until you remove them.
 
+`chromo manual` can combine sorting-style and fixing-style review in one human
+workflow: you can remove unaligned contigs, reorder pieces, invert pieces, add
+breakpoints, label scaffolds, and export a reviewed FASTA or recipe. The dot
+plots in the dashboard still come from the original coords or PAF file. After
+exporting a manual FASTA, re-run MUMmer or minimap2 before using that FASTA as
+the assembly input to `chromo sort`, `chromo plot`, `chromo scaffold`, or other
+alignment-dependent steps.
+
 ## Run `chromo manual`
 
 ```bash

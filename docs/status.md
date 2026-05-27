@@ -19,6 +19,15 @@ ChromoSort is under active development. Current version: `0.2.23`.
 
 The repository includes synthetic tests and fixtures under `tests/`, including small FASTA, MUMmer coords, minimap2 PAF, GFA, GAF, and Hi-C-like files for graph-aware workflows.
 
+## Roadmap Proposals
+
+- [`chromo clean`]({{ '/proposals/chromo-clean/' | relative_url }}): a proposed
+  conservative cleanup command that would combine sort-style filtering/order
+  decisions with fix-style conservative splitting on retained raw contigs, then
+  write a cleaned FASTA plus audit reports. The proposal keeps the
+  FASTA/alignment compatibility rule explicit: final `clean.fa` should still be
+  re-aligned for validation.
+
 ## Development Checks
 
 ```bash

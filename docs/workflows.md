@@ -32,6 +32,40 @@ or
 See [Input Files]({{ '/input-files/' | relative_url }}) for alignment commands
 and graph-related inputs.
 
+## The FASTA/Alignment Rule
+
+Every MUMmer coords or minimap2 PAF file describes one exact reference FASTA and
+one exact assembly FASTA. It can be reused for multiple decisions about that
+same assembly, but it does not update itself when ChromoSort writes a changed
+FASTA.
+
+Re-run MUMmer or minimap2 before using a changed FASTA as the assembly input to
+another alignment-dependent step. This applies after sorting to `ordered.fa`,
+fixing to `fixed.fa`, cutting, manual export, or scaffolding.
+
+Two common safe patterns are:
+
+```text
+raw.fa + raw.coords
+  -> chromo sort for assignment/filter review
+  -> chromo fix on raw.fa using raw.coords
+  -> re-align fixed.fa
+  -> chromo sort and chromo plot on fixed.fa using fixed.coords
+```
+
+```text
+raw.fa + raw.coords
+  -> chromo fix on raw.fa using raw.coords
+  -> re-align fixed.fa
+  -> chromo sort and chromo plot on fixed.fa using fixed.coords
+```
+
+`chromo plot --assignments` is a review convenience, not a hidden re-alignment:
+it draws the original alignment rows and orders the query axis by the
+`chromo sort` assignment report. To validate the actual `ordered.fa`,
+`fixed.fa`, or manually edited FASTA, generate fresh coords or PAF for that
+exact FASTA.
+
 ## Workflow 1: Reference-Order a Mostly Clean Assembly
 
 Use this workflow when the assembly is already close to chromosome scale and
@@ -84,6 +118,10 @@ chromo plot \
   --per-ref
 ```
 
+This plot uses the original assembly FASTA and the original alignment rows. The
+assignment report changes the query-axis order in the plot, but it does not make
+a new alignment of `results/sample.ordered.fa`.
+
 If the ordered contigs look reasonable, make chromosome-scale scaffold records:
 
 ```bash
@@ -102,6 +140,9 @@ Review these outputs before treating the result as final:
 - `plots/sample.pdf` and per-reference plots: visual placement check.
 - `results/sample.scaffold_gaps.tsv`: inferred gaps, overlaps, and scaffold
   overlap actions.
+
+If the next step should operate on `results/sample.ordered.fa` itself, re-align
+that FASTA first and use the new coords or PAF in the downstream command.
 
 ## Workflow 2: Fix Misjoined Contigs Before Sorting
 
@@ -206,6 +247,58 @@ Review these outputs before moving downstream:
 - `results/sample.fixed.fa`: the FASTA that must be re-aligned before sorting.
 - `plots/sample.fixed.*`: confirmation that the repaired contigs now place as
   expected.
+
+## Workflow 2b: Sort-Guided Fixing Of A Mostly Clean Assembly
+
+Use this workflow when the assembly is generally good, but you want
+reference-guided cleanup to remove short unaligned or redundant contigs and to
+surface one or a few candidate misjoins. This is often useful for HiFiASM
+assemblies with strong chromosome-scale contigs plus small fragments.
+
+First sort the raw assembly:
+
+```bash
+chromo sort \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/raw.coords \
+  --output-prefix results/sample.raw_sort \
+  --orient-to-reference \
+  --discarded-fasta results/sample.raw_sort.discarded.fa
+```
+
+Review `results/sample.raw_sort.contig_assignments.tsv`, especially:
+
+- `status`
+- `kept`
+- `split_candidate`
+- `split_candidate_refs`
+- `second_ref`
+- `overlap_class`
+
+Then fix only the original raw contigs that you want to inspect. The
+`--contigs-file` should contain original contig IDs from the assignment report,
+not renamed `ordered.fa` IDs:
+
+```bash
+awk -F'\t' '
+  NR==1 {for (i=1; i<=NF; i++) h[$i]=i; next}
+  $(h["kept"])=="yes" && $(h["split_candidate"])=="yes" {print $(h["contig"])}
+' results/sample.raw_sort.contig_assignments.tsv \
+  > results/sample.fix_targets.txt
+
+chromo fix \
+  --assembly-fasta assembly.fa \
+  --coords mummer/raw.coords \
+  --contigs-file results/sample.fix_targets.txt \
+  --mode conservative \
+  --output-fasta results/sample.fixed.fa \
+  --report results/sample.fixed_contigs.tsv
+```
+
+After fixing, re-align `results/sample.fixed.fa`, then sort and plot the fixed
+FASTA from the fixed alignment. Do not run `chromo fix` on
+`results/sample.raw_sort.ordered.fa` with `mummer/raw.coords`.
 
 ## Workflow 3: Scaffold and Fill Graph-Supported Gaps
 
