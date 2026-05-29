@@ -10,6 +10,7 @@ from chromosort.gaf import (
     parse_gaf_path,
     read_gaf,
     reverse_oriented_nodes,
+    summarize_gaf_traversal,
 )
 
 
@@ -72,6 +73,37 @@ class GafTests(unittest.TestCase):
         )
         self.assertEqual(supports, [2, 1])
         self.assertEqual(choose_gaf_supported_path(paths, supports, min_support=2), 0)
+
+    def test_summarize_gaf_traversal_reports_alternate_support(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "reads.gaf"
+            path.write_text(
+                "read_selected\t10\t0\t10\t+\t>left>bridge>right\t10\t0\t10\t10\t10\t60\n"
+                "read_alt_1\t10\t0\t10\t+\t>left>alt>right\t10\t0\t10\t10\t10\t60\n"
+                "read_alt_2\t10\t0\t10\t+\t>left>alt>right\t10\t0\t10\t10\t10\t60\n"
+            )
+            records = read_gaf(path)
+            paths = [
+                [
+                    Edge(("left", "+"), ("bridge", "+")),
+                    Edge(("bridge", "+"), ("right", "+")),
+                ],
+                [
+                    Edge(("left", "+"), ("alt", "+")),
+                    Edge(("alt", "+"), ("right", "+")),
+                ],
+            ]
+
+            summary = summarize_gaf_traversal(records, paths, selected_index=0, min_support=1)
+
+        self.assertEqual(summary.selected_path_nodes, "left+,bridge+,right+")
+        self.assertEqual(summary.selected_support, 1)
+        self.assertEqual(summary.best_alt_path_nodes, "left+,alt+,right+")
+        self.assertEqual(summary.best_alt_support, 2)
+        self.assertEqual(summary.best_path_nodes, "left+,alt+,right+")
+        self.assertEqual(summary.support_status, "supports_alternate")
+        self.assertEqual(summary.selected_reads, ("read_selected",))
+        self.assertEqual([item.support for item in summary.path_supports], [1, 2])
 
 
 if __name__ == "__main__":

@@ -239,7 +239,7 @@ The sequence-changing commands should remain conservative:
 | Phase | Status | Notes |
 | --- | --- | --- |
 | G1. Move GAF parsing and path-support helpers into a shared evidence module. | Done | Added `chromosort.gaf` with GAF path parsing, MAPQ-filtered reading, oriented subpath support counting, and gapfill-compatible path support helpers. |
-| G2. Add shared GAF summary objects for graph traversal evidence. | Planned | Summaries should support direct edge/path support, best alternate support, support conflicts, and per-read path counts. |
+| G2. Add shared GAF summary objects for graph traversal evidence. | Done | Added reusable traversal summary objects with selected-path support, best alternate support, support status, selected reads, and per-path read support details. |
 | G3. Add `--gaf` support to `chromo eval scaffold`. | Planned | Scaffold review rows should report read support for direct or short GFA paths between adjacent contigs. |
 | G4. Add advisory `--gaf` support to `chromo eval fix`. | Planned | Fix review rows should summarize graph traversal context near candidate split/breakpoint-associated graph nodes without driving automatic fixes. |
 | G5. Refactor `chromo eval gapfill` to use the shared GAF evidence layer. | Planned | Preserve current gapfill behavior while making the evidence reusable by manual dashboards. |
