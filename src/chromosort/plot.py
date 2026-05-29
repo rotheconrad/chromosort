@@ -346,7 +346,7 @@ def fmt_tick(value, unit_scale):
     return f"{scaled:.2f}".rstrip("0").rstrip(".")
 
 
-def make_text(x, y, value, size=12, anchor="start", rotate=None, fill=TEXT_COLOR):
+def make_text(x, y, value, size=12, anchor="start", rotate=None, fill=TEXT_COLOR, baseline=None):
     return {
         "type": "text",
         "x": x,
@@ -356,6 +356,7 @@ def make_text(x, y, value, size=12, anchor="start", rotate=None, fill=TEXT_COLOR
         "anchor": anchor,
         "rotate": rotate,
         "fill": fill,
+        "baseline": baseline,
     }
 
 
@@ -390,9 +391,11 @@ def svg_text(item):
     y = item["y"]
     rotate = item["rotate"]
     transform = f' transform="rotate({rotate} {x:.2f} {y:.2f})"' if rotate else ""
+    baseline = item.get("baseline")
+    baseline_attr = f' dominant-baseline="{baseline}"' if baseline else ""
     return (
         f'<text x="{x:.2f}" y="{y:.2f}" font-size="{item["size"]}" '
-        f'text-anchor="{item["anchor"]}" fill="{item["fill"]}"{transform}>'
+        f'text-anchor="{item["anchor"]}" fill="{item["fill"]}"{baseline_attr}{transform}>'
         f"{html.escape(item['value'])}</text>"
     )
 
@@ -469,7 +472,7 @@ def draw_separators(elements, records, offsets, total, origin, size, is_x_axis, 
 
 def build_plot_items(title, ref_records, query_records, segments, width, height):
     margin_left = 170
-    margin_right = 150
+    margin_right = 230
     margin_top = 124
     margin_bottom = 116
     plot_width = max(100, width - margin_left - margin_right)
@@ -523,7 +526,7 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
             make_line(origin[0], origin[1], origin[0], origin[1] + plot_height, AXIS_COLOR, 1.2),
             make_line(origin[0] + plot_width, origin[1], origin[0] + plot_width, origin[1] + plot_height, AXIS_COLOR, 1.0),
             make_text(origin[0] + plot_width / 2, height - 30, f"Reference Position ({ref_unit})", size=AXIS_LABEL_SIZE, anchor="middle"),
-            make_text(width - 28, origin[1] + plot_height / 2, f"Query Position ({query_unit})", size=AXIS_LABEL_SIZE, anchor="middle", rotate=90),
+            make_text(width - 58, origin[1] + plot_height / 2, f"Query Position ({query_unit})", size=AXIS_LABEL_SIZE, anchor="middle", rotate=90, baseline="middle"),
             make_line(width - 280, 35, width - 230, 35, PLUS_COLOR, width=2.4),
             make_text(width - 218, 40, "forward", size=LEGEND_LABEL_SIZE),
             make_line(width - 280, 60, width - 230, 60, MINUS_COLOR, width=2.4),
@@ -577,14 +580,16 @@ def pdf_text(item, page_height):
     size = item["size"]
     x = item["x"]
     y = page_height - item["y"]
-    anchor = item["anchor"]
-    if anchor == "middle":
-        x -= text_width(item["value"], size) / 2
-    elif anchor == "end":
-        x -= text_width(item["value"], size)
     fill = pdf_rgb(item["fill"])
     rotate = item["rotate"]
+    anchor = item["anchor"]
     if rotate:
+        dx = 0
+        if anchor == "middle":
+            dx = -text_width(item["value"], size) / 2
+        elif anchor == "end":
+            dx = -text_width(item["value"], size)
+        dy = -size * 0.35 if item.get("baseline") == "middle" else 0
         theta = math.radians(-rotate)
         cos_t = math.cos(theta)
         sin_t = math.sin(theta)
@@ -592,9 +597,13 @@ def pdf_text(item, page_height):
             "q\n"
             f"{fill} rg\n"
             f"{cos_t:.6f} {sin_t:.6f} {-sin_t:.6f} {cos_t:.6f} {x:.2f} {y:.2f} cm\n"
-            f"BT /F1 {size} Tf 0 0 Td ({value}) Tj ET\n"
+            f"BT /F1 {size} Tf {dx:.2f} {dy:.2f} Td ({value}) Tj ET\n"
             "Q\n"
         )
+    if anchor == "middle":
+        x -= text_width(item["value"], size) / 2
+    elif anchor == "end":
+        x -= text_width(item["value"], size)
     return f"{fill} rg\nBT /F1 {size} Tf {x:.2f} {y:.2f} Td ({value}) Tj ET\n"
 
 
@@ -684,18 +693,25 @@ def write_png(path, elements, width, height):
             y = item["y"] - item["size"]
             bbox = draw.textbbox((0, 0), item["value"], font=fnt)
             tw = bbox[2] - bbox[0]
-            if item["anchor"] == "middle":
-                x -= tw / 2
-            elif item["anchor"] == "end":
-                x -= tw
             color = hex_rgb(item["fill"])
             if item["rotate"]:
-                text_img = Image.new("RGBA", (max(1, tw + 4), max(1, item["size"] + 8)), (255, 255, 255, 0))
+                th = bbox[3] - bbox[1]
+                text_img = Image.new("RGBA", (max(1, tw + 4), max(1, th + 4)), (255, 255, 255, 0))
                 text_draw = ImageDraw.Draw(text_img)
-                text_draw.text((2, 2), item["value"], font=fnt, fill=(*color, 255))
+                text_draw.text((2 - bbox[0], 2 - bbox[1]), item["value"], font=fnt, fill=(*color, 255))
                 rotated = text_img.rotate(-item["rotate"], expand=True)
+                if item["anchor"] == "middle":
+                    x -= rotated.width / 2
+                elif item["anchor"] == "end":
+                    x -= rotated.width
+                if item.get("baseline") == "middle" or item["anchor"] == "middle":
+                    y = item["y"] - rotated.height / 2
                 image.paste(rotated, (round(x), round(y)), rotated)
             else:
+                if item["anchor"] == "middle":
+                    x -= tw / 2
+                elif item["anchor"] == "end":
+                    x -= tw
                 draw.text((x, y), item["value"], font=fnt, fill=(*color, 255))
     image.save(path)
 
