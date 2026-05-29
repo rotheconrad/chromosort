@@ -150,3 +150,98 @@ The shared evidence layer should summarize:
 - Sequence-changing commands must revalidate reviewed rows before applying
   them.
 - Ambiguous or stale evidence should remain reviewable rather than guessed.
+
+## Next Chapter: GAF Evidence And Modular Manual Panels
+
+The next review upgrade should fully surface long-read GAF graph alignments
+across the same `eval` and `manual` task modes. GAF should be treated as a
+complementary evidence stream rather than a replacement for GFA or long-read
+PAF:
+
+- GFA answers whether the graph topology permits a relationship.
+- Long-read PAF answers whether reads support breakpoints or junctions in
+  assembly-contig coordinate space.
+- Long-read GAF answers whether reads traverse graph paths that support,
+  disambiguate, or conflict with a proposed graph relationship.
+
+The main product goal is communication. Users should be able to inspect four
+independent evidence panels when the corresponding inputs are provided, while
+the command-line `eval` tables expose compact summary columns for the same
+evidence.
+
+### Evidence Inputs
+
+| Evidence | Role | Optional input |
+| --- | --- | --- |
+| Whole-genome alignment | Reference placement, dot plots, fix candidates, sort/scaffold coordinates | `--coords` or whole-genome `--paf` |
+| Assembly graph | Graph nodes, direct links, short paths, graph complexity | `--gfa` |
+| Long-read PAF to assembly | Breakpoint support, contig-end read bridges, read-space gap/overlap estimates | `--read-paf` |
+| Long-read GAF to graph | Read traversal support for graph paths, branch support, path conflicts | `--gaf` |
+
+Each evidence stream should remain optional where possible. The dashboard
+should render only the panels backed by provided evidence, and `eval` should
+write `.` values for unavailable evidence rather than forcing unnecessary
+inputs.
+
+### Eval Mode Expansion
+
+`chromo eval fix`, `chromo eval scaffold`, and `chromo eval gapfill` should all
+accept long-read GAF evidence.
+
+For `eval fix`, GAF evidence should remain advisory. It should summarize graph
+traversal context near candidate split nodes or breakpoint-associated graph
+nodes, but PAF-to-assembly evidence should remain the primary coordinate-level
+support for breakpoint decisions.
+
+For `eval scaffold`, GAF evidence should be first-class support. Scaffold
+junction rows should report whether reads traverse the direct GFA edge or the
+short graph path connecting adjacent contigs, whether support favors an
+alternate path, and whether graph traversal conflicts with the reference-space
+order.
+
+For `eval gapfill`, GAF is already central to branch resolution. The next work
+should move GAF parsing and path-support helpers into a shared evidence module,
+then reuse the same summaries in the review-event table and manual dashboard.
+
+### Manual Dashboard Panels
+
+Task-specific manual dashboards should expose a modular evidence layout for the
+selected event, contig, junction, or candidate path.
+
+| Panel | Shows | Present when |
+| --- | --- | --- |
+| Alignment panel | Dot plot, reference placement, local alignment rows, task target context | `--coords` or whole-genome `--paf` |
+| GFA panel | Node status, direct links, short paths, graph complexity, neighbor context | `--gfa` |
+| Long-read PAF panel | Spanning reads, split/edge reads, contig-end bridges, median read-space gaps | `--read-paf` |
+| Long-read GAF panel | Read-path support, candidate-path support, branch/conflict summaries | `--gaf` |
+
+The current manual dashboard already has the alignment view, optional GFA
+context, and task-specific event queue. The next dashboard step is to split the
+selected-event evidence into these explicit panels instead of relying only on
+review-table columns and badges.
+
+### Executor Policy
+
+The sequence-changing commands should remain conservative:
+
+- `chromo fix` may consume GAF-derived review-table rows only when the reviewed
+  table explicitly accepts the change; automatic fixing should still rely on
+  existing coordinate-based logic.
+- `chromo scaffold` may use GAF as report-only support or as reviewed-table
+  context for accepted gap decisions, but it should not reorder, orient, or
+  trim based on GAF alone.
+- `chromo gapfill` can continue using GAF as a branch-support signal, with
+  reviewed rows revalidated against the current GFA path before sequence is
+  applied.
+
+### GAF Implementation Phases
+
+| Phase | Status | Notes |
+| --- | --- | --- |
+| G1. Move GAF parsing and path-support helpers into a shared evidence module. | Planned | Start from the current gapfill GAF reader and support functions, keeping behavior compatible with existing tests. |
+| G2. Add shared GAF summary objects for graph traversal evidence. | Planned | Summaries should support direct edge/path support, best alternate support, support conflicts, and per-read path counts. |
+| G3. Add `--gaf` support to `chromo eval scaffold`. | Planned | Scaffold review rows should report read support for direct or short GFA paths between adjacent contigs. |
+| G4. Add advisory `--gaf` support to `chromo eval fix`. | Planned | Fix review rows should summarize graph traversal context near candidate split/breakpoint-associated graph nodes without driving automatic fixes. |
+| G5. Refactor `chromo eval gapfill` to use the shared GAF evidence layer. | Planned | Preserve current gapfill behavior while making the evidence reusable by manual dashboards. |
+| G6. Add modular evidence panels to `chromo manual fix/scaffold/gapfill`. | Planned | Render alignment, GFA, long-read PAF, and long-read GAF panels only when their evidence exists. |
+| G7. Add docs, fixtures, and regression tests for mixed GFA/PAF/GAF review. | Planned | Include examples where evidence agrees, where GAF disambiguates a graph branch, and where GAF conflicts with another evidence stream. |
