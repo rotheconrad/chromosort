@@ -10,6 +10,7 @@ from chromosort.gaf import (
     parse_gaf_path,
     read_gaf,
     reverse_oriented_nodes,
+    summarize_gaf_node,
     summarize_gaf_traversal,
 )
 
@@ -104,6 +105,27 @@ class GafTests(unittest.TestCase):
         self.assertEqual(summary.support_status, "supports_alternate")
         self.assertEqual(summary.selected_reads, ("read_selected",))
         self.assertEqual([item.support for item in summary.path_supports], [1, 2])
+
+    def test_summarize_gaf_node_reports_touching_reads(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "reads.gaf"
+            path.write_text(
+                "read_a\t10\t0\t10\t+\t>left>target>right\t10\t0\t10\t10\t10\t60\n"
+                "read_b\t10\t0\t10\t+\t<target<left\t10\t0\t10\t10\t10\t60\n"
+                "read_other\t10\t0\t10\t+\t>left>other\t10\t0\t10\t10\t10\t60\n"
+            )
+            records = read_gaf(path)
+
+            support = summarize_gaf_node(records, "target")
+
+        self.assertEqual(support.node, "target")
+        self.assertEqual(support.traversal_count, 2)
+        self.assertEqual(support.reads, ("read_a", "read_b"))
+        self.assertEqual(support.orientation_summary, "+:1,-:1")
+        self.assertEqual(
+            support.path_examples,
+            ("left+,target+,right+", "target-,left-"),
+        )
 
 
 if __name__ == "__main__":

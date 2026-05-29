@@ -74,6 +74,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("scaffold", eval_help)
         self.assertIn("gapfill", eval_help)
         self.assertIn("--read-paf", eval_fix_help)
+        self.assertIn("--gaf", eval_fix_help)
         self.assertIn("--output-prefix", eval_fix_help)
         self.assertIn("--ordered-fasta", eval_scaffold_help)
         self.assertIn("--assignments", eval_scaffold_help)

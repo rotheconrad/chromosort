@@ -48,6 +48,7 @@ contigs and slices to apply.
 `chromo eval fix` can include report-only context from:
 
 - `--gfa`: assembly graph node status and local complexity fields.
+- `--gaf`: advisory graph traversal context for candidate contig graph nodes.
 - `--read-paf`: long-read-to-assembly PAF evidence around candidate
   breakpoints.
 
@@ -155,7 +156,7 @@ current scaffold, contig pair, and `path_nodes` before applying sequence.
 | `--assignments` | required for scaffold mode | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`. |
 | `--fixed-gap-bp` | none | In scaffold mode, prepare rows using fixed gaps instead of inferred gaps. |
 | `--gfa` | required for gapfill mode | Assembly graph GFA for candidate fill paths. |
-| `--gaf` | none | Optional long-read graph traversal evidence for scaffold and gapfill modes. Scaffold mode requires `--gfa` when `--gaf` is provided. |
+| `--gaf` | none | Optional long-read graph traversal evidence for fix, scaffold, and gapfill modes. Scaffold mode requires `--gfa` when `--gaf` is provided. |
 | `--hic-pairs`, `--ref-paf` | none | Optional graph-path support evidence for gapfill mode. |
 | `--include-fill-sequences` | off | In gapfill mode, include candidate fill sequence in the review table. |
 

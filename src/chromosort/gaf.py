@@ -1,5 +1,6 @@
 """GAF read-to-graph evidence helpers."""
 
+from collections import Counter
 from dataclasses import dataclass
 
 
@@ -42,6 +43,21 @@ class GafTraversalSummary:
     @property
     def selected_read_count(self):
         return len(self.selected_reads)
+
+
+@dataclass(frozen=True)
+class GafNodeSupport:
+    """GAF read-path evidence touching one graph node."""
+
+    node: str
+    traversal_count: int
+    reads: tuple
+    orientation_summary: str = "."
+    path_examples: tuple = ()
+
+    @property
+    def read_count(self):
+        return len(self.reads)
 
 
 def parse_gaf_path(path_text):
@@ -209,4 +225,39 @@ def summarize_gaf_traversal(gaf_records, paths, selected_index=0, min_support=1)
         support_status=status,
         selected_reads=selected.reads,
         path_supports=path_supports,
+    )
+
+
+def summarize_gaf_node(gaf_records, node, max_examples=3):
+    if not node or node == ".":
+        return GafNodeSupport(node=".", traversal_count=0, reads=())
+
+    records = []
+    orientations = Counter()
+    examples = []
+    for record in gaf_records or []:
+        matched = False
+        for path_node, orientation in record.path:
+            if path_node != node:
+                continue
+            orientations[orientation] += 1
+            matched = True
+        if not matched:
+            continue
+        records.append(record)
+        example = oriented_nodes_text(record.path)
+        if len(examples) < max_examples and example not in examples:
+            examples.append(example)
+
+    orientation_summary = (
+        ",".join(f"{orientation}:{orientations[orientation]}" for orientation in sorted(orientations))
+        if orientations
+        else "."
+    )
+    return GafNodeSupport(
+        node=node,
+        traversal_count=len(records),
+        reads=tuple(sorted({record.query for record in records})),
+        orientation_summary=orientation_summary,
+        path_examples=tuple(examples),
     )

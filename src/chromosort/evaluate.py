@@ -9,7 +9,7 @@ from typing import Optional, Sequence
 from . import fix_contigs
 from . import gapfill as gapfill_mod
 from . import scaffold as scaffold_mod
-from .gaf import read_gaf, summarize_gaf_traversal
+from .gaf import read_gaf, summarize_gaf_node, summarize_gaf_traversal
 from .graph import graph_node_evidence, read_gfa
 from .longreads import read_long_read_paf, summarize_breakpoint, summarize_contig_bridge
 from .paths import ensure_output_dirs
@@ -39,6 +39,11 @@ FIX_REVIEW_COLUMNS = [
     "graph_node_status",
     "graph_neighbor_count",
     "graph_self_loop",
+    "gaf_node",
+    "gaf_node_reads",
+    "gaf_node_traversals",
+    "gaf_node_orientations",
+    "gaf_path_examples",
     "longread_breakpoint_position",
     "longread_spanning_reads",
     "longread_split_reads",
@@ -129,6 +134,8 @@ def parse_fix_args(argv=None, prog=None):
     ap.add_argument("--contigs-file", default=None, help="One contig name per line.")
     ap.add_argument("--all", action="store_true", dest="all_contigs", help="Evaluate all split-signal contigs.")
     ap.add_argument("--gfa", default=None, help="Optional assembly graph GFA for node context.")
+    ap.add_argument("--gaf", default=None, help="Optional long-read-to-graph GAF for advisory graph traversal context.")
+    ap.add_argument("--min-gaf-mapq", type=int, default=20, help="Minimum GAF MAPQ for advisory graph traversal context.")
     ap.add_argument("--read-paf", default=None, help="Optional long-read-to-assembly PAF.")
     ap.add_argument("--min-read-mapq", type=int, default=0, help="Minimum MAPQ for --read-paf rows.")
     ap.add_argument("--read-window-bp", type=int, default=5_000, help="Breakpoint window for read evidence.")
@@ -270,6 +277,45 @@ def graph_fields(graph, contig):
     }
 
 
+def empty_gaf_node_fields():
+    return {
+        "gaf_node": ".",
+        "gaf_node_reads": ".",
+        "gaf_node_traversals": ".",
+        "gaf_node_orientations": ".",
+        "gaf_path_examples": ".",
+    }
+
+
+def gaf_node_fields(gaf_records, graph, contig):
+    if not gaf_records:
+        return empty_gaf_node_fields()
+
+    candidates = []
+    if graph is not None:
+        evidence = graph_node_evidence(graph, [contig])
+        if evidence.graph_node and evidence.graph_node != ".":
+            candidates.append(evidence.graph_node)
+    candidates.append(contig)
+
+    seen = []
+    for candidate in candidates:
+        if candidate and candidate != "." and candidate not in seen:
+            seen.append(candidate)
+    summaries = [summarize_gaf_node(gaf_records, candidate) for candidate in seen]
+    summary = max(summaries, key=lambda item: item.traversal_count) if summaries else None
+    if summary is None:
+        return empty_gaf_node_fields()
+
+    return {
+        "gaf_node": summary.node,
+        "gaf_node_reads": str(summary.read_count),
+        "gaf_node_traversals": str(summary.traversal_count),
+        "gaf_node_orientations": summary.orientation_summary,
+        "gaf_path_examples": ";".join(summary.path_examples) if summary.path_examples else ".",
+    }
+
+
 def read_support_fields(read_evidence, contig, position, args):
     if read_evidence is None or position is None:
         return {
@@ -297,7 +343,7 @@ def read_support_fields(read_evidence, contig, position, args):
     }
 
 
-def split_piece_event(plan, piece, index, graph, read_evidence, args):
+def split_piece_event(plan, piece, index, graph, gaf_records, read_evidence, args):
     is_last = index == len(plan.pieces) - 1
     breakpoint_position = None if is_last else piece.slice_end
     fields = {
@@ -320,6 +366,7 @@ def split_piece_event(plan, piece, index, graph, read_evidence, args):
         "planner_score": fmt(plan.planner_score, 1),
     }
     fields.update(graph_fields(graph, piece.original_contig))
+    fields.update(gaf_node_fields(gaf_records, graph, piece.original_contig))
     fields.update(read_support_fields(read_evidence, piece.original_contig, breakpoint_position, args))
     return ReviewEvent(
         event_id=f"fix:{piece.original_contig}:{piece.part_index}",
@@ -334,7 +381,7 @@ def split_piece_event(plan, piece, index, graph, read_evidence, args):
     )
 
 
-def no_split_event(contig, plan, graph):
+def no_split_event(contig, plan, graph, gaf_records):
     fields = {
         "source_contig": contig,
         "new_contig": ".",
@@ -361,6 +408,7 @@ def no_split_event(contig, plan, graph):
         "longread_nearby_reads": ".",
     }
     fields.update(graph_fields(graph, contig))
+    fields.update(gaf_node_fields(gaf_records, graph, contig))
     return ReviewEvent(
         event_id=f"fix:{contig}:no_split",
         task="fix",
@@ -381,6 +429,8 @@ def build_fix_events(args):
         raise ValueError("use either --all or --contigs/--contigs-file, not both")
     if not explicit_requested and not args.all_contigs:
         raise ValueError("provide at least one contig via --contigs/--contigs-file or use --all")
+    if args.min_gaf_mapq < 0:
+        raise ValueError("--min-gaf-mapq must be zero or greater")
 
     collect_for = None if args.all_contigs else explicit_requested
     blocks_by_contig = fix_contigs.collect_blocks(
@@ -402,6 +452,7 @@ def build_fix_events(args):
     fix_contigs.apply_breakpoint_guard(plans, args)
 
     graph = read_gfa(args.gfa) if args.gfa else None
+    gaf_records = read_gaf(args.gaf, args.min_gaf_mapq) if args.gaf else []
     read_evidence = (
         read_long_read_paf(args.read_paf, min_mapq=args.min_read_mapq)
         if args.read_paf
@@ -413,9 +464,9 @@ def build_fix_events(args):
         plan = plans[contig]
         if plan.status == "split":
             for index, piece in enumerate(plan.pieces):
-                events.append(split_piece_event(plan, piece, index, graph, read_evidence, args))
+                events.append(split_piece_event(plan, piece, index, graph, gaf_records, read_evidence, args))
         else:
-            events.append(no_split_event(contig, plan, graph))
+            events.append(no_split_event(contig, plan, graph, gaf_records))
     return events
 
 

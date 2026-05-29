@@ -119,6 +119,10 @@ class EvalTests(unittest.TestCase):
     def test_eval_fix_writes_review_table(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = Path(tmp) / "sample"
+            gaf = Path(tmp) / "reads.gaf"
+            gaf.write_text(
+                "read_graph\t40\t0\t40\t+\t>contig_04>graph_neighbor\t40\t0\t40\t40\t40\t60\n"
+            )
             run_cli(
                 "eval",
                 "fix",
@@ -128,6 +132,8 @@ class EvalTests(unittest.TestCase):
                 str(DATA / "sample.coords"),
                 "--contigs",
                 "contig_04",
+                "--gaf",
+                str(gaf),
                 "--output-prefix",
                 str(prefix),
                 "--min-segment-bp",
@@ -143,6 +149,9 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["schema"], "chromosort-review-event-v1")
         self.assertEqual(rows[0]["source_contig"], "contig_04")
         self.assertEqual(rows[0]["new_contig"], "chrom02-contig_04-a")
+        self.assertEqual(rows[0]["gaf_node"], "contig_04")
+        self.assertEqual(rows[0]["gaf_node_reads"], "1")
+        self.assertEqual(rows[0]["gaf_node_orientations"], "+:1")
         self.assertEqual(rows[1]["slice_start"], "21")
 
     def test_fix_can_apply_eval_fix_review_table_without_alignment(self):
