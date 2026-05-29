@@ -88,6 +88,8 @@ nav:
         url: /commands/sort/
       - title: clean
         url: /commands/clean/
+      - title: eval
+        url: /commands/eval/
       - title: fix
         url: /commands/fix/
       - title: cut

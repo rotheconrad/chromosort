@@ -97,6 +97,31 @@ chromo fix \
   --gfa assembly_graph.gfa
 ```
 
+## Run `chromo fix` From an Eval Table
+
+Use `chromo eval fix` when you want a spreadsheet-editable table first:
+
+```bash
+chromo eval fix \
+  --assembly-fasta assembly.fa \
+  --paf minimap2/sample.paf \
+  --contigs contig_04 contig_12 \
+  --output-prefix results/sample.eval_fix
+```
+
+After review, apply accepted `split_piece` rows:
+
+```bash
+chromo fix \
+  --assembly-fasta assembly.fa \
+  --reviewed-plan results/sample.eval_fix.fix_review.tsv \
+  --output-fasta results/sample.fixed.fa \
+  --report results/sample.fixed_contigs.tsv
+```
+
+With `--reviewed-plan`, the table supplies target contigs and exact slices, so
+`--coords`/`--paf` and `--contigs`/`--all` are omitted.
+
 ## `chromo fix` Outputs
 
 | Output | Description |
@@ -182,6 +207,7 @@ appear in your FASTA and alignment output are used. Change the separator with
 | --- | ---: | --- |
 | `--coords` | required unless `--paf` | MUMmer `show-coords` alignment file. |
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
+| `--reviewed-plan` | none | Reviewed `chromo eval fix` table. Accepted `split_piece` rows are applied directly and replace the alignment-driven planner path. |
 | `--gfa` | none | Optional assembly graph GFA for report-only context about reviewed source contigs. |
 | `--graph-report` | report path with `.graph.tsv` suffix | Optional path for the `--gfa` graph context report. |
 | `--graph-guard` | off | Requires `--gfa`; emits conservative warnings for graph-simple planned splits and graph-complex unsplit contigs without changing the fixed FASTA. |

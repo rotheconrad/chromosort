@@ -28,6 +28,7 @@ before they are used as inputs to another alignment-dependent command.
 
 - [chromo sort](https://rotheconrad.github.io/chromosort/commands/sort/)
 - [chromo clean](https://rotheconrad.github.io/chromosort/commands/clean/)
+- [chromo eval](https://rotheconrad.github.io/chromosort/commands/eval/)
 - [chromo fix](https://rotheconrad.github.io/chromosort/commands/fix/)
 - [chromo cut](https://rotheconrad.github.io/chromosort/commands/cut/)
 - [chromo manual](https://rotheconrad.github.io/chromosort/commands/manual/)

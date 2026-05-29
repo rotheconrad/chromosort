@@ -16,6 +16,7 @@ same FASTA records used by the command you are running.
 | --- | --- | --- |
 | Sort contigs with `chromo sort` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA for report-only graph context, FASTA indexes |
 | Clean mostly-correct assemblies with `chromo clean` | Reference FASTA, raw assembly FASTA, and either MUMmer coords or minimap2 PAF from that raw assembly | FASTA indexes, optional fix-target list |
+| Prepare fix review tables with `chromo eval fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for graph context, long-read-to-assembly PAF |
 | Fix chimeric contigs with `chromo fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for report-only graph context |
 | Cut reviewed coordinates with `chromo cut` | Assembly FASTA and explicit cut positions | Assembly FAI |
 | Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, FASTA indexes, embedded sequences |

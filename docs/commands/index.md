@@ -5,12 +5,13 @@ description: Overview of ChromoSort subcommands.
 
 # Command Reference
 
-ChromoSort exposes one top-level command, `chromo`, with eight subcommands. Each subcommand page includes the purpose, examples, outputs, key parameters, and reasoning behind the command.
+ChromoSort exposes one top-level command, `chromo`, with nine subcommands. Each subcommand page includes the purpose, examples, outputs, key parameters, and reasoning behind the command.
 
 | Command | Use it when you need to |
 | --- | --- |
 | [`chromo sort`](https://rotheconrad.github.io/chromosort/commands/sort/) | assign contigs to reference sequences, filter duplicate overlaps, and write an ordered FASTA. |
 | [`chromo clean`](https://rotheconrad.github.io/chromosort/commands/clean/) | sort-filter raw contigs, conservatively fix retained contigs, and write a cleaned FASTA. |
+| [`chromo eval`](https://rotheconrad.github.io/chromosort/commands/eval/) | prepare editable TSV review tables for command-line or spreadsheet-first curation. |
 | [`chromo fix`](https://rotheconrad.github.io/chromosort/commands/fix/) | split reviewed or automatically detected chimeric contigs into reference-labeled pieces. |
 | [`chromo cut`](https://rotheconrad.github.io/chromosort/commands/cut/) | cut contigs at exact reviewed coordinates. |
 | [`chromo manual`](https://rotheconrad.github.io/chromosort/commands/manual/) | generate a browser dashboard for manual dot-plot review and reproducible recipe export. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) if the visual patterns are unfamiliar. |

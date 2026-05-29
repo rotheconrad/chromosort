@@ -11,6 +11,7 @@ ChromoSort is under active development. Current version: `0.2.25`.
 
 - `chromo sort`
 - `chromo clean`
+- `chromo eval fix`
 - `chromo fix`
 - `chromo cut`
 - `chromo manual`
@@ -28,8 +29,9 @@ The repository includes synthetic tests and fixtures under `tests/`, including s
 
 The next planned production upgrade is captured in the
 [Production Upgrade Roadmap]({{ '/roadmap/' | relative_url }}). The roadmap
-describes planned `eval` table workflows and task-specific `manual` dashboards
-for reviewed `fix`, `scaffold`, and `gapfill` decisions.
+describes planned table workflows and task-specific `manual` dashboards for
+reviewed `fix`, `scaffold`, and `gapfill` decisions. `chromo eval fix` is now
+available; scaffold and gapfill eval modes remain planned.
 
 ## Development Checks
 

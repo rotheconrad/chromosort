@@ -2,12 +2,13 @@
 
 Reference-guided genome assembly utilities for sorting contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot review, plotting alignments, scaffolding final ordered contigs, and applying reviewed graph-supported gap fills.
 
-ChromoSort provides one command, `chromo`, with eight subcommands:
+ChromoSort provides one command, `chromo`, with nine subcommands:
 
 | Command | Purpose |
 | --- | --- |
 | `chromo sort` | Assign contigs to the best-supported reference sequence from MUMmer coords or minimap2 PAF, merge alignment evidence, filter contained or low-value duplicate overlaps, protect likely split candidates, and write a reference-ordered FASTA with TSV decision reports ([sort docs](https://rotheconrad.github.io/chromosort/commands/sort/)). |
 | `chromo clean` | Apply sort-style filtering to raw contigs, conservatively fix retained contigs, orient/order the emitted records, and write a cleaned FASTA plus audit reports for mostly-correct assemblies ([clean docs](https://rotheconrad.github.io/chromosort/commands/clean/)). |
+| `chromo eval` | Prepare editable TSV review tables for algorithm-assisted, human-reviewed decisions, starting with `chromo eval fix` tables that can feed `chromo fix --reviewed-plan` ([eval docs](https://rotheconrad.github.io/chromosort/commands/eval/)). |
 | `chromo fix` | Split chimeric or structurally inconsistent contigs into reference-labeled pieces by scanning query-ordered alignment blocks, smoothing ordinary gaps, selecting eligible reference/orientation transitions, and writing a fixed full-assembly FASTA plus an audit report ([fix docs](https://rotheconrad.github.io/chromosort/commands/fix/)). |
 | `chromo cut` | Apply exact reviewed breakpoint edits when you already know the cut positions, replacing each requested contig with numbered pieces while copying uncut contigs unchanged and recording every emitted slice ([cut docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
 | `chromo manual` | Build a self-contained browser dashboard for dot-plot curation, contig removal/restoration, reordering, inversion, breakpoint staging, optional GFA neighborhood review, FASTA export, and reproducible recipe application ([manual docs](https://rotheconrad.github.io/chromosort/commands/manual/), [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/)). |
@@ -120,7 +121,7 @@ pixi run test
 
 ## Current Status
 
-Current version: `0.2.25`. Operational commands are `sort`, `clean`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the planned `eval` and task-specific `manual` review-mode upgrade.
+Current version: `0.2.25`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the planned task-specific `manual` review-mode upgrade.
 
 ## Citation
 

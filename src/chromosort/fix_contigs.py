@@ -25,6 +25,7 @@ from .reference_order import (
     reverse_complement,
     write_wrapped,
 )
+from .review import accepted_events, parse_accept, read_review_events
 
 
 @dataclass
@@ -113,7 +114,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         required=True,
         help="Assembly FASTA containing the contigs to fix.",
     )
-    alignment_group = ap.add_mutually_exclusive_group(required=True)
+    alignment_group = ap.add_mutually_exclusive_group(required=False)
     alignment_group.add_argument(
         "-c",
         "--coords",
@@ -133,6 +134,15 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--contigs-file",
         default=None,
         help="Optional text file with one contig name per line.",
+    )
+    ap.add_argument(
+        "--reviewed-plan",
+        default=None,
+        help=(
+            "Optional reviewed fix table from chromo eval fix. When provided, "
+            "accepted split_piece rows are applied directly and --coords/--paf "
+            "plus --contigs/--all are not required."
+        ),
     )
     ap.add_argument(
         "--all",
@@ -1211,6 +1221,144 @@ def write_report(path, requested, plans):
                 out.write("\t".join(str(item) for item in row) + "\n")
 
 
+def reviewed_field(event, field, required=True, default=None):
+    value = event.fields.get(field, default)
+    if value in {None, "", "."}:
+        if required:
+            raise ValueError(f"Review event {event.event_id!r} is missing {field}.")
+        return default
+    return value
+
+
+def reviewed_int(event, field, required=True, default=None):
+    value = reviewed_field(event, field, required=required, default=default)
+    if value in {None, "", "."}:
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"Review event {event.event_id!r} has invalid integer {field}: {value!r}."
+        ) from exc
+
+
+def reviewed_float(event, field, required=True, default=None):
+    value = reviewed_field(event, field, required=required, default=default)
+    if value in {None, "", "."}:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"Review event {event.event_id!r} has invalid number {field}: {value!r}."
+        ) from exc
+
+
+def reviewed_bool(event, field, required=True, default=None):
+    value = reviewed_field(event, field, required=required, default=default)
+    if value in {None, "", "."}:
+        return default
+    return parse_accept(value)
+
+
+def source_contig_for_event(event):
+    return reviewed_field(event, "source_contig", required=False, default=event.target)
+
+
+def split_piece_from_review_event(event, seq_len, args):
+    source_contig = source_contig_for_event(event)
+    new_name = reviewed_field(event, "new_contig")
+    part_index = reviewed_int(event, "part_index", required=False, default=1)
+    ref = reviewed_field(event, "dominant_ref", required=False, default=".")
+    slice_start_1 = reviewed_int(event, "slice_start")
+    slice_end = reviewed_int(event, "slice_end")
+    if slice_start_1 < 1 or slice_end < slice_start_1 or slice_end > seq_len:
+        raise ValueError(
+            f"Review event {event.event_id!r} has invalid slice "
+            f"{slice_start_1}-{slice_end} for contig length {seq_len}."
+        )
+
+    align_start_1 = reviewed_int(event, "alignment_query_start", required=False, default=slice_start_1)
+    align_end = reviewed_int(event, "alignment_query_end", required=False, default=slice_end)
+    orientation = reviewed_field(event, "orientation", required=False, default="+")
+    if orientation not in {"+", "-"}:
+        raise ValueError(
+            f"Review event {event.event_id!r} has invalid orientation: {orientation!r}."
+        )
+    reverse_piece = reviewed_bool(
+        event,
+        "reverse_complemented",
+        required=False,
+        default=(args.orient_to_reference and orientation == "-"),
+    )
+    avg_identity = reviewed_float(event, "avg_identity", required=False, default=0.0)
+    segment_count = reviewed_int(event, "segment_count", required=False, default=0)
+    return SplitPiece(
+        original_contig=source_contig,
+        new_name=new_name,
+        part_index=part_index,
+        ref=ref,
+        ref_start=0,
+        ref_end=0,
+        slice_start=slice_start_1 - 1,
+        slice_end=slice_end,
+        align_start=max(0, align_start_1 - 1),
+        align_end=align_end,
+        orientation=orientation,
+        avg_identity=avg_identity,
+        segment_count=segment_count,
+        reverse_complemented=bool(reverse_piece),
+    )
+
+
+def build_reviewed_plans(fasta_path, reviewed_plan, args):
+    events = read_review_events(reviewed_plan, expected_task="fix")
+    accepted = accepted_events(events)
+    grouped = defaultdict(list)
+    for event in accepted:
+        if event.action == "no_split":
+            continue
+        if event.action != "split_piece":
+            raise ValueError(
+                f"Review event {event.event_id!r} has unsupported fix action "
+                f"{event.action!r}."
+            )
+        grouped[source_contig_for_event(event)].append(event)
+
+    seq_lengths = {name: len(seq) for name, _, seq in iter_fasta_records(fasta_path)}
+    plans = {}
+    used_names = set()
+    requested = []
+    for contig, contig_events in grouped.items():
+        if contig not in seq_lengths:
+            raise ValueError(f"Reviewed fix source contig {contig!r} was not found in FASTA.")
+        requested.append(contig)
+        pieces = [
+            split_piece_from_review_event(event, seq_lengths[contig], args)
+            for event in contig_events
+        ]
+        pieces.sort(key=lambda piece: (piece.part_index, piece.slice_start, piece.slice_end))
+        for piece in pieces:
+            if piece.new_name in used_names:
+                raise ValueError(f"Reviewed fix output name is duplicated: {piece.new_name!r}.")
+            used_names.add(piece.new_name)
+        plans[contig] = ContigPlan(
+            contig=contig,
+            status="split",
+            pieces=pieces,
+            reason=f"Reviewed fix plan accepted {len(pieces)} split_piece row(s).",
+            planner_breakpoints=max(0, len(pieces) - 1),
+            planner_ref_transition=len({piece.ref for piece in pieces}) > 1,
+        )
+
+    unchanged = set(seq_lengths) - set(plans)
+    collisions = used_names & unchanged
+    if collisions:
+        preview = ", ".join(sorted(collisions)[:5])
+        raise ValueError(f"Reviewed fix output name collides with unchanged FASTA record(s): {preview}.")
+    return requested, plans
+
+
 def default_graph_report_path(report_path):
     return Path(report_path).with_suffix(".graph.tsv")
 
@@ -1312,12 +1460,20 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     if args.graph_guard and not args.gfa:
         sys.stderr.write("ERROR: --graph-guard requires --gfa\n")
         sys.exit(2)
-    alignment_path, alignment_format = alignment_source_from_args(args)
     explicit_requested = read_requested_contigs(args.contigs, args.contigs_file)
     if args.all_contigs and explicit_requested:
         sys.stderr.write("ERROR: use either --all or --contigs/--contigs-file, not both\n")
         sys.exit(2)
-    if not explicit_requested and not args.all_contigs:
+    if args.reviewed_plan and (args.coords or args.paf):
+        sys.stderr.write("ERROR: use either --reviewed-plan or --coords/--paf, not both\n")
+        sys.exit(2)
+    if args.reviewed_plan and (explicit_requested or args.all_contigs):
+        sys.stderr.write("ERROR: --reviewed-plan determines target contigs; omit --contigs/--contigs-file/--all\n")
+        sys.exit(2)
+    if not args.reviewed_plan and not (args.coords or args.paf):
+        sys.stderr.write("ERROR: provide --coords/--paf or use --reviewed-plan\n")
+        sys.exit(2)
+    if not args.reviewed_plan and not explicit_requested and not args.all_contigs:
         sys.stderr.write("ERROR: provide at least one contig via --contigs/--contigs-file or use --all\n")
         sys.exit(2)
 
@@ -1334,29 +1490,37 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         output_paths.append(graph_report_path)
     ensure_output_dirs(output_paths)
 
-    collect_for = None if args.all_contigs else explicit_requested
-    blocks_by_contig = collect_blocks(
-        alignment_path,
-        alignment_format,
-        collect_for,
-        args.min_segment_bp,
-        args.min_segment_idy,
-        args.max_merge_gap,
-        min_mapq=args.min_mapq,
-        include_secondary_paf=args.include_secondary_paf,
-    )
-    requested = (
-        all_requested_contigs(args.assembly_fasta, blocks_by_contig, args)
-        if args.all_contigs
-        else explicit_requested
-    )
-    plans = build_plans(
-        args.assembly_fasta,
-        requested,
-        blocks_by_contig,
-        args,
-    )
-    apply_breakpoint_guard(plans, args)
+    if args.reviewed_plan:
+        try:
+            requested, plans = build_reviewed_plans(args.assembly_fasta, args.reviewed_plan, args)
+        except ValueError as exc:
+            sys.stderr.write(f"ERROR: {exc}\n")
+            sys.exit(2)
+    else:
+        alignment_path, alignment_format = alignment_source_from_args(args)
+        collect_for = None if args.all_contigs else explicit_requested
+        blocks_by_contig = collect_blocks(
+            alignment_path,
+            alignment_format,
+            collect_for,
+            args.min_segment_bp,
+            args.min_segment_idy,
+            args.max_merge_gap,
+            min_mapq=args.min_mapq,
+            include_secondary_paf=args.include_secondary_paf,
+        )
+        requested = (
+            all_requested_contigs(args.assembly_fasta, blocks_by_contig, args)
+            if args.all_contigs
+            else explicit_requested
+        )
+        plans = build_plans(
+            args.assembly_fasta,
+            requested,
+            blocks_by_contig,
+            args,
+        )
+        apply_breakpoint_guard(plans, args)
     write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args)
     write_report(args.report, requested, plans)
     if args.gfa:
