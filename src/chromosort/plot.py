@@ -7,6 +7,7 @@ import html
 import math
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Sequence
 
@@ -24,6 +25,13 @@ GRID_COLOR = "#d1d5db"
 TEXT_COLOR = "#111827"
 MUTED_TEXT = "#6b7280"
 BACKGROUND = "#ffffff"
+
+
+@dataclass(frozen=True)
+class AxisRecord:
+    name: str
+    length: int
+    axis_start: int = 1
 
 
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -223,13 +231,19 @@ def read_assignment_order(path, query_by_name, ref_records):
     return [item[-1] for item in sorted(ordered)]
 
 
-def segment_coords(seg, x_offsets, y_offsets):
+def axis_starts_for_records(records):
+    return {rec.name: getattr(rec, "axis_start", 1) for rec in records}
+
+
+def segment_coords(seg, x_offsets, y_offsets, x_starts=None, y_starts=None):
     x_offset = x_offsets[seg.ref]
     y_offset = y_offsets[seg.query]
-    r0 = x_offset + min(seg.ref_start, seg.ref_end) - 1
-    r1 = x_offset + max(seg.ref_start, seg.ref_end)
-    q0 = y_offset + min(seg.query_start, seg.query_end) - 1
-    q1 = y_offset + max(seg.query_start, seg.query_end)
+    x_start = (x_starts or {}).get(seg.ref, 1)
+    y_start = (y_starts or {}).get(seg.query, 1)
+    r0 = x_offset + min(seg.ref_start, seg.ref_end) - x_start
+    r1 = x_offset + max(seg.ref_start, seg.ref_end) - x_start + 1
+    q0 = y_offset + min(seg.query_start, seg.query_end) - y_start
+    q1 = y_offset + max(seg.query_start, seg.query_end) - y_start + 1
     if seg.orientation == "-":
         return r0, q1, r1, q0
     return r0, q0, r1, q1
@@ -345,6 +359,8 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
 
     ref_offsets, ref_total = offsets_for_records(ref_records)
     query_offsets, query_total = offsets_for_records(query_records)
+    ref_starts = axis_starts_for_records(ref_records)
+    query_starts = axis_starts_for_records(query_records)
 
     elements = [
         make_rect(0, 0, width, height, BACKGROUND),
@@ -363,7 +379,13 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
     draw_separators(elements, query_records, query_offsets, query_total, origin, size, False)
 
     for seg in segments:
-        r0, q0, r1, q1 = segment_coords(seg, ref_offsets, query_offsets)
+        r0, q0, r1, q1 = segment_coords(
+            seg,
+            ref_offsets,
+            query_offsets,
+            ref_starts,
+            query_starts,
+        )
         x1 = scale(r0, ref_total, origin[0], plot_width)
         x2 = scale(r1, ref_total, origin[0], plot_width)
         y1 = scale(q0, query_total, origin[1], plot_height)
@@ -565,23 +587,47 @@ def draw_plot(path, title, ref_records, query_records, segments, width, height, 
         raise ValueError(f"Unsupported plot format: {output_format}")
 
 
-def per_ref_query_records(ref_name, segments, query_records, query_by_name, order):
+def per_ref_query_records(ref_name, segments, query_records, order):
     hits = [seg for seg in segments if seg.ref == ref_name]
     if not hits:
         return []
-    hit_names = {seg.query for seg in hits}
-    if order == "fasta":
-        return [rec for rec in query_records if rec.name in hit_names]
 
-    first_ref_pos = defaultdict(lambda: float("inf"))
+    query_names_to_plot = {rec.name for rec in query_records}
+    hits = [seg for seg in hits if seg.query in query_names_to_plot]
+    if not hits:
+        return []
+
+    span_bounds = {}
     for seg in hits:
-        first_ref_pos[seg.query] = min(
-            first_ref_pos[seg.query],
-            min(seg.ref_start, seg.ref_end),
+        start = min(seg.query_start, seg.query_end)
+        end = max(seg.query_start, seg.query_end)
+        if seg.query not in span_bounds:
+            span_bounds[seg.query] = [start, end]
+        else:
+            span_bounds[seg.query][0] = min(span_bounds[seg.query][0], start)
+            span_bounds[seg.query][1] = max(span_bounds[seg.query][1], end)
+
+    if order == "fasta":
+        ordered_names = [rec.name for rec in query_records if rec.name in span_bounds]
+    else:
+        first_ref_pos = defaultdict(lambda: float("inf"))
+        for seg in hits:
+            first_ref_pos[seg.query] = min(
+                first_ref_pos[seg.query],
+                min(seg.ref_start, seg.ref_end),
+            )
+        ordered_names = sorted(
+            span_bounds,
+            key=lambda name: (first_ref_pos[name], name),
         )
+
     return [
-        query_by_name[name]
-        for name in sorted(hit_names, key=lambda name: (first_ref_pos[name], name))
+        AxisRecord(
+            name=name,
+            length=span_bounds[name][1] - span_bounds[name][0] + 1,
+            axis_start=span_bounds[name][0],
+        )
+        for name in ordered_names
     ]
 
 
@@ -626,9 +672,14 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
                 ref_rec.name,
                 segments,
                 query_records,
-                query_by_name,
                 args.per_ref_query_order,
             )
+            if not query_subset:
+                continue
+            query_subset_names = {rec.name for rec in query_subset}
+            ref_segments = [seg for seg in ref_segments if seg.query in query_subset_names]
+            if not ref_segments:
+                continue
             for output_format in args.formats:
                 ref_plot = Path(f"{prefix}.{safe_name(ref_rec.name)}.{output_format}")
                 draw_plot(

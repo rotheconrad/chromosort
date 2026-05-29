@@ -104,6 +104,18 @@ class PlotTests(unittest.TestCase):
             self.assertTrue(Path(f"{prefix}.chr1.svg").exists())
             self.assertTrue(Path(f"{prefix}.chr2.png").exists())
 
+    def test_per_ref_plot_crops_query_axis_to_current_reference_hits(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = run_plot(
+                Path(tmp),
+                "--paf",
+                str(DATA / "sample.paf"),
+                formats=["svg"],
+            )
+            svg = Path(f"{prefix}.chr2.svg").read_text()
+            self.assertIn("2 alignments | x: reference (100 bp) | y: query (90 bp)", svg)
+            self.assertNotIn("y: query (160 bp)", svg)
+
     def test_plot_can_use_assignment_order_without_realignment(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

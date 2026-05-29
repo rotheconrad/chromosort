@@ -56,6 +56,11 @@ order from the same alignment file that powered the sort. It is not equivalent
 to plotting the `ordered.fa` output; align `ordered.fa` separately if you want
 the plot to reflect the edited FASTA records.
 
+Per-reference plots keep the x-axis on the full selected reference sequence,
+but crop each query row to the query coordinate span covered by alignments to
+that selected reference. This keeps multi-reference contigs from adding
+unrelated vertical whitespace to each `--per-ref` panel.
+
 ## `chromo plot` Outputs
 
 | Output | Description |
