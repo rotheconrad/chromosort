@@ -22,6 +22,8 @@ from .reference_order import (
 PLUS_COLOR = "#2563eb"
 MINUS_COLOR = "#dc2626"
 GRID_COLOR = "#d1d5db"
+TICK_GRID_COLOR = "#e5e7eb"
+AXIS_COLOR = "#374151"
 TEXT_COLOR = "#111827"
 MUTED_TEXT = "#6b7280"
 BACKGROUND = "#ffffff"
@@ -32,6 +34,7 @@ class AxisRecord:
     name: str
     length: int
     axis_start: int = 1
+    axis_intervals: tuple = ()
 
 
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -198,6 +201,16 @@ def offsets_for_records(records):
     return offsets, cursor
 
 
+def merge_intervals(intervals):
+    merged = []
+    for start, end in sorted(intervals):
+        if not merged or start > merged[-1][1] + 1:
+            merged.append([start, end])
+        else:
+            merged[-1][1] = max(merged[-1][1], end)
+    return tuple((start, end) for start, end in merged)
+
+
 def read_assignment_order(path, query_by_name, ref_records):
     ref_rank = {rec.name: idx for idx, rec in enumerate(ref_records)}
     ordered = []
@@ -231,19 +244,37 @@ def read_assignment_order(path, query_by_name, ref_records):
     return [item[-1] for item in sorted(ordered)]
 
 
-def axis_starts_for_records(records):
-    return {rec.name: getattr(rec, "axis_start", 1) for rec in records}
+def axis_intervals_for_records(records):
+    intervals = {}
+    for rec in records:
+        rec_intervals = getattr(rec, "axis_intervals", ())
+        if rec_intervals:
+            intervals[rec.name] = rec_intervals
+        else:
+            start = getattr(rec, "axis_start", 1)
+            intervals[rec.name] = ((start, start + rec.length - 1),)
+    return intervals
 
 
-def segment_coords(seg, x_offsets, y_offsets, x_starts=None, y_starts=None):
+def axis_offset(position, intervals, is_end=False):
+    cursor = 0
+    for start, end in intervals:
+        if start <= position <= end:
+            offset = cursor + position - start
+            return offset + 1 if is_end else offset
+        cursor += end - start + 1
+    return cursor
+
+
+def segment_coords(seg, x_offsets, y_offsets, x_intervals=None, y_intervals=None):
     x_offset = x_offsets[seg.ref]
     y_offset = y_offsets[seg.query]
-    x_start = (x_starts or {}).get(seg.ref, 1)
-    y_start = (y_starts or {}).get(seg.query, 1)
-    r0 = x_offset + min(seg.ref_start, seg.ref_end) - x_start
-    r1 = x_offset + max(seg.ref_start, seg.ref_end) - x_start + 1
-    q0 = y_offset + min(seg.query_start, seg.query_end) - y_start
-    q1 = y_offset + max(seg.query_start, seg.query_end) - y_start + 1
+    x_axis_intervals = (x_intervals or {}).get(seg.ref, ((1, seg.ref_length),))
+    y_axis_intervals = (y_intervals or {}).get(seg.query, ((1, seg.query_length),))
+    r0 = x_offset + axis_offset(min(seg.ref_start, seg.ref_end), x_axis_intervals)
+    r1 = x_offset + axis_offset(max(seg.ref_start, seg.ref_end), x_axis_intervals, is_end=True)
+    q0 = y_offset + axis_offset(min(seg.query_start, seg.query_end), y_axis_intervals)
+    q1 = y_offset + axis_offset(max(seg.query_start, seg.query_end), y_axis_intervals, is_end=True)
     if seg.orientation == "-":
         return r0, q1, r1, q0
     return r0, q0, r1, q1
@@ -263,6 +294,50 @@ def fmt_bp(value):
     if value >= 1_000:
         return f"{value / 1_000:.1f} kb"
     return f"{value} bp"
+
+
+def axis_unit(total):
+    if total >= 1_000_000_000:
+        return 1_000_000_000, "Gb"
+    if total >= 1_000_000:
+        return 1_000_000, "Mb"
+    if total >= 1_000:
+        return 1_000, "kb"
+    return 1, "bp"
+
+
+def nice_tick_step(total, target_ticks=6):
+    if total <= 0:
+        return 1
+    rough = total / max(1, target_ticks)
+    exponent = math.floor(math.log10(rough)) if rough > 0 else 0
+    base = 10**exponent
+    for multiplier in (1, 2, 5, 10):
+        step = multiplier * base
+        if rough <= step:
+            return max(1, int(step))
+    return max(1, int(10 * base))
+
+
+def tick_values(total, target_ticks=6):
+    if total <= 0:
+        return [0]
+    step = nice_tick_step(total, target_ticks)
+    values = list(range(0, total + 1, step))
+    if not values or values[0] != 0:
+        values.insert(0, 0)
+    return values
+
+
+def fmt_tick(value, unit_scale):
+    if unit_scale == 1:
+        return str(int(value))
+    scaled = value / unit_scale
+    if abs(scaled - round(scaled)) < 0.01:
+        return str(int(round(scaled)))
+    if scaled >= 10:
+        return f"{scaled:.1f}".rstrip("0").rstrip(".")
+    return f"{scaled:.2f}".rstrip("0").rstrip(".")
 
 
 def make_text(x, y, value, size=12, anchor="start", rotate=None, fill=TEXT_COLOR):
@@ -333,23 +408,41 @@ def svg_rect(item):
     )
 
 
+def draw_axis_ticks(elements, total, origin, size, is_x_axis):
+    unit_scale, _unit = axis_unit(total)
+    for value in tick_values(total):
+        pos = scale(value, total, origin[0 if is_x_axis else 1], size[0 if is_x_axis else 1])
+        label = fmt_tick(value, unit_scale)
+        if is_x_axis:
+            elements.append(make_line(pos, origin[1], pos, origin[1] + size[1], TICK_GRID_COLOR, 0.6, 0.45))
+            elements.append(make_line(pos, origin[1] + size[1], pos, origin[1] + size[1] + 6, AXIS_COLOR, 0.8))
+            elements.append(make_text(pos, origin[1] + size[1] + 20, label, size=10, anchor="middle", fill=MUTED_TEXT))
+        else:
+            elements.append(make_line(origin[0], pos, origin[0] + size[0], pos, TICK_GRID_COLOR, 0.6, 0.45))
+            elements.append(make_line(origin[0] + size[0], pos, origin[0] + size[0] + 6, pos, AXIS_COLOR, 0.8))
+            elements.append(make_text(origin[0] + size[0] + 10, pos + 3, label, size=10, fill=MUTED_TEXT))
+
+
 def draw_separators(elements, records, offsets, total, origin, size, is_x_axis, max_labels=60):
     label_every = max(1, len(records) // max_labels) if records else 1
     for idx, rec in enumerate(records):
         pos = scale(offsets[rec.name], total, origin[0 if is_x_axis else 1], size[0 if is_x_axis else 1])
+        axis_size = size[0 if is_x_axis else 1]
+        span_px = (rec.length / total) * axis_size if total > 0 else axis_size
+        should_label = idx % label_every == 0 and (span_px >= 14 or len(records) <= 2)
         if is_x_axis:
             elements.append(make_line(pos, origin[1], pos, origin[1] + size[1], GRID_COLOR, 0.8, 0.65))
-            if idx % label_every == 0:
+            if should_label:
                 elements.append(make_text(pos + 3, origin[1] - 8, rec.name, size=10, rotate=-35, fill=MUTED_TEXT))
         else:
             elements.append(make_line(origin[0], pos, origin[0] + size[0], pos, GRID_COLOR, 0.8, 0.65))
-            if idx % label_every == 0:
+            if should_label:
                 elements.append(make_text(origin[0] - 8, pos + 3, rec.name, size=10, anchor="end", fill=MUTED_TEXT))
 
 
 def build_plot_items(title, ref_records, query_records, segments, width, height):
     margin_left = 130
-    margin_right = 40
+    margin_right = 88
     margin_top = 92
     margin_bottom = 92
     plot_width = max(100, width - margin_left - margin_right)
@@ -359,8 +452,10 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
 
     ref_offsets, ref_total = offsets_for_records(ref_records)
     query_offsets, query_total = offsets_for_records(query_records)
-    ref_starts = axis_starts_for_records(ref_records)
-    query_starts = axis_starts_for_records(query_records)
+    ref_intervals = axis_intervals_for_records(ref_records)
+    query_intervals = axis_intervals_for_records(query_records)
+    ref_unit = axis_unit(ref_total)[1]
+    query_unit = axis_unit(query_total)[1]
 
     elements = [
         make_rect(0, 0, width, height, BACKGROUND),
@@ -375,6 +470,8 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
         make_rect(origin[0], origin[1], plot_width, plot_height, "#f9fafb", stroke="#9ca3af"),
     ]
 
+    draw_axis_ticks(elements, ref_total, origin, size, True)
+    draw_axis_ticks(elements, query_total, origin, size, False)
     draw_separators(elements, ref_records, ref_offsets, ref_total, origin, size, True)
     draw_separators(elements, query_records, query_offsets, query_total, origin, size, False)
 
@@ -383,8 +480,8 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
             seg,
             ref_offsets,
             query_offsets,
-            ref_starts,
-            query_starts,
+            ref_intervals,
+            query_intervals,
         )
         x1 = scale(r0, ref_total, origin[0], plot_width)
         x2 = scale(r1, ref_total, origin[0], plot_width)
@@ -395,10 +492,11 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
 
     elements.extend(
         [
-            make_line(origin[0], origin[1] + plot_height, origin[0] + plot_width, origin[1] + plot_height, "#374151", 1.2),
-            make_line(origin[0], origin[1], origin[0], origin[1] + plot_height, "#374151", 1.2),
-            make_text(origin[0] + plot_width / 2, height - 24, "Reference position", size=13, anchor="middle"),
-            make_text(22, origin[1] + plot_height / 2, "Query position", size=13, anchor="middle", rotate=-90),
+            make_line(origin[0], origin[1] + plot_height, origin[0] + plot_width, origin[1] + plot_height, AXIS_COLOR, 1.2),
+            make_line(origin[0], origin[1], origin[0], origin[1] + plot_height, AXIS_COLOR, 1.2),
+            make_line(origin[0] + plot_width, origin[1], origin[0] + plot_width, origin[1] + plot_height, AXIS_COLOR, 1.0),
+            make_text(origin[0] + plot_width / 2, height - 24, f"Reference position ({ref_unit})", size=13, anchor="middle"),
+            make_text(22, origin[1] + plot_height / 2, f"Query position ({query_unit})", size=13, anchor="middle", rotate=-90),
             make_line(width - 210, 30, width - 170, 30, PLUS_COLOR, width=2.0),
             make_text(width - 160, 34, "forward", size=12),
             make_line(width - 210, 50, width - 170, 50, MINUS_COLOR, width=2.0),
@@ -597,18 +695,19 @@ def per_ref_query_records(ref_name, segments, query_records, order):
     if not hits:
         return []
 
-    span_bounds = {}
+    spans_by_query = defaultdict(list)
     for seg in hits:
         start = min(seg.query_start, seg.query_end)
         end = max(seg.query_start, seg.query_end)
-        if seg.query not in span_bounds:
-            span_bounds[seg.query] = [start, end]
-        else:
-            span_bounds[seg.query][0] = min(span_bounds[seg.query][0], start)
-            span_bounds[seg.query][1] = max(span_bounds[seg.query][1], end)
+        spans_by_query[seg.query].append((start, end))
+
+    query_intervals = {
+        query: merge_intervals(spans)
+        for query, spans in spans_by_query.items()
+    }
 
     if order == "fasta":
-        ordered_names = [rec.name for rec in query_records if rec.name in span_bounds]
+        ordered_names = [rec.name for rec in query_records if rec.name in query_intervals]
     else:
         first_ref_pos = defaultdict(lambda: float("inf"))
         for seg in hits:
@@ -617,15 +716,16 @@ def per_ref_query_records(ref_name, segments, query_records, order):
                 min(seg.ref_start, seg.ref_end),
             )
         ordered_names = sorted(
-            span_bounds,
+            query_intervals,
             key=lambda name: (first_ref_pos[name], name),
         )
 
     return [
         AxisRecord(
             name=name,
-            length=span_bounds[name][1] - span_bounds[name][0] + 1,
-            axis_start=span_bounds[name][0],
+            length=sum(end - start + 1 for start, end in query_intervals[name]),
+            axis_start=query_intervals[name][0][0],
+            axis_intervals=query_intervals[name],
         )
         for name in ordered_names
     ]

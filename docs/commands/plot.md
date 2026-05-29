@@ -57,9 +57,11 @@ to plotting the `ordered.fa` output; align `ordered.fa` separately if you want
 the plot to reflect the edited FASTA records.
 
 Per-reference plots keep the x-axis on the full selected reference sequence,
-but crop each query row to the query coordinate span covered by alignments to
-that selected reference. This keeps multi-reference contigs from adding
-unrelated vertical whitespace to each `--per-ref` panel.
+but compact each query row to the merged query coordinate spans covered by
+alignments to that selected reference. This keeps multi-reference contigs and
+large unaligned query gaps from adding unrelated vertical whitespace to each
+`--per-ref` panel. Axis tick units scale with the plotted length, using bp, kb,
+Mb, or Gb as appropriate for the current panel.
 
 ## `chromo plot` Outputs
 
