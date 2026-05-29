@@ -132,16 +132,15 @@ The shared evidence layer should summarize:
 
 ## Implementation Phases
 
-1. Add shared long-read evidence parsing and summary helpers.
-2. Add the shared review-event data model and TSV serialization.
-3. Implement `chromo eval fix` and `chromo fix` reviewed-table application.
-4. Implement `chromo eval scaffold` and `chromo scaffold` reviewed-table
-   application.
-5. Align `chromo eval gapfill` with current gapfill plan semantics and add any
-   missing reviewed-table compatibility.
-6. Refactor `chromo manual` into task-specific modes over the same review-event
-   model.
-7. Expand docs and tests around mixed algorithmic-plus-reviewed workflows.
+| Phase | Status | Notes |
+| --- | --- | --- |
+| 1. Add shared long-read evidence parsing and summary helpers. | Done | Added PAF-backed long-read evidence helpers for breakpoint support, contig-end bridges, and read-depth summaries. |
+| 2. Add the shared review-event data model and TSV serialization. | Planned |  |
+| 3. Implement `chromo eval fix` and `chromo fix` reviewed-table application. | Planned |  |
+| 4. Implement `chromo eval scaffold` and `chromo scaffold` reviewed-table application. | Planned |  |
+| 5. Align `chromo eval gapfill` with current gapfill plan semantics and add any missing reviewed-table compatibility. | Planned |  |
+| 6. Refactor `chromo manual` into task-specific modes over the same review-event model. | Planned |  |
+| 7. Expand docs and tests around mixed algorithmic-plus-reviewed workflows. | Planned |  |
 
 ## Guardrails
 
