@@ -507,6 +507,9 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
     plot_height = max(100, height - margin_top - margin_bottom)
     origin = (margin_left, margin_top)
     size = (plot_width, plot_height)
+    right_axis_x = origin[0] + plot_width
+    bottom_axis_y = origin[1] + plot_height
+    axis_label_gap = height - 30 - bottom_axis_y
 
     ref_offsets, ref_total = offsets_for_records(ref_records)
     query_offsets, query_total = offsets_for_records(query_records)
@@ -550,11 +553,11 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
 
     elements.extend(
         [
-            make_line(origin[0], origin[1] + plot_height, origin[0] + plot_width, origin[1] + plot_height, AXIS_COLOR, 1.2),
+            make_line(origin[0], bottom_axis_y, right_axis_x, bottom_axis_y, AXIS_COLOR, 1.2),
             make_line(origin[0], origin[1], origin[0], origin[1] + plot_height, AXIS_COLOR, 1.2),
-            make_line(origin[0] + plot_width, origin[1], origin[0] + plot_width, origin[1] + plot_height, AXIS_COLOR, 1.0),
-            make_text(origin[0] + plot_width / 2, height - 30, f"Reference Position ({ref_unit})", size=AXIS_LABEL_SIZE, anchor="middle"),
-            make_text(width - 58, origin[1] + plot_height / 2, f"Query Position ({query_unit})", size=AXIS_LABEL_SIZE, anchor="middle", rotate=90, baseline="middle"),
+            make_line(right_axis_x, origin[1], right_axis_x, bottom_axis_y, AXIS_COLOR, 1.0),
+            make_text(origin[0] + plot_width / 2, bottom_axis_y + axis_label_gap, f"Reference Position ({ref_unit})", size=AXIS_LABEL_SIZE, anchor="middle"),
+            make_text(right_axis_x + axis_label_gap, origin[1] + plot_height / 2, f"Query Position ({query_unit})", size=AXIS_LABEL_SIZE, anchor="middle", rotate=90, baseline="middle"),
             make_line(width - 280, 35, width - 230, 35, PLUS_COLOR, width=2.4),
             make_text(width - 218, 40, "forward", size=LEGEND_LABEL_SIZE),
             make_line(width - 280, 60, width - 230, 60, MINUS_COLOR, width=2.4),

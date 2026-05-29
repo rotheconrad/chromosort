@@ -92,6 +92,27 @@ class PlotTests(unittest.TestCase):
             self.assertIn("forward", text)
             self.assertIn("reverse", text)
 
+    def test_query_axis_title_uses_same_gap_as_reference_axis_title(self):
+        sys.path.insert(0, str(ROOT / "src"))
+        from chromosort.plot import build_plot_items
+        from chromosort.reference_order import FastaIndexRecord
+
+        records = [FastaIndexRecord("chr1", 200, 0, 0, 0)]
+        elements = build_plot_items("test", records, records, [], 900, 700)
+        plot_rect = next(
+            item for item in elements if item["type"] == "rect" and item["fill"] == "#f9fafb"
+        )
+        reference_label = next(
+            item for item in elements if item["type"] == "text" and item["value"].startswith("Reference Position")
+        )
+        query_label = next(
+            item for item in elements if item["type"] == "text" and item["value"].startswith("Query Position")
+        )
+        bottom_gap = reference_label["y"] - (plot_rect["y"] + plot_rect["height"])
+        right_gap = query_label["x"] - (plot_rect["x"] + plot_rect["width"])
+
+        self.assertAlmostEqual(right_gap, bottom_gap)
+
     def test_paf_plot_writes_per_reference_svgs(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = run_plot(
