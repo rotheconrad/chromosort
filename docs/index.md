@@ -22,6 +22,7 @@ before they are used as inputs to another alignment-dependent command.
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
+- [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
 
 ## Commands
 
@@ -39,6 +40,7 @@ before they are used as inputs to another alignment-dependent command.
 
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
 - [Architecture](https://rotheconrad.github.io/chromosort/architecture/)
+- [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
 - [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/)
 
 ## Project Information

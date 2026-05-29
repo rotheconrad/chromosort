@@ -5,7 +5,7 @@ description: Current ChromoSort command status and version history.
 
 # Current Status and Roadmap
 
-ChromoSort is under active development. Current version: `0.2.24`.
+ChromoSort is under active development. Current version: `0.2.25`.
 
 ## What Works Now
 
@@ -24,6 +24,13 @@ the visual patterns those tools show.
 
 The repository includes synthetic tests and fixtures under `tests/`, including small FASTA, MUMmer coords, minimap2 PAF, GFA, GAF, and Hi-C-like files for graph-aware workflows.
 
+## Production Upgrade Roadmap
+
+The next planned production upgrade is captured in the
+[Production Upgrade Roadmap]({{ '/roadmap/' | relative_url }}). The roadmap
+describes planned `eval` table workflows and task-specific `manual` dashboards
+for reviewed `fix`, `scaffold`, and `gapfill` decisions.
+
 ## Development Checks
 
 ```bash
@@ -37,6 +44,7 @@ pixi run test
 | Version | Notes |
 | --- | --- |
 | Unreleased | No changes yet. |
+| `0.2.25` | Synchronized package, citation, Pixi, conda recipe, README, and docs version metadata; added the production-upgrade roadmap for paired `eval` table workflows and task-specific `manual` dashboards feeding reviewed `fix`, `scaffold`, and `gapfill` execution paths. |
 | `0.2.24` | Added `chromo clean`, a conservative cleanup command for mostly-correct assemblies that combines sort-style filtering with fix-style conservative splitting on retained raw contigs, then writes `<prefix>.clean.fa` plus initial-sort, fix, clean, and run-summary reports. Clarified README, command docs, and workflows around when FASTA-changing steps require fresh MUMmer or minimap2 alignments before downstream steps or final plots. |
 | `0.2.23` | Renamed the graph gap-filling command from `chromo fill` to `chromo gapfill`, moved the package entry point to `chromosort.gapfill`, replaced the package script with `chromosort-gapfill`, and updated gapfill output names to `<prefix>.gapfill_plan.tsv` and `<prefix>.gapfilled.fa`. |
 | `0.2.22` | Added Pixi installation support with `pixi.toml`, plus README figure assets and captions for `chromo manual` graph review and `chromo plot` whole-genome/per-reference examples. |

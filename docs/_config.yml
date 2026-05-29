@@ -153,8 +153,21 @@ nav:
     children:
       - title: Works now
         url: /status/#what-works-now
+      - title: Production roadmap
+        url: /status/#production-upgrade-roadmap
       - title: Version history
         url: /status/#version-history
+  - title: Roadmap
+    url: /roadmap/
+    children:
+      - title: Review layer
+        url: /roadmap/#review-layer-design
+      - title: Eval modes
+        url: /roadmap/#planned-eval-modes
+      - title: Manual modes
+        url: /roadmap/#planned-manual-modes
+      - title: Long reads
+        url: /roadmap/#long-read-backmapping-evidence
   - title: Troubleshooting
     url: /troubleshooting/
   - title: Contributing

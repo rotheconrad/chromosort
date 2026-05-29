@@ -19,7 +19,7 @@ ChromoSort provides one command, `chromo`, with eight subcommands:
 
 Full documentation is available at <https://rotheconrad.github.io/chromosort/>.
 
-New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. The [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/) is a mini tutorial for reading whole-genome and per-reference dot plots. Command-specific pages are linked in the table above.
+New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. The [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/) is a mini tutorial for reading whole-genome and per-reference dot plots. The [Production Upgrade Roadmap](https://rotheconrad.github.io/chromosort/roadmap/) captures the planned `eval` and task-specific `manual` review modes. Command-specific pages are linked in the table above.
 
 For interpreting results, see [Output Files](https://rotheconrad.github.io/chromosort/outputs/) and [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/).
 
@@ -120,7 +120,7 @@ pixi run test
 
 ## Current Status
 
-Current version: `0.2.24`. Operational commands are `sort`, `clean`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history.
+Current version: `0.2.25`. Operational commands are `sort`, `clean`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the planned `eval` and task-specific `manual` review-mode upgrade.
 
 ## Citation
 
@@ -152,6 +152,7 @@ scaffolding tools.
 | Version | Notes |
 | --- | --- |
 | Unreleased | No changes yet. |
+| `0.2.25` | Synchronized package, citation, Pixi, conda recipe, README, and docs version metadata; added the production-upgrade roadmap for paired `eval` table workflows and task-specific `manual` dashboards feeding reviewed `fix`, `scaffold`, and `gapfill` execution paths. |
 | `0.2.24` | Added `chromo clean`, a conservative cleanup command for mostly-correct assemblies that combines sort-style filtering with fix-style conservative splitting on retained raw contigs, then writes `<prefix>.clean.fa` plus initial-sort, fix, clean, and run-summary reports. Clarified README, command docs, and workflows around when FASTA-changing steps require fresh MUMmer or minimap2 alignments before downstream steps or final plots. |
 | `0.2.23` | Renamed the graph gap-filling command from `chromo fill` to `chromo gapfill`, moved the package entry point to `chromosort.gapfill`, replaced the package script with `chromosort-gapfill`, and updated gapfill output names to `<prefix>.gapfill_plan.tsv` and `<prefix>.gapfilled.fa`. |
 | `0.2.22` | Added Pixi installation support with `pixi.toml`, plus README figure assets and captions for `chromo manual` graph review and `chromo plot` whole-genome/per-reference examples. |
