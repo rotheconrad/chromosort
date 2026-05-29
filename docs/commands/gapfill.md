@@ -98,7 +98,7 @@ reference-space N gap, or `--fixed-gap-bp` when provided.
 
 | Output | Description |
 | --- | --- |
-| `<prefix>.gapfill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
+| `<prefix>.gapfill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF support counts/status/supporting reads, Hi-C and reference-placement support counts, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
 | `--review-html` path | Optional self-contained HTML table for reviewing gapfill-plan rows, comparing candidate paths, and exporting a reviewed-plan TSV. |
 | `<prefix>.gapfilled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
 | `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |

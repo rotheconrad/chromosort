@@ -307,6 +307,7 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["fill_status"], "fillable")
         self.assertEqual(rows[0]["path_nodes"], "left+,gapper+,right+")
         self.assertEqual(rows[0]["fill_sequence"], "GGGGTT")
+        self.assertEqual(rows[0]["gaf_support_status"], ".")
         self.assertEqual(rows[0]["longread_bridge_reads"], "1")
         self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
 

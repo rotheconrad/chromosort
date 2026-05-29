@@ -410,6 +410,8 @@ class GapfillTests(unittest.TestCase):
             self.assertEqual(plan["fill_status"], "fillable")
             self.assertEqual(plan["gaf_path_support"], "2")
             self.assertEqual(plan["gaf_best_alt_support"], "1")
+            self.assertEqual(plan["gaf_support_status"], "supports_selected")
+            self.assertEqual(plan["gaf_selected_reads"], "read_confident_1,read_confident_2")
             self.assertEqual(plan["path_nodes"], "left+,bridge_good+,right+")
             self.assertEqual(plan["fill_sequence"], "GGGG")
             self.assertEqual(plan["right_trim_bp"], "4")

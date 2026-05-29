@@ -12,9 +12,9 @@ from typing import Optional, Sequence
 
 from .gaf import (
     choose_gaf_supported_path,
-    gaf_path_supports,
     path_oriented_nodes,
     read_gaf,
+    summarize_gaf_traversal,
 )
 from .graph import read_gfa
 from .paths import ensure_output_dirs, ensure_parent_dir
@@ -56,6 +56,8 @@ class FillPlan:
     fill_status: str
     gaf_path_support: Optional[int] = None
     gaf_best_alt_support: Optional[int] = None
+    gaf_support_status: str = "."
+    gaf_selected_reads: str = "."
     hic_path_support: Optional[int] = None
     hic_best_alt_support: Optional[int] = None
     ref_path_support: Optional[int] = None
@@ -547,6 +549,29 @@ def support_value(supports, index):
     return supports[index]
 
 
+def gaf_summary_for(gaf_records, paths, selected_index, args):
+    if not gaf_records:
+        return None
+    return summarize_gaf_traversal(
+        gaf_records,
+        paths,
+        selected_index=selected_index,
+        min_support=args.min_gaf_path_support,
+    )
+
+
+def gaf_summary_supports(summary):
+    if summary is None:
+        return []
+    return [support.support for support in summary.path_supports]
+
+
+def gaf_selected_reads(summary):
+    if summary is None or not summary.selected_reads:
+        return "."
+    return ",".join(summary.selected_reads)
+
+
 def candidate_path_details(
     graph,
     paths,
@@ -896,7 +921,8 @@ def plan_gap(
             **risk,
         )
 
-    supports = gaf_path_supports(gaf_records, paths) if gaf_records else []
+    gaf_summary = gaf_summary_for(gaf_records, paths, 0, args)
+    supports = gaf_summary_supports(gaf_summary)
     hic_supports = hic_path_supports(hic_contacts, paths) if hic_contacts else []
     ref_supports = ref_path_supports(
         ref_placements,
@@ -981,6 +1007,8 @@ def plan_gap(
                 fill_status="ambiguous_paths",
                 gaf_path_support=selected_support,
                 gaf_best_alt_support=alt_support,
+                gaf_support_status=gaf_summary.support_status if gaf_summary else ".",
+                gaf_selected_reads=gaf_selected_reads(gaf_summary),
                 hic_path_support=selected_hic_support,
                 hic_best_alt_support=alt_hic_support,
                 ref_path_support=selected_ref_support,
@@ -1044,6 +1072,8 @@ def plan_gap(
                 fill_status="ambiguous_paths",
                 gaf_path_support=selected_support,
                 gaf_best_alt_support=alt_support,
+                gaf_support_status=gaf_summary.support_status if gaf_summary else ".",
+                gaf_selected_reads=gaf_selected_reads(gaf_summary),
                 hic_path_support=selected_hic_support,
                 hic_best_alt_support=alt_hic_support,
                 ref_path_support=selected_ref_support,
@@ -1056,7 +1086,11 @@ def plan_gap(
         graph_status = support_graph_status(support_choices)
 
     path = paths[selected_index]
-    selected_support, alt_support = selected_and_alt_support(supports, selected_index)
+    selected_gaf_summary = gaf_summary_for(gaf_records, paths, selected_index, args)
+    selected_support, alt_support = selected_and_alt_support(
+        gaf_summary_supports(selected_gaf_summary),
+        selected_index,
+    )
     selected_hic_support, alt_hic_support = selected_and_alt_support(
         hic_supports,
         selected_index,
@@ -1115,6 +1149,8 @@ def plan_gap(
         fill_status="fillable" if fillable else reason,
         gaf_path_support=selected_support,
         gaf_best_alt_support=alt_support,
+        gaf_support_status=selected_gaf_summary.support_status if selected_gaf_summary else ".",
+        gaf_selected_reads=gaf_selected_reads(selected_gaf_summary),
         hic_path_support=selected_hic_support,
         hic_best_alt_support=alt_hic_support,
         ref_path_support=selected_ref_support,
@@ -1246,6 +1282,8 @@ def fill_plan_header():
         "candidate_paths",
         "gaf_path_support",
         "gaf_best_alt_support",
+        "gaf_support_status",
+        "gaf_selected_reads",
         "hic_path_support",
         "hic_best_alt_support",
         "ref_path_support",
@@ -1286,6 +1324,8 @@ def fill_plan_row(plan, include_sequences):
         plan.candidate_paths,
         plan.gaf_path_support if plan.gaf_path_support is not None else ".",
         plan.gaf_best_alt_support if plan.gaf_best_alt_support is not None else ".",
+        plan.gaf_support_status,
+        plan.gaf_selected_reads,
         plan.hic_path_support if plan.hic_path_support is not None else ".",
         plan.hic_best_alt_support if plan.hic_best_alt_support is not None else ".",
         plan.ref_path_support if plan.ref_path_support is not None else ".",
