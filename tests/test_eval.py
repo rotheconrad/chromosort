@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data" / "chimeric"
+SCAFFOLD_DATA = Path(__file__).resolve().parent / "data" / "scaffold"
 
 
 def run_cli(*args):
@@ -108,6 +109,41 @@ class EvalTests(unittest.TestCase):
         self.assertIn("chrom07-contig_04-b", headers)
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]["reason"], "Reviewed fix plan accepted 2 split_piece row(s).")
+
+    def test_eval_scaffold_writes_review_table(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = Path(tmp) / "sample"
+            read_paf = Path(tmp) / "reads.paf"
+            read_paf.write_text(
+                "read1\t20\t0\t12\t+\tcontigA\t4\t0\t4\t4\t4\t60\n"
+                "read1\t20\t13\t20\t+\tcontigB\t3\t0\t3\t3\t3\t60\n"
+            )
+            run_cli(
+                "eval",
+                "scaffold",
+                "--ordered-fasta",
+                str(SCAFFOLD_DATA / "ordered.fa"),
+                "--assignments",
+                str(SCAFFOLD_DATA / "assignments.tsv"),
+                "--read-paf",
+                str(read_paf),
+                "--read-min-anchor-bp",
+                "2",
+                "--output-prefix",
+                str(prefix),
+            )
+
+            rows = read_tsv(Path(str(prefix) + ".scaffold_review.tsv"))
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["task"], "scaffold")
+        self.assertEqual(rows[0]["action"], "scaffold_gap")
+        self.assertEqual(rows[0]["accept"], "yes")
+        self.assertEqual(rows[0]["left_contig"], "chr1_contigA")
+        self.assertEqual(rows[0]["right_contig"], "chr1_contigB")
+        self.assertEqual(rows[0]["gap_bp"], "5")
+        self.assertEqual(rows[0]["longread_bridge_reads"], "1")
+        self.assertEqual(rows[0]["longread_read_order_summary"], "left_before_right:1")
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ from typing import Optional, Sequence
 from .graph import ORIENTATIONS, format_oriented_node, read_gfa
 from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import iter_fasta_records, write_wrapped
+from .review import accepted_events, read_review_events
 
 
 REQUIRED_ASSIGNMENT_COLUMNS = {
@@ -131,6 +132,14 @@ class ScaffoldRecord:
         return sum(member.trimmed_bp for member in self.members)
 
 
+@dataclass(frozen=True)
+class ReviewedGap:
+    scaffold: str
+    left_contig: str
+    right_contig: str
+    gap_bp: int
+
+
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     ap = argparse.ArgumentParser(
         prog=prog,
@@ -198,6 +207,15 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--simple-headers",
         action="store_true",
         help="Write FASTA headers containing only the scaffold sequence ID.",
+    )
+    ap.add_argument(
+        "--reviewed-plan",
+        default=None,
+        help=(
+            "Optional reviewed scaffold table from chromo eval scaffold. "
+            "Accepted scaffold_gap rows override gap_bp for matching "
+            "scaffold/left/right junctions."
+        ),
     )
     ap.add_argument(
         "--gfa",
@@ -278,6 +296,44 @@ def read_ordered_fasta(path):
         seen.add(name)
         records.append(FastaRecord(name=name, header=header, seq=seq))
     return records
+
+
+def parse_reviewed_gap_int(event, field):
+    value = event.fields.get(field)
+    if value in {None, "", "."}:
+        raise ValueError(f"Review event {event.event_id!r} is missing {field}.")
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"Review event {event.event_id!r} has invalid integer {field}: {value!r}."
+        ) from exc
+
+
+def read_reviewed_scaffold_gaps(path):
+    decisions = {}
+    for event in accepted_events(read_review_events(path, expected_task="scaffold")):
+        if event.action != "scaffold_gap":
+            raise ValueError(
+                f"Review event {event.event_id!r} has unsupported scaffold action "
+                f"{event.action!r}."
+            )
+        scaffold = event.fields.get("scaffold") or "."
+        left = event.fields.get("left_contig") or "."
+        right = event.fields.get("right_contig") or "."
+        gap_bp = parse_reviewed_gap_int(event, "gap_bp")
+        if gap_bp < 0:
+            raise ValueError(f"Review event {event.event_id!r} has negative gap_bp.")
+        key = (scaffold, left, right)
+        if key in decisions:
+            raise ValueError(f"Duplicate reviewed scaffold junction: {scaffold}/{left}/{right}.")
+        decisions[key] = ReviewedGap(
+            scaffold=scaffold,
+            left_contig=left,
+            right_contig=right,
+            gap_bp=gap_bp,
+        )
+    return decisions
 
 
 def group_scaffold_members(records, assignments):
@@ -401,10 +457,19 @@ def apply_overlap_policy(left, right, overlap_bp, overlap_class, args, graph=Non
     return "trim_skipped_sequence_identity", graph_overlap_action, 0, identity
 
 
-def build_scaffold(ref, members, fixed_gap_bp, args, graph=None):
+def build_scaffold(
+    ref,
+    members,
+    fixed_gap_bp,
+    args,
+    graph=None,
+    reviewed_gaps=None,
+    used_reviewed_gaps=None,
+):
     pieces = []
     gaps = []
-    gap_mode = "fixed" if fixed_gap_bp is not None else "inferred"
+    default_gap_mode = "fixed" if fixed_gap_bp is not None else "inferred"
+    reviewed_gaps = reviewed_gaps or {}
 
     for index, member in enumerate(members):
         if index:
@@ -421,6 +486,14 @@ def build_scaffold(ref, members, fixed_gap_bp, args, graph=None):
                 graph,
             )
             gap_bp = fixed_gap_bp if fixed_gap_bp is not None else max(0, raw_gap)
+            gap_mode = default_gap_mode
+            review_key = (ref, left.assignment.new_name, member.assignment.new_name)
+            reviewed = reviewed_gaps.get(review_key)
+            if reviewed is not None:
+                gap_bp = reviewed.gap_bp
+                gap_mode = "reviewed"
+                if used_reviewed_gaps is not None:
+                    used_reviewed_gaps.add(review_key)
             gaps.append(
                 GapRecord(
                     scaffold=ref,
@@ -477,9 +550,24 @@ def build_scaffold(ref, members, fixed_gap_bp, args, graph=None):
     )
 
 
-def build_scaffolds(groups, fixed_gap_bp, args, graph=None):
+def build_scaffolds(
+    groups,
+    fixed_gap_bp,
+    args,
+    graph=None,
+    reviewed_gaps=None,
+    used_reviewed_gaps=None,
+):
     return [
-        build_scaffold(ref, members, fixed_gap_bp, args, graph)
+        build_scaffold(
+            ref,
+            members,
+            fixed_gap_bp,
+            args,
+            graph,
+            reviewed_gaps=reviewed_gaps,
+            used_reviewed_gaps=used_reviewed_gaps,
+        )
         for ref, members in groups.items()
     ]
 
@@ -834,7 +922,7 @@ def write_summary(path, scaffolds, unassigned):
 
 
 def write_run_summary(path, args, output_paths, scaffolds, unassigned):
-    gap_mode = "fixed" if args.fixed_gap_bp is not None else "inferred"
+    gap_mode = "reviewed" if args.reviewed_plan else ("fixed" if args.fixed_gap_bp is not None else "inferred")
     ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("chromo scaffold\n")
@@ -888,8 +976,21 @@ def run(args):
     records = read_ordered_fasta(args.ordered_fasta)
     groups, unassigned = group_scaffold_members(records, assignments)
     graph = read_gfa(args.gfa) if args.gfa else None
-    scaffolds = build_scaffolds(groups, args.fixed_gap_bp, args, graph)
-    gap_mode = "fixed" if args.fixed_gap_bp is not None else "inferred"
+    reviewed_gaps = read_reviewed_scaffold_gaps(args.reviewed_plan) if args.reviewed_plan else {}
+    used_reviewed_gaps = set()
+    scaffolds = build_scaffolds(
+        groups,
+        args.fixed_gap_bp,
+        args,
+        graph,
+        reviewed_gaps=reviewed_gaps,
+        used_reviewed_gaps=used_reviewed_gaps,
+    )
+    unused_reviewed = set(reviewed_gaps) - used_reviewed_gaps
+    if unused_reviewed:
+        preview = ", ".join("/".join(key) for key in sorted(unused_reviewed)[:5])
+        raise ValueError(f"Reviewed scaffold junction(s) did not match current inputs: {preview}")
+    gap_mode = "reviewed" if reviewed_gaps else ("fixed" if args.fixed_gap_bp is not None else "inferred")
     graph_gap_records = []
     if graph is not None:
         graph_gap_records = build_graph_gap_records(

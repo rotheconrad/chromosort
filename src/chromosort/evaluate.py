@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from . import fix_contigs
+from . import scaffold as scaffold_mod
 from .graph import graph_node_evidence, read_gfa
-from .longreads import read_long_read_paf, summarize_breakpoint
+from .longreads import read_long_read_paf, summarize_breakpoint, summarize_contig_bridge
 from .paths import ensure_output_dirs
 from .reference_order import alignment_source_from_args
 from .review import ReviewEvent, event_table_path, write_review_events
@@ -42,6 +43,27 @@ FIX_REVIEW_COLUMNS = [
     "longread_left_edge_reads",
     "longread_right_edge_reads",
     "longread_nearby_reads",
+]
+
+SCAFFOLD_REVIEW_COLUMNS = [
+    "scaffold",
+    "left_contig",
+    "right_contig",
+    "left_ref_end",
+    "right_ref_start",
+    "raw_inferred_gap_bp",
+    "gap_bp",
+    "gap_mode",
+    "overlap_bp",
+    "overlap_class",
+    "overlap_action",
+    "graph_status",
+    "graph_direct_edge",
+    "graph_path_nodes",
+    "longread_bridge_reads",
+    "longread_orientation_summary",
+    "longread_read_order_summary",
+    "longread_median_read_gap_bp",
 ]
 
 
@@ -99,6 +121,52 @@ def parse_fix_args(argv=None, prog=None):
         help="Output prefix. Writes <prefix>.fix_review.tsv.",
     )
     add_fix_planner_args(ap)
+    return ap.parse_args(argv)
+
+
+def parse_scaffold_args(argv=None, prog=None):
+    ap = argparse.ArgumentParser(
+        prog=prog,
+        description="Prepare an editable TSV of candidate chromo scaffold junction decisions.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    ap.add_argument(
+        "-f",
+        "--ordered-fasta",
+        required=True,
+        help="Final ordered FASTA from chromo sort.",
+    )
+    ap.add_argument(
+        "-a",
+        "--assignments",
+        required=True,
+        help="Matching <prefix>.contig_assignments.tsv from chromo sort.",
+    )
+    ap.add_argument(
+        "-o",
+        "--output-prefix",
+        required=True,
+        help="Output prefix. Writes <prefix>.scaffold_review.tsv.",
+    )
+    ap.add_argument("--gfa", default=None, help="Optional assembly graph GFA for junction context.")
+    ap.add_argument("--read-paf", default=None, help="Optional long-read-to-assembly PAF.")
+    ap.add_argument("--min-read-mapq", type=int, default=0, help="Minimum MAPQ for --read-paf rows.")
+    ap.add_argument("--read-terminal-window-bp", type=int, default=5_000)
+    ap.add_argument("--read-min-anchor-bp", type=int, default=500)
+    ap.add_argument("--fixed-gap-bp", type=int, default=None)
+    ap.add_argument(
+        "--overlap-policy",
+        choices=["zero-gap", "warn", "trim-reference", "trim-sequence"],
+        default="zero-gap",
+    )
+    ap.add_argument("--trim-sequence-min-identity", type=float, default=0.98)
+    ap.add_argument(
+        "--graph-overlap-policy",
+        choices=["report", "warn", "confirm"],
+        default="report",
+    )
+    ap.add_argument("--graph-max-path-edges", type=int, default=4)
+    ap.set_defaults(simple_headers=False)
     return ap.parse_args(argv)
 
 
@@ -282,6 +350,134 @@ def build_fix_events(args):
     return events
 
 
+def graph_gap_fields(graph_records, gap):
+    record = graph_records.get((gap.scaffold, gap.left_contig, gap.right_contig))
+    if record is None:
+        return {
+            "graph_status": ".",
+            "graph_direct_edge": ".",
+            "graph_path_nodes": ".",
+        }
+    return {
+        "graph_status": record.graph_status,
+        "graph_direct_edge": bool_text(record.direct_edge),
+        "graph_path_nodes": record.shortest_path_nodes,
+    }
+
+
+def member_name_candidates(member):
+    candidates = [
+        member.assignment.new_name,
+        member.assignment.contig,
+        member.record.name,
+    ]
+    ordered = []
+    for candidate in candidates:
+        if candidate and candidate != "." and candidate not in ordered:
+            ordered.append(candidate)
+    return ordered
+
+
+def read_bridge_fields(read_evidence, left_member, right_member, args):
+    if read_evidence is None:
+        return {
+            "longread_bridge_reads": ".",
+            "longread_orientation_summary": ".",
+            "longread_read_order_summary": ".",
+            "longread_median_read_gap_bp": ".",
+        }
+    supports = []
+    for left_name in member_name_candidates(left_member):
+        for right_name in member_name_candidates(right_member):
+            supports.append(
+                summarize_contig_bridge(
+                    read_evidence,
+                    left_name,
+                    right_name,
+                    terminal_window_bp=args.read_terminal_window_bp,
+                    min_anchor_bp=args.read_min_anchor_bp,
+                )
+            )
+    support = max(supports, key=lambda item: item.bridge_count) if supports else None
+    if support is None:
+        return {
+            "longread_bridge_reads": "0",
+            "longread_orientation_summary": ".",
+            "longread_read_order_summary": ".",
+            "longread_median_read_gap_bp": ".",
+        }
+    median_gap = support.median_read_gap_bp
+    return {
+        "longread_bridge_reads": str(support.bridge_count),
+        "longread_orientation_summary": support.orientation_summary,
+        "longread_read_order_summary": support.read_order_summary,
+        "longread_median_read_gap_bp": "." if median_gap is None else str(median_gap),
+    }
+
+
+def build_scaffold_events(args):
+    if args.fixed_gap_bp is not None and args.fixed_gap_bp < 0:
+        raise ValueError("--fixed-gap-bp must be zero or greater")
+    if args.graph_max_path_edges < 1:
+        raise ValueError("--graph-max-path-edges must be at least 1")
+    if args.graph_overlap_policy != "report" and not args.gfa:
+        raise ValueError("--graph-overlap-policy warn/confirm requires --gfa")
+    assignments = scaffold_mod.read_assignments(args.assignments)
+    records = scaffold_mod.read_ordered_fasta(args.ordered_fasta)
+    groups, unassigned = scaffold_mod.group_scaffold_members(records, assignments)
+    del unassigned
+    graph = read_gfa(args.gfa) if args.gfa else None
+    scaffolds = scaffold_mod.build_scaffolds(groups, args.fixed_gap_bp, args, graph)
+    graph_records = {}
+    if graph is not None:
+        graph_records = {
+            (record.scaffold, record.left_contig, record.right_contig): record
+            for record in scaffold_mod.build_graph_gap_records(
+                scaffolds,
+                graph,
+                args.graph_max_path_edges,
+            )
+        }
+    read_evidence = (
+        read_long_read_paf(args.read_paf, min_mapq=args.min_read_mapq)
+        if args.read_paf
+        else None
+    )
+
+    events = []
+    for scaffold in scaffolds:
+        for gap, left, right in zip(scaffold.gaps, scaffold.members, scaffold.members[1:]):
+            fields = {
+                "scaffold": gap.scaffold,
+                "left_contig": gap.left_contig,
+                "right_contig": gap.right_contig,
+                "left_ref_end": gap.left_ref_end,
+                "right_ref_start": gap.right_ref_start,
+                "raw_inferred_gap_bp": gap.raw_inferred_gap_bp,
+                "gap_bp": gap.gap_bp,
+                "gap_mode": gap.gap_mode,
+                "overlap_bp": gap.overlap_bp,
+                "overlap_class": gap.overlap_class,
+                "overlap_action": gap.overlap_action,
+            }
+            fields.update(graph_gap_fields(graph_records, gap))
+            fields.update(read_bridge_fields(read_evidence, left, right, args))
+            events.append(
+                ReviewEvent(
+                    event_id=f"scaffold:{gap.scaffold}:{gap.left_contig}:{gap.right_contig}",
+                    task="scaffold",
+                    action="scaffold_gap",
+                    target=f"{gap.scaffold}:{gap.left_contig}|{gap.right_contig}",
+                    accept=True,
+                    status="candidate",
+                    confidence=".",
+                    reason="scaffold_junction",
+                    fields=fields,
+                )
+            )
+    return events
+
+
 def run_fix(args):
     prefix = Path(args.output_prefix)
     output_paths = {
@@ -302,6 +498,22 @@ def run_fix(args):
         sys.stderr.write(f"  {status}: {count}\n")
 
 
+def run_scaffold(args):
+    prefix = Path(args.output_prefix)
+    output_paths = {
+        "scaffold_review": event_table_path(prefix, ".scaffold_review.tsv"),
+    }
+    ensure_output_dirs(output_paths)
+    events = build_scaffold_events(args)
+    write_review_events(
+        output_paths["scaffold_review"],
+        events,
+        extra_columns=SCAFFOLD_REVIEW_COLUMNS,
+    )
+    sys.stderr.write(f"Wrote scaffold review table: {output_paths['scaffold_review']}\n")
+    sys.stderr.write(f"  scaffold_gap: {len(events)}\n")
+
+
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     if argv is None:
         argv = sys.argv[1:]
@@ -309,7 +521,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         prog=prog,
         description="Prepare TSV review tables for ChromoSort command decisions.",
     )
-    parser.add_argument("mode", nargs="?", choices=["fix"], help="Review table mode to run.")
+    parser.add_argument("mode", nargs="?", choices=["fix", "scaffold"], help="Review table mode to run.")
     if not argv or argv[0] in {"-h", "--help"}:
         parser.print_help()
         return
@@ -319,6 +531,8 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     try:
         if mode == "fix":
             run_fix(parse_fix_args(remaining, prog=f"{prog} fix" if prog else None))
+        elif mode == "scaffold":
+            run_scaffold(parse_scaffold_args(remaining, prog=f"{prog} scaffold" if prog else None))
         else:
             parser.error(f"unknown eval mode: {mode}")
     except ValueError as exc:

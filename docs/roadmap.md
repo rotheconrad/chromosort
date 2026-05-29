@@ -5,9 +5,9 @@ description: Planned eval and manual review modes for task-specific human-guided
 
 # Production Upgrade Roadmap
 
-This roadmap captures the next major production upgrade direction for
-ChromoSort. It is a planning document, not a description of currently available
-commands.
+This roadmap tracks the next major production upgrade direction for
+ChromoSort. Completed rows describe behavior now available in the current
+development branch; planned rows describe the remaining work.
 
 ## Goal
 
@@ -137,7 +137,7 @@ The shared evidence layer should summarize:
 | 1. Add shared long-read evidence parsing and summary helpers. | Done | Added PAF-backed long-read evidence helpers for breakpoint support, contig-end bridges, and read-depth summaries. |
 | 2. Add the shared review-event data model and TSV serialization. | Done | Added a shared review-event schema and TSV reader/writer for `eval`, `manual`, and reviewed execution paths. |
 | 3. Implement `chromo eval fix` and `chromo fix` reviewed-table application. | Done | Added `chromo eval fix` table generation and `chromo fix --reviewed-plan` application for accepted `split_piece` rows. |
-| 4. Implement `chromo eval scaffold` and `chromo scaffold` reviewed-table application. | Planned |  |
+| 4. Implement `chromo eval scaffold` and `chromo scaffold` reviewed-table application. | Done | Added table-only scaffold junction evaluation with GFA and long-read bridge context, plus accepted gap overrides through `chromo scaffold --reviewed-plan`. |
 | 5. Align `chromo eval gapfill` with current gapfill plan semantics and add any missing reviewed-table compatibility. | Planned |  |
 | 6. Refactor `chromo manual` into task-specific modes over the same review-event model. | Planned |  |
 | 7. Expand docs and tests around mixed algorithmic-plus-reviewed workflows. | Planned |  |

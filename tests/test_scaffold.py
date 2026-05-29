@@ -146,6 +146,60 @@ class ScaffoldTests(unittest.TestCase):
             self.assertEqual(gaps[0]["gap_bp"], "2")
             self.assertEqual(gaps[0]["gap_mode"], "fixed")
 
+    def test_scaffold_can_apply_reviewed_gap_table(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            review = tmp_path / "review.tsv"
+            with open(review, "w", newline="") as fh:
+                writer = csv.DictWriter(
+                    fh,
+                    fieldnames=[
+                        "schema",
+                        "event_id",
+                        "task",
+                        "action",
+                        "target",
+                        "accept",
+                        "status",
+                        "confidence",
+                        "reason",
+                        "notes",
+                        "scaffold",
+                        "left_contig",
+                        "right_contig",
+                        "gap_bp",
+                    ],
+                    delimiter="\t",
+                )
+                writer.writeheader()
+                writer.writerow(
+                    {
+                        "schema": "chromosort-review-event-v1",
+                        "event_id": "scaffold:chr1:chr1_contigA:chr1_contigB",
+                        "task": "scaffold",
+                        "action": "scaffold_gap",
+                        "target": "chr1:chr1_contigA|chr1_contigB",
+                        "accept": "yes",
+                        "status": "candidate",
+                        "confidence": ".",
+                        "reason": "test",
+                        "notes": "",
+                        "scaffold": "chr1",
+                        "left_contig": "chr1_contigA",
+                        "right_contig": "chr1_contigB",
+                        "gap_bp": "2",
+                    }
+                )
+
+            prefix = run_scaffold(tmp_path, "--reviewed-plan", str(review))
+
+            records = read_fasta(Path(str(prefix) + ".scaffold.fa"))
+            self.assertEqual(records["chr1"], "AAAANNTTT")
+
+            gaps = read_tsv(Path(str(prefix) + ".scaffold_gaps.tsv"))
+            self.assertEqual(gaps[0]["gap_bp"], "2")
+            self.assertEqual(gaps[0]["gap_mode"], "reviewed")
+
     def test_scaffold_graph_report_marks_direct_edges(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

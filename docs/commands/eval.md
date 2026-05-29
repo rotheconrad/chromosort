@@ -10,8 +10,8 @@ for spreadsheet-first review workflows where users want the algorithm to
 propose candidate decisions, then keep, reject, delete, or add rows before a
 sequence-changing command applies the reviewed decisions.
 
-At present, `chromo eval fix` is available. Scaffold and gapfill review-table
-modes are planned in the production roadmap.
+At present, `chromo eval fix` and `chromo eval scaffold` are available.
+Gapfill review-table mode is planned in the production roadmap.
 
 ## Run `chromo eval fix`
 
@@ -54,6 +54,47 @@ contigs and slices to apply.
 Long-read evidence is summarized as spanning-read, split-read, edge-read, and
 nearby-read counts for candidate breakpoint rows.
 
+## Run `chromo eval scaffold`
+
+```bash
+chromo eval scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.eval_scaffold \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_assembly.paf
+```
+
+The command writes:
+
+```text
+results/sample.eval_scaffold.scaffold_review.tsv
+```
+
+Each accepted `scaffold_gap` row can override the gap length for one matching
+adjacent scaffold junction:
+
+```bash
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --reviewed-plan results/sample.eval_scaffold.scaffold_review.tsv \
+  --output-prefix results/sample.reviewed_scaffold
+```
+
+`chromo scaffold` still builds every ordinary junction algorithmically. The
+reviewed table only pins accepted rows whose `scaffold`, `left_contig`, and
+`right_contig` match the current inputs. Stale accepted rows are rejected so an
+old spreadsheet cannot silently change a new scaffold.
+
+`chromo eval scaffold` can include report-only context from:
+
+- `--gfa`: direct-link and short-path graph context for adjacent contigs.
+- `--read-paf`: long-read-to-assembly bridge evidence between contig ends.
+
+Long-read scaffold evidence is summarized as bridge-read counts, orientation
+summaries, read-order summaries, and median read-space gap estimates.
+
 ## Parameters
 
 | Parameter | Default | Meaning |
@@ -65,6 +106,9 @@ nearby-read counts for candidate breakpoint rows.
 | `--gfa` | none | Optional assembly graph GFA for node context fields. |
 | `--read-paf` | none | Optional long-read-to-assembly PAF for breakpoint support fields. |
 | `--mode` | `conservative` | Fix planner mode used to prepare candidate rows. |
+| `--ordered-fasta` | required for scaffold mode | Final ordered FASTA from `chromo sort`. |
+| `--assignments` | required for scaffold mode | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`. |
+| `--fixed-gap-bp` | none | In scaffold mode, prepare rows using fixed gaps instead of inferred gaps. |
 
 The planner threshold options mirror `chromo fix`.
 

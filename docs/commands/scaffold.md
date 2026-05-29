@@ -24,7 +24,8 @@ Given a final `chromo sort` ordered FASTA and its matching
    contig.
 9. Optionally writes a report-only GFA graph-evidence table for adjacent
    scaffold junctions.
-10. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
+10. Optionally applies accepted gap overrides from `chromo eval scaffold`.
+11. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
 
 The intended input is the final ordered FASTA from the same `chromo sort` run as
 the assignment report. If you run `chromo fix`, re-run `chromo sort` on the
@@ -67,6 +68,30 @@ chromo scaffold \
 Fixed-gap mode ignores inferred gap length for FASTA construction and inserts
 the requested number of Ns between every neighboring contig on the same
 scaffold. The report still records the raw inferred gap for comparison.
+
+## Run `chromo scaffold` With A Reviewed Plan
+
+```bash
+chromo eval scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --output-prefix results/sample.eval_scaffold \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_assembly.paf
+
+chromo scaffold \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --reviewed-plan results/sample.eval_scaffold.scaffold_review.tsv \
+  --output-prefix results/sample.reviewed_scaffold
+```
+
+The reviewed table is optional. When supplied, accepted `scaffold_gap` rows
+override `gap_bp` for matching `scaffold`/`left_contig`/`right_contig`
+junctions, and the gap report marks those junctions with `gap_mode=reviewed`.
+Junctions without accepted rows keep the normal inferred or fixed-gap behavior.
+Accepted rows that no longer match the current ordered FASTA and assignment TSV
+are rejected as stale.
 
 ## Run `chromo scaffold` With Overlap Trimming
 
@@ -154,6 +179,7 @@ GG
 | `--assignments` | required | Matching `<prefix>.contig_assignments.tsv` report from `chromo sort`. |
 | `--output-prefix` | required | Prefix for scaffold FASTA and reports. |
 | `--fixed-gap-bp` | none | Insert this many Ns between neighboring contigs instead of inferred gaps. |
+| `--reviewed-plan` | none | Optional edited table from `chromo eval scaffold`; accepted `scaffold_gap` rows override matching junction gap lengths. |
 | `--overlap-policy` | `zero-gap` | Handling for negative inferred gaps: `zero-gap`, `warn`, `trim-reference`, or `trim-sequence`. |
 | `--trim-sequence-min-identity` | `0.98` | Minimum suffix/prefix identity required by `--overlap-policy trim-sequence`. |
 | `--simple-headers` | off | Write scaffold FASTA headers containing only the scaffold ID. |

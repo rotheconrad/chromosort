@@ -51,6 +51,7 @@ class CliTests(unittest.TestCase):
         clean_help = run_cli("clean", "--help").stdout
         eval_help = run_cli("eval", "--help").stdout
         eval_fix_help = run_cli("eval", "fix", "--help").stdout
+        eval_scaffold_help = run_cli("eval", "scaffold", "--help").stdout
         fix_help = run_cli("fix", "--help").stdout
         cut_help = run_cli("cut", "--help").stdout
         manual_help = run_cli("manual", "--help").stdout
@@ -66,8 +67,11 @@ class CliTests(unittest.TestCase):
         self.assertIn("--fix-mode", clean_help)
         self.assertIn("--discarded-fasta", clean_help)
         self.assertIn("fix", eval_help)
+        self.assertIn("scaffold", eval_help)
         self.assertIn("--read-paf", eval_fix_help)
         self.assertIn("--output-prefix", eval_fix_help)
+        self.assertIn("--ordered-fasta", eval_scaffold_help)
+        self.assertIn("--assignments", eval_scaffold_help)
         self.assertIn("--all", fix_help)
         self.assertIn("--mode", fix_help)
         self.assertIn("--reviewed-plan", fix_help)
@@ -84,6 +88,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--gfa", manual_help)
         self.assertIn("--recipe", manual_apply_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
+        self.assertIn("--reviewed-plan", scaffold_help)
         self.assertIn("--gfa", scaffold_help)
         self.assertIn("--graph-overlap-policy", scaffold_help)
         self.assertIn("--graph-max-path-edges", scaffold_help)
