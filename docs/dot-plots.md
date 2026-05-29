@@ -92,7 +92,7 @@ patterns are the alphabet you use to read them.
 
 <figure>
   <img src="{{ '/assets/dotplot_collinear.svg' | relative_url }}" alt="Clean dot plot with three query contigs aligning in forward orientation along one reference chromosome." width="900">
-  <figcaption><strong>Figure 2. Clean collinear placement.</strong> Several query contigs align to one reference in the expected order and orientation. Gaps between contigs are normal when the assembly is fragmented or when unaligned sequence separates blocks.</figcaption>
+  <figcaption><strong>Figure 2. Clean collinear placement.</strong> Several query contigs align to one reference in the expected order and orientation. Dashed horizontal lines mark separate query contig rows, so blank space between rows should not be mistaken for an internal contig gap.</figcaption>
 </figure>
 
 What it looks like: long blue segments form an ordered diagonal across one
@@ -260,7 +260,7 @@ How to follow up:
 
 <figure>
   <img src="{{ '/assets/dotplot_whole_vs_perref.svg' | relative_url }}" alt="Side-by-side whole-genome and per-reference dot plot cartoons showing that per-reference plots reveal local details hidden in compressed whole-genome views." width="900">
-  <figcaption><strong>Figure 9. Whole-genome and per-reference views answer different questions.</strong> Whole-genome plots reveal global placement and cross-reference jumps. Per-reference plots make local order, gaps, inversions, and duplicate overlaps easier to inspect.</figcaption>
+  <figcaption><strong>Figure 9. Whole-genome and per-reference views answer different questions.</strong> Whole-genome plots reveal global placement and cross-reference jumps. Per-reference plots make local order, gaps, inversions, and duplicate overlaps easier to inspect. Contig row markers help separate between-contig breaks from within-contig interruptions.</figcaption>
 </figure>
 
 Whole-genome plots are best for asking broad questions:

@@ -2,59 +2,55 @@
   <title id="title">Dot plot anatomy</title>
   <desc id="desc">Annotated dot plot showing reference and query axes, forward and reverse alignment segments, and local alignment rows.</desc>
   <rect width="900" height="440" fill="#ffffff"/>
-  <rect x="88" y="48" width="650" height="310" fill="#fbfbf8" stroke="#d7d7d0" stroke-width="1.5"/>
+  <text x="145" y="35" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202124">Each line segment is one local alignment row.</text>
+  <rect x="145" y="62" width="560" height="270" fill="#fbfbf8" stroke="#d7d7d0" stroke-width="1.5"/>
   <g stroke="#e6e6df" stroke-width="1">
-    <line x1="196" y1="48" x2="196" y2="358"/>
-    <line x1="305" y1="48" x2="305" y2="358"/>
-    <line x1="413" y1="48" x2="413" y2="358"/>
-    <line x1="521" y1="48" x2="521" y2="358"/>
-    <line x1="630" y1="48" x2="630" y2="358"/>
-    <line x1="88" y1="100" x2="738" y2="100"/>
-    <line x1="88" y1="151" x2="738" y2="151"/>
-    <line x1="88" y1="203" x2="738" y2="203"/>
-    <line x1="88" y1="255" x2="738" y2="255"/>
-    <line x1="88" y1="306" x2="738" y2="306"/>
+    <line x1="257" y1="62" x2="257" y2="332"/>
+    <line x1="369" y1="62" x2="369" y2="332"/>
+    <line x1="481" y1="62" x2="481" y2="332"/>
+    <line x1="593" y1="62" x2="593" y2="332"/>
+    <line x1="145" y1="116" x2="705" y2="116"/>
+    <line x1="145" y1="170" x2="705" y2="170"/>
+    <line x1="145" y1="224" x2="705" y2="224"/>
+    <line x1="145" y1="278" x2="705" y2="278"/>
   </g>
   <g stroke="#202124" stroke-width="2">
-    <line x1="88" y1="358" x2="754" y2="358"/>
-    <line x1="88" y1="358" x2="88" y2="32"/>
+    <line x1="145" y1="332" x2="718" y2="332"/>
+    <line x1="145" y1="332" x2="145" y2="50"/>
   </g>
   <g fill="#202124" font-family="Arial, Helvetica, sans-serif" font-size="15">
-    <text x="350" y="410">reference position on x-axis</text>
-    <text x="-250" y="28" transform="rotate(-90)">query or assembly position on y-axis</text>
+    <text x="425" y="388" text-anchor="middle">reference position on x-axis</text>
+    <text x="34" y="200" text-anchor="middle" transform="rotate(-90 34 200)">query or assembly position on y-axis</text>
   </g>
   <g fill="#5f6368" font-family="Arial, Helvetica, sans-serif" font-size="12">
-    <text x="82" y="382">0 Mb</text>
-    <text x="285" y="382">50 Mb</text>
-    <text x="497" y="382">100 Mb</text>
-    <text x="705" y="382">150 Mb</text>
-    <text x="31" y="362">0 Mb</text>
-    <text x="22" y="257">20 Mb</text>
-    <text x="22" y="153">40 Mb</text>
-    <text x="22" y="51">60 Mb</text>
+    <text x="134" y="356">0 Mb</text>
+    <text x="315" y="356">50 Mb</text>
+    <text x="492" y="356">100 Mb</text>
+    <text x="666" y="356">150 Mb</text>
+    <text x="96" y="336">0 Mb</text>
+    <text x="88" y="282">20 Mb</text>
+    <text x="88" y="228">40 Mb</text>
+    <text x="88" y="174">60 Mb</text>
   </g>
-  <line x1="150" y1="315" x2="360" y2="205" stroke="#2563eb" stroke-width="7" stroke-linecap="round"/>
-  <line x1="390" y1="190" x2="650" y2="74" stroke="#2563eb" stroke-width="7" stroke-linecap="round"/>
-  <line x1="162" y1="100" x2="330" y2="178" stroke="#dc2626" stroke-width="7" stroke-linecap="round"/>
-  <line x1="495" y1="310" x2="602" y2="264" stroke="#2563eb" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+  <line x1="185" y1="300" x2="335" y2="230" stroke="#2563eb" stroke-width="7" stroke-linecap="round"/>
+  <line x1="372" y1="216" x2="640" y2="86" stroke="#2563eb" stroke-width="7" stroke-linecap="round"/>
+  <line x1="198" y1="112" x2="333" y2="176" stroke="#dc2626" stroke-width="7" stroke-linecap="round"/>
+  <line x1="485" y1="292" x2="586" y2="250" stroke="#2563eb" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
   <g fill="#ffffff" stroke="#5f6368" stroke-width="1.2">
-    <rect x="760" y="58" width="110" height="32" rx="4"/>
-    <rect x="760" y="110" width="110" height="32" rx="4"/>
-    <rect x="760" y="247" width="110" height="46" rx="4"/>
+    <rect x="735" y="72" width="125" height="32" rx="4"/>
+    <rect x="735" y="126" width="125" height="32" rx="4"/>
+    <rect x="735" y="238" width="125" height="46" rx="4"/>
   </g>
   <g font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#202124">
-    <text x="772" y="79">forward row</text>
-    <text x="772" y="131">reverse row</text>
-    <text x="772" y="268">short local</text>
-    <text x="772" y="284">alignment</text>
+    <text x="751" y="93">forward row</text>
+    <text x="751" y="147">reverse row</text>
+    <text x="751" y="259">short local</text>
+    <text x="751" y="275">alignment</text>
   </g>
   <g stroke="#5f6368" stroke-width="1.4" fill="none">
-    <path d="M760 74 C720 76 700 80 650 74"/>
-    <path d="M760 126 C715 129 670 146 330 178"/>
-    <path d="M760 265 C700 275 655 284 602 264"/>
+    <path d="M735 88 C700 88 675 88 640 86"/>
+    <path d="M735 142 C665 148 520 164 333 176"/>
+    <path d="M735 256 C682 270 630 270 586 250"/>
   </g>
-  <g font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#202124">
-    <text x="112" y="31">Each line segment is one local alignment row.</text>
-    <text x="111" y="398" fill="#5f6368">Blue: same orientation. Red: reverse orientation.</text>
-  </g>
+  <text x="145" y="415" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#5f6368">Blue: same orientation. Red: reverse orientation.</text>
 </svg>
