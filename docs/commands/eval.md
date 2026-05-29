@@ -90,6 +90,7 @@ old spreadsheet cannot silently change a new scaffold.
 `chromo eval scaffold` can include report-only context from:
 
 - `--gfa`: direct-link and short-path graph context for adjacent contigs.
+- `--gaf`: long-read graph traversal support for the direct or short GFA path.
 - `--read-paf`: long-read-to-assembly bridge evidence between contig ends.
 
 Long-read scaffold evidence is summarized as bridge-read counts, orientation
@@ -154,7 +155,8 @@ current scaffold, contig pair, and `path_nodes` before applying sequence.
 | `--assignments` | required for scaffold mode | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`. |
 | `--fixed-gap-bp` | none | In scaffold mode, prepare rows using fixed gaps instead of inferred gaps. |
 | `--gfa` | required for gapfill mode | Assembly graph GFA for candidate fill paths. |
-| `--gaf`, `--hic-pairs`, `--ref-paf` | none | Optional graph-path support evidence for gapfill mode. |
+| `--gaf` | none | Optional long-read graph traversal evidence for scaffold and gapfill modes. Scaffold mode requires `--gfa` when `--gaf` is provided. |
+| `--hic-pairs`, `--ref-paf` | none | Optional graph-path support evidence for gapfill mode. |
 | `--include-fill-sequences` | off | In gapfill mode, include candidate fill sequence in the review table. |
 
 The planner threshold options mirror the corresponding executor command.

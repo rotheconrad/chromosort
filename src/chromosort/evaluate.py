@@ -9,6 +9,7 @@ from typing import Optional, Sequence
 from . import fix_contigs
 from . import gapfill as gapfill_mod
 from . import scaffold as scaffold_mod
+from .gaf import read_gaf, summarize_gaf_traversal
 from .graph import graph_node_evidence, read_gfa
 from .longreads import read_long_read_paf, summarize_breakpoint, summarize_contig_bridge
 from .paths import ensure_output_dirs
@@ -61,6 +62,12 @@ SCAFFOLD_REVIEW_COLUMNS = [
     "graph_status",
     "graph_direct_edge",
     "graph_path_nodes",
+    "gaf_path_nodes",
+    "gaf_path_support",
+    "gaf_best_alt_path_nodes",
+    "gaf_best_alt_support",
+    "gaf_support_status",
+    "gaf_selected_reads",
     "longread_bridge_reads",
     "longread_orientation_summary",
     "longread_read_order_summary",
@@ -161,6 +168,10 @@ def parse_scaffold_args(argv=None, prog=None):
         help="Output prefix. Writes <prefix>.scaffold_review.tsv.",
     )
     ap.add_argument("--gfa", default=None, help="Optional assembly graph GFA for junction context.")
+    ap.add_argument("--gaf", default=None, help="Optional long-read-to-graph GAF for junction path support.")
+    ap.add_argument("--min-gaf-mapq", type=int, default=20, help="Minimum GAF MAPQ for read-path support.")
+    ap.add_argument("--min-gaf-path-support", type=int, default=1)
+    ap.add_argument("--gaf-max-candidate-paths", type=int, default=2)
     ap.add_argument("--read-paf", default=None, help="Optional long-read-to-assembly PAF.")
     ap.add_argument("--min-read-mapq", type=int, default=0, help="Minimum MAPQ for --read-paf rows.")
     ap.add_argument("--read-terminal-window-bp", type=int, default=5_000)
@@ -423,6 +434,63 @@ def graph_gap_fields(graph_records, gap):
     }
 
 
+def empty_gaf_fields():
+    return {
+        "gaf_path_nodes": ".",
+        "gaf_path_support": ".",
+        "gaf_best_alt_path_nodes": ".",
+        "gaf_best_alt_support": ".",
+        "gaf_support_status": ".",
+        "gaf_selected_reads": ".",
+    }
+
+
+def gaf_scaffold_fields(graph, gaf_records, left_member, right_member, args):
+    if not gaf_records:
+        return empty_gaf_fields()
+    if graph is None:
+        fields = empty_gaf_fields()
+        fields["gaf_support_status"] = "missing_gfa"
+        return fields
+
+    left_node = scaffold_mod.graph_node_name(left_member, graph)
+    right_node = scaffold_mod.graph_node_name(right_member, graph)
+    missing_status = scaffold_mod.missing_graph_status(left_node, right_node)
+    if missing_status is not None:
+        fields = empty_gaf_fields()
+        fields["gaf_support_status"] = missing_status
+        return fields
+
+    paths = gapfill_mod.enumerate_graph_paths(
+        graph,
+        left_node,
+        right_node,
+        scaffold_mod.graph_orientation(left_member),
+        scaffold_mod.graph_orientation(right_member),
+        args.graph_max_path_edges,
+        args.gaf_max_candidate_paths,
+    ).paths
+    if not paths:
+        fields = empty_gaf_fields()
+        fields["gaf_support_status"] = "no_graph_path"
+        return fields
+
+    summary = summarize_gaf_traversal(
+        gaf_records,
+        paths,
+        selected_index=0,
+        min_support=args.min_gaf_path_support,
+    )
+    return {
+        "gaf_path_nodes": summary.selected_path_nodes,
+        "gaf_path_support": str(summary.selected_support),
+        "gaf_best_alt_path_nodes": summary.best_alt_path_nodes,
+        "gaf_best_alt_support": str(summary.best_alt_support),
+        "gaf_support_status": summary.support_status,
+        "gaf_selected_reads": ",".join(summary.selected_reads) if summary.selected_reads else ".",
+    }
+
+
 def member_name_candidates(member):
     candidates = [
         member.assignment.new_name,
@@ -478,8 +546,16 @@ def build_scaffold_events(args):
         raise ValueError("--fixed-gap-bp must be zero or greater")
     if args.graph_max_path_edges < 1:
         raise ValueError("--graph-max-path-edges must be at least 1")
+    if args.gaf_max_candidate_paths < 1:
+        raise ValueError("--gaf-max-candidate-paths must be at least 1")
+    if args.min_gaf_mapq < 0:
+        raise ValueError("--min-gaf-mapq must be zero or greater")
+    if args.min_gaf_path_support < 1:
+        raise ValueError("--min-gaf-path-support must be at least 1")
     if args.graph_overlap_policy != "report" and not args.gfa:
         raise ValueError("--graph-overlap-policy warn/confirm requires --gfa")
+    if args.gaf and not args.gfa:
+        raise ValueError("--gaf requires --gfa")
     assignments = scaffold_mod.read_assignments(args.assignments)
     records = scaffold_mod.read_ordered_fasta(args.ordered_fasta)
     groups, unassigned = scaffold_mod.group_scaffold_members(records, assignments)
@@ -501,6 +577,7 @@ def build_scaffold_events(args):
         if args.read_paf
         else None
     )
+    gaf_records = read_gaf(args.gaf, args.min_gaf_mapq) if args.gaf else []
 
     events = []
     for scaffold in scaffolds:
@@ -519,6 +596,7 @@ def build_scaffold_events(args):
                 "overlap_action": gap.overlap_action,
             }
             fields.update(graph_gap_fields(graph_records, gap))
+            fields.update(gaf_scaffold_fields(graph, gaf_records, left, right, args))
             fields.update(read_bridge_fields(read_evidence, left, right, args))
             events.append(
                 ReviewEvent(

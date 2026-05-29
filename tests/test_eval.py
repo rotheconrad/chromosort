@@ -190,9 +190,22 @@ class EvalTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = Path(tmp) / "sample"
             read_paf = Path(tmp) / "reads.paf"
+            graph = Path(tmp) / "graph.gfa"
+            gaf = Path(tmp) / "reads.gaf"
             read_paf.write_text(
                 "read1\t20\t0\t12\t+\tcontigA\t4\t0\t4\t4\t4\t60\n"
                 "read1\t20\t13\t20\t+\tcontigB\t3\t0\t3\t3\t3\t60\n"
+            )
+            graph.write_text(
+                "H\tVN:Z:1.0\n"
+                "S\tcontigA\tAAAA\tLN:i:4\n"
+                "S\tbridge\tNN\tLN:i:2\n"
+                "S\tcontigB\tTTT\tLN:i:3\n"
+                "L\tcontigA\t+\tbridge\t+\t0M\n"
+                "L\tbridge\t+\tcontigB\t+\t0M\n"
+            )
+            gaf.write_text(
+                "read_graph\t20\t0\t20\t+\t>contigA>bridge>contigB\t20\t0\t20\t20\t20\t60\n"
             )
             run_cli(
                 "eval",
@@ -201,6 +214,10 @@ class EvalTests(unittest.TestCase):
                 str(SCAFFOLD_DATA / "ordered.fa"),
                 "--assignments",
                 str(SCAFFOLD_DATA / "assignments.tsv"),
+                "--gfa",
+                str(graph),
+                "--gaf",
+                str(gaf),
                 "--read-paf",
                 str(read_paf),
                 "--read-min-anchor-bp",
@@ -218,6 +235,9 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["left_contig"], "chr1_contigA")
         self.assertEqual(rows[0]["right_contig"], "chr1_contigB")
         self.assertEqual(rows[0]["gap_bp"], "5")
+        self.assertEqual(rows[0]["gaf_path_nodes"], "contigA+,bridge+,contigB+")
+        self.assertEqual(rows[0]["gaf_path_support"], "1")
+        self.assertEqual(rows[0]["gaf_support_status"], "supports_selected")
         self.assertEqual(rows[0]["longread_bridge_reads"], "1")
         self.assertEqual(rows[0]["longread_read_order_summary"], "left_before_right:1")
 
