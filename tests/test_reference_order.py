@@ -285,6 +285,56 @@ class ReferenceOrderTests(unittest.TestCase):
                 ],
             )
 
+            summary = prefix.with_suffix(".run_summary.txt").read_text()
+            self.assertIn("paf_rows_observed\t6", summary)
+            self.assertIn("paf_rows_parseable\t6", summary)
+            self.assertIn("paf_rows_with_cg\t0", summary)
+            self.assertIn("paf_cigar_tag_present\tno", summary)
+            self.assertIn("paf_tp_A_P_observed\t6", summary)
+            self.assertIn("paf_tp_A_S_skipped\t0", summary)
+            self.assertIn("paf_warning\tPAF has no cg:Z CIGAR tags", summary)
+
+    def test_paf_metadata_reports_cigar_and_tp_classes(self):
+        from chromosort.reference_order import inspect_paf_metadata, paf_metadata_warning
+
+        with tempfile.TemporaryDirectory() as tmp:
+            paf = Path(tmp) / "sample.paf"
+            paf.write_text(
+                "query1\t100\t0\t50\t+\tchr1\t200\t0\t50\t50\t50\t60\ttp:A:P\tcg:Z:50M\n"
+                "query1\t100\t50\t100\t+\tchr1\t200\t50\t100\t50\t50\t60\ttp:A:S\n"
+                "query2\t80\t0\t40\t-\tchr2\t100\t0\t40\t39\t40\t30\ttp:A:I\tcg:Z:39M1I\n"
+                "query3\t70\t0\t35\t+\tchr2\t100\t40\t75\t35\t35\t20\n"
+                "not_a_paf_row\n"
+            )
+
+            metadata = inspect_paf_metadata(paf)
+
+            self.assertEqual(metadata.data_rows, 5)
+            self.assertEqual(metadata.parseable_rows, 4)
+            self.assertEqual(metadata.malformed_rows, 1)
+            self.assertEqual(metadata.rows_with_cg, 2)
+            self.assertEqual(metadata.rows_without_cg, 2)
+            self.assertEqual(metadata.tp_counts["A_P"], 1)
+            self.assertEqual(metadata.tp_counts["A_S"], 1)
+            self.assertEqual(metadata.tp_counts["A_I"], 1)
+            self.assertEqual(metadata.tp_counts["missing"], 1)
+            self.assertIsNone(paf_metadata_warning(metadata))
+
+    def test_paf_metadata_warns_when_cigar_tags_are_absent(self):
+        from chromosort.reference_order import inspect_paf_metadata, paf_metadata_warning
+
+        with tempfile.TemporaryDirectory() as tmp:
+            paf = Path(tmp) / "sample.paf"
+            paf.write_text(
+                "query1\t100\t0\t50\t+\tchr1\t200\t0\t50\t50\t50\t60\ttp:A:P\n"
+                "query1\t100\t50\t100\t+\tchr1\t200\t50\t100\t50\t50\t60\ttp:A:S\n"
+            )
+
+            metadata = inspect_paf_metadata(paf)
+
+            self.assertEqual(metadata.rows_with_cg, 0)
+            self.assertIn("minimap2 -c", paf_metadata_warning(metadata))
+
     def test_graph_assignment_report_summarizes_gfa_context(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = run_graph_sort(Path(tmp))

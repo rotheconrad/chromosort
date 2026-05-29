@@ -81,7 +81,7 @@ chromo sort \
 | `<prefix>.contig_ref_matches.tsv` | One row per contig-reference match before final assignment. |
 | `<prefix>.chromosome_summary.tsv` | One row per reference sequence with ordered contig lists and covered reference bp. |
 | `<prefix>.graph_assignments.tsv` | Optional report-only graph evidence for assignment and duplicate-overlap decisions when `--gfa` is provided. |
-| `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, and status counts. |
+| `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, status counts, and PAF diagnostics when `--paf` is used. |
 
 ### Example `chromo sort` Output
 

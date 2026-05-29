@@ -38,7 +38,7 @@ filtering, reference coverage, and the final reference-ordered FASTA.
 | `<prefix>.contig_ref_matches.tsv` | One row per contig-reference match before final assignment. |
 | `<prefix>.chromosome_summary.tsv` | One row per reference sequence with retained contig lists and covered reference bp. |
 | `<prefix>.graph_assignments.tsv` | Optional report-only graph evidence for assignment and duplicate-overlap decisions when `--gfa` is provided. |
-| `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, and status counts. |
+| `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, status counts, and PAF diagnostics when `--paf` is used. |
 
 **Table 2. Example `contig_assignments.tsv` rows.** Selected columns from the
 synthetic fixture show common status classes.

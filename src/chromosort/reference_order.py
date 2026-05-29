@@ -60,6 +60,23 @@ class Segment:
 
 
 @dataclass
+class PafMetadata:
+    data_rows: int = 0
+    parseable_rows: int = 0
+    malformed_rows: int = 0
+    rows_with_cg: int = 0
+    tp_counts: Counter = field(default_factory=Counter)
+
+    @property
+    def rows_without_cg(self):
+        return self.parseable_rows - self.rows_with_cg
+
+    @property
+    def has_cg(self):
+        return self.rows_with_cg > 0
+
+
+@dataclass
 class MatchMetrics:
     query: str
     ref: str
@@ -569,6 +586,48 @@ def parse_paf_line(line):
         orientation=strand,
         mapq=mapq,
         is_secondary=is_secondary,
+    )
+
+
+def paf_tp_label(tags):
+    tag = tags.get("tp")
+    if tag is None:
+        return "missing"
+    tag_type, tag_value = tag
+    if tag_type == "A" and tag_value:
+        return f"A_{tag_value}"
+    return "other"
+
+
+def inspect_paf_metadata(path):
+    metadata = PafMetadata()
+    with open_text(path) as fh:
+        for line in fh:
+            if not line.strip() or line.startswith("#"):
+                continue
+            metadata.data_rows += 1
+            cols = line.rstrip("\n").split("\t")
+            if len(cols) < 12:
+                metadata.malformed_rows += 1
+                continue
+            segment = parse_paf_line(line)
+            if segment is None:
+                metadata.malformed_rows += 1
+                continue
+            tags = parse_paf_tags(cols)
+            metadata.parseable_rows += 1
+            if "cg" in tags:
+                metadata.rows_with_cg += 1
+            metadata.tp_counts[paf_tp_label(tags)] += 1
+    return metadata
+
+
+def paf_metadata_warning(metadata):
+    if metadata is None or metadata.parseable_rows == 0 or metadata.has_cg:
+        return None
+    return (
+        "PAF has no cg:Z CIGAR tags; minimap2 -c --secondary=no is "
+        "recommended for ChromoSort identity summaries and filters."
     )
 
 
@@ -1563,7 +1622,16 @@ def write_chromosome_summary(path, ref_records, kept_assignments):
             out.write("\t".join(str(x) for x in row) + "\n")
 
 
-def write_run_summary(path, args, output_paths, ref_records, query_records, assignments, skipped_unknown_query):
+def write_run_summary(
+    path,
+    args,
+    output_paths,
+    ref_records,
+    query_records,
+    assignments,
+    skipped_unknown_query,
+    paf_metadata=None,
+):
     status_counts = Counter(a.status for a in assignments.values())
     kept = sum(1 for a in assignments.values() if a.kept)
     alignment_path, alignment_format = alignment_source_from_args(args)
@@ -1616,6 +1684,20 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
             out.write(f"coords_rows_skipped_unknown_query\t{skipped_unknown_query}\n")
         else:
             out.write(f"paf_rows_skipped_unknown_query\t{skipped_unknown_query}\n")
+            if paf_metadata is not None:
+                out.write(f"paf_rows_observed\t{paf_metadata.data_rows}\n")
+                out.write(f"paf_rows_parseable\t{paf_metadata.parseable_rows}\n")
+                out.write(f"paf_rows_malformed\t{paf_metadata.malformed_rows}\n")
+                out.write(f"paf_rows_with_cg\t{paf_metadata.rows_with_cg}\n")
+                out.write(f"paf_rows_without_cg\t{paf_metadata.rows_without_cg}\n")
+                out.write(f"paf_cigar_tag_present\t{'yes' if paf_metadata.has_cg else 'no'}\n")
+                for label, count in sorted(paf_metadata.tp_counts.items()):
+                    out.write(f"paf_tp_{label}_observed\t{count}\n")
+                skipped_secondary = 0 if args.include_secondary_paf else paf_metadata.tp_counts.get("A_S", 0)
+                out.write(f"paf_tp_A_S_skipped\t{skipped_secondary}\n")
+                warning = paf_metadata_warning(paf_metadata)
+                if warning:
+                    out.write(f"paf_warning\t{warning}\n")
         for status, count in sorted(status_counts.items()):
             out.write(f"status_{status}\t{count}\n")
         out.write(
@@ -1639,6 +1721,7 @@ def main(argv=None, prog=None):
         sys.exit(2)
     alignment_path, alignment_format = alignment_source_from_args(args)
     prefix = Path(args.output_prefix)
+    paf_metadata = inspect_paf_metadata(alignment_path) if alignment_format == "paf" else None
 
     output_paths = {
         "ordered_fasta": Path(str(prefix) + ".ordered.fa"),
@@ -1667,6 +1750,9 @@ def main(argv=None, prog=None):
         min_mapq=args.min_mapq,
         include_secondary_paf=args.include_secondary_paf,
     )
+    warning = paf_metadata_warning(paf_metadata)
+    if warning:
+        sys.stderr.write(f"WARNING: {warning}\n")
     assignments = choose_assignments(query_records, by_query, args)
     resolve_duplicate_overlaps(assignments, args)
     kept_assignments = order_assignments(
@@ -1692,6 +1778,7 @@ def main(argv=None, prog=None):
         query_records,
         assignments,
         skipped_unknown_query,
+        paf_metadata,
     )
 
     if not args.reports_only:
