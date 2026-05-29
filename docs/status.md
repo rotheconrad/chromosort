@@ -17,6 +17,9 @@ ChromoSort is under active development. Current version: `0.2.25`.
 - `chromo fix`
 - `chromo cut`
 - `chromo manual`
+- `chromo manual fix`
+- `chromo manual scaffold`
+- `chromo manual gapfill`
 - `chromo plot`
 - `chromo scaffold`
 - `chromo gapfill`
@@ -33,7 +36,8 @@ The next planned production upgrade is captured in the
 [Production Upgrade Roadmap]({{ '/roadmap/' | relative_url }}). The roadmap
 describes planned table workflows and task-specific `manual` dashboards for
 reviewed `fix`, `scaffold`, and `gapfill` decisions. `chromo eval fix`,
-`chromo eval scaffold`, and `chromo eval gapfill` are now available.
+`chromo eval scaffold`, `chromo eval gapfill`, and task-specific
+`chromo manual` review modes are now available.
 
 ## Development Checks
 

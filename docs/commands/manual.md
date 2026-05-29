@@ -17,11 +17,13 @@ kept at the end until you remove them.
 
 `chromo manual` can combine sorting-style and fixing-style review in one human
 workflow: you can remove unaligned contigs, reorder pieces, invert pieces, add
-breakpoints, label scaffolds, and export a reviewed FASTA or recipe. The dot
-plots in the dashboard still come from the original coords or PAF file. After
-exporting a manual FASTA, re-run MUMmer or minimap2 before using that FASTA as
-the assembly input to `chromo sort`, `chromo plot`, `chromo scaffold`, or other
-alignment-dependent steps.
+breakpoints, label scaffolds, and export a reviewed FASTA or recipe. Task modes
+`chromo manual fix`, `chromo manual scaffold`, and `chromo manual gapfill` add
+a focused review-event queue from `chromo eval` tables while keeping the same
+browse-around dashboard. The dot plots in the dashboard still come from the
+original coords or PAF file. After exporting a manual FASTA, re-run MUMmer or
+minimap2 before using that FASTA as the assembly input to `chromo sort`,
+`chromo plot`, `chromo scaffold`, or other alignment-dependent steps.
 
 ## Run `chromo manual`
 
@@ -44,6 +46,29 @@ chromo manual \
   --paf paf/sample.paf \
   --output-html results/sample.manual.html
 ```
+
+## Run A Task-Specific Manual Dashboard
+
+```bash
+chromo eval fix \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --all \
+  --output-prefix results/sample.eval_fix
+
+chromo manual fix \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --review-table results/sample.eval_fix.fix_review.tsv \
+  --output-html results/sample.manual_fix.html
+```
+
+The same pattern works for `chromo manual scaffold` with
+`<prefix>.scaffold_review.tsv` and `chromo manual gapfill` with
+`<prefix>.gapfill_review.tsv`. A task dashboard embeds the shared review events,
+shows them as a queue, and selecting an event focuses the corresponding contig
+or junction target when that source is present in the dashboard FASTA.
 
 When `--gfa` is provided, the manual dashboard embeds per-contig graph context
 beside the dot plot review. Contig badges and details show whether the matching
@@ -80,6 +105,8 @@ The manual dashboard provides:
   See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for examples of
   common patterns to look for during review.
 - Optional GFA node badges and neighbor details when generated with `--gfa`.
+- An optional task-specific review-event queue when generated with
+  `--review-table`.
 - A graph filter for `simple`, `branching`, `self_loop`, and `missing` graph
   neighborhoods, plus a read-only neighborhood panel for the selected contig.
 - A click-to-stage breakpoint position from the selected contig dot plot.
@@ -162,6 +189,7 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 | `--suggested-output-fasta` | `<assembly>.manual.fa` | Suggested browser download filename for FASTA export. |
 | `--embed-sequences` | off | Embed full assembly sequences in the HTML for single-file export. Best for small assemblies. |
 | `--gfa` | none | Optional assembly graph GFA for per-contig node status, graph complexity, degree, coverage tag, and neighbor context. |
+| `--review-table` | none | Optional shared review-event TSV from `chromo eval`; in `manual fix`, `manual scaffold`, and `manual gapfill`, events are embedded as a focused queue. |
 | `--min-segment-bp` | `0` | Minimum alignment row length to embed in the dashboard. |
 | `--min-segment-idy` | `0.0` | Minimum percent identity for embedded alignment rows. |
 | `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |

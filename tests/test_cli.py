@@ -57,6 +57,9 @@ class CliTests(unittest.TestCase):
         cut_help = run_cli("cut", "--help").stdout
         manual_help = run_cli("manual", "--help").stdout
         manual_apply_help = run_cli("manual", "apply", "--help").stdout
+        manual_fix_help = run_cli("manual", "fix", "--help").stdout
+        manual_scaffold_help = run_cli("manual", "scaffold", "--help").stdout
+        manual_gapfill_help = run_cli("manual", "gapfill", "--help").stdout
         scaffold_help = run_cli("scaffold", "--help").stdout
         gapfill_help = run_cli("gapfill", "--help").stdout
         plot_help = run_cli("plot", "--help").stdout
@@ -91,6 +94,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("--embed-sequences", manual_help)
         self.assertIn("--gfa", manual_help)
         self.assertIn("--recipe", manual_apply_help)
+        self.assertIn("--review-table", manual_fix_help)
+        self.assertIn("--review-table", manual_scaffold_help)
+        self.assertIn("--review-table", manual_gapfill_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--reviewed-plan", scaffold_help)
         self.assertIn("--gfa", scaffold_help)

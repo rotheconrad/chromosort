@@ -19,7 +19,7 @@ same FASTA records used by the command you are running.
 | Prepare fix review tables with `chromo eval fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for graph context, long-read-to-assembly PAF |
 | Fix chimeric contigs with `chromo fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for report-only graph context |
 | Cut reviewed coordinates with `chromo cut` | Assembly FASTA and explicit cut positions | Assembly FAI |
-| Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, FASTA indexes, embedded sequences |
+| Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, FASTA indexes, embedded sequences, `chromo eval` review table for task modes |
 | Plot alignments with `chromo plot` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | Assignment TSV for ChromoSort query ordering, FASTA indexes. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation examples. |
 | Prepare scaffold review tables with `chromo eval scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for graph junction context, long-read-to-assembly PAF |
 | Scaffold sorted contigs with `chromo scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for report-only graph junction evidence |

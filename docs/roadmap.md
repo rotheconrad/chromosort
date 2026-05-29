@@ -139,7 +139,7 @@ The shared evidence layer should summarize:
 | 3. Implement `chromo eval fix` and `chromo fix` reviewed-table application. | Done | Added `chromo eval fix` table generation and `chromo fix --reviewed-plan` application for accepted `split_piece` rows. |
 | 4. Implement `chromo eval scaffold` and `chromo scaffold` reviewed-table application. | Done | Added table-only scaffold junction evaluation with GFA and long-read bridge context, plus accepted gap overrides through `chromo scaffold --reviewed-plan`. |
 | 5. Align `chromo eval gapfill` with current gapfill plan semantics and add any missing reviewed-table compatibility. | Done | Added table-only gapfill evaluation from the existing graph path planner, long-read bridge context, and `chromo gapfill --reviewed-plan` support for the shared review-event table. |
-| 6. Refactor `chromo manual` into task-specific modes over the same review-event model. | Planned |  |
+| 6. Refactor `chromo manual` into task-specific modes over the same review-event model. | Done | Added `chromo manual fix`, `chromo manual scaffold`, and `chromo manual gapfill` modes with shared review-event table embedding and focused event queues inside the existing exploratory dashboard. |
 | 7. Expand docs and tests around mixed algorithmic-plus-reviewed workflows. | Planned |  |
 
 ## Guardrails

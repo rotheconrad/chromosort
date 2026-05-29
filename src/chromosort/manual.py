@@ -21,9 +21,11 @@ from .reference_order import (
     reverse_complement,
     write_wrapped,
 )
+from .review import read_review_events
 
 
 SCHEMA = "chromosort-manual-v1"
+MANUAL_TASKS = {"fix", "scaffold", "gapfill"}
 
 
 @dataclass
@@ -42,7 +44,7 @@ class ManualPiece:
         return self.end - self.start + 1
 
 
-def parse_generate_args(argv=None, prog=None):
+def parse_generate_args(argv=None, prog=None, manual_task="general"):
     ap = argparse.ArgumentParser(
         prog=prog,
         description=(
@@ -99,6 +101,14 @@ def parse_generate_args(argv=None, prog=None):
         ),
     )
     ap.add_argument(
+        "--review-table",
+        default=None,
+        help=(
+            "Optional shared review-event TSV from chromo eval. In task modes, "
+            "the dashboard opens around these candidate events."
+        ),
+    )
+    ap.add_argument(
         "--min-segment-bp",
         type=int,
         default=0,
@@ -127,7 +137,9 @@ def parse_generate_args(argv=None, prog=None):
         default=0,
         help="Maximum number of alignment rows embedded after filtering; 0 means no limit.",
     )
-    return ap.parse_args(argv)
+    args = ap.parse_args(argv)
+    args.manual_task = manual_task
+    return args
 
 
 def parse_apply_args(argv=None, prog=None):
@@ -418,6 +430,55 @@ def build_initial_pieces(query_items):
     return pieces
 
 
+def review_event_sources(event):
+    fields = event.fields
+    candidates = [
+        fields.get("source_contig"),
+        fields.get("new_contig"),
+        fields.get("left_contig"),
+        fields.get("right_contig"),
+        fields.get("scaffold"),
+        event.target,
+    ]
+    sources = []
+    for candidate in candidates:
+        if candidate in {None, "", "."}:
+            continue
+        text = str(candidate)
+        for delimiter in (":", "|", ","):
+            text = text.replace(delimiter, " ")
+        for part in text.split():
+            if part and part != "." and part not in sources:
+                sources.append(part)
+    return sources
+
+
+def review_event_to_dict(event):
+    return {
+        "event_id": event.event_id,
+        "task": event.task,
+        "action": event.action,
+        "target": event.target,
+        "accept": event.accept,
+        "status": event.status,
+        "confidence": event.confidence,
+        "reason": event.reason,
+        "notes": event.notes,
+        "fields": event.fields,
+        "sources": review_event_sources(event),
+    }
+
+
+def load_review_events(path, task):
+    if not path:
+        return []
+    expected_task = task if task in MANUAL_TASKS else None
+    return [
+        review_event_to_dict(event)
+        for event in read_review_events(path, expected_task=expected_task)
+    ]
+
+
 def build_dashboard_data(args):
     alignment_path, alignment_format = alignment_source_from_args(args)
     ref_records, ref_by_name = read_fasta_lengths(args.ref_fasta, args.ref_fai)
@@ -458,16 +519,21 @@ def build_dashboard_data(args):
     if not suggested:
         suggested = str(Path(args.assembly_fasta).with_suffix(".manual.fa").name)
 
+    manual_task = getattr(args, "manual_task", "general")
+    review_events = load_review_events(args.review_table, manual_task)
+
     return {
         "schema": SCHEMA,
         "version": __version__,
-        "mode": "manual-dashboard",
+        "mode": f"manual-{manual_task}" if manual_task in MANUAL_TASKS else "manual-dashboard",
+        "reviewTask": manual_task,
         "inputs": {
             "refFasta": str(args.ref_fasta),
             "assemblyFasta": str(args.assembly_fasta),
             "alignmentFormat": alignment_format,
             "alignmentPath": str(alignment_path),
             "gfa": str(args.gfa) if args.gfa else None,
+            "reviewTable": str(args.review_table) if args.review_table else None,
         },
         "settings": {
             "minSegmentBp": args.min_segment_bp,
@@ -487,6 +553,7 @@ def build_dashboard_data(args):
             "allMatchRows": len(matches),
             "embeddedSequenceCount": len(sequences),
             "embeddedSequenceBp": sum(len(seq) for seq in sequences.values()),
+            "reviewEvents": len(review_events),
             "graphContigsPresent": sum(
                 1 for item in query_items
                 if item.get("graph")
@@ -512,6 +579,7 @@ def build_dashboard_data(args):
         "initialPieces": build_initial_pieces(query_items),
         "segments": segments,
         "sequences": sequences,
+        "reviewEvents": review_events,
     }
 
 
@@ -725,6 +793,11 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             apply_prog = f"{prog} apply" if prog else None
             args = parse_apply_args(argv[1:], prog=apply_prog)
             run_apply(args)
+        elif argv and argv[0] in MANUAL_TASKS:
+            mode = argv[0]
+            mode_prog = f"{prog} {mode}" if prog else None
+            args = parse_generate_args(argv[1:], prog=mode_prog, manual_task=mode)
+            run_generate(args)
         else:
             args = parse_generate_args(argv, prog=prog)
             run_generate(args)
@@ -863,6 +936,47 @@ input[type="file"] {
 .piece-list {
   overflow: auto;
   min-height: 0;
+}
+.event-panel {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #f8fafc;
+}
+.event-panel.hidden { display: none; }
+.event-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.event-list {
+  display: grid;
+  gap: 6px;
+  max-height: 190px;
+  overflow: auto;
+}
+.event-row {
+  display: grid;
+  gap: 3px;
+  padding: 7px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+}
+.event-row:hover { border-color: var(--focus); }
+.event-row.selected {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.event-row strong, .event-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .piece-row {
   display: grid;
@@ -1076,6 +1190,10 @@ label input, label select {
       <button id="removeUnaligned">Remove unaligned</button>
       <button id="restoreAll">Restore all</button>
     </div>
+    <div class="event-panel hidden" id="eventPanel">
+      <div class="event-title" id="eventTitle">Review events</div>
+      <div class="event-list" id="eventList"></div>
+    </div>
     <div class="stats" id="stats"></div>
     <div class="piece-list" id="pieceList"></div>
   </aside>
@@ -1120,7 +1238,11 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
 (() => {
   const data = window.CHROMOSORT_MANUAL_DATA;
   let pieces = data.initialPieces.map(p => ({...p}));
-  let selectedId = pieces.length ? pieces[0].id : null;
+  const reviewEvents = data.reviewEvents || [];
+  let selectedEventId = reviewEvents.length ? reviewEvents[0].event_id : null;
+  let selectedId = reviewEvents.length
+    ? (pieceIdForEvent(reviewEvents[0]) || (pieces.length ? pieces[0].id : null))
+    : (pieces.length ? pieces[0].id : null);
   let nextId = pieces.length + 1;
   let sequences = {...(data.sequences || {})};
   let scaffoldEnabled = false;
@@ -1137,6 +1259,9 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     stats: document.getElementById("stats"),
     search: document.getElementById("search"),
     graphFilter: document.getElementById("graphFilter"),
+    eventPanel: document.getElementById("eventPanel"),
+    eventTitle: document.getElementById("eventTitle"),
+    eventList: document.getElementById("eventList"),
     pieceList: document.getElementById("pieceList"),
     selectedName: document.getElementById("selectedName"),
     selectedMeta: document.getElementById("selectedMeta"),
@@ -1167,6 +1292,28 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     return pieces.find(p => p.id === selectedId) || pieces[0] || null;
   }
 
+  function selectedEvent() {
+    return reviewEvents.find(evt => evt.event_id === selectedEventId) || null;
+  }
+
+  function eventSources(evt) {
+    return (evt && evt.sources ? evt.sources : []).map(String);
+  }
+
+  function pieceIdForEvent(evt) {
+    const sources = new Set(eventSources(evt));
+    if (!sources.size) return null;
+    const piece = pieces.find(p => sources.has(p.source) || sources.has(p.name));
+    return piece ? piece.id : null;
+  }
+
+  function pieceEventCount(piece) {
+    return reviewEvents.filter(evt => {
+      const sources = new Set(eventSources(evt));
+      return sources.has(piece.source) || sources.has(piece.name);
+    }).length;
+  }
+
   function pieceLength(piece) {
     return piece.end - piece.start + 1;
   }
@@ -1188,6 +1335,8 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
         badges.push(`<span class="badge ${graphClass}">${escapeHtml(graph.graphComplexity)}</span>`);
       }
     }
+    const eventCount = pieceEventCount(piece);
+    if (eventCount) badges.push(`<span class="badge blue">${eventCount} event${eventCount === 1 ? "" : "s"}</span>`);
     if (piece.removed) badges.push('<span class="badge red">removed</span>');
     return badges.join("");
   }
@@ -1304,11 +1453,50 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       ["Aligned", data.stats.alignedContigs],
       ["Unaligned", data.stats.unalignedContigs]
     ];
+    if (reviewEvents.length) {
+      stats.push(["Events", reviewEvents.length]);
+    }
     if (data.inputs.gfa) {
       stats.push(["Graph present", data.stats.graphContigsPresent || 0]);
       stats.push(["Graph branching", data.stats.graphBranchingContigs || 0]);
     }
     els.stats.innerHTML = stats.map(([label, value]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+  }
+
+  function eventBadgeClass(evt) {
+    if (!evt.accept) return "amber";
+    if (evt.status === "fillable" || evt.status === "candidate" || evt.status === "split") return "green";
+    return "blue";
+  }
+
+  function renderEventList() {
+    if (!els.eventPanel || !els.eventList) return;
+    if (!reviewEvents.length) {
+      els.eventPanel.classList.add("hidden");
+      els.eventList.innerHTML = "";
+      return;
+    }
+    els.eventPanel.classList.remove("hidden");
+    els.eventTitle.textContent = (data.reviewTask || "review") + " events";
+    els.eventList.innerHTML = reviewEvents.map(evt => {
+      const selected = evt.event_id === selectedEventId ? " selected" : "";
+      const fields = evt.fields || {};
+      const support = fields.longread_bridge_reads || fields.longread_spanning_reads || fields.graph_status || "";
+      return `<div class="event-row${selected}" data-event-id="${escapeHtml(evt.event_id)}">
+        <strong title="${escapeHtml(evt.target)}">${escapeHtml(evt.action)} | ${escapeHtml(evt.target)}</strong>
+        <span>${escapeHtml(evt.status)} | ${escapeHtml(evt.reason || ".")}</span>
+        <span><span class="badge ${eventBadgeClass(evt)}">${evt.accept ? "accepted" : "review"}</span> ${escapeHtml(support)}</span>
+      </div>`;
+    }).join("");
+    els.eventList.querySelectorAll(".event-row").forEach(row => {
+      row.addEventListener("click", () => {
+        selectedEventId = row.dataset.eventId;
+        const evt = selectedEvent();
+        const pieceId = pieceIdForEvent(evt);
+        if (pieceId) selectedId = pieceId;
+        render();
+      });
+    });
   }
 
   function renderList() {
@@ -1362,6 +1550,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     }
     const q = queriesByName.get(piece.source) || {};
     const graph = q.graph || null;
+    const evt = selectedEvent();
     els.selectedName.textContent = piece.name;
     els.selectedMeta.textContent = [
       piece.source + ":" + piece.start + "-" + piece.end,
@@ -1369,7 +1558,10 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       q.bestRef ? "best " + q.bestRef + ":" + q.refStart + "-" + q.refEnd : "unaligned",
       q.queryCov ? "query cov " + (q.queryCov * 100).toFixed(1) + "%" : ""
     ].filter(Boolean).join(" | ");
-    els.selectedGraph.textContent = graphDetail(graph);
+    els.selectedGraph.textContent = [
+      graphDetail(graph),
+      evt ? "Event: " + evt.action + " | " + evt.status + " | " + evt.target : ""
+    ].filter(Boolean).join(" | ");
     renderGraphPanel(q, graph);
     els.cutPos.value = "";
     els.cutPos.min = String(piece.start);
@@ -1379,6 +1571,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
   }
 
   function render() {
+    renderEventList();
     renderStats();
     renderList();
     renderDetails();

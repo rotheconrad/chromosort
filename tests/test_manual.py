@@ -73,6 +73,29 @@ def run_manual_apply(tmp_path, assembly_fasta, recipe, *extra_args):
     return output_fasta, report
 
 
+def run_manual_mode(tmp_path, mode, *extra_args):
+    output_html = tmp_path / f"{mode}.html"
+    cmd = [
+        sys.executable,
+        "-m",
+        "chromosort.manual",
+        mode,
+        "--ref-fasta",
+        str(DATA / "ref.fa"),
+        "--assembly-fasta",
+        str(DATA / "assembly.fa"),
+        "--paf",
+        str(DATA / "sample.paf"),
+        "--output-html",
+        str(output_html),
+        *extra_args,
+    ]
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "src")
+    subprocess.run(cmd, cwd=ROOT, check=True, env=env)
+    return output_html
+
+
 def html_data(path):
     text = path.read_text()
     marker = "window.CHROMOSORT_MANUAL_DATA = "
@@ -185,6 +208,25 @@ class ManualTests(unittest.TestCase):
             self.assertTrue(left_outgoing["reverse_only"]["otherAligned"])
             self.assertEqual(graph_by_name["isolated"]["graphComplexity"], "simple")
             self.assertTrue(graph_by_name["bridge_alt"]["graphSelfLoop"])
+
+    def test_manual_fix_mode_embeds_review_event_queue(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            review = tmp_path / "fix_review.tsv"
+            review.write_text(
+                "schema\tevent_id\ttask\taction\ttarget\taccept\tstatus\tconfidence\treason\tnotes\tsource_contig\tnew_contig\n"
+                "chromosort-review-event-v1\tfix:contigA:1\tfix\tsplit_piece\tcontigA\tyes\tcandidate\t.\ttest\t\tcontigA\tcontigA_left\n"
+            )
+            output_html = run_manual_mode(tmp_path, "fix", "--review-table", str(review))
+            text = output_html.read_text()
+            data = html_data(output_html)
+
+            self.assertIn("eventPanel", text)
+            self.assertEqual(data["mode"], "manual-fix")
+            self.assertEqual(data["reviewTask"], "fix")
+            self.assertEqual(data["stats"]["reviewEvents"], 1)
+            self.assertEqual(data["reviewEvents"][0]["task"], "fix")
+            self.assertEqual(data["reviewEvents"][0]["sources"], ["contigA", "contigA_left"])
 
     def test_manual_apply_piece_recipe_cuts_inverts_and_removes(self):
         with tempfile.TemporaryDirectory() as tmp:
