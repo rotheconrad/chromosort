@@ -116,9 +116,16 @@ For normal reference ordering, minimap2 should be run with the reference FASTA
 as target and the assembly FASTA as query:
 
 ```bash
-minimap2 -x asm5 -t 16 --secondary=no reference.fa assembly.fa \
+minimap2 -x asm5 -c -t 16 --secondary=no reference.fa assembly.fa \
   > paf/sample.ref_vs_asm.paf
 ```
+
+`-c` asks minimap2 to perform base-level alignment and write CIGAR-bearing PAF
+rows. ChromoSort does not parse the CIGAR string directly, but the base-level
+alignment changes the PAF match and block-length columns that ChromoSort uses
+for identity summaries and optional identity filters. Without `-c`, long
+assembly alignments can have misleadingly low PAF column identity even when the
+minimap2 divergence tags indicate a close match.
 
 ### GFA
 
@@ -232,6 +239,7 @@ name=sample
 
 minimap2 \
   -x asm5 \
+  -c \
   -t 16 \
   --secondary=no \
   "$ref" \
@@ -258,7 +266,9 @@ chromo plot \
 `chromo fix`, and `chromo plot`. For PAF input, ChromoSort computes percent
 identity from the PAF match and block-length columns, uses the PAF strand for
 orientation, and skips rows marked `tp:A:S` unless `--include-secondary-paf` is
-set. Use `--min-mapq` to ignore low-MAPQ PAF rows.
+set. `--secondary=no` keeps those skipped secondary rows out of the PAF file in
+the first place, reducing file size and making downstream review less noisy. Use
+`--min-mapq` to ignore low-MAPQ PAF rows.
 
 ### Choosing `asm5`, `asm10`, or `asm20`
 
@@ -283,15 +293,23 @@ chromosome-scale alignments:
 A practical progression is to start with `asm5` for same-species work, move to
 `asm10` only if expected contigs are missing or highly fragmented, and reserve
 `asm20` for clearly more divergent references. When using `asm10` or `asm20`,
-review `chromo plot` output and consider stricter ChromoSort filters such as
-`--min-mapq`, `--min-segment-idy`, and larger minimum aligned-bp thresholds. If
-`asm20` still gives sparse placements, the chosen reference may be too distant
-for automated chromosome assignment without substantial manual review.
+keep `-c --secondary=no` in the minimap2 command, review `chromo plot` output,
+and consider stricter ChromoSort filters such as `--min-mapq` and larger minimum
+aligned-bp thresholds. Identity filtering can also be useful, but check the PAF
+identity distribution from your chosen preset before setting `--min-segment-idy`
+because PAF column identity is not always directly comparable to MUMmer coords
+percent identity.
 
-ChromoSort does not need minimap2's `--cs` tag or SAM output. Plain PAF from
-`minimap2 -x asm5|asm10|asm20 reference.fa assembly.fa` is sufficient because
-ChromoSort reads the PAF coordinates, lengths, strand, match count, block
-length, MAPQ, and names.
+ChromoSort does not need minimap2's `--cs` tag or SAM output. Recommended PAF
+comes from:
+
+```bash
+minimap2 -x asm5 -c --secondary=no reference.fa assembly.fa
+```
+
+Use `asm10` or `asm20` in place of `asm5` when the stricter preset misses
+expected chromosome-scale alignments. ChromoSort reads the PAF coordinates,
+lengths, strand, match count, block length, MAPQ, and names.
 
 ## Graph Input Files
 
@@ -342,6 +360,7 @@ alignment:
 ```bash
 minimap2 \
   -x asm5 \
+  -c \
   -t 16 \
   --secondary=no \
   reference.fa \
@@ -370,7 +389,7 @@ If you run `chromo fix` and create a new fixed FASTA, re-align the fixed FASTA
 and keep that second PAF beside the fixed results:
 
 ```bash
-minimap2 -x asm5 -t 16 --secondary=no reference.fa results/sample.fixed.fa \
+minimap2 -x asm5 -c -t 16 --secondary=no reference.fa results/sample.fixed.fa \
   > paf/sample.fixed.ref_vs_asm.paf
 ```
 
@@ -388,6 +407,7 @@ GFA or assembler output and align those graph nodes to the reference:
 ```bash
 minimap2 \
   -x asm5 \
+  -c \
   -t 16 \
   --secondary=no \
   reference.fa \
