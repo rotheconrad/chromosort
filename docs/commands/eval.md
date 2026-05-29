@@ -63,6 +63,7 @@ chromo eval scaffold \
   --assignments results/sample.contig_assignments.tsv \
   --output-prefix results/sample.eval_scaffold \
   --gfa assembly_graph.gfa \
+  --gaf reads_to_graph.gaf \
   --read-paf reads_to_assembly.paf
 ```
 
@@ -96,6 +97,11 @@ old spreadsheet cannot silently change a new scaffold.
 
 Long-read scaffold evidence is summarized as bridge-read counts, orientation
 summaries, read-order summaries, and median read-space gap estimates.
+GAF scaffold evidence reports the first selected GFA path, its supporting read
+count, the best alternate path and count when present, and a compact status such
+as `supports_selected`, `supports_alternate`, `tied_support`, or `no_support`.
+These fields are advisory for `chromo scaffold`; accepted reviewed rows pin gap
+lengths, not graph branches.
 
 ## Run `chromo eval gapfill`
 

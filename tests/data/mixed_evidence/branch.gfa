@@ -1,0 +1,9 @@
+H	VN:Z:1.0
+S	contigA	AAAA	LN:i:4
+S	bridge_good	NN	LN:i:2
+S	bridge_alt	TT	LN:i:2
+S	contigB	TTT	LN:i:3
+L	contigA	+	bridge_good	+	0M
+L	bridge_good	+	contigB	+	0M
+L	contigA	+	bridge_alt	+	0M
+L	bridge_alt	+	contigB	+	0M

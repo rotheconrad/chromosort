@@ -85,6 +85,7 @@ chromo eval fix \
   --all \
   --gfa assembly_graph.gfa \
   --read-paf reads_to_assembly.paf \
+  --gaf reads_to_graph.gaf \
   --output-prefix results/sample.eval_fix
 
 chromo manual fix \
@@ -92,6 +93,9 @@ chromo manual fix \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
   --review-table results/sample.eval_fix.fix_review.tsv \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_assembly.paf \
+  --gaf reads_to_graph.gaf \
   --output-html results/sample.manual_fix.html
 
 chromo fix \
@@ -109,6 +113,14 @@ The same loop applies to scaffold and gapfill decisions:
   feed `chromo gapfill --reviewed-plan --apply`.
 - `chromo manual scaffold` and `chromo manual gapfill` load those same tables
   with `--review-table` when you want visual context before executing.
+
+The `eval` table and `manual` task dashboard are counterparts. The table keeps
+alignment, GFA, long-read PAF, and long-read GAF evidence in editable columns;
+the dashboard renders those same streams as focused panels for the selected
+event. If only one optional evidence file exists, only that panel appears. If
+GAF supports a different graph branch than the first GFA path, the row stays
+reviewable through fields such as `gaf_support_status`,
+`gaf_best_alt_path_nodes`, and `gaf_best_alt_support`.
 
 ## Workflow 1: Reference-Order a Mostly Clean Assembly
 

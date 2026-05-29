@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).resolve().parent / "data" / "chimeric"
 SCAFFOLD_DATA = Path(__file__).resolve().parent / "data" / "scaffold"
+MIXED_EVIDENCE_DATA = Path(__file__).resolve().parent / "data" / "mixed_evidence"
 
 
 def run_cli(*args):
@@ -247,6 +248,42 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["gaf_path_nodes"], "contigA+,bridge+,contigB+")
         self.assertEqual(rows[0]["gaf_path_support"], "1")
         self.assertEqual(rows[0]["gaf_support_status"], "supports_selected")
+        self.assertEqual(rows[0]["longread_bridge_reads"], "1")
+        self.assertEqual(rows[0]["longread_read_order_summary"], "left_before_right:1")
+
+    def test_eval_scaffold_reports_mixed_gfa_paf_gaf_branch_support(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = Path(tmp) / "mixed"
+            run_cli(
+                "eval",
+                "scaffold",
+                "--ordered-fasta",
+                str(SCAFFOLD_DATA / "ordered.fa"),
+                "--assignments",
+                str(SCAFFOLD_DATA / "assignments.tsv"),
+                "--gfa",
+                str(MIXED_EVIDENCE_DATA / "branch.gfa"),
+                "--gaf",
+                str(MIXED_EVIDENCE_DATA / "reads_to_graph.gaf"),
+                "--read-paf",
+                str(MIXED_EVIDENCE_DATA / "reads_to_assembly.paf"),
+                "--read-min-anchor-bp",
+                "2",
+                "--output-prefix",
+                str(prefix),
+            )
+
+            rows = read_tsv(Path(str(prefix) + ".scaffold_review.tsv"))
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["task"], "scaffold")
+        self.assertEqual(rows[0]["graph_path_nodes"], "contigA+,bridge_good+,contigB+")
+        self.assertEqual(rows[0]["gaf_path_nodes"], "contigA+,bridge_good+,contigB+")
+        self.assertEqual(rows[0]["gaf_path_support"], "1")
+        self.assertEqual(rows[0]["gaf_best_alt_path_nodes"], "contigA+,bridge_alt+,contigB+")
+        self.assertEqual(rows[0]["gaf_best_alt_support"], "2")
+        self.assertEqual(rows[0]["gaf_support_status"], "supports_alternate")
+        self.assertEqual(rows[0]["gaf_selected_reads"], "read_good")
         self.assertEqual(rows[0]["longread_bridge_reads"], "1")
         self.assertEqual(rows[0]["longread_read_order_summary"], "left_before_right:1")
 
