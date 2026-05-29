@@ -206,14 +206,16 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 Use `chromo plot` outputs to visually check MUMmer coords or minimap2 PAF
 alignments without re-running the aligner. For examples of how to read clean,
 reversed, chimeric, inverted, duplicated, gapped, and noisy patterns, see
-[How to Interpret Dot Plots]({{ '/dot-plots/' | relative_url }}).
+[How to Interpret Dot Plots]({{ '/dot-plots/' | relative_url }}). When
+`--sel-ref` is used, the whole-genome output is restricted to the selected
+references and `--per-ref` writes only those selected reference panels.
 
 | Output | Description |
 | --- | --- |
 | `<prefix>.pdf` | Whole-genome PDF dot plot by default. |
 | `<prefix>.svg` | Whole-genome SVG dot plot when `--formats svg` is set. |
 | `<prefix>.png` | Whole-genome PNG dot plot when `--formats png` is set. |
-| `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set. |
+| `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set; restricted to selected references when `--sel-ref` is also set. |
 
 **Table 7. Example plot file set.** A single run can write a whole-genome plot
 and, with `--per-ref`, one plot per reference sequence in each requested format.

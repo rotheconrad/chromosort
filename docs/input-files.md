@@ -206,6 +206,8 @@ chromo plot \
   --coords "mummer/${name}.coords" \
   --output-prefix "mummer/plot_${name}" \
   --per-ref
+
+# Optional: add --sel-ref Gm6 Gm12 Gm15 for focused replotting.
 ```
 
 ### Why These MUMmer Choices?
@@ -262,6 +264,8 @@ chromo plot \
   --assignments "results/${name}.contig_assignments.tsv" \
   --output-prefix "plots/${name}" \
   --per-ref
+
+# Optional: add --sel-ref Gm6 Gm12 Gm15 for focused replotting.
 ```
 
 `--coords` and `--paf` are mutually exclusive for `chromo sort`,

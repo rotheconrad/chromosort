@@ -14,6 +14,6 @@ ChromoSort exposes one top-level command, `chromo`, with eight subcommands. Each
 | [`chromo fix`](https://rotheconrad.github.io/chromosort/commands/fix/) | split reviewed or automatically detected chimeric contigs into reference-labeled pieces. |
 | [`chromo cut`](https://rotheconrad.github.io/chromosort/commands/cut/) | cut contigs at exact reviewed coordinates. |
 | [`chromo manual`](https://rotheconrad.github.io/chromosort/commands/manual/) | generate a browser dashboard for manual dot-plot review and reproducible recipe export. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) if the visual patterns are unfamiliar. |
-| [`chromo plot`](https://rotheconrad.github.io/chromosort/commands/plot/) | draw dot plots from existing MUMmer coords or minimap2 PAF alignments. Use the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) to interpret whole-genome and per-reference patterns. |
+| [`chromo plot`](https://rotheconrad.github.io/chromosort/commands/plot/) | draw whole-genome, per-reference, or selected-reference dot plots from existing MUMmer coords or minimap2 PAF alignments. Use the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) to interpret the patterns. |
 | [`chromo scaffold`](https://rotheconrad.github.io/chromosort/commands/scaffold/) | join final sorted contigs into one scaffold per reference sequence. |
 | [`chromo gapfill`](https://rotheconrad.github.io/chromosort/commands/gapfill/) | plan and optionally apply reviewed graph-supported fills between adjacent sorted contigs. |

@@ -106,6 +106,47 @@ class PlotTests(unittest.TestCase):
             self.assertTrue(Path(f"{prefix}.chr1.svg").exists())
             self.assertTrue(Path(f"{prefix}.chr2.png").exists())
 
+    def test_sel_ref_limits_whole_and_per_reference_plots(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = run_plot(
+                Path(tmp),
+                "--paf",
+                str(DATA / "sample.paf"),
+                "--sel-ref",
+                "chr2",
+                formats=["svg"],
+            )
+            whole_svg = prefix.with_suffix(".svg").read_text()
+            self.assertIn("2 alignments | x: reference (100 bp) | y: query (160 bp)", whole_svg)
+            self.assertNotIn(">chr1<", whole_svg)
+            self.assertIn(">chr2<", whole_svg)
+            self.assertFalse(Path(f"{prefix}.chr1.svg").exists())
+            self.assertTrue(Path(f"{prefix}.chr2.svg").exists())
+
+    def test_sel_ref_reports_missing_reference(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = Path(tmp) / "sample_plot"
+            cmd = [
+                sys.executable,
+                "-m",
+                "chromosort.plot",
+                "--ref-fasta",
+                str(DATA / "ref.fa"),
+                "--assembly-fasta",
+                str(DATA / "assembly.fa"),
+                "--paf",
+                str(DATA / "sample.paf"),
+                "--sel-ref",
+                "chrMissing",
+                "--output-prefix",
+                str(prefix),
+            ]
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(ROOT / "src")
+            result = subprocess.run(cmd, cwd=ROOT, env=env, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("--sel-ref reference sequence(s) not found", result.stderr)
+
     def test_per_ref_plot_crops_query_axis_to_current_reference_hits(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = run_plot(

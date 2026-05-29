@@ -99,6 +99,17 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         help="Also write one plot per reference sequence that has plotted alignments.",
     )
     ap.add_argument(
+        "--sel-ref",
+        nargs="+",
+        metavar="REF",
+        default=None,
+        help=(
+            "Limit plots to one or more reference sequence IDs. The whole plot uses "
+            "only selected references and, with --per-ref, only selected "
+            "per-reference plots are written."
+        ),
+    )
+    ap.add_argument(
         "--assignments",
         default=None,
         help=(
@@ -248,6 +259,23 @@ def read_assignment_order(path, query_by_name, ref_records):
                 )
             )
     return [item[-1] for item in sorted(ordered)]
+
+
+def select_ref_records(ref_records, selected_names):
+    if not selected_names:
+        return ref_records, None
+    selected_order = list(dict.fromkeys(selected_names))
+    ref_names = {rec.name for rec in ref_records}
+    missing = [name for name in selected_order if name not in ref_names]
+    if missing:
+        sys.stderr.write(
+            "ERROR: --sel-ref reference sequence(s) not found in --ref-fasta: "
+            + ", ".join(missing)
+            + "\n"
+        )
+        raise SystemExit(2)
+    selected = set(selected_order)
+    return [rec for rec in ref_records if rec.name in selected], selected
 
 
 def axis_intervals_for_records(records):
@@ -779,6 +807,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     prefix = Path(args.output_prefix)
 
     ref_records, ref_by_name = read_fasta_lengths(args.ref_fasta, args.ref_fai)
+    plot_ref_records, selected_ref_names = select_ref_records(ref_records, args.sel_ref)
     query_records, query_by_name = read_fasta_lengths(args.assembly_fasta, args.assembly_fai)
     if args.assignments:
         assignment_records = read_assignment_order(args.assignments, query_by_name, ref_records)
@@ -787,6 +816,10 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     segments, skipped = load_segments(args, ref_by_name, query_by_name)
     query_names_to_plot = {rec.name for rec in query_records}
     segments = [seg for seg in segments if seg.query in query_names_to_plot]
+    if selected_ref_names:
+        segments = [seg for seg in segments if seg.ref in selected_ref_names]
+        selected_query_names = {seg.query for seg in segments}
+        query_records = [rec for rec in query_records if rec.name in selected_query_names]
 
     written = []
     for output_format in args.formats:
@@ -794,7 +827,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         draw_plot(
             whole_plot,
             "ChromoSort whole-genome dot plot",
-            ref_records,
+            plot_ref_records,
             query_records,
             segments,
             args.width,
@@ -807,7 +840,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         by_ref = defaultdict(list)
         for seg in segments:
             by_ref[seg.ref].append(seg)
-        for ref_rec in ref_records:
+        for ref_rec in plot_ref_records:
             ref_segments = by_ref.get(ref_rec.name, [])
             if not ref_segments:
                 continue

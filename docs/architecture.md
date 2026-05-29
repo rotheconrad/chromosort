@@ -99,7 +99,7 @@ The public command surface is the `chromo` dispatcher in
 | `chromo manual apply` | `manual.py` | Assembly FASTA and exported recipe JSON | Apply a dashboard recipe containing slices, orientation choices, removals, and optional scaffold grouping. | Writes a manually edited FASTA and optional report. |
 | `chromo scaffold` | `scaffold.py` | Ordered FASTA and `sort` assignment TSV, optional GFA | Join ordered contigs per reference with inferred or fixed gaps; report reference overlaps and graph adjacency. | Writes scaffold FASTA. Overlap trimming occurs only under explicit overlap policies. |
 | `chromo gapfill` | `gapfill.py` | Ordered FASTA, assignment TSV, GFA, optional GAF, Hi-C table, reference-placement PAF, reviewed plan | Plan graph-supported gap fills, annotate risk, resolve unique supported paths, and optionally apply fillable paths. | Writes gapfilled FASTA only with `--apply`; reviewed plans can further restrict which fillable gaps are applied. |
-| `chromo plot` | `plot.py` | Reference FASTA, assembly FASTA, coords or PAF, optional assignment TSV | Draw whole-genome and per-reference dot plots from existing alignments. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation patterns. | Does not change FASTA. |
+| `chromo plot` | `plot.py` | Reference FASTA, assembly FASTA, coords or PAF, optional assignment TSV, optional selected reference IDs | Draw whole-genome, per-reference, and selected-reference dot plots from existing alignments. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation patterns. | Does not change FASTA. |
 
 ## Formal Data Model
 
@@ -435,7 +435,9 @@ $$
 and maps normalized alignment endpoints into a whole-genome or per-reference
 canvas. Forward and reverse alignments are rendered as line segments with
 different colors. Optional assignment input reorders the query axis by kept
-ChromoSort assignments without re-running placement. The
+ChromoSort assignments without re-running placement. Optional selected-reference
+input filters the reference axis, alignment rows, and `--per-ref` panel set
+without changing the underlying FASTA or alignment file. The
 [dot-plot guide]({{ '/dot-plots/' | relative_url }}) describes how these
 segments map to common review patterns such as clean collinearity, reversed
 contigs, internal inversions, chimeric candidates, duplicate signal, and

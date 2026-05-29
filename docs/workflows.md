@@ -123,7 +123,9 @@ chromo plot \
 
 This plot uses the original assembly FASTA and the original alignment rows. The
 assignment report changes the query-axis order in the plot, but it does not make
-a new alignment of `results/sample.ordered.fa`.
+a new alignment of `results/sample.ordered.fa`. Add `--sel-ref Gm6 Gm12 Gm15`
+when you only need to redraw a few reference sequences and their `--per-ref`
+panels.
 
 If the ordered contigs look reasonable, make chromosome-scale scaffold records:
 
@@ -167,6 +169,9 @@ chromo plot \
   --output-prefix plots/sample.raw \
   --per-ref
 ```
+
+If you are reviewing only one or a few chromosomes, add a selected-reference
+filter such as `--sel-ref Gm6 Gm12 Gm15` to keep the plot set focused.
 
 Fix only reviewed contigs when you know which records are suspect:
 
@@ -213,6 +218,9 @@ chromo plot \
   --output-prefix plots/sample.fixed \
   --per-ref
 ```
+
+Use `--sel-ref` on this validation plot when the repair work was limited to a
+small reference subset.
 
 When the breakpoint is already known from manual review, use an explicit cut
 instead of automatic split planning:

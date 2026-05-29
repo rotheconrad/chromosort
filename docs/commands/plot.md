@@ -52,6 +52,7 @@ chromo plot \
   --assignments results/sample.contig_assignments.tsv \
   --output-prefix plots/sample \
   --per-ref \
+  --sel-ref Gm6 Gm12 Gm15 \
   --formats pdf svg
 ```
 
@@ -68,6 +69,10 @@ large unaligned query gaps from adding unrelated vertical whitespace to each
 `--per-ref` panel. Axis tick units scale with the plotted length, using bp, kb,
 Mb, or Gb as appropriate for the current panel.
 
+Use `--sel-ref` when you only want to replot one or a few reference sequences.
+For example, `--sel-ref Gm6 Gm12 Gm15` limits the main plot to those reference
+sequences and, with `--per-ref`, writes only those per-reference panels.
+
 ## `chromo plot` Outputs
 
 | Output | Description |
@@ -75,7 +80,7 @@ Mb, or Gb as appropriate for the current panel.
 | `<prefix>.pdf` | Whole-genome PDF dot plot by default. |
 | `<prefix>.svg` | Whole-genome SVG dot plot when `--formats svg` is set. |
 | `<prefix>.png` | Whole-genome PNG dot plot when `--formats png` is set. |
-| `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set. |
+| `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set; restricted to selected references when `--sel-ref` is also set. |
 
 ### Example `chromo plot` Output
 
@@ -108,6 +113,7 @@ and, with `--per-ref`, one plot per reference sequence in each requested format.
 | `--formats` | `pdf` | One or more output formats: `pdf`, `svg`, `png`. |
 | `--assignments` | none | Optional `chromo sort` assignment report for ordering the query axis by kept sorted contigs. |
 | `--per-ref` | off | Also write one plot per reference sequence with plotted alignments. |
+| `--sel-ref` | none | Limit the main plot and `--per-ref` output to one or more reference IDs, such as `--sel-ref Gm6 Gm12 Gm15`. |
 | `--per-ref-query-order` | `fasta` | Use FASTA order or first reference-hit order for per-reference query axes. |
 | `--min-segment-bp` | `0` | Minimum query-aligned bp for a row to be drawn. |
 | `--min-segment-idy` | `0.0` | Ignore individual alignment rows below this percent identity. |

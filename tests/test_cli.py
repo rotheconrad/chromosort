@@ -92,6 +92,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--min-ref-path-support", gapfill_help)
         self.assertIn("--include-fill-sequences", gapfill_help)
         self.assertIn("--per-ref", plot_help)
+        self.assertIn("--sel-ref", plot_help)
         self.assertIn("--paf", plot_help)
         self.assertIn("--formats", plot_help)
 
