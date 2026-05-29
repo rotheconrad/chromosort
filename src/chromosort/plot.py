@@ -10,6 +10,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Sequence
 
+from .paths import ensure_parent_dir
 from .reference_order import (
     alignment_source_from_args,
     iter_alignments,
@@ -386,6 +387,7 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
 
 
 def write_svg(path, elements, width, height):
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write(
             '<svg xmlns="http://www.w3.org/2000/svg" '
@@ -481,6 +483,7 @@ def write_pdf(path, elements, width, height):
         b"<< /Length " + str(len(content)).encode("ascii") + b" >>\nstream\n" + content + b"endstream",
         b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
     ]
+    ensure_parent_dir(path)
     with open(path, "wb") as out:
         out.write(b"%PDF-1.4\n")
         offsets = []
@@ -501,6 +504,7 @@ def write_pdf(path, elements, width, height):
 
 
 def write_png(path, elements, width, height):
+    ensure_parent_dir(path)
     try:
         from PIL import Image, ImageDraw, ImageFont
     except ImportError as exc:
@@ -584,8 +588,6 @@ def per_ref_query_records(ref_name, segments, query_records, query_by_name, orde
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
     prefix = Path(args.output_prefix)
-    if prefix.parent and str(prefix.parent) != ".":
-        prefix.parent.mkdir(parents=True, exist_ok=True)
 
     ref_records, ref_by_name = read_fasta_lengths(args.ref_fasta, args.ref_fai)
     query_records, query_by_name = read_fasta_lengths(args.assembly_fasta, args.assembly_fai)

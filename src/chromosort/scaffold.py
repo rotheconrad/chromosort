@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from .graph import ORIENTATIONS, format_oriented_node, read_gfa
+from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import iter_fasta_records, write_wrapped
 
 
@@ -677,6 +678,7 @@ def scaffold_header(scaffold, simple_headers, gap_mode):
 
 
 def write_scaffold_fasta(path, scaffolds, unassigned, simple_headers, gap_mode):
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         for scaffold in scaffolds:
             out.write(f">{scaffold_header(scaffold, simple_headers, gap_mode)}\n")
@@ -707,6 +709,7 @@ def write_gap_report(path, scaffolds):
         "trimmed_bp",
         "sequence_overlap_identity",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for scaffold in scaffolds:
@@ -752,6 +755,7 @@ def write_graph_gap_report(path, records):
         "candidate_intermediate_nodes",
         "max_path_edges",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for record in records:
@@ -790,6 +794,7 @@ def write_summary(path, scaffolds, unassigned):
         "last_ref_end",
         "ordered_contigs",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for scaffold in scaffolds:
@@ -830,6 +835,7 @@ def write_summary(path, scaffolds, unassigned):
 
 def write_run_summary(path, args, output_paths, scaffolds, unassigned):
     gap_mode = "fixed" if args.fixed_gap_bp is not None else "inferred"
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("chromo scaffold\n")
         out.write("\nInputs\n")
@@ -867,8 +873,6 @@ def run(args):
         raise ValueError("--graph-overlap-policy warn/confirm requires --gfa")
 
     prefix = Path(args.output_prefix)
-    if prefix.parent and str(prefix.parent) != ".":
-        prefix.parent.mkdir(parents=True, exist_ok=True)
 
     output_paths = {
         "scaffold_fasta": Path(str(prefix) + ".scaffold.fa"),
@@ -878,6 +882,7 @@ def run(args):
     }
     if args.gfa:
         output_paths["graph_gap_report"] = Path(str(prefix) + ".graph_gaps.tsv")
+    ensure_output_dirs(output_paths)
 
     assignments = read_assignments(args.assignments)
     records = read_ordered_fasta(args.ordered_fasta)

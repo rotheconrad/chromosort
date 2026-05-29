@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from .graph import read_gfa
+from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import iter_paf, reverse_complement, write_wrapped
 from .scaffold import (
     classify_adjacent_overlap,
@@ -1409,6 +1410,7 @@ def fill_plan_review_dict(plan, include_sequences):
 
 def write_fill_plan(path, plans, include_sequences):
     header = fill_plan_header()
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for plan in plans:
@@ -1436,11 +1438,13 @@ def write_review_html(path, plans, include_sequences):
         "__CHROMOSORT_GAPFILL_REVIEW_DATA__",
         json_for_script(data),
     )
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write(html_text)
 
 
 def write_filled_fasta(path, records, simple_headers):
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         for record in records:
             out.write(f">{filled_header(record, simple_headers)}\n")
@@ -1450,6 +1454,7 @@ def write_filled_fasta(path, records, simple_headers):
 def write_run_summary(path, args, output_paths, plans, filled_records):
     fillable = sum(1 for plan in plans if plan.fill_status == "fillable")
     applied = sum(1 for plan in plans if plan.applied)
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("chromo gapfill\n")
         out.write("\nInputs\n")
@@ -1517,8 +1522,6 @@ def run(args):
         raise ValueError("--min-ref-paf-idy must be zero or greater")
 
     prefix = Path(args.output_prefix)
-    if prefix.parent and str(prefix.parent) != ".":
-        prefix.parent.mkdir(parents=True, exist_ok=True)
 
     output_paths = {
         "fill_plan": Path(str(prefix) + ".gapfill_plan.tsv"),
@@ -1528,9 +1531,7 @@ def run(args):
         output_paths["filled_fasta"] = Path(str(prefix) + ".gapfilled.fa")
     if args.review_html:
         output_paths["review_html"] = Path(args.review_html)
-    for output_path in output_paths.values():
-        if output_path.parent and str(output_path.parent) != ".":
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dirs(output_paths)
 
     graph = read_gfa(args.gfa)
     gaf_records = read_gaf(args.gaf, args.min_gaf_mapq) if args.gaf else []

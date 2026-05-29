@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 
 from .graph import graph_node_evidence, read_gfa
+from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import (
     alignment_source_from_args,
     iter_alignments,
@@ -1108,6 +1109,7 @@ def fasta_header(piece, simple_headers):
 
 
 def write_fixed_fasta(path, fasta_path, plans, args):
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         for name, header, seq in iter_fasta_records(fasta_path):
             plan = plans.get(name)
@@ -1163,6 +1165,7 @@ def write_report(path, requested, plans):
         "segment_count",
         "reason",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for contig in requested:
@@ -1241,6 +1244,7 @@ def write_graph_report(path, requested, plans, graph):
         "planner_score",
         "graph_note",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for contig in requested:
@@ -1328,9 +1332,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     output_paths = [Path(args.output_fasta), Path(args.report)]
     if graph_report_path is not None:
         output_paths.append(graph_report_path)
-    for output_path in output_paths:
-        if output_path.parent and str(output_path.parent) != ".":
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dirs(output_paths)
 
     collect_for = None if args.all_contigs else explicit_requested
     blocks_by_contig = collect_blocks(

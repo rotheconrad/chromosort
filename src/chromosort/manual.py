@@ -11,6 +11,7 @@ from typing import Optional, Sequence
 
 from . import __version__
 from .graph import graph_node_evidence, read_gfa
+from .paths import ensure_parent_dir
 from .reference_order import (
     alignment_source_from_args,
     build_match_metrics,
@@ -173,12 +174,6 @@ def parse_apply_args(argv=None, prog=None):
         help="Override the recipe scaffold gap size.",
     )
     return ap.parse_args(argv)
-
-
-def ensure_parent(path):
-    parent = Path(path).parent
-    if parent and str(parent) != ".":
-        parent.mkdir(parents=True, exist_ok=True)
 
 
 def fmt_float(value, digits=4):
@@ -525,7 +520,7 @@ def json_for_script(data):
 
 
 def write_dashboard(path, data):
-    ensure_parent(path)
+    ensure_parent_dir(path)
     html = DASHBOARD_HTML.replace("__CHROMOSORT_MANUAL_DATA__", json_for_script(data))
     with open(path, "w") as out:
         out.write(html)
@@ -627,7 +622,7 @@ def group_scaffold_pieces(pieces):
 def write_apply_fasta(path, fasta_path, pieces, scaffold_enabled, gap_bp):
     if gap_bp < 0:
         raise ValueError("Manual scaffold gap bp must be non-negative.")
-    ensure_parent(path)
+    ensure_parent_dir(path)
     sequences = fetch_piece_sequences(fasta_path, pieces)
     with open(path, "w") as out:
         if scaffold_enabled:
@@ -651,7 +646,7 @@ def write_apply_fasta(path, fasta_path, pieces, scaffold_enabled, gap_bp):
 
 
 def write_apply_report(path, pieces, scaffold_enabled):
-    ensure_parent(path)
+    ensure_parent_dir(path)
     header = [
         "piece_id",
         "source",

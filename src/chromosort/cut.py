@@ -4,9 +4,9 @@
 import argparse
 import sys
 from collections import defaultdict
-from pathlib import Path
 from typing import Optional, Sequence
 
+from .paths import ensure_parent_dir
 from .reference_order import iter_fasta_records, read_fasta_lengths, write_wrapped
 
 
@@ -282,6 +282,7 @@ def cut_header(original_name, new_name, start, end, cut_positions, simple_header
 
 
 def write_cut_fasta(path, fasta_path, cuts_by_contig, separator, simple_headers):
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         for name, header, seq in iter_fasta_records(fasta_path):
             cut_positions = cuts_by_contig.get(name)
@@ -310,6 +311,7 @@ def write_report(path, records, cuts_by_contig, separator):
         "piece_bp",
         "cut_after_positions",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for rec in records:
@@ -331,20 +333,14 @@ def write_report(path, records, cuts_by_contig, separator):
                 out.write("\t".join(str(item) for item in row) + "\n")
 
 
-def ensure_parent(path):
-    parent = Path(path).parent
-    if parent and str(parent) != ".":
-        parent.mkdir(parents=True, exist_ok=True)
-
-
 def run(args):
     raw_cuts = collect_cut_positions(args)
     records, _ = read_fasta_lengths(args.assembly_fasta, args.assembly_fai)
     cuts_by_contig = normalize_cuts(raw_cuts, records, args.min_piece_bp)
     ensure_unique_output_names(records, cuts_by_contig, args.name_separator)
 
-    ensure_parent(args.output_fasta)
-    ensure_parent(args.report)
+    ensure_parent_dir(args.output_fasta)
+    ensure_parent_dir(args.report)
     write_cut_fasta(
         args.output_fasta,
         args.assembly_fasta,

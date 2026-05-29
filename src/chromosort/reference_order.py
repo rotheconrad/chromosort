@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Optional
 
 from .graph import graph_link_evidence, graph_node_evidence, read_gfa
+from .paths import ensure_output_dirs, ensure_parent_dir
 
 
 @dataclass
@@ -1203,6 +1204,7 @@ def fasta_header(assignment, simple_headers):
 
 
 def write_ordered_fasta(path, fasta_path, kept_assignments, assembly_fai, simple_headers):
+    ensure_parent_dir(path)
     reader = FastaReader(fasta_path, assembly_fai)
     try:
         with open(path, "w") as out:
@@ -1217,6 +1219,7 @@ def write_ordered_fasta(path, fasta_path, kept_assignments, assembly_fai, simple
 
 
 def write_discarded_fasta(path, fasta_path, assignments, assembly_fai):
+    ensure_parent_dir(path)
     discard_ids = [name for name, assignment in assignments.items() if not assignment.kept]
     reader = FastaReader(fasta_path, assembly_fai)
     try:
@@ -1281,6 +1284,7 @@ def write_assignment_report(path, query_records, assignments):
         "split_candidate_refs",
         "split_candidate_reason",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for rec in query_records:
@@ -1371,6 +1375,7 @@ def write_graph_assignment_report(path, query_records, assignments, graph):
         "overlap_direct_edge_overlap_bp",
         "graph_note",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for rec in query_records:
@@ -1488,6 +1493,7 @@ def write_match_report(path, matches):
         "orientation",
         "avg_identity",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for match in sorted(
@@ -1531,6 +1537,7 @@ def write_chromosome_summary(path, ref_records, kept_assignments):
         "ordered_new_names",
         "ordered_original_contigs",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for rec in ref_records:
@@ -1560,6 +1567,7 @@ def write_run_summary(path, args, output_paths, ref_records, query_records, assi
     status_counts = Counter(a.status for a in assignments.values())
     kept = sum(1 for a in assignments.values() if a.kept)
     alignment_path, alignment_format = alignment_source_from_args(args)
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("fasta_mummer_reference_order.py\n")
         out.write("\nInputs\n")
@@ -1631,8 +1639,6 @@ def main(argv=None, prog=None):
         sys.exit(2)
     alignment_path, alignment_format = alignment_source_from_args(args)
     prefix = Path(args.output_prefix)
-    if prefix.parent and str(prefix.parent) != ".":
-        prefix.parent.mkdir(parents=True, exist_ok=True)
 
     output_paths = {
         "ordered_fasta": Path(str(prefix) + ".ordered.fa"),
@@ -1645,9 +1651,7 @@ def main(argv=None, prog=None):
         output_paths["discarded_fasta"] = Path(args.discarded_fasta)
     if args.gfa:
         output_paths["graph_assignments"] = Path(str(prefix) + ".graph_assignments.tsv")
-    for output_path in output_paths.values():
-        if output_path.parent and str(output_path.parent) != ".":
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_output_dirs(output_paths)
 
     ref_records, ref_by_name = read_fasta_lengths(args.ref_fasta, args.ref_fai)
     query_records, query_by_name = read_fasta_lengths(args.assembly_fasta, args.assembly_fai)

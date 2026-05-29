@@ -211,6 +211,20 @@ class ReferenceOrderTests(unittest.TestCase):
                 ],
             )
 
+    def test_discarded_fasta_creates_missing_parent_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            discarded_fasta = tmp_path / "new_output_dir" / "discarded.fa"
+
+            run_chromosort(
+                tmp_path,
+                "--discarded-fasta",
+                str(discarded_fasta),
+            )
+
+            self.assertTrue(discarded_fasta.exists())
+            self.assertIn(">contigNo status=no_alignment", discarded_fasta.read_text())
+
     def test_no_overlap_filter_keeps_otherwise_good_duplicate(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = run_chromosort(Path(tmp), "--no-overlap-filter")

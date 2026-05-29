@@ -10,6 +10,7 @@ from typing import Optional, Sequence
 
 from . import fix_contigs, reference_order
 from .fix_contigs import MODE_CHOICES
+from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import (
     FastaReader,
     alignment_source_from_args,
@@ -241,12 +242,6 @@ def output_paths(prefix, discarded_fasta=None):
     }
 
 
-def ensure_output_dirs(paths):
-    for path in paths.values():
-        if path.parent and str(path.parent) != ".":
-            path.parent.mkdir(parents=True, exist_ok=True)
-
-
 def read_name_file(path):
     names = []
     seen = set()
@@ -283,6 +278,7 @@ def select_fix_targets(query_records, assignments, args):
 
 
 def write_fix_targets(path, targets):
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         for target in targets:
             out.write(f"{target}\n")
@@ -464,6 +460,7 @@ def clean_fasta_header(record, simple_headers):
 
 
 def write_clean_fasta(path, fasta_path, records, assembly_fai, simple_headers):
+    ensure_parent_dir(path)
     reader = FastaReader(fasta_path, assembly_fai)
     try:
         with open(path, "w") as out:
@@ -505,6 +502,7 @@ def write_clean_report(path, rows):
         "segment_count",
         "reason",
     ]
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("\t".join(header) + "\n")
         for row in rows:
@@ -543,6 +541,7 @@ def write_clean_chromosome_summary(path, ref_records, clean_records):
     by_ref = defaultdict(list)
     for record in clean_records:
         by_ref[record.ref].append(record)
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write(
             "\t".join(
@@ -595,6 +594,7 @@ def write_run_summary(
     sort_counts = Counter(assignment.status for assignment in assignments.values())
     clean_counts = Counter(record.clean_status for record in clean_records)
     fix_counts = Counter(plan.status for plan in plans.values())
+    ensure_parent_dir(path)
     with open(path, "w") as out:
         out.write("chromo clean\n")
         out.write("\nInputs\n")
