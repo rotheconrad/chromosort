@@ -2,7 +2,8 @@
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | Completed the production review upgrade: shared long-read evidence helpers, shared review-event TSVs, `chromo eval fix/scaffold/gapfill`, reviewed execution paths for `fix`, `scaffold`, and `gapfill`, task-specific `manual` review modes, and mixed algorithmic-plus-reviewed workflow docs/tests. |
+| Unreleased | No changes yet. |
+| `0.2.26` | Completed the GAF evidence and modular manual-panel upgrade: shared GAF parsing/traversal summaries, `--gaf` evidence in `chromo eval fix/scaffold/gapfill`, GAF status and selected-read fields in gapfill plans, optional `--read-paf`/`--gaf` panels in task-specific manual dashboards, and mixed GFA/PAF/GAF review fixtures/docs. |
 | `0.2.25` | Synchronized package, citation, Pixi, conda recipe, README, and docs version metadata; added the production-upgrade roadmap for paired `eval` table workflows and task-specific `manual` dashboards feeding reviewed `fix`, `scaffold`, and `gapfill` execution paths. |
 | `0.2.24` | Added `chromo clean`, a conservative cleanup command for mostly-correct assemblies that combines sort-style filtering with fix-style conservative splitting on retained raw contigs, then writes `<prefix>.clean.fa` plus initial-sort, fix, clean, and run-summary reports. Clarified README, command docs, and workflows around when FASTA-changing steps require fresh MUMmer or minimap2 alignments before downstream steps or final plots. |
 | `0.2.23` | Renamed the graph gap-filling command from `chromo fill` to `chromo gapfill`, moved the package entry point to `chromosort.gapfill`, replaced the package script with `chromosort-gapfill`, and updated gapfill output names to `<prefix>.gapfill_plan.tsv` and `<prefix>.gapfilled.fa`. |

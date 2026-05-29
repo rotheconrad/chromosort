@@ -1,6 +1,6 @@
 [project]
 name = "chromosort"
-version = "0.2.25"
+version = "0.2.26"
 description = "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, plot, and review genome assembly contigs."
 channels = ["conda-forge", "bioconda"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
