@@ -39,6 +39,82 @@ def fasta_headers(path):
     return headers
 
 
+def read_fasta(path):
+    records = {}
+    name = None
+    parts = []
+    with open(path) as fh:
+        for line in fh:
+            line = line.strip()
+            if line.startswith(">"):
+                if name is not None:
+                    records[name] = "".join(parts)
+                name = line[1:].split()[0]
+                parts = []
+            else:
+                parts.append(line)
+        if name is not None:
+            records[name] = "".join(parts)
+    return records
+
+
+def write_gapfill_fixture(tmp_path):
+    ordered = tmp_path / "ordered.fa"
+    assignments = tmp_path / "assignments.tsv"
+    graph = tmp_path / "graph.gfa"
+
+    ordered.write_text(">chr1_left\nAAAACC\n>chr1_right\nTTCCCC\n")
+    with open(assignments, "w", newline="") as fh:
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=[
+                "contig",
+                "kept",
+                "new_name",
+                "assigned_ref",
+                "order_in_ref",
+                "ref_start",
+                "ref_end",
+                "orientation",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        writer.writerows(
+            [
+                {
+                    "contig": "left",
+                    "kept": "yes",
+                    "new_name": "chr1_left",
+                    "assigned_ref": "chr1",
+                    "order_in_ref": 1,
+                    "ref_start": 1,
+                    "ref_end": 6,
+                    "orientation": "+",
+                },
+                {
+                    "contig": "right",
+                    "kept": "yes",
+                    "new_name": "chr1_right",
+                    "assigned_ref": "chr1",
+                    "order_in_ref": 2,
+                    "ref_start": 21,
+                    "ref_end": 26,
+                    "orientation": "+",
+                },
+            ]
+        )
+    graph.write_text(
+        "H\tVN:Z:1.0\n"
+        "S\tleft\tAAAACC\tLN:i:6\n"
+        "S\tgapper\tCCGGGGTT\tLN:i:8\n"
+        "S\tright\tTTCCCC\tLN:i:6\n"
+        "L\tleft\t+\tgapper\t+\t2M\n"
+        "L\tgapper\t+\tright\t+\t2M\n"
+    )
+    return ordered, assignments, graph
+
+
 class EvalTests(unittest.TestCase):
     def test_eval_fix_writes_review_table(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -144,6 +220,66 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["gap_bp"], "5")
         self.assertEqual(rows[0]["longread_bridge_reads"], "1")
         self.assertEqual(rows[0]["longread_read_order_summary"], "left_before_right:1")
+
+    def test_eval_gapfill_review_table_can_drive_gapfill_apply(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered, assignments, graph = write_gapfill_fixture(tmp_path)
+            read_paf = tmp_path / "reads.paf"
+            eval_prefix = tmp_path / "eval"
+            applied_prefix = tmp_path / "applied"
+            read_paf.write_text(
+                "read1\t20\t0\t12\t+\tleft\t6\t0\t6\t6\t6\t60\n"
+                "read1\t20\t13\t20\t+\tright\t6\t0\t6\t6\t6\t60\n"
+            )
+
+            run_cli(
+                "eval",
+                "gapfill",
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--read-paf",
+                str(read_paf),
+                "--read-min-anchor-bp",
+                "2",
+                "--include-fill-sequences",
+                "--output-prefix",
+                str(eval_prefix),
+            )
+            review = Path(str(eval_prefix) + ".gapfill_review.tsv")
+            rows = read_tsv(review)
+
+            run_cli(
+                "gapfill",
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--reviewed-plan",
+                str(review),
+                "--output-prefix",
+                str(applied_prefix),
+                "--apply",
+                "--simple-headers",
+            )
+
+            records = read_fasta(Path(str(applied_prefix) + ".gapfilled.fa"))
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["task"], "gapfill")
+        self.assertEqual(rows[0]["action"], "fill_path")
+        self.assertEqual(rows[0]["accept"], "yes")
+        self.assertEqual(rows[0]["fill_status"], "fillable")
+        self.assertEqual(rows[0]["path_nodes"], "left+,gapper+,right+")
+        self.assertEqual(rows[0]["fill_sequence"], "GGGGTT")
+        self.assertEqual(rows[0]["longread_bridge_reads"], "1")
+        self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
 
 
 if __name__ == "__main__":

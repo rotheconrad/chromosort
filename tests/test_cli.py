@@ -52,6 +52,7 @@ class CliTests(unittest.TestCase):
         eval_help = run_cli("eval", "--help").stdout
         eval_fix_help = run_cli("eval", "fix", "--help").stdout
         eval_scaffold_help = run_cli("eval", "scaffold", "--help").stdout
+        eval_gapfill_help = run_cli("eval", "gapfill", "--help").stdout
         fix_help = run_cli("fix", "--help").stdout
         cut_help = run_cli("cut", "--help").stdout
         manual_help = run_cli("manual", "--help").stdout
@@ -68,10 +69,13 @@ class CliTests(unittest.TestCase):
         self.assertIn("--discarded-fasta", clean_help)
         self.assertIn("fix", eval_help)
         self.assertIn("scaffold", eval_help)
+        self.assertIn("gapfill", eval_help)
         self.assertIn("--read-paf", eval_fix_help)
         self.assertIn("--output-prefix", eval_fix_help)
         self.assertIn("--ordered-fasta", eval_scaffold_help)
         self.assertIn("--assignments", eval_scaffold_help)
+        self.assertIn("--gfa", eval_gapfill_help)
+        self.assertIn("--read-paf", eval_gapfill_help)
         self.assertIn("--all", fix_help)
         self.assertIn("--mode", fix_help)
         self.assertIn("--reviewed-plan", fix_help)

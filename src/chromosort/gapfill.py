@@ -13,6 +13,7 @@ from typing import Optional, Sequence
 from .graph import read_gfa
 from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import iter_paf, reverse_complement, write_wrapped
+from .review import read_review_events
 from .scaffold import (
     classify_adjacent_overlap,
     graph_intermediate_nodes,
@@ -709,6 +710,11 @@ def fill_plan_key(plan):
 
 
 def read_reviewed_plan(path):
+    with open(path, newline="") as fh:
+        reader = csv.DictReader(fh, delimiter="\t")
+        if "schema" in set(reader.fieldnames or []):
+            return read_review_event_plan(path)
+
     required = {"scaffold", "left_contig", "right_contig", "path_nodes", "accept_fill"}
     decisions = {}
     with open(path, newline="") as fh:
@@ -741,6 +747,37 @@ def read_reviewed_plan(path):
                 "path_nodes": row.get("path_nodes", ""),
                 "line_number": line_number,
             }
+    return decisions
+
+
+def read_review_event_plan(path):
+    decisions = {}
+    for event in read_review_events(path, expected_task="gapfill"):
+        if event.action != "fill_path":
+            raise ValueError(
+                f"Review event {event.event_id!r} has unsupported gapfill action "
+                f"{event.action!r}."
+            )
+        key = (
+            event.fields.get("scaffold", ""),
+            event.fields.get("left_contig", ""),
+            event.fields.get("right_contig", ""),
+        )
+        if not all(key):
+            raise ValueError(
+                f"Malformed gapfill review event {event.event_id!r}: "
+                "missing scaffold, left_contig, or right_contig"
+            )
+        if key in decisions:
+            raise ValueError(
+                f"Duplicate gapfill review event {event.event_id!r}: "
+                f"{key[0]} {key[1]} {key[2]}"
+            )
+        decisions[key] = {
+            "accept": event.accept,
+            "path_nodes": event.fields.get("path_nodes", ""),
+            "line_number": event.event_id,
+        }
     return decisions
 
 
@@ -1501,7 +1538,7 @@ def status_counts(plans):
     return dict(counts)
 
 
-def run(args):
+def validate_plan_args(args):
     if args.fixed_gap_bp is not None and args.fixed_gap_bp < 0:
         raise ValueError("--fixed-gap-bp must be zero or greater")
     if args.max_path_edges < 1:
@@ -1521,18 +1558,9 @@ def run(args):
     if args.min_ref_paf_idy < 0:
         raise ValueError("--min-ref-paf-idy must be zero or greater")
 
-    prefix = Path(args.output_prefix)
 
-    output_paths = {
-        "fill_plan": Path(str(prefix) + ".gapfill_plan.tsv"),
-        "run_summary": Path(str(prefix) + ".run_summary.txt"),
-    }
-    if args.apply:
-        output_paths["filled_fasta"] = Path(str(prefix) + ".gapfilled.fa")
-    if args.review_html:
-        output_paths["review_html"] = Path(args.review_html)
-    ensure_output_dirs(output_paths)
-
+def build_plan_context(args):
+    validate_plan_args(args)
     graph = read_gfa(args.gfa)
     gaf_records = read_gaf(args.gaf, args.min_gaf_mapq) if args.gaf else []
     hic_contacts = read_hic_pairs(args.hic_pairs) if args.hic_pairs else {}
@@ -1557,6 +1585,23 @@ def run(args):
         hic_contacts,
         ref_placements,
     )
+    return groups, unassigned, plans
+
+
+def run(args):
+    prefix = Path(args.output_prefix)
+
+    output_paths = {
+        "fill_plan": Path(str(prefix) + ".gapfill_plan.tsv"),
+        "run_summary": Path(str(prefix) + ".run_summary.txt"),
+    }
+    if args.apply:
+        output_paths["filled_fasta"] = Path(str(prefix) + ".gapfilled.fa")
+    if args.review_html:
+        output_paths["review_html"] = Path(args.review_html)
+    ensure_output_dirs(output_paths)
+
+    groups, unassigned, plans = build_plan_context(args)
     if args.reviewed_plan:
         apply_reviewed_plan(plans, read_reviewed_plan(args.reviewed_plan))
 

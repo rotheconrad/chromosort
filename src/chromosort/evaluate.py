@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from . import fix_contigs
+from . import gapfill as gapfill_mod
 from . import scaffold as scaffold_mod
 from .graph import graph_node_evidence, read_gfa
 from .longreads import read_long_read_paf, summarize_breakpoint, summarize_contig_bridge
@@ -60,6 +61,17 @@ SCAFFOLD_REVIEW_COLUMNS = [
     "graph_status",
     "graph_direct_edge",
     "graph_path_nodes",
+    "longread_bridge_reads",
+    "longread_orientation_summary",
+    "longread_read_order_summary",
+    "longread_median_read_gap_bp",
+]
+
+GAPFILL_REVIEW_COLUMNS = [
+    column
+    for column in gapfill_mod.fill_plan_header()
+    if column not in {"accept_fill", "applied"}
+] + [
     "longread_bridge_reads",
     "longread_orientation_summary",
     "longread_read_order_summary",
@@ -167,6 +179,52 @@ def parse_scaffold_args(argv=None, prog=None):
     )
     ap.add_argument("--graph-max-path-edges", type=int, default=4)
     ap.set_defaults(simple_headers=False)
+    return ap.parse_args(argv)
+
+
+def parse_gapfill_args(argv=None, prog=None):
+    ap = argparse.ArgumentParser(
+        prog=prog,
+        description="Prepare an editable TSV of candidate chromo gapfill decisions.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    ap.add_argument("-f", "--ordered-fasta", required=True, help="Final ordered FASTA from chromo sort.")
+    ap.add_argument(
+        "-a",
+        "--assignments",
+        required=True,
+        help="Matching <prefix>.contig_assignments.tsv from chromo sort.",
+    )
+    ap.add_argument("--gfa", required=True, help="Assembly graph GFA containing segment sequences and links.")
+    ap.add_argument("--gaf", default=None, help="Optional GAF graph alignments for read-path support.")
+    ap.add_argument("--hic-pairs", default=None, help="Optional graph-node contact count TSV.")
+    ap.add_argument("--ref-paf", default=None, help="Optional reference-to-assembly PAF for graph-node placement.")
+    ap.add_argument("--read-paf", default=None, help="Optional long-read-to-assembly PAF for contig-end bridge support.")
+    ap.add_argument("--min-read-mapq", type=int, default=0, help="Minimum MAPQ for --read-paf rows.")
+    ap.add_argument("--read-terminal-window-bp", type=int, default=5_000)
+    ap.add_argument("--read-min-anchor-bp", type=int, default=500)
+    ap.add_argument(
+        "-o",
+        "--output-prefix",
+        required=True,
+        help="Output prefix. Writes <prefix>.gapfill_review.tsv.",
+    )
+    ap.add_argument("--fixed-gap-bp", type=int, default=None)
+    ap.add_argument("--max-path-edges", type=int, default=4)
+    ap.add_argument("--max-candidate-paths", type=int, default=2)
+    ap.add_argument("--min-gaf-mapq", type=int, default=20)
+    ap.add_argument("--min-gaf-path-support", type=int, default=1)
+    ap.add_argument("--min-hic-path-support", type=int, default=1)
+    ap.add_argument("--min-ref-path-support", type=int, default=1)
+    ap.add_argument("--min-ref-paf-mapq", type=int, default=0)
+    ap.add_argument("--min-ref-paf-idy", type=float, default=0.0)
+    ap.add_argument("--include-secondary-ref-paf", action="store_true")
+    ap.add_argument("--max-fill-bp", type=int, default=1_000_000)
+    ap.add_argument(
+        "--include-fill-sequences",
+        action="store_true",
+        help="Include candidate fill sequences in the review table.",
+    )
     return ap.parse_args(argv)
 
 
@@ -478,6 +536,66 @@ def build_scaffold_events(args):
     return events
 
 
+def adjacent_member_pairs(groups):
+    pairs = {}
+    for scaffold_name, members in groups.items():
+        for left, right in zip(members, members[1:]):
+            key = (scaffold_name, left.assignment.new_name, right.assignment.new_name)
+            pairs[key] = (left, right)
+    return pairs
+
+
+def gapfill_read_bridge_fields(read_evidence, member_pairs, plan, args):
+    if read_evidence is None:
+        return {
+            "longread_bridge_reads": ".",
+            "longread_orientation_summary": ".",
+            "longread_read_order_summary": ".",
+            "longread_median_read_gap_bp": ".",
+        }
+    pair = member_pairs.get(gapfill_mod.fill_plan_key(plan))
+    if pair is None:
+        return {
+            "longread_bridge_reads": "0",
+            "longread_orientation_summary": ".",
+            "longread_read_order_summary": ".",
+            "longread_median_read_gap_bp": ".",
+        }
+    left, right = pair
+    return read_bridge_fields(read_evidence, left, right, args)
+
+
+def build_gapfill_events(args):
+    groups, _unassigned, plans = gapfill_mod.build_plan_context(args)
+    member_pairs = adjacent_member_pairs(groups)
+    read_evidence = (
+        read_long_read_paf(args.read_paf, min_mapq=args.min_read_mapq)
+        if args.read_paf
+        else None
+    )
+
+    events = []
+    for plan in plans:
+        fields = gapfill_mod.fill_plan_dict(plan, args.include_fill_sequences)
+        fields.pop("accept_fill", None)
+        fields.pop("applied", None)
+        fields.update(gapfill_read_bridge_fields(read_evidence, member_pairs, plan, args))
+        events.append(
+            ReviewEvent(
+                event_id=f"gapfill:{plan.scaffold}:{plan.left_contig}:{plan.right_contig}",
+                task="gapfill",
+                action="fill_path",
+                target=f"{plan.scaffold}:{plan.left_contig}|{plan.right_contig}",
+                accept=plan.fill_status == "fillable",
+                status=plan.fill_status,
+                confidence=".",
+                reason=plan.reason,
+                fields=fields,
+            )
+        )
+    return events
+
+
 def run_fix(args):
     prefix = Path(args.output_prefix)
     output_paths = {
@@ -514,6 +632,26 @@ def run_scaffold(args):
     sys.stderr.write(f"  scaffold_gap: {len(events)}\n")
 
 
+def run_gapfill(args):
+    prefix = Path(args.output_prefix)
+    output_paths = {
+        "gapfill_review": event_table_path(prefix, ".gapfill_review.tsv"),
+    }
+    ensure_output_dirs(output_paths)
+    events = build_gapfill_events(args)
+    write_review_events(
+        output_paths["gapfill_review"],
+        events,
+        extra_columns=GAPFILL_REVIEW_COLUMNS,
+    )
+    status_counts = defaultdict(int)
+    for event in events:
+        status_counts[event.status] += 1
+    sys.stderr.write(f"Wrote gapfill review table: {output_paths['gapfill_review']}\n")
+    for status, count in sorted(status_counts.items()):
+        sys.stderr.write(f"  {status}: {count}\n")
+
+
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     if argv is None:
         argv = sys.argv[1:]
@@ -521,7 +659,12 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         prog=prog,
         description="Prepare TSV review tables for ChromoSort command decisions.",
     )
-    parser.add_argument("mode", nargs="?", choices=["fix", "scaffold"], help="Review table mode to run.")
+    parser.add_argument(
+        "mode",
+        nargs="?",
+        choices=["fix", "scaffold", "gapfill"],
+        help="Review table mode to run.",
+    )
     if not argv or argv[0] in {"-h", "--help"}:
         parser.print_help()
         return
@@ -533,6 +676,8 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             run_fix(parse_fix_args(remaining, prog=f"{prog} fix" if prog else None))
         elif mode == "scaffold":
             run_scaffold(parse_scaffold_args(remaining, prog=f"{prog} scaffold" if prog else None))
+        elif mode == "gapfill":
+            run_gapfill(parse_gapfill_args(remaining, prog=f"{prog} gapfill" if prog else None))
         else:
             parser.error(f"unknown eval mode: {mode}")
     except ValueError as exc:

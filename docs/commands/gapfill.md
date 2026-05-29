@@ -28,12 +28,13 @@ reference-placement PAF evidence, `chromo gapfill`:
 7. Rejects missing nodes, disconnected flanks, unresolved ambiguous paths,
    unsequenced nodes, unknown or invalid overlaps, oversized fills, and flank
    sequence mismatches.
-8. Writes `<prefix>.gapfill_plan.tsv` for review with `accept_fill=no` by default
-   and can write a self-contained HTML reviewer with `--review-html`.
+8. Writes `<prefix>.gapfill_plan.tsv` for review with `accept_fill=no` by default,
+   can write a self-contained HTML reviewer with `--review-html`, and can accept
+   the shared review-event table from `chromo eval gapfill`.
 9. With `--apply`, writes `<prefix>.gapfilled.fa`. Without `--reviewed-plan`, all
    currently fillable paths are applied; with `--reviewed-plan`, only rows with
-   `accept_fill=yes` are applied and other junctions fall back to inferred or
-   fixed N gaps.
+   accepted fill decisions are applied and other junctions fall back to inferred
+   or fixed N gaps.
 
 ## Plan Graph Fills
 
@@ -56,6 +57,10 @@ provided, the HTML table can filter rows, toggle accepted fillable paths, show
 side-by-side candidate path comparisons for ambiguous branches, and export a
 reviewed-plan TSV with the same columns.
 
+For spreadsheet-first review using the shared review-event schema, run
+`chromo eval gapfill` instead. It writes `<prefix>.gapfill_review.tsv` with
+accepted `fill_path` rows that can also be passed to `--reviewed-plan`.
+
 ## Apply Reviewed Graph Fills
 
 ```bash
@@ -66,7 +71,7 @@ chromo gapfill \
   --ref-paf paf/sample.ref_vs_asm.paf \
   --gaf reads_to_graph.gaf \
   --hic-pairs graph_contacts.tsv \
-  --reviewed-plan chromosort.gapfill.reviewed_plan.tsv \
+  --reviewed-plan results/sample.eval_gapfill.gapfill_review.tsv \
   --output-prefix results/sample.reviewed_gapfill \
   --apply
 ```
@@ -80,13 +85,14 @@ unique summed contact support of at least `--min-hic-path-support`. If
 graph nodes have uniquely stronger same-reference placement support inside the
 expected reference-space gap. When evidence sources uniquely support different
 paths, the branch remains unresolved. When `--reviewed-plan` is used,
-ChromoSort rechecks the current scaffold, contig pair, and `path_nodes` against
-the edited plan before applying an accepted row, so stale reviewed paths fail
-instead of being applied. For a fillable path, ChromoSort inserts the graph
-sequence after the left flank and trims the right flank prefix by the final GFA
-overlap so the joined sequence follows the graph path without duplicating the
-overlap. Unfilled junctions receive the inferred reference-space N gap, or
-`--fixed-gap-bp` when provided.
+ChromoSort accepts either the legacy gapfill-plan TSV with `accept_fill=yes` or
+the shared `chromo eval gapfill` review-event TSV with `accept=yes`. It rechecks
+the current scaffold, contig pair, and `path_nodes` before applying an accepted
+row, so stale reviewed paths fail instead of being applied. For a fillable path,
+ChromoSort inserts the graph sequence after the left flank and trims the right
+flank prefix by the final GFA overlap so the joined sequence follows the graph
+path without duplicating the overlap. Unfilled junctions receive the inferred
+reference-space N gap, or `--fixed-gap-bp` when provided.
 
 ## `chromo gapfill` Outputs
 
@@ -129,7 +135,7 @@ AAAACCCCGGGGTTTT
 | `--ref-paf` | none | Optional reference-to-assembly PAF used to score intermediate graph nodes against the expected reference-space gap. |
 | `--output-prefix` | required | Prefix for gapfill plan, run summary, and optional gapfilled FASTA. |
 | `--apply` | off | Write `<prefix>.gapfilled.fa` using only accepted graph paths. |
-| `--reviewed-plan` | none | Optional edited gapfill plan TSV. With `--apply`, only rows with `accept_fill=yes` are applied after the current path is rechecked. |
+| `--reviewed-plan` | none | Optional edited gapfill plan TSV or `chromo eval gapfill` review-event TSV. With `--apply`, only accepted rows are applied after the current path is rechecked. |
 | `--review-html` | none | Optional self-contained HTML review dashboard for the gapfill plan. |
 | `--fixed-gap-bp` | none | Use this many Ns for unresolved gaps in `--apply` output instead of inferred reference-space gaps. |
 | `--max-path-edges` | `4` | Maximum GFA link depth searched between adjacent sorted contigs. |
@@ -155,13 +161,13 @@ This keeps evidence review separate from FASTA construction.
 
 ### Reviewed Plan Gate
 
-For strict reviewed application, run `chromo gapfill` once in planning mode, edit
-`accept_fill` to `yes` only for approved rows, then rerun with `--apply` and
-`--reviewed-plan`. ChromoSort recomputes the graph path and validates the
-accepted row before applying it. Accepted rows whose current `path_nodes` or
-fillable status no longer match are rejected with an error. `--review-html`
-writes a browser-based table for the same review step; its exported TSV is the
-file to pass to `--reviewed-plan`.
+For strict reviewed application, run either `chromo eval gapfill` or
+`chromo gapfill` once in planning mode, mark only approved rows as accepted,
+then rerun with `--apply` and `--reviewed-plan`. ChromoSort recomputes the graph
+path and validates the accepted row before applying it. Accepted rows whose
+current `path_nodes` or fillable status no longer match are rejected with an
+error. `--review-html` writes a browser-based table for the legacy plan-review
+step; `chromo eval gapfill` writes the table-only counterpart.
 
 ### Unique Paths Or Unique Evidence
 

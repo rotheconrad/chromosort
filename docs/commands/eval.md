@@ -10,8 +10,8 @@ for spreadsheet-first review workflows where users want the algorithm to
 propose candidate decisions, then keep, reject, delete, or add rows before a
 sequence-changing command applies the reviewed decisions.
 
-At present, `chromo eval fix` and `chromo eval scaffold` are available.
-Gapfill review-table mode is planned in the production roadmap.
+At present, `chromo eval fix`, `chromo eval scaffold`, and
+`chromo eval gapfill` are available.
 
 ## Run `chromo eval fix`
 
@@ -95,6 +95,50 @@ old spreadsheet cannot silently change a new scaffold.
 Long-read scaffold evidence is summarized as bridge-read counts, orientation
 summaries, read-order summaries, and median read-space gap estimates.
 
+## Run `chromo eval gapfill`
+
+```bash
+chromo eval gapfill \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --gaf reads_to_graph.gaf \
+  --ref-paf paf/sample.ref_vs_asm.paf \
+  --read-paf reads_to_assembly.paf \
+  --output-prefix results/sample.eval_gapfill
+```
+
+The command writes:
+
+```text
+results/sample.eval_gapfill.gapfill_review.tsv
+```
+
+Each accepted `fill_path` row can be applied with:
+
+```bash
+chromo gapfill \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --reviewed-plan results/sample.eval_gapfill.gapfill_review.tsv \
+  --output-prefix results/sample.reviewed_gapfill \
+  --apply
+```
+
+`chromo eval gapfill` uses the same graph path planner as `chromo gapfill`.
+Fillable rows are accepted by default in the review-event table; unresolved,
+ambiguous, stale, or unfillable rows remain visible but are not accepted by
+default. `chromo gapfill --reviewed-plan` validates accepted rows against the
+current scaffold, contig pair, and `path_nodes` before applying sequence.
+
+`chromo eval gapfill` can include report-only context from:
+
+- `--gaf`: read-path support for candidate GFA paths.
+- `--hic-pairs`: graph-node contact support.
+- `--ref-paf`: reference-placement support for intermediate graph nodes.
+- `--read-paf`: long-read-to-assembly bridge evidence between contig ends.
+
 ## Parameters
 
 | Parameter | Default | Meaning |
@@ -109,8 +153,11 @@ summaries, read-order summaries, and median read-space gap estimates.
 | `--ordered-fasta` | required for scaffold mode | Final ordered FASTA from `chromo sort`. |
 | `--assignments` | required for scaffold mode | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`. |
 | `--fixed-gap-bp` | none | In scaffold mode, prepare rows using fixed gaps instead of inferred gaps. |
+| `--gfa` | required for gapfill mode | Assembly graph GFA for candidate fill paths. |
+| `--gaf`, `--hic-pairs`, `--ref-paf` | none | Optional graph-path support evidence for gapfill mode. |
+| `--include-fill-sequences` | off | In gapfill mode, include candidate fill sequence in the review table. |
 
-The planner threshold options mirror `chromo fix`.
+The planner threshold options mirror the corresponding executor command.
 
 ## Reasoning
 
