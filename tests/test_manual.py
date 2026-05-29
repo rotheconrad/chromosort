@@ -228,6 +228,53 @@ class ManualTests(unittest.TestCase):
             self.assertEqual(data["reviewEvents"][0]["task"], "fix")
             self.assertEqual(data["reviewEvents"][0]["sources"], ["contigA", "contigA_left"])
 
+    def test_manual_task_dashboard_embeds_modular_evidence_inputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            review = tmp_path / "fix_review.tsv"
+            read_paf = tmp_path / "reads_to_assembly.paf"
+            gaf = tmp_path / "reads_to_graph.gaf"
+            read_paf.write_text("")
+            gaf.write_text("")
+            review.write_text(
+                "schema\tevent_id\ttask\taction\ttarget\taccept\tstatus\tconfidence\treason\tnotes\t"
+                "source_contig\tgraph_node\tgraph_node_status\tlongread_spanning_reads\t"
+                "longread_split_reads\tlongread_left_edge_reads\tlongread_right_edge_reads\t"
+                "gaf_node\tgaf_node_reads\tgaf_node_traversals\tgaf_node_orientations\t"
+                "gaf_path_examples\n"
+                "chromosort-review-event-v1\tfix:contigA:1\tfix\tsplit_piece\tcontigA\tno\t"
+                "candidate\t.\ttest\t\tcontigA\tcontigA\tpresent\t3\t1\t2\t2\tcontigA\t4\t5\t+:4\t"
+                "contigA+>bridge+\n"
+            )
+            output_html = run_manual_mode(
+                tmp_path,
+                "fix",
+                "--review-table",
+                str(review),
+                "--read-paf",
+                str(read_paf),
+                "--min-read-mapq",
+                "15",
+                "--gaf",
+                str(gaf),
+                "--min-gaf-mapq",
+                "30",
+            )
+            text = output_html.read_text()
+            data = html_data(output_html)
+
+            self.assertIn("evidencePanels", text)
+            self.assertIn("Long-read PAF", text)
+            self.assertIn("Long-read GAF", text)
+            self.assertEqual(data["inputs"]["readPaf"], str(read_paf))
+            self.assertEqual(data["inputs"]["gaf"], str(gaf))
+            self.assertEqual(data["settings"]["minReadMapq"], 15)
+            self.assertEqual(data["settings"]["minGafMapq"], 30)
+            fields = data["reviewEvents"][0]["fields"]
+            self.assertEqual(fields["graph_node"], "contigA")
+            self.assertEqual(fields["longread_spanning_reads"], "3")
+            self.assertEqual(fields["gaf_node_reads"], "4")
+
     def test_manual_apply_piece_recipe_cuts_inverts_and_removes(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

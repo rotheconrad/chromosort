@@ -61,6 +61,9 @@ chromo manual fix \
   --assembly-fasta assembly.fa \
   --coords mummer/sample.coords \
   --review-table results/sample.eval_fix.fix_review.tsv \
+  --gfa assembly_graph.gfa \
+  --read-paf paf/reads_to_assembly.paf \
+  --gaf graph_alignments/reads_to_graph.gaf \
   --output-html results/sample.manual_fix.html
 ```
 
@@ -80,6 +83,14 @@ lengths, and whether each neighbor is aligned to the same best reference. This
 borrows the useful graph-inspection idea from Gap-Graph while keeping
 ChromoSort's sequence-changing actions explicit in the manual recipe. An
 example graph-aware dashboard is shown in the output section below.
+
+Task dashboards also expose modular evidence panels for the selected event.
+The alignment panel is always available because `--coords` or `--paf` is
+required. GFA, long-read PAF, and long-read GAF panels appear when the
+corresponding file is provided or when the review table contains matching
+`graph_*`, `longread_*`, or `gaf_*` fields from `chromo eval`. This keeps the
+dashboard useful when only one evidence stream exists, while making conflicting
+or complementary support visible when several streams were generated.
 
 For large genomes, the dashboard embeds alignment metadata but not full FASTA
 sequences by default. Open the HTML file in a browser, load the original
@@ -107,6 +118,8 @@ The manual dashboard provides:
 - Optional GFA node badges and neighbor details when generated with `--gfa`.
 - An optional task-specific review-event queue when generated with
   `--review-table`.
+- Modular evidence panels for alignment, GFA, long-read PAF, and long-read GAF
+  support when those inputs or review-table fields are available.
 - A graph filter for `simple`, `branching`, `self_loop`, and `missing` graph
   neighborhoods, plus a read-only neighborhood panel for the selected contig.
 - A click-to-stage breakpoint position from the selected contig dot plot.
@@ -189,6 +202,10 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 | `--suggested-output-fasta` | `<assembly>.manual.fa` | Suggested browser download filename for FASTA export. |
 | `--embed-sequences` | off | Embed full assembly sequences in the HTML for single-file export. Best for small assemblies. |
 | `--gfa` | none | Optional assembly graph GFA for per-contig node status, graph complexity, degree, coverage tag, and neighbor context. |
+| `--read-paf` | none | Optional long-read-to-assembly PAF path recorded for task evidence panels. Matching `longread_*` fields from eval review tables are shown beside the selected event. |
+| `--min-read-mapq` | `0` | MAPQ threshold recorded for optional long-read PAF evidence panels. |
+| `--gaf` | none | Optional long-read-to-graph GAF path recorded for task evidence panels. Matching `gaf_*` fields from eval review tables are shown beside the selected event. |
+| `--min-gaf-mapq` | `20` | MAPQ threshold recorded for optional long-read GAF evidence panels. |
 | `--review-table` | none | Optional shared review-event TSV from `chromo eval`; in `manual fix`, `manual scaffold`, and `manual gapfill`, events are embedded as a focused queue. |
 | `--min-segment-bp` | `0` | Minimum alignment row length to embed in the dashboard. |
 | `--min-segment-idy` | `0.0` | Minimum percent identity for embedded alignment rows. |

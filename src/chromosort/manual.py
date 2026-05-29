@@ -101,6 +101,34 @@ def parse_generate_args(argv=None, prog=None, manual_task="general"):
         ),
     )
     ap.add_argument(
+        "--read-paf",
+        default=None,
+        help=(
+            "Optional long-read-to-assembly PAF. In task dashboards, matching "
+            "longread_* review-table fields are shown as a separate evidence panel."
+        ),
+    )
+    ap.add_argument(
+        "--min-read-mapq",
+        type=int,
+        default=0,
+        help="MAPQ threshold recorded for optional long-read PAF evidence panels.",
+    )
+    ap.add_argument(
+        "--gaf",
+        default=None,
+        help=(
+            "Optional long-read-to-graph GAF. In task dashboards, matching "
+            "gaf_* review-table fields are shown as a separate evidence panel."
+        ),
+    )
+    ap.add_argument(
+        "--min-gaf-mapq",
+        type=int,
+        default=20,
+        help="MAPQ threshold recorded for optional GAF evidence panels.",
+    )
+    ap.add_argument(
         "--review-table",
         default=None,
         help=(
@@ -138,6 +166,10 @@ def parse_generate_args(argv=None, prog=None, manual_task="general"):
         help="Maximum number of alignment rows embedded after filtering; 0 means no limit.",
     )
     args = ap.parse_args(argv)
+    if args.min_read_mapq < 0:
+        ap.error("--min-read-mapq must be >= 0.")
+    if args.min_gaf_mapq < 0:
+        ap.error("--min-gaf-mapq must be >= 0.")
     args.manual_task = manual_task
     return args
 
@@ -533,12 +565,16 @@ def build_dashboard_data(args):
             "alignmentFormat": alignment_format,
             "alignmentPath": str(alignment_path),
             "gfa": str(args.gfa) if args.gfa else None,
+            "readPaf": str(args.read_paf) if args.read_paf else None,
+            "gaf": str(args.gaf) if args.gaf else None,
             "reviewTable": str(args.review_table) if args.review_table else None,
         },
         "settings": {
             "minSegmentBp": args.min_segment_bp,
             "minSegmentIdy": args.min_segment_idy,
             "minMapq": args.min_mapq,
+            "minReadMapq": args.min_read_mapq,
+            "minGafMapq": args.min_gaf_mapq,
             "includeSecondaryPaf": bool(args.include_secondary_paf),
             "maxSegments": args.max_segments,
             "embedSequences": bool(args.embed_sequences),
@@ -1120,6 +1156,53 @@ input[type="file"] {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.evidence-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+}
+.evidence-panels.hidden { display: none; }
+.evidence-panel {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+.evidence-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.evidence-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.evidence-row {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.8fr) minmax(0, 1.2fr);
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+.evidence-row span:first-child {
+  color: var(--muted);
+  font-weight: 650;
+}
+.evidence-row span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .graph-side {
   color: var(--muted);
   font-weight: 650;
@@ -1223,6 +1306,7 @@ label input, label select {
         <label>Recipe file<input id="recipeFile" type="file" accept=".json"></label>
       </div>
       <div class="graph-panel hidden" id="graphPanel"></div>
+      <div class="evidence-panels hidden" id="evidencePanels"></div>
       <div class="detail-tools">
         <button id="addCut">Add breakpoint</button>
         <label><input id="scaffoldMode" type="checkbox"> Scaffold export</label>
@@ -1267,6 +1351,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     selectedMeta: document.getElementById("selectedMeta"),
     selectedGraph: document.getElementById("selectedGraph"),
     graphPanel: document.getElementById("graphPanel"),
+    evidencePanels: document.getElementById("evidencePanels"),
     dotplot: document.getElementById("dotplot"),
     status: document.getElementById("status"),
     cutPos: document.getElementById("cutPos"),
@@ -1405,6 +1490,129 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     </div>`;
   }
 
+  function eventFields(evt) {
+    return (evt && evt.fields) || {};
+  }
+
+  function presentValue(value) {
+    if (value === null || value === undefined) return false;
+    const text = String(value).trim();
+    return text !== "" && text !== ".";
+  }
+
+  function firstPresent(...values) {
+    for (const value of values) {
+      if (presentValue(value)) return value;
+    }
+    return ".";
+  }
+
+  function fieldValue(fields, names) {
+    for (const name of names) {
+      if (presentValue(fields[name])) return fields[name];
+    }
+    return ".";
+  }
+
+  function hasPrefixedEvidence(fields, prefixes) {
+    const source = fields || {};
+    return Object.keys(source).some(key => {
+      return prefixes.some(prefix => key.startsWith(prefix)) && presentValue(source[key]);
+    });
+  }
+
+  function percentValue(value) {
+    if (value === null || value === undefined || value === "") return ".";
+    const numeric = Number(value);
+    if (Number.isNaN(numeric)) return String(value);
+    return (numeric * 100).toFixed(1) + "%";
+  }
+
+  function evidencePanel(title, rows) {
+    const visibleRows = rows.filter(row => presentValue(row[1]));
+    if (!visibleRows.length) return "";
+    const body = visibleRows.map(([label, value]) => {
+      return `<div class="evidence-row">
+        <span>${escapeHtml(label)}</span>
+        <span title="${escapeHtml(value)}">${escapeHtml(value)}</span>
+      </div>`;
+    }).join("");
+    return `<div class="evidence-panel">
+      <div class="evidence-title"><span>${escapeHtml(title)}</span></div>
+      ${body}
+    </div>`;
+  }
+
+  function renderEvidencePanels(q, graph, evt) {
+    if (!els.evidencePanels) return;
+    const inputs = data.inputs || {};
+    const settings = data.settings || {};
+    const fields = eventFields(evt);
+    const panels = [];
+
+    panels.push(evidencePanel("Alignment", [
+      ["file", inputs.alignmentPath],
+      ["format", inputs.alignmentFormat],
+      ["selected", firstPresent(q && q.name, evt && evt.target)],
+      ["best ref", q && q.bestRef],
+      ["query cov", q && q.queryCov ? percentValue(q.queryCov) : "."]
+    ]));
+
+    if (inputs.gfa || graph || hasPrefixedEvidence(fields, ["graph_", "left_graph_", "right_graph_"])) {
+      panels.push(evidencePanel("GFA", [
+        ["file", inputs.gfa],
+        ["node", firstPresent(graph && graph.graphNode, fields.graph_node, fields.left_graph_node)],
+        ["right node", fields.right_graph_node],
+        ["status", firstPresent(fields.graph_status, fields.graph_node_status, graph && graph.graphNodeStatus)],
+        ["complexity", graph && graph.graphComplexity],
+        ["path", fieldValue(fields, ["graph_path_nodes", "path_nodes"])],
+        ["direct edge", fields.graph_direct_edge]
+      ]));
+    }
+
+    if (inputs.readPaf || hasPrefixedEvidence(fields, ["longread_"])) {
+      panels.push(evidencePanel("Long-read PAF", [
+        ["file", inputs.readPaf],
+        ["min MAPQ", settings.minReadMapq],
+        ["bridges", fields.longread_bridge_reads],
+        ["spanning", fields.longread_spanning_reads],
+        ["split", fields.longread_split_reads],
+        ["left edge", fields.longread_left_edge_reads],
+        ["right edge", fields.longread_right_edge_reads],
+        ["nearby", fields.longread_nearby_reads],
+        ["orientation", fields.longread_orientation_summary],
+        ["read order", fields.longread_read_order_summary],
+        ["median gap", fields.longread_median_read_gap_bp]
+      ]));
+    }
+
+    if (inputs.gaf || hasPrefixedEvidence(fields, ["gaf_"])) {
+      panels.push(evidencePanel("Long-read GAF", [
+        ["file", inputs.gaf],
+        ["min MAPQ", settings.minGafMapq],
+        ["status", fields.gaf_support_status],
+        ["node", fields.gaf_node],
+        ["node reads", fields.gaf_node_reads],
+        ["traversals", fields.gaf_node_traversals],
+        ["orientations", fields.gaf_node_orientations],
+        ["path", fieldValue(fields, ["gaf_path_nodes", "gaf_path_examples"])],
+        ["support", fields.gaf_path_support],
+        ["alt path", fields.gaf_best_alt_path_nodes],
+        ["alt support", fields.gaf_best_alt_support],
+        ["reads", fields.gaf_selected_reads]
+      ]));
+    }
+
+    const html = panels.filter(Boolean).join("");
+    if (!html) {
+      els.evidencePanels.classList.add("hidden");
+      els.evidencePanels.innerHTML = "";
+      return;
+    }
+    els.evidencePanels.classList.remove("hidden");
+    els.evidencePanels.innerHTML = html;
+  }
+
   function renderGraphPanel(q, graph) {
     if (!els.graphPanel) return;
     if (!graph) {
@@ -1480,8 +1688,15 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     els.eventTitle.textContent = (data.reviewTask || "review") + " events";
     els.eventList.innerHTML = reviewEvents.map(evt => {
       const selected = evt.event_id === selectedEventId ? " selected" : "";
-      const fields = evt.fields || {};
-      const support = fields.longread_bridge_reads || fields.longread_spanning_reads || fields.graph_status || "";
+      const fields = eventFields(evt);
+      const support = firstPresent(
+        fields.gaf_support_status,
+        fields.gaf_path_support,
+        fields.longread_bridge_reads,
+        fields.longread_spanning_reads,
+        fields.graph_status,
+        ""
+      );
       return `<div class="event-row${selected}" data-event-id="${escapeHtml(evt.event_id)}">
         <strong title="${escapeHtml(evt.target)}">${escapeHtml(evt.action)} | ${escapeHtml(evt.target)}</strong>
         <span>${escapeHtml(evt.status)} | ${escapeHtml(evt.reason || ".")}</span>
@@ -1546,6 +1761,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       els.selectedMeta.textContent = "";
       els.selectedGraph.textContent = "";
       renderGraphPanel(null, null);
+      renderEvidencePanels(null, null, null);
       return;
     }
     const q = queriesByName.get(piece.source) || {};
@@ -1563,6 +1779,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       evt ? "Event: " + evt.action + " | " + evt.status + " | " + evt.target : ""
     ].filter(Boolean).join(" | ");
     renderGraphPanel(q, graph);
+    renderEvidencePanels(q, graph, evt);
     els.cutPos.value = "";
     els.cutPos.min = String(piece.start);
     els.cutPos.max = String(piece.end - 1);

@@ -19,7 +19,7 @@ same FASTA records used by the command you are running.
 | Prepare fix review tables with `chromo eval fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for graph context, long-read-to-assembly PAF, long-read-to-graph GAF |
 | Fix chimeric contigs with `chromo fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for report-only graph context |
 | Cut reviewed coordinates with `chromo cut` | Assembly FASTA and explicit cut positions | Assembly FAI |
-| Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, FASTA indexes, embedded sequences, `chromo eval` review table for task modes |
+| Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, long-read-to-assembly PAF, long-read-to-graph GAF, FASTA indexes, embedded sequences, `chromo eval` review table for task modes |
 | Plot alignments with `chromo plot` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | Assignment TSV for ChromoSort query ordering, FASTA indexes. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation examples. |
 | Prepare scaffold review tables with `chromo eval scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for graph junction context, long-read-to-assembly PAF, long-read-to-graph GAF |
 | Scaffold sorted contigs with `chromo scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for report-only graph junction evidence |
@@ -325,13 +325,19 @@ lengths, strand, match count, block length, MAPQ, and names.
 Graph-aware ChromoSort commands use these graph-related evidence files:
 
 - GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
-  `chromo fix --gfa`, `chromo scaffold --gfa`, and `chromo gapfill --gfa`.
+  `chromo eval fix/scaffold/gapfill`, `chromo fix --gfa`,
+  `chromo scaffold --gfa`, and `chromo gapfill --gfa`.
 - reference-to-assembly PAF: the minimap2 alignment format used by
   `chromo sort`, `chromo fix`, `chromo manual`, and `chromo plot`; for
   `chromo gapfill --ref-paf`, the PAF query names must match the GFA graph
   nodes being scored.
-- GAF: optional read-to-graph alignments used by `chromo gapfill --gaf` to resolve
-  otherwise ambiguous graph paths.
+- long-read-to-assembly PAF: optional read alignments used by
+  `chromo eval fix`, `chromo eval scaffold`, `chromo eval gapfill`, and
+  `chromo manual --read-paf` task dashboards to report split, bridge, and
+  contig-end support.
+- GAF: optional read-to-graph alignments used by `chromo eval fix`,
+  `chromo eval scaffold`, `chromo eval gapfill`, `chromo manual --gaf`, and
+  `chromo gapfill --gaf` to report or resolve graph traversal support.
 - Hi-C pairs: optional graph-node contact counts used by
   `chromo gapfill --hic-pairs` as an additional conservative branch-support
   signal.
@@ -436,8 +442,8 @@ gapfill.
 
 ### Creating GAF Read-to-Graph Alignments
 
-GAF is a graph-alignment format. ChromoSort uses it in `chromo gapfill --gaf` as
-optional read-path evidence for candidate graph fills. A typical source is a
+GAF is a graph-alignment format. ChromoSort uses it as optional read-path
+evidence for fix, scaffold, manual, and gapfill review. A typical source is a
 long-read-to-GFA alignment from a graph aligner:
 
 ```bash
@@ -448,12 +454,15 @@ GraphAligner \
 ```
 
 `GraphAligner` is an optional external tool; it is not needed for the core
-sorting/fixing/scaffolding workflow. In the current `chromo gapfill` implementation,
-GAF is used as path support only. ChromoSort reads the query name, path string,
-and MAPQ columns, filters with `--min-gaf-mapq`, and counts how many read paths
-contain each candidate graph path. If one candidate path has unique support
-above `--min-gaf-path-support`, that path can resolve an otherwise ambiguous
-GFA branch. Tied, weak, or absent support keeps the fill unresolved for review.
+sorting/fixing/scaffolding workflow. ChromoSort reads the query name, path
+string, and MAPQ columns, filters with `--min-gaf-mapq`, and counts how many
+read paths contain a graph node or candidate graph traversal. In `chromo eval
+fix`, GAF is advisory node/traversal evidence. In `chromo eval scaffold`, it
+reports support for selected and alternate graph paths between adjacent
+contigs. In `chromo eval gapfill` and `chromo gapfill --gaf`, one candidate
+path with unique support above `--min-gaf-path-support` can resolve an
+otherwise ambiguous GFA branch. Tied, weak, absent, or conflicting support
+keeps the event reviewable instead of forcing a hidden choice.
 
 ### Optional Hi-C Pair Evidence
 
