@@ -27,6 +27,12 @@ AXIS_COLOR = "#374151"
 TEXT_COLOR = "#111827"
 MUTED_TEXT = "#6b7280"
 BACKGROUND = "#ffffff"
+TITLE_SIZE = 24
+SUBTITLE_SIZE = 15
+AXIS_LABEL_SIZE = 18
+TICK_LABEL_SIZE = 13
+RECORD_LABEL_SIZE = 13
+LEGEND_LABEL_SIZE = 15
 
 
 @dataclass(frozen=True)
@@ -416,11 +422,11 @@ def draw_axis_ticks(elements, total, origin, size, is_x_axis):
         if is_x_axis:
             elements.append(make_line(pos, origin[1], pos, origin[1] + size[1], TICK_GRID_COLOR, 0.6, 0.45))
             elements.append(make_line(pos, origin[1] + size[1], pos, origin[1] + size[1] + 6, AXIS_COLOR, 0.8))
-            elements.append(make_text(pos, origin[1] + size[1] + 20, label, size=10, anchor="middle", fill=MUTED_TEXT))
+            elements.append(make_text(pos, origin[1] + size[1] + 24, label, size=TICK_LABEL_SIZE, anchor="middle", fill=MUTED_TEXT))
         else:
             elements.append(make_line(origin[0], pos, origin[0] + size[0], pos, TICK_GRID_COLOR, 0.6, 0.45))
             elements.append(make_line(origin[0] + size[0], pos, origin[0] + size[0] + 6, pos, AXIS_COLOR, 0.8))
-            elements.append(make_text(origin[0] + size[0] + 10, pos + 3, label, size=10, fill=MUTED_TEXT))
+            elements.append(make_text(origin[0] + size[0] + 12, pos + 4, label, size=TICK_LABEL_SIZE, fill=MUTED_TEXT))
 
 
 def draw_separators(elements, records, offsets, total, origin, size, is_x_axis, max_labels=60):
@@ -429,22 +435,43 @@ def draw_separators(elements, records, offsets, total, origin, size, is_x_axis, 
         pos = scale(offsets[rec.name], total, origin[0 if is_x_axis else 1], size[0 if is_x_axis else 1])
         axis_size = size[0 if is_x_axis else 1]
         span_px = (rec.length / total) * axis_size if total > 0 else axis_size
-        should_label = idx % label_every == 0 and (span_px >= 14 or len(records) <= 2)
+        label_value = offsets[rec.name] + rec.length / 2
+        label_pos = scale(label_value, total, origin[0 if is_x_axis else 1], axis_size)
+        should_label = idx % label_every == 0 and (span_px >= 20 or len(records) <= 2)
         if is_x_axis:
             elements.append(make_line(pos, origin[1], pos, origin[1] + size[1], GRID_COLOR, 0.8, 0.65))
             if should_label:
-                elements.append(make_text(pos + 3, origin[1] - 8, rec.name, size=10, rotate=-35, fill=MUTED_TEXT))
+                elements.append(
+                    make_text(
+                        label_pos,
+                        origin[1] - 14,
+                        rec.name,
+                        size=RECORD_LABEL_SIZE,
+                        anchor="middle",
+                        rotate=-35,
+                        fill=MUTED_TEXT,
+                    )
+                )
         else:
             elements.append(make_line(origin[0], pos, origin[0] + size[0], pos, GRID_COLOR, 0.8, 0.65))
             if should_label:
-                elements.append(make_text(origin[0] - 8, pos + 3, rec.name, size=10, anchor="end", fill=MUTED_TEXT))
+                elements.append(
+                    make_text(
+                        origin[0] - 10,
+                        label_pos + 4,
+                        rec.name,
+                        size=RECORD_LABEL_SIZE,
+                        anchor="end",
+                        fill=MUTED_TEXT,
+                    )
+                )
 
 
 def build_plot_items(title, ref_records, query_records, segments, width, height):
-    margin_left = 130
-    margin_right = 88
-    margin_top = 92
-    margin_bottom = 92
+    margin_left = 170
+    margin_right = 150
+    margin_top = 124
+    margin_bottom = 116
     plot_width = max(100, width - margin_left - margin_right)
     plot_height = max(100, height - margin_top - margin_bottom)
     origin = (margin_left, margin_top)
@@ -459,12 +486,12 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
 
     elements = [
         make_rect(0, 0, width, height, BACKGROUND),
-        make_text(24, 32, title, size=18),
+        make_text(28, 38, title, size=TITLE_SIZE),
         make_text(
-            24,
-            54,
+            28,
+            64,
             f"{len(segments)} alignments | x: reference ({fmt_bp(ref_total)}) | y: query ({fmt_bp(query_total)})",
-            size=12,
+            size=SUBTITLE_SIZE,
             fill=MUTED_TEXT,
         ),
         make_rect(origin[0], origin[1], plot_width, plot_height, "#f9fafb", stroke="#9ca3af"),
@@ -495,12 +522,12 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
             make_line(origin[0], origin[1] + plot_height, origin[0] + plot_width, origin[1] + plot_height, AXIS_COLOR, 1.2),
             make_line(origin[0], origin[1], origin[0], origin[1] + plot_height, AXIS_COLOR, 1.2),
             make_line(origin[0] + plot_width, origin[1], origin[0] + plot_width, origin[1] + plot_height, AXIS_COLOR, 1.0),
-            make_text(origin[0] + plot_width / 2, height - 24, f"Reference position ({ref_unit})", size=13, anchor="middle"),
-            make_text(22, origin[1] + plot_height / 2, f"Query position ({query_unit})", size=13, anchor="middle", rotate=-90),
-            make_line(width - 210, 30, width - 170, 30, PLUS_COLOR, width=2.0),
-            make_text(width - 160, 34, "forward", size=12),
-            make_line(width - 210, 50, width - 170, 50, MINUS_COLOR, width=2.0),
-            make_text(width - 160, 54, "reverse", size=12),
+            make_text(origin[0] + plot_width / 2, height - 30, f"Reference Position ({ref_unit})", size=AXIS_LABEL_SIZE, anchor="middle"),
+            make_text(width - 28, origin[1] + plot_height / 2, f"Query Position ({query_unit})", size=AXIS_LABEL_SIZE, anchor="middle", rotate=90),
+            make_line(width - 280, 35, width - 230, 35, PLUS_COLOR, width=2.4),
+            make_text(width - 218, 40, "forward", size=LEGEND_LABEL_SIZE),
+            make_line(width - 280, 60, width - 230, 60, MINUS_COLOR, width=2.4),
+            make_text(width - 218, 65, "reverse", size=LEGEND_LABEL_SIZE),
         ]
     )
     return elements

@@ -87,8 +87,8 @@ class PlotTests(unittest.TestCase):
             text = svg.read_text()
             self.assertIn("<svg", text)
             self.assertIn("ChromoSort whole-genome dot plot", text)
-            self.assertIn("Reference position (bp)", text)
-            self.assertIn("Query position (bp)", text)
+            self.assertIn("Reference Position (bp)", text)
+            self.assertIn("Query Position (bp)", text)
             self.assertIn("forward", text)
             self.assertIn("reverse", text)
 
