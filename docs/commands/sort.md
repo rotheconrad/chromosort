@@ -14,6 +14,8 @@ FASTA for `chromo fix`, `chromo plot`, or another alignment-dependent command,
 re-run MUMmer or minimap2 against `<prefix>.ordered.fa` first. The original
 alignment remains valid for reviewing the original assembly and for
 `chromo plot --assignments`, but it is not a new alignment of the ordered FASTA.
+For help reading those review plots, see the
+[dot-plot guide]({{ '/dot-plots/' | relative_url }}).
 
 ## What `chromo sort` Does
 

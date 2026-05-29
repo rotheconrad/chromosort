@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="440" viewBox="0 0 900 440" role="img" aria-labelledby="title desc">
+  <title id="title">Duplication, haplotig, or repeat pattern</title>
+  <desc id="desc">Two query intervals align to the same reference interval with additional short repeat-like hits.</desc>
+  <rect width="900" height="440" fill="#ffffff"/>
+  <rect x="88" y="58" width="650" height="292" fill="#fbfbf8" stroke="#d7d7d0" stroke-width="1.5"/>
+  <g stroke="#e6e6df" stroke-width="1">
+    <line x1="218" y1="58" x2="218" y2="350"/>
+    <line x1="348" y1="58" x2="348" y2="350"/>
+    <line x1="478" y1="58" x2="478" y2="350"/>
+    <line x1="608" y1="58" x2="608" y2="350"/>
+    <line x1="88" y1="131" x2="738" y2="131"/>
+    <line x1="88" y1="204" x2="738" y2="204"/>
+    <line x1="88" y1="277" x2="738" y2="277"/>
+  </g>
+  <line x1="88" y1="350" x2="754" y2="350" stroke="#202124" stroke-width="2"/>
+  <line x1="88" y1="350" x2="88" y2="44" stroke="#202124" stroke-width="2"/>
+  <rect x="265" y="52" width="260" height="305" fill="#206a5d" opacity="0.06"/>
+  <g stroke="#2563eb" stroke-linecap="round">
+    <line x1="188" y1="318" x2="530" y2="165" stroke-width="8"/>
+    <line x1="238" y1="238" x2="505" y2="119" stroke-width="7" opacity="0.82"/>
+    <line x1="575" y1="310" x2="625" y2="288" stroke-width="4" opacity="0.45"/>
+    <line x1="128" y1="188" x2="178" y2="166" stroke-width="4" opacity="0.45"/>
+    <line x1="620" y1="128" x2="690" y2="98" stroke-width="4" opacity="0.45"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#202124">
+    <text x="108" y="36" font-size="16" font-weight="700">Multiple query intervals hit the same reference span</text>
+    <text x="335" y="400" font-size="15">reference chr1 position</text>
+    <text x="-253" y="28" transform="rotate(-90)" font-size="15">query intervals</text>
+    <text x="548" y="162" font-size="13" fill="#5f6368">Possible duplicate,</text>
+    <text x="548" y="180" font-size="13" fill="#5f6368">haplotig, or repeat.</text>
+    <text x="104" y="378" font-size="13" fill="#5f6368">Interpretation depends on coverage, identity, containment, and ploidy.</text>
+  </g>
+  <path d="M543 160 C512 151 492 135 505 119" stroke="#5f6368" stroke-width="1.3" fill="none"/>
+</svg>

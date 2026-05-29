@@ -70,3 +70,8 @@ Graph-aware commands expect GFA segment names to match the assembly FASTA or the
 ## Plots Are Empty Or Sparse
 
 Check that the reference and assembly FASTA IDs match the alignment file exactly. If you applied strict filters upstream, try plotting the unfiltered or less strictly filtered coords/PAF file first, then add `--min-segment-bp`, `--min-segment-idy`, or `--min-mapq` only after confirming the expected rows are present.
+
+If the plot is not empty but the pattern is hard to classify, use
+[How to Interpret Dot Plots]({{ '/dot-plots/' | relative_url }}) to compare it
+against common clean, reversed, chimeric, inversion, duplicate, gap, and
+repeat-like examples.

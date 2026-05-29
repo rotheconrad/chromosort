@@ -70,6 +70,17 @@ nav:
         url: /workflows/#handling-overlapping-contigs
       - title: Synthetic graph workflow
         url: /workflows/#synthetic-graph-workflow
+  - title: Dot Plot Guide
+    url: /dot-plots/
+    children:
+      - title: Anatomy
+        url: /dot-plots/#dot-plot-anatomy
+      - title: Pattern gallery
+        url: /dot-plots/#pattern-gallery
+      - title: Review workflow
+        url: /dot-plots/#a-practical-review-workflow
+      - title: Common traps
+        url: /dot-plots/#common-traps
   - title: Commands
     url: /commands/
     children:

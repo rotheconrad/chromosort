@@ -10,8 +10,8 @@ ChromoSort provides one command, `chromo`, with eight subcommands:
 | `chromo clean` | Apply sort-style filtering to raw contigs, conservatively fix retained contigs, orient/order the emitted records, and write a cleaned FASTA plus audit reports for mostly-correct assemblies ([clean docs](https://rotheconrad.github.io/chromosort/commands/clean/)). |
 | `chromo fix` | Split chimeric or structurally inconsistent contigs into reference-labeled pieces by scanning query-ordered alignment blocks, smoothing ordinary gaps, selecting eligible reference/orientation transitions, and writing a fixed full-assembly FASTA plus an audit report ([fix docs](https://rotheconrad.github.io/chromosort/commands/fix/)). |
 | `chromo cut` | Apply exact reviewed breakpoint edits when you already know the cut positions, replacing each requested contig with numbered pieces while copying uncut contigs unchanged and recording every emitted slice ([cut docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
-| `chromo manual` | Build a self-contained browser dashboard for dot-plot curation, contig removal/restoration, reordering, inversion, breakpoint staging, optional GFA neighborhood review, FASTA export, and reproducible recipe application ([manual docs](https://rotheconrad.github.io/chromosort/commands/manual/)). |
-| `chromo plot` | Draw whole-genome and per-reference dot plots from existing MUMmer coords or minimap2 PAF alignments, optionally ordered by a `chromo sort` assignment report, without re-running an aligner ([plot docs](https://rotheconrad.github.io/chromosort/commands/plot/)). |
+| `chromo manual` | Build a self-contained browser dashboard for dot-plot curation, contig removal/restoration, reordering, inversion, breakpoint staging, optional GFA neighborhood review, FASTA export, and reproducible recipe application ([manual docs](https://rotheconrad.github.io/chromosort/commands/manual/), [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/)). |
+| `chromo plot` | Draw whole-genome and per-reference dot plots from existing MUMmer coords or minimap2 PAF alignments, optionally ordered by a `chromo sort` assignment report, without re-running an aligner ([plot docs](https://rotheconrad.github.io/chromosort/commands/plot/), [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/)). |
 | `chromo scaffold` | Join the final sorted contigs into one scaffold FASTA record per assigned reference, infer or fix N-gap lengths, report overlaps and gap decisions, and optionally add report-only GFA junction evidence ([scaffold docs](https://rotheconrad.github.io/chromosort/commands/scaffold/)). |
 | `chromo gapfill` | Plan graph-supported fills between adjacent sorted contigs using GFA paths plus optional GAF, Hi-C-like, or reference-placement PAF evidence, then apply only fillable and reviewed paths while unresolved junctions fall back to N gaps ([gapfill docs](https://rotheconrad.github.io/chromosort/commands/gapfill/)). |
 
@@ -19,7 +19,7 @@ ChromoSort provides one command, `chromo`, with eight subcommands:
 
 Full documentation is available at <https://rotheconrad.github.io/chromosort/>.
 
-New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. Command-specific pages are linked in the table above.
+New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. The [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/) is a mini tutorial for reading whole-genome and per-reference dot plots. Command-specific pages are linked in the table above.
 
 For interpreting results, see [Output Files](https://rotheconrad.github.io/chromosort/outputs/) and [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/).
 
@@ -43,7 +43,8 @@ original alignment rows while ordering the query axis by a `chromo sort`
 assignment report. This is useful for reviewing sort decisions without
 re-aligning, but it is not a new alignment of the edited FASTA. To validate
 `ordered.fa`, `fixed.fa`, or a manual-export FASTA, generate fresh coords or PAF
-for that exact FASTA.
+for that exact FASTA. For help reading the resulting visual patterns, use the
+[dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/).
 
 ## Quick Start
 

@@ -20,6 +20,7 @@ before they are used as inputs to another alignment-dependent command.
 - [Installation](https://rotheconrad.github.io/chromosort/installation/)
 - [Input files](https://rotheconrad.github.io/chromosort/input-files/)
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
+- [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 
 ## Commands
@@ -29,7 +30,8 @@ before they are used as inputs to another alignment-dependent command.
 - [chromo fix](https://rotheconrad.github.io/chromosort/commands/fix/)
 - [chromo cut](https://rotheconrad.github.io/chromosort/commands/cut/)
 - [chromo manual](https://rotheconrad.github.io/chromosort/commands/manual/)
-- [chromo plot](https://rotheconrad.github.io/chromosort/commands/plot/)
+- [chromo plot](https://rotheconrad.github.io/chromosort/commands/plot/) and
+  [dot-plot interpretation]({{ '/dot-plots/' | relative_url }})
 - [chromo scaffold](https://rotheconrad.github.io/chromosort/commands/scaffold/)
 - [chromo gapfill](https://rotheconrad.github.io/chromosort/commands/gapfill/)
 
@@ -49,8 +51,9 @@ before they are used as inputs to another alignment-dependent command.
 1. Generate MUMmer `show-coords` or minimap2 PAF alignments between the reference and assembly.
 2. For mostly-correct assemblies, use `chromo clean` for conservative
    sort-filter-fix cleanup, then re-align the cleaned FASTA.
-3. For more complex cases, use `chromo plot` and, when helpful, `chromo manual`
-   to inspect suspicious contigs.
+3. For more complex cases, use `chromo plot` and the
+   [dot-plot guide]({{ '/dot-plots/' | relative_url }}), then use
+   `chromo manual` when helpful to inspect suspicious contigs.
 4. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
 5. Re-align the fixed assembly.
 6. Use `chromo sort` to assign, filter, orient, and order contigs.

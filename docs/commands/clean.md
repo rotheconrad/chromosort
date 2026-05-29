@@ -143,4 +143,6 @@ sorted together by final dominant reference placement.
 The cleaned FASTA is derived from raw alignment evidence. That is enough for an
 auditable cleanup decision, but it is not a substitute for final validation.
 After `chromo clean`, align `<prefix>.clean.fa` to the reference and inspect
-fresh `chromo plot` or `mummerplot` output from that clean-FASTA alignment.
+fresh `chromo plot` or `mummerplot` output from that clean-FASTA alignment. The
+[dot-plot guide]({{ '/dot-plots/' | relative_url }}) gives examples of the
+patterns to look for during that validation step.

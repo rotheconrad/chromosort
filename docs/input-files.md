@@ -19,7 +19,7 @@ same FASTA records used by the command you are running.
 | Fix chimeric contigs with `chromo fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for report-only graph context |
 | Cut reviewed coordinates with `chromo cut` | Assembly FASTA and explicit cut positions | Assembly FAI |
 | Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, FASTA indexes, embedded sequences |
-| Plot alignments with `chromo plot` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | Assignment TSV for ChromoSort query ordering, FASTA indexes |
+| Plot alignments with `chromo plot` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | Assignment TSV for ChromoSort query ordering, FASTA indexes. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation examples. |
 | Scaffold sorted contigs with `chromo scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for report-only graph junction evidence |
 | Fill graph-supported gaps with `chromo gapfill` | Ordered FASTA, matching assignment TSV, and GFA | GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, reviewed plan TSV |
 
@@ -79,7 +79,9 @@ records, including:
 changed alignment" expectations. It still plots the original coords or PAF
 rows, but uses a `chromo sort` assignment report to order the query axis by kept
 sorted contigs. This is useful for reviewing sort decisions without re-running
-an aligner. It is not a fresh alignment of `<prefix>.ordered.fa`.
+an aligner. It is not a fresh alignment of `<prefix>.ordered.fa`. The
+[dot-plot guide]({{ '/dot-plots/' | relative_url }}) shows how to interpret
+the visual patterns that this review plot can reveal.
 
 ## File Format Contracts
 

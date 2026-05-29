@@ -10,6 +10,11 @@ and want a visual check without running `mummerplot` or re-aligning only for
 the plot. It writes PDF by default and can also write SVG or PNG. Forward-strand
 alignments are blue and reverse-strand alignments are red.
 
+If you are learning how to read those patterns, start with
+[How to Interpret Dot Plots]({{ '/dot-plots/' | relative_url }}). It explains
+axis orientation, forward and reverse segments, chimeric-looking contigs,
+inversions, duplicate or repeat-like signal, gaps, and common traps.
+
 `chromo plot` never runs MUMmer or minimap2. It draws the alignment rows you
 give it. If those rows were generated from `raw.fa`, the plot still describes
 `raw.fa`, even when you also provide a `chromo sort` assignment report. The

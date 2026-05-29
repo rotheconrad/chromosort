@@ -14,7 +14,8 @@ and then run `chromo fix --assembly-fasta raw.fa --coords raw.coords` on selecte
 original contigs. It is not valid to run `chromo fix` on `sample.ordered.fa`
 with coords or PAF that were generated from `raw.fa`. After `chromo fix` writes
 `fixed.fa`, re-run MUMmer or minimap2 before sorting or plotting that fixed
-FASTA.
+FASTA. Use the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) when
+checking whether the repaired contigs now place cleanly.
 
 ## What `chromo fix` Does
 

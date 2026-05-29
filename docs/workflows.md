@@ -31,7 +31,9 @@ with
 or
 [minimap2 PAF]({{ '/input-files/' | relative_url }}#creating-input-files-with-minimap2).
 See [Input Files]({{ '/input-files/' | relative_url }}) for alignment commands
-and graph-related inputs.
+and graph-related inputs. If the raw visual patterns are unfamiliar, read
+[How to Interpret Dot Plots]({{ '/dot-plots/' | relative_url }}) before making
+sequence-edit decisions from a plot.
 
 ## The FASTA/Alignment Rule
 
@@ -148,7 +150,9 @@ that FASTA first and use the new coords or PAF in the downstream command.
 ## Workflow 2: Fix Misjoined Contigs Before Sorting
 
 Use this workflow when a raw dot plot shows contigs jumping between references,
-orientation blocks, or otherwise looking chimeric. In this case, fix the raw
+orientation blocks, or otherwise looking chimeric. The
+[dot-plot guide]({{ '/dot-plots/' | relative_url }}) walks through these
+patterns with illustrated examples. In this case, fix the raw
 assembly first, then re-align the fixed FASTA and run `chromo sort` on the
 updated assembly. Sorting protects strong split candidates, but it is still a
 placement/filtering step, not a splitter.

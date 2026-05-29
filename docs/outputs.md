@@ -22,7 +22,7 @@ command-specific output sections below.
 | [`chromo fix`](#chromo-fix-outputs) | Reviewed fixed FASTA at `--output-fasta`, split report at `--report`, and optional graph report. |
 | [`chromo cut`](#chromo-cut-outputs) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
 | [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
-| [`chromo plot`](#chromo-plot-outputs) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG. |
+| [`chromo plot`](#chromo-plot-outputs) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG, with interpretation examples in the [dot-plot guide]({{ '/dot-plots/' | relative_url }}). |
 | [`chromo scaffold`](#chromo-scaffold-outputs) | `<prefix>.scaffold.fa`, `<prefix>.scaffold_gaps.tsv`, optional `<prefix>.graph_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, and `<prefix>.run_summary.txt`. |
 | [`chromo gapfill`](#chromo-gapfill-outputs) | `<prefix>.gapfill_plan.tsv`, optional review HTML, optional `<prefix>.gapfilled.fa`, and `<prefix>.run_summary.txt`. |
 
@@ -204,7 +204,9 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 ## `chromo plot` Outputs
 
 Use `chromo plot` outputs to visually check MUMmer coords or minimap2 PAF
-alignments without re-running the aligner.
+alignments without re-running the aligner. For examples of how to read clean,
+reversed, chimeric, inverted, duplicated, gapped, and noisy patterns, see
+[How to Interpret Dot Plots]({{ '/dot-plots/' | relative_url }}).
 
 | Output | Description |
 | --- | --- |

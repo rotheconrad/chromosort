@@ -44,7 +44,8 @@ ChromoSort provides one command, `chromo`, with eight subcommands:
   nodes, unsequenced nodes, and support-risk flags for manual review.
 - `chromo plot` draws PDF/SVG/PNG dot plots from existing MUMmer `show-coords` or
   minimap2 PAF alignments, so each fix/sort/scaffold step can be visually
-  reviewed without re-running an aligner just to make a plot.
+  reviewed without re-running an aligner just to make a plot. The
+  [dot-plot guide](docs/dot-plots.md) explains how to read those patterns.
 
 The sorting, fixing, plotting, and manual dashboard workflows use standard
 MUMmer `show-coords` output or minimap2 PAF. Graph evidence and gap filling use
@@ -99,6 +100,7 @@ overlaps, flank sequence mismatches, and stale reviewed gapfill-plan paths.
   - [`chromo fix` Parameters](#chromo-fix-parameters)
   - [Reasoning Behind `chromo fix`](#reasoning-behind-chromo-fix)
 - [chromo plot](#chromo-plot)
+  - [Dot plot interpretation guide](docs/dot-plots.md)
   - [Run `chromo plot`](#run-chromo-plot)
   - [`chromo plot` Outputs](#chromo-plot-outputs)
   - [`chromo plot` Parameters](#chromo-plot-parameters)
@@ -1371,6 +1373,11 @@ Use `chromo plot` when you already have a MUMmer coords or minimap2 PAF file
 and want a visual check without running `mummerplot` or re-aligning only for
 the plot. It writes PDF by default and can also write SVG or PNG. Forward-strand
 alignments are blue and reverse-strand alignments are red.
+
+For a deeper mini tutorial on reading dot plots, see
+[How to Interpret Dot Plots](docs/dot-plots.md). It covers axes, strand
+direction, collinearity, reverse-complemented contigs, chimeric candidates,
+inversions, duplicated or repeat-like signal, gaps, and per-reference review.
 
 <figure>
   <img src="docs/assets/chromo_plot_example.png" alt="ChromoSort whole-genome dot plot with forward and reverse alignments." width="900">

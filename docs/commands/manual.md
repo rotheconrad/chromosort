@@ -77,6 +77,8 @@ The manual dashboard provides:
 
 - A reference-ordered contig/piece list with every contig retained initially.
 - A per-contig dot plot. Forward alignments are blue; reverse alignments are red.
+  See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for examples of
+  common patterns to look for during review.
 - Optional GFA node badges and neighbor details when generated with `--gfa`.
 - A graph filter for `simple`, `branching`, `self_loop`, and `missing` graph
   neighborhoods, plus a read-only neighborhood panel for the selected contig.

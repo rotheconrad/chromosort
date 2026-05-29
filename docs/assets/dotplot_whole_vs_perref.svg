@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="440" viewBox="0 0 900 440" role="img" aria-labelledby="title desc">
+  <title id="title">Whole-genome versus per-reference dot plots</title>
+  <desc id="desc">Side-by-side cartoon comparing a compressed whole-genome dot plot with a clearer per-reference view.</desc>
+  <rect width="900" height="440" fill="#ffffff"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#202124">
+    <text x="92" y="36" font-size="16" font-weight="700">Whole-genome view</text>
+    <text x="522" y="36" font-size="16" font-weight="700">Per-reference view</text>
+  </g>
+  <rect x="70" y="58" width="340" height="282" fill="#fbfbf8" stroke="#d7d7d0" stroke-width="1.5"/>
+  <rect x="492" y="58" width="340" height="282" fill="#fbfbf8" stroke="#d7d7d0" stroke-width="1.5"/>
+  <g stroke="#bdbdb7" stroke-width="1.5">
+    <line x1="183" y1="58" x2="183" y2="340"/>
+    <line x1="296" y1="58" x2="296" y2="340"/>
+  </g>
+  <g stroke="#e6e6df" stroke-width="1">
+    <line x1="70" y1="128" x2="410" y2="128"/>
+    <line x1="70" y1="199" x2="410" y2="199"/>
+    <line x1="70" y1="269" x2="410" y2="269"/>
+    <line x1="577" y1="58" x2="577" y2="340"/>
+    <line x1="662" y1="58" x2="662" y2="340"/>
+    <line x1="747" y1="58" x2="747" y2="340"/>
+    <line x1="492" y1="128" x2="832" y2="128"/>
+    <line x1="492" y1="199" x2="832" y2="199"/>
+    <line x1="492" y1="269" x2="832" y2="269"/>
+  </g>
+  <g stroke="#202124" stroke-width="2">
+    <line x1="70" y1="340" x2="422" y2="340"/>
+    <line x1="70" y1="340" x2="70" y2="45"/>
+    <line x1="492" y1="340" x2="844" y2="340"/>
+    <line x1="492" y1="340" x2="492" y2="45"/>
+  </g>
+  <g stroke-linecap="round">
+    <line x1="92" y1="312" x2="168" y2="280" stroke="#2563eb" stroke-width="6"/>
+    <line x1="204" y1="254" x2="274" y2="226" stroke="#2563eb" stroke-width="6"/>
+    <line x1="314" y1="206" x2="390" y2="176" stroke="#2563eb" stroke-width="6"/>
+    <line x1="95" y1="125" x2="148" y2="101" stroke="#dc2626" stroke-width="4" opacity="0.6"/>
+    <line x1="322" y1="290" x2="382" y2="266" stroke="#2563eb" stroke-width="3" opacity="0.5"/>
+    <line x1="520" y1="304" x2="610" y2="266" stroke="#2563eb" stroke-width="7"/>
+    <line x1="622" y1="204" x2="690" y2="232" stroke="#dc2626" stroke-width="7"/>
+    <line x1="705" y1="170" x2="808" y2="126" stroke="#2563eb" stroke-width="7"/>
+  </g>
+  <rect x="630" y="58" width="70" height="282" fill="#f4b400" opacity="0.12"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#5f6368" font-size="13">
+    <text x="98" y="363">ref chr1</text>
+    <text x="210" y="363">ref chr2</text>
+    <text x="323" y="363">ref chr3</text>
+    <text x="585" y="363">one selected reference</text>
+    <text x="82" y="388">Best for global placement and cross-reference jumps.</text>
+    <text x="514" y="388">Best for local orientation, gaps, and overlaps.</text>
+    <text x="641" y="92">local detail</text>
+  </g>
+</svg>

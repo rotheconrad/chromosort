@@ -18,6 +18,10 @@ ChromoSort is under active development. Current version: `0.2.24`.
 - `chromo scaffold`
 - `chromo gapfill`
 
+For the plotting and manual review commands, the
+[dot-plot guide]({{ '/dot-plots/' | relative_url }}) explains how to interpret
+the visual patterns those tools show.
+
 The repository includes synthetic tests and fixtures under `tests/`, including small FASTA, MUMmer coords, minimap2 PAF, GFA, GAF, and Hi-C-like files for graph-aware workflows.
 
 ## Development Checks
