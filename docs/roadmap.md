@@ -1,17 +1,17 @@
 ---
 title: Production Upgrade Roadmap
-description: Planned eval and manual review modes for task-specific human-guided assembly curation.
+description: Eval and manual review modes for task-specific human-guided assembly curation.
 ---
 
 # Production Upgrade Roadmap
 
-This roadmap tracks the next major production upgrade direction for
-ChromoSort. Completed rows describe behavior now available in the current
-development branch; planned rows describe the remaining work.
+This roadmap tracks the production review upgrade for ChromoSort. Completed
+rows describe behavior now available in the current development branch; planned
+rows describe remaining follow-up work if new review needs appear.
 
 ## Goal
 
-The next upgrade will add a paired review layer around the sequence-changing
+The upgrade adds a paired review layer around the sequence-changing
 commands that most often need human judgment:
 
 - `fix`
@@ -38,7 +38,7 @@ and row identifiers. `eval` should stay table-only. `manual` should remain
 exploratory, but each mode should also zoom directly to the candidate events
 that need review.
 
-## Planned Eval Modes
+## Eval Modes
 
 ### `chromo eval fix`
 
@@ -84,7 +84,7 @@ needed to include long-read backmapping. Evidence should include:
 The reviewed table should become an optional input to `chromo gapfill`, with
 the command revalidating accepted rows before applying sequence.
 
-## Planned Manual Modes
+## Manual Modes
 
 `chromo manual` should evolve from one general review dashboard into
 task-specific review modes:
@@ -140,7 +140,7 @@ The shared evidence layer should summarize:
 | 4. Implement `chromo eval scaffold` and `chromo scaffold` reviewed-table application. | Done | Added table-only scaffold junction evaluation with GFA and long-read bridge context, plus accepted gap overrides through `chromo scaffold --reviewed-plan`. |
 | 5. Align `chromo eval gapfill` with current gapfill plan semantics and add any missing reviewed-table compatibility. | Done | Added table-only gapfill evaluation from the existing graph path planner, long-read bridge context, and `chromo gapfill --reviewed-plan` support for the shared review-event table. |
 | 6. Refactor `chromo manual` into task-specific modes over the same review-event model. | Done | Added `chromo manual fix`, `chromo manual scaffold`, and `chromo manual gapfill` modes with shared review-event table embedding and focused event queues inside the existing exploratory dashboard. |
-| 7. Expand docs and tests around mixed algorithmic-plus-reviewed workflows. | Planned |  |
+| 7. Expand docs and tests around mixed algorithmic-plus-reviewed workflows. | Done | Updated command, input, status, changelog, README, and workflow docs and verified the full test suite across the review upgrade. |
 
 ## Guardrails
 

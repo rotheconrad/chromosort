@@ -69,6 +69,47 @@ it draws the original alignment rows and orders the query axis by the
 `fixed.fa`, or manually edited FASTA, generate fresh coords or PAF for that
 exact FASTA.
 
+## Mixed Algorithmic Plus Reviewed Decisions
+
+Use this pattern when the default algorithm is mostly right but a few biological
+outliers need human judgment. `chromo eval` prepares a task-specific review TSV
+for command-line or spreadsheet curation. `chromo manual fix`, `manual scaffold`,
+and `manual gapfill` can load the same table as a focused event queue inside the
+browser dashboard. The corresponding executor then validates accepted rows
+before changing sequence.
+
+```bash
+chromo eval fix \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --all \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_assembly.paf \
+  --output-prefix results/sample.eval_fix
+
+chromo manual fix \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.fa \
+  --coords mummer/sample.coords \
+  --review-table results/sample.eval_fix.fix_review.tsv \
+  --output-html results/sample.manual_fix.html
+
+chromo fix \
+  --assembly-fasta assembly.fa \
+  --reviewed-plan results/sample.eval_fix.fix_review.tsv \
+  --output-fasta results/sample.fixed.fa \
+  --report results/sample.fixed.tsv
+```
+
+The same loop applies to scaffold and gapfill decisions:
+
+- `chromo eval scaffold` writes `<prefix>.scaffold_review.tsv`; accepted rows can
+  feed `chromo scaffold --reviewed-plan`.
+- `chromo eval gapfill` writes `<prefix>.gapfill_review.tsv`; accepted rows can
+  feed `chromo gapfill --reviewed-plan --apply`.
+- `chromo manual scaffold` and `chromo manual gapfill` load those same tables
+  with `--review-table` when you want visual context before executing.
+
 ## Workflow 1: Reference-Order a Mostly Clean Assembly
 
 Use this workflow when the assembly is already close to chromosome scale and
