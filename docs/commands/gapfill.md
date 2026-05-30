@@ -5,8 +5,9 @@ description: Usage, outputs, parameters, and reasoning for chromo gapfill.
 
 # chromo gapfill
 
-Use `chromo gapfill` after final sorting and manual review when a GFA graph gives a
-simple sequence path between adjacent sorted contigs.
+Use `chromo gapfill` after final sorting and manual review when a GFA graph
+gives a validated sequence path between adjacent sorted contigs, or when an
+otherwise ambiguous graph branch has unique non-conflicting support evidence.
 
 ## What `chromo gapfill` Does
 
@@ -172,12 +173,13 @@ step; `chromo eval gapfill` writes the table-only counterpart.
 ### Unique Paths Or Unique Evidence
 
 Assembly graphs often contain repeats, bubbles, and alternate paths. If more
-than one candidate path is found within the search limit, `chromo gapfill` usually
-marks the junction `ambiguous_paths` and falls back to Ns in applied output. GAF
-read paths and Hi-C contacts are supported tie-breakers: an ambiguous branch can
-be resolved only when one candidate has unique support above the configured
-threshold. Ties, weak support, or conflicting GAF/Hi-C support still remain
-unresolved for manual review.
+than one candidate path is found within the search limit, `chromo gapfill`
+usually marks the junction `ambiguous_paths` and falls back to Ns in applied
+output. GAF read paths, Hi-C contacts, and reference-placement PAF are supported
+tie-breakers: an ambiguous branch can be resolved only when one candidate has
+unique support above the configured threshold and no other evidence source
+uniquely supports a different path. Ties, weak support, or conflicting evidence
+remain unresolved for manual review.
 
 ### Verify the Flanks
 

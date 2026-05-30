@@ -91,6 +91,9 @@ corresponding file is provided or when the review table contains matching
 `graph_*`, `longread_*`, or `gaf_*` fields from `chromo eval`. This keeps the
 dashboard useful when only one evidence stream exists, while making conflicting
 or complementary support visible when several streams were generated.
+The dashboard generator records optional `--read-paf` and `--gaf` paths and
+displays matching review-table fields; it does not independently recompute
+long-read support in the browser HTML.
 
 For large genomes, the dashboard embeds alignment metadata but not full FASTA
 sequences by default. Open the HTML file in a browser, load the original

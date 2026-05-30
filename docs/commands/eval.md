@@ -10,8 +10,15 @@ for spreadsheet-first review workflows where users want the algorithm to
 propose candidate decisions, then keep, reject, delete, or add rows before a
 sequence-changing command applies the reviewed decisions.
 
-At present, `chromo eval fix`, `chromo eval scaffold`, and
-`chromo eval gapfill` are available.
+The available modes are `chromo eval fix`, `chromo eval scaffold`, and
+`chromo eval gapfill`. Each mode reuses the algorithm or planner from the
+matching executor, then writes a task-scoped `chromosort-review-event-v1` table.
+
+| Eval mode | Reuses algorithm from | Reviewed executor path | Optional evidence columns |
+| --- | --- | --- | --- |
+| `fix` | `chromo fix` breakpoint planner | `chromo fix --reviewed-plan` | `graph_*`, `gaf_*`, `longread_*` |
+| `scaffold` | `chromo scaffold` gap/overlap and graph-junction reporting | `chromo scaffold --reviewed-plan` | `graph_*`, `gaf_*`, `longread_*` |
+| `gapfill` | `chromo gapfill` path planner and fillability checks | `chromo gapfill --reviewed-plan --apply` | GAF, Hi-C, reference-placement PAF, and long-read bridge fields |
 
 ## Run `chromo eval fix`
 
@@ -149,22 +156,22 @@ current scaffold, contig pair, and `path_nodes` before applying sequence.
 
 ## Parameters
 
-| Parameter | Default | Meaning |
-| --- | --- | --- |
-| `--assembly-fasta` | required | Assembly FASTA containing contigs to evaluate. |
-| `--coords` / `--paf` | required | Whole-genome reference-to-assembly alignment used by the fix planner. |
-| `--contigs`, `--contigs-file`, `--all` | none | Evaluate selected contigs or all split-signal contigs. |
-| `--output-prefix` | required | Prefix for `<prefix>.fix_review.tsv`. |
-| `--gfa` | none | Optional assembly graph GFA for node context fields. |
-| `--read-paf` | none | Optional long-read-to-assembly PAF for breakpoint support fields. |
-| `--mode` | `conservative` | Fix planner mode used to prepare candidate rows. |
-| `--ordered-fasta` | required for scaffold mode | Final ordered FASTA from `chromo sort`. |
-| `--assignments` | required for scaffold mode | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`. |
-| `--fixed-gap-bp` | none | In scaffold mode, prepare rows using fixed gaps instead of inferred gaps. |
-| `--gfa` | required for gapfill mode | Assembly graph GFA for candidate fill paths. |
-| `--gaf` | none | Optional long-read graph traversal evidence for fix, scaffold, and gapfill modes. Scaffold mode requires `--gfa` when `--gaf` is provided. |
-| `--hic-pairs`, `--ref-paf` | none | Optional graph-path support evidence for gapfill mode. |
-| `--include-fill-sequences` | off | In gapfill mode, include candidate fill sequence in the review table. |
+| Mode | Parameter | Default | Meaning |
+| --- | --- | --- | --- |
+| `fix` | `--assembly-fasta` | required | Assembly FASTA containing contigs to evaluate. |
+| `fix` | `--coords` / `--paf` | required | Whole-genome reference-to-assembly alignment used by the fix planner. |
+| `fix` | `--contigs`, `--contigs-file`, `--all` | none | Evaluate selected contigs or all split-signal contigs. |
+| `fix` | `--mode` | `conservative` | Fix planner mode used to prepare candidate rows. |
+| `scaffold`, `gapfill` | `--ordered-fasta` | required | Final ordered FASTA from `chromo sort`. |
+| `scaffold`, `gapfill` | `--assignments` | required | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`. |
+| `scaffold` | `--fixed-gap-bp` | none | Prepare rows using fixed gaps instead of inferred gaps. |
+| `scaffold` | `--gfa` | none | Optional assembly graph GFA for direct-link and short-path junction context; required when `--gaf` is provided. |
+| `gapfill` | `--gfa` | required | Assembly graph GFA for candidate fill paths. |
+| all modes | `--output-prefix` | required | Prefix for the mode-specific review TSV. |
+| all modes | `--read-paf` | none | Optional long-read-to-assembly PAF for breakpoint or contig-end bridge support fields. |
+| all modes | `--gaf` | none | Optional long-read graph traversal evidence. In `fix`, GAF is advisory node context; in `scaffold` and `gapfill`, it reports candidate path support. |
+| `gapfill` | `--hic-pairs`, `--ref-paf` | none | Optional graph-path support evidence for gapfill branch resolution. |
+| `gapfill` | `--include-fill-sequences` | off | Include candidate fill sequence in the review table. |
 
 The planner threshold options mirror the corresponding executor command.
 

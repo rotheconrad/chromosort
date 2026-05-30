@@ -77,6 +77,7 @@ chromo eval scaffold \
   --assignments results/sample.contig_assignments.tsv \
   --output-prefix results/sample.eval_scaffold \
   --gfa assembly_graph.gfa \
+  --gaf reads_to_graph.gaf \
   --read-paf reads_to_assembly.paf
 
 chromo scaffold \
@@ -92,6 +93,11 @@ junctions, and the gap report marks those junctions with `gap_mode=reviewed`.
 Junctions without accepted rows keep the normal inferred or fixed-gap behavior.
 Accepted rows that no longer match the current ordered FASTA and assignment TSV
 are rejected as stale.
+
+GFA, GAF, and long-read PAF evidence in the eval table is review context for
+the junction. `chromo scaffold --reviewed-plan` applies accepted gap lengths; it
+does not reorder, orient, trim, or gapfill contigs based on GAF or long-read
+support alone.
 
 ## Run `chromo scaffold` With Overlap Trimming
 
@@ -179,7 +185,7 @@ GG
 | `--assignments` | required | Matching `<prefix>.contig_assignments.tsv` report from `chromo sort`. |
 | `--output-prefix` | required | Prefix for scaffold FASTA and reports. |
 | `--fixed-gap-bp` | none | Insert this many Ns between neighboring contigs instead of inferred gaps. |
-| `--reviewed-plan` | none | Optional edited table from `chromo eval scaffold`; accepted `scaffold_gap` rows override matching junction gap lengths. |
+| `--reviewed-plan` | none | Optional edited table from `chromo eval scaffold`; accepted `scaffold_gap` rows override matching junction gap lengths while evidence columns remain provenance. |
 | `--overlap-policy` | `zero-gap` | Handling for negative inferred gaps: `zero-gap`, `warn`, `trim-reference`, or `trim-sequence`. |
 | `--trim-sequence-min-identity` | `0.98` | Minimum suffix/prefix identity required by `--overlap-policy trim-sequence`. |
 | `--simple-headers` | off | Write scaffold FASTA headers containing only the scaffold ID. |
