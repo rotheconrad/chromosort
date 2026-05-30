@@ -89,6 +89,7 @@ class PlotTests(unittest.TestCase):
             self.assertIn("ChromoSort whole-genome dot plot", text)
             self.assertIn("Reference Position (bp)", text)
             self.assertIn("Query Position (bp)", text)
+            self.assertIn("stroke-dasharray", text)
             self.assertIn("forward", text)
             self.assertIn("reverse", text)
 
@@ -112,6 +113,36 @@ class PlotTests(unittest.TestCase):
         right_gap = query_label["x"] - (plot_rect["x"] + plot_rect["width"])
 
         self.assertAlmostEqual(right_gap, bottom_gap)
+
+    def test_position_grid_is_visually_distinct_from_sequence_boundaries(self):
+        sys.path.insert(0, str(ROOT / "src"))
+        from chromosort.plot import (
+            BOUNDARY_GRID_COLOR,
+            POSITION_GRID_COLOR,
+            build_plot_items,
+        )
+        from chromosort.reference_order import FastaIndexRecord
+
+        records = [
+            FastaIndexRecord("chr1", 100, 0, 0, 0),
+            FastaIndexRecord("chr2", 100, 0, 0, 0),
+        ]
+        elements = build_plot_items("test", records, records, [], 900, 700)
+        position_grid_lines = [
+            item for item in elements
+            if item["type"] == "line" and item["stroke"] == POSITION_GRID_COLOR
+        ]
+        boundary_lines = [
+            item for item in elements
+            if item["type"] == "line" and item["stroke"] == BOUNDARY_GRID_COLOR
+        ]
+
+        self.assertTrue(position_grid_lines)
+        self.assertTrue(boundary_lines)
+        self.assertTrue(all(item["dash"] for item in position_grid_lines))
+        self.assertTrue(all(item["dash"] is None for item in boundary_lines))
+        self.assertGreater(boundary_lines[0]["width"], position_grid_lines[0]["width"])
+        self.assertGreater(boundary_lines[0]["opacity"], position_grid_lines[0]["opacity"])
 
     def test_paf_plot_writes_per_reference_svgs(self):
         with tempfile.TemporaryDirectory() as tmp:

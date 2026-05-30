@@ -21,8 +21,13 @@ from .reference_order import (
 
 PLUS_COLOR = "#2563eb"
 MINUS_COLOR = "#dc2626"
-GRID_COLOR = "#d1d5db"
-TICK_GRID_COLOR = "#e5e7eb"
+POSITION_GRID_COLOR = "#e5e7eb"
+POSITION_GRID_WIDTH = 0.45
+POSITION_GRID_OPACITY = 0.48
+POSITION_GRID_DASH = (1.5, 4.5)
+BOUNDARY_GRID_COLOR = "#9ca3af"
+BOUNDARY_GRID_WIDTH = 0.9
+BOUNDARY_GRID_OPACITY = 0.82
 AXIS_COLOR = "#374151"
 TEXT_COLOR = "#111827"
 MUTED_TEXT = "#6b7280"
@@ -388,7 +393,7 @@ def make_text(x, y, value, size=12, anchor="start", rotate=None, fill=TEXT_COLOR
     }
 
 
-def make_line(x1, y1, x2, y2, stroke, width=1.0, opacity=1.0):
+def make_line(x1, y1, x2, y2, stroke, width=1.0, opacity=1.0, dash=None):
     return {
         "type": "line",
         "x1": x1,
@@ -398,6 +403,7 @@ def make_line(x1, y1, x2, y2, stroke, width=1.0, opacity=1.0):
         "stroke": stroke,
         "width": width,
         "opacity": opacity,
+        "dash": dash,
     }
 
 
@@ -429,11 +435,16 @@ def svg_text(item):
 
 
 def svg_line(item):
+    dash = item.get("dash")
+    dash_attr = ""
+    if dash:
+        dash_values = " ".join(f"{value:g}" for value in dash)
+        dash_attr = f' stroke-dasharray="{dash_values}"'
     return (
         f'<line x1="{item["x1"]:.2f}" y1="{item["y1"]:.2f}" '
         f'x2="{item["x2"]:.2f}" y2="{item["y2"]:.2f}" '
         f'stroke="{item["stroke"]}" stroke-width="{item["width"]}" '
-        f'opacity="{item["opacity"]}" vector-effect="non-scaling-stroke"/>'
+        f'opacity="{item["opacity"]}"{dash_attr} vector-effect="non-scaling-stroke"/>'
     )
 
 
@@ -451,11 +462,33 @@ def draw_axis_ticks(elements, total, origin, size, is_x_axis):
         pos = scale(value, total, origin[0 if is_x_axis else 1], size[0 if is_x_axis else 1])
         label = fmt_tick(value, unit_scale)
         if is_x_axis:
-            elements.append(make_line(pos, origin[1], pos, origin[1] + size[1], TICK_GRID_COLOR, 0.6, 0.45))
+            elements.append(
+                make_line(
+                    pos,
+                    origin[1],
+                    pos,
+                    origin[1] + size[1],
+                    POSITION_GRID_COLOR,
+                    POSITION_GRID_WIDTH,
+                    POSITION_GRID_OPACITY,
+                    POSITION_GRID_DASH,
+                )
+            )
             elements.append(make_line(pos, origin[1] + size[1], pos, origin[1] + size[1] + 6, AXIS_COLOR, 0.8))
             elements.append(make_text(pos, origin[1] + size[1] + 24, label, size=TICK_LABEL_SIZE, anchor="middle", fill=MUTED_TEXT))
         else:
-            elements.append(make_line(origin[0], pos, origin[0] + size[0], pos, TICK_GRID_COLOR, 0.6, 0.45))
+            elements.append(
+                make_line(
+                    origin[0],
+                    pos,
+                    origin[0] + size[0],
+                    pos,
+                    POSITION_GRID_COLOR,
+                    POSITION_GRID_WIDTH,
+                    POSITION_GRID_OPACITY,
+                    POSITION_GRID_DASH,
+                )
+            )
             elements.append(make_line(origin[0] + size[0], pos, origin[0] + size[0] + 6, pos, AXIS_COLOR, 0.8))
             elements.append(make_text(origin[0] + size[0] + 12, pos + 4, label, size=TICK_LABEL_SIZE, fill=MUTED_TEXT))
 
@@ -470,7 +503,17 @@ def draw_separators(elements, records, offsets, total, origin, size, is_x_axis, 
         label_pos = scale(label_value, total, origin[0 if is_x_axis else 1], axis_size)
         should_label = idx % label_every == 0 and (span_px >= 20 or len(records) <= 2)
         if is_x_axis:
-            elements.append(make_line(pos, origin[1], pos, origin[1] + size[1], GRID_COLOR, 0.8, 0.65))
+            elements.append(
+                make_line(
+                    pos,
+                    origin[1],
+                    pos,
+                    origin[1] + size[1],
+                    BOUNDARY_GRID_COLOR,
+                    BOUNDARY_GRID_WIDTH,
+                    BOUNDARY_GRID_OPACITY,
+                )
+            )
             if should_label:
                 elements.append(
                     make_text(
@@ -484,7 +527,17 @@ def draw_separators(elements, records, offsets, total, origin, size, is_x_axis, 
                     )
                 )
         else:
-            elements.append(make_line(origin[0], pos, origin[0] + size[0], pos, GRID_COLOR, 0.8, 0.65))
+            elements.append(
+                make_line(
+                    origin[0],
+                    pos,
+                    origin[0] + size[0],
+                    pos,
+                    BOUNDARY_GRID_COLOR,
+                    BOUNDARY_GRID_WIDTH,
+                    BOUNDARY_GRID_OPACITY,
+                )
+            )
             if should_label:
                 elements.append(
                     make_text(
@@ -602,6 +655,14 @@ def pdf_escape(value):
     return value.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
 
 
+def pdf_dash(item):
+    dash = item.get("dash")
+    if not dash:
+        return ""
+    dash_values = " ".join(f"{value:g}" for value in dash)
+    return f"[{dash_values}] 0 d\n1 J\n"
+
+
 def text_width(value, size):
     return len(value) * size * 0.55
 
@@ -651,11 +712,15 @@ def write_pdf(path, elements, width, height):
             if item["stroke"] != "none":
                 stream.append(f"{pdf_rgb(item['stroke'])} RG\n0.8 w\n{x:.2f} {y:.2f} {w:.2f} {h:.2f} re S\n")
         elif item["type"] == "line":
-            stream.append(
+            line = (
                 f"{pdf_rgb(item['stroke'])} RG\n{item['width']:.2f} w\n"
+                f"{pdf_dash(item)}"
                 f"{item['x1']:.2f} {height - item['y1']:.2f} m "
                 f"{item['x2']:.2f} {height - item['y2']:.2f} l S\n"
             )
+            if item.get("dash"):
+                line = "q\n" + line + "Q\n"
+            stream.append(line)
         elif item["type"] == "text":
             stream.append(pdf_text(item, height))
 
@@ -709,6 +774,36 @@ def write_png(path, elements, width, height):
                 font_cache[size] = ImageFont.load_default()
         return font_cache[size]
 
+    def dashed_line(coords, fill, width, dash):
+        x1, y1, x2, y2 = coords
+        dx = x2 - x1
+        dy = y2 - y1
+        distance = math.hypot(dx, dy)
+        if distance == 0:
+            return
+        pattern = [max(0.1, value) for value in dash]
+        offset = 0.0
+        index = 0
+        draw_segment = True
+        while offset < distance:
+            next_offset = min(distance, offset + pattern[index % len(pattern)])
+            if draw_segment:
+                start = offset / distance
+                end = next_offset / distance
+                draw.line(
+                    [
+                        x1 + dx * start,
+                        y1 + dy * start,
+                        x1 + dx * end,
+                        y1 + dy * end,
+                    ],
+                    fill=fill,
+                    width=width,
+                )
+            offset = next_offset
+            index += 1
+            draw_segment = not draw_segment
+
     for item in elements:
         if item["type"] == "rect":
             fill = hex_rgb(item["fill"]) if item["fill"] != "none" else None
@@ -717,7 +812,12 @@ def write_png(path, elements, width, height):
             draw.rectangle(xy, fill=fill, outline=stroke)
         elif item["type"] == "line":
             color = (*hex_rgb(item["stroke"]), int(255 * item["opacity"]))
-            draw.line([item["x1"], item["y1"], item["x2"], item["y2"]], fill=color, width=max(1, round(item["width"])))
+            width_px = max(1, round(item["width"]))
+            coords = [item["x1"], item["y1"], item["x2"], item["y2"]]
+            if item.get("dash"):
+                dashed_line(coords, color, width_px, item["dash"])
+            else:
+                draw.line(coords, fill=color, width=width_px)
         elif item["type"] == "text":
             fnt = font(item["size"])
             x = item["x"]
