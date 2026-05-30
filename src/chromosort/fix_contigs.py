@@ -11,6 +11,7 @@ SV-like noise can be smoothed over before breakpoints are accepted.
 
 import argparse
 import sys
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -97,6 +98,26 @@ class BlockGroup:
 
 
 MODE_CHOICES = ("conservative", "chromosome", "comprehensive", "sensitive")
+PROGRESS_INTERVAL_SECONDS = 30.0
+
+
+class ProgressLogger:
+    def __init__(self, stream=None, interval_seconds=PROGRESS_INTERVAL_SECONDS):
+        self.stream = stream or sys.stderr
+        self.interval_seconds = interval_seconds
+        self.last_update = None
+
+    def log(self, message):
+        self.stream.write(f"{message}\n")
+        self.stream.flush()
+        self.last_update = time.monotonic()
+
+    def maybe(self, message):
+        now = time.monotonic()
+        if self.last_update is None or now - self.last_update >= self.interval_seconds:
+            self.stream.write(f"{message}\n")
+            self.stream.flush()
+            self.last_update = now
 
 
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -434,9 +455,21 @@ def collect_blocks(
     max_merge_gap,
     min_mapq=0,
     include_secondary_paf=False,
+    progress=None,
 ):
     raw_blocks = defaultdict(list)
     requested_set = set(requested) if requested is not None else None
+    segments_seen = 0
+    kept_segments = 0
+
+    def maybe_report_alignment_scan():
+        if progress is not None and segments_seen % 1000 == 0:
+            progress.maybe(
+                "  alignment scan: "
+                f"{segments_seen:,} passing segment(s) examined, "
+                f"{kept_segments:,} kept for {len(raw_blocks):,} contig(s)"
+            )
+
     for segment in iter_alignments(
         alignment_path,
         alignment_format,
@@ -444,12 +477,16 @@ def collect_blocks(
         min_mapq=min_mapq,
         include_secondary_paf=include_secondary_paf,
     ):
+        segments_seen += 1
         if requested_set is not None and segment.query not in requested_set:
+            maybe_report_alignment_scan()
             continue
         if segment.len_query < min_segment_bp:
+            maybe_report_alignment_scan()
             continue
         start, end = query_interval(segment)
         ref_start, ref_end = ref_interval(segment)
+        kept_segments += 1
         raw_blocks[segment.query].append(
             QueryBlock(
                 contig=segment.query,
@@ -464,10 +501,24 @@ def collect_blocks(
                 segment_count=1,
             )
         )
+        maybe_report_alignment_scan()
 
+    if progress is not None:
+        progress.log(
+            "Finished alignment scan: "
+            f"{segments_seen:,} passing segment(s) examined, "
+            f"{kept_segments:,} kept for {len(raw_blocks):,} contig(s)."
+        )
+        progress.log("Merging nearby alignment blocks...")
     merged = {}
     for contig, blocks in raw_blocks.items():
         merged[contig] = merge_query_blocks(blocks, max_merge_gap)
+    if progress is not None:
+        merged_blocks = sum(len(blocks) for blocks in merged.values())
+        progress.log(
+            "Merged alignments into "
+            f"{merged_blocks:,} block(s) across {len(merged):,} contig(s)."
+        )
     return merged
 
 
@@ -784,9 +835,11 @@ def count_smoothed_transitions(groups, include_orientation=True):
     return count
 
 
-def all_requested_contigs(fasta_path, blocks_by_contig, args):
+def all_requested_contigs(fasta_path, blocks_by_contig, args, progress=None):
     requested = []
+    records_seen = 0
     for name, _, _ in iter_fasta_records(fasta_path):
+        records_seen += 1
         blocks = blocks_by_contig.get(name, [])
         if args.mode == "sensitive":
             include = has_split_signal(blocks, True)
@@ -797,6 +850,18 @@ def all_requested_contigs(fasta_path, blocks_by_contig, args):
             )
         if include:
             requested.append(name)
+        if progress is not None and records_seen % 1000 == 0:
+            progress.maybe(
+                "  target selection: "
+                f"checked {records_seen:,} FASTA record(s), "
+                f"selected {len(requested):,}"
+            )
+    if progress is not None:
+        progress.log(
+            "Selected "
+            f"{len(requested):,} split-signal contig(s) from "
+            f"{records_seen:,} FASTA record(s)."
+        )
     return requested
 
 
@@ -1052,10 +1117,18 @@ def build_smoothed_split_plan(contig, seq_len, blocks, args):
     )
 
 
-def build_plans(fasta_path, requested, blocks_by_contig, args):
+def build_plans(fasta_path, requested, blocks_by_contig, args, progress=None):
+    if progress is not None:
+        progress.log("Loading assembly FASTA lengths...")
     seq_lengths = {name: len(seq) for name, _, seq in iter_fasta_records(fasta_path)}
+    if progress is not None:
+        progress.log(
+            "Planning fixes for "
+            f"{len(requested):,} requested contig(s) in {args.mode} mode..."
+        )
     plans: Dict[str, ContigPlan] = {}
-    for contig in requested:
+    update_every = max(1, len(requested) // 10) if requested else 1
+    for index, contig in enumerate(requested, start=1):
         if contig not in seq_lengths:
             plans[contig] = ContigPlan(
                 contig=contig,
@@ -1078,6 +1151,14 @@ def build_plans(fasta_path, requested, blocks_by_contig, args):
                 blocks_by_contig.get(contig, []),
                 args,
             )
+        if progress is not None and (
+            index == len(requested) or index % update_every == 0
+        ):
+            progress.maybe(
+                f"  fix planning: {index:,}/{len(requested):,} contig(s) planned"
+            )
+    if progress is not None:
+        progress.log(f"Finished fix planning for {len(requested):,} contig(s).")
     return plans
 
 
@@ -1118,21 +1199,37 @@ def fasta_header(piece, simple_headers):
     return " ".join(fields)
 
 
-def write_fixed_fasta(path, fasta_path, plans, args):
+def write_fixed_fasta(path, fasta_path, plans, args, progress=None):
     ensure_parent_dir(path)
+    records_seen = 0
+    emitted_records = 0
+
+    def maybe_report_fasta_write():
+        if progress is not None and records_seen % 1000 == 0:
+            progress.maybe(
+                "  FASTA write: "
+                f"scanned {records_seen:,} input record(s), "
+                f"emitted {emitted_records:,}"
+            )
+
     with open(path, "w") as out:
         for name, header, seq in iter_fasta_records(fasta_path):
+            records_seen += 1
             plan = plans.get(name)
             if plan is None:
                 if not args.pieces_only:
                     out.write(header + "\n")
                     write_wrapped(out, seq)
+                    emitted_records += 1
+                maybe_report_fasta_write()
                 continue
 
             if plan.status != "split":
                 if not args.pieces_only:
                     out.write(header + "\n")
                     write_wrapped(out, seq)
+                    emitted_records += 1
+                maybe_report_fasta_write()
                 continue
 
             for piece in plan.pieces:
@@ -1141,6 +1238,13 @@ def write_fixed_fasta(path, fasta_path, plans, args):
                     piece_seq = reverse_complement(piece_seq)
                 out.write(f">{fasta_header(piece, args.simple_headers)}\n")
                 write_wrapped(out, piece_seq)
+                emitted_records += 1
+            maybe_report_fasta_write()
+    if progress is not None:
+        progress.log(
+            "Finished FASTA write: "
+            f"scanned {records_seen:,} input record(s), emitted {emitted_records:,}."
+        )
 
 
 def fmt(value, digits=3):
@@ -1477,6 +1581,18 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         sys.stderr.write("ERROR: provide at least one contig via --contigs/--contigs-file or use --all\n")
         sys.exit(2)
 
+    progress = ProgressLogger()
+    if args.reviewed_plan:
+        target_desc = "reviewed-plan target contig(s)"
+    elif args.all_contigs:
+        target_desc = "all split-signal contigs"
+    else:
+        target_desc = f"{len(explicit_requested):,} requested contig(s)"
+    progress.log(
+        f"Starting chromo fix: {target_desc}; mode={args.mode}; "
+        f"assembly={args.assembly_fasta}"
+    )
+
     graph_report_path = None
     if args.gfa:
         graph_report_path = (
@@ -1491,13 +1607,16 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     ensure_output_dirs(output_paths)
 
     if args.reviewed_plan:
+        progress.log(f"Reading reviewed fix plan: {args.reviewed_plan}")
         try:
             requested, plans = build_reviewed_plans(args.assembly_fasta, args.reviewed_plan, args)
         except ValueError as exc:
             sys.stderr.write(f"ERROR: {exc}\n")
             sys.exit(2)
+        progress.log(f"Loaded reviewed split plan for {len(requested):,} contig(s).")
     else:
         alignment_path, alignment_format = alignment_source_from_args(args)
+        progress.log(f"Reading {alignment_format} alignments: {alignment_path}")
         collect_for = None if args.all_contigs else explicit_requested
         blocks_by_contig = collect_blocks(
             alignment_path,
@@ -1508,23 +1627,38 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             args.max_merge_gap,
             min_mapq=args.min_mapq,
             include_secondary_paf=args.include_secondary_paf,
+            progress=progress,
         )
+        if args.all_contigs:
+            progress.log("Selecting split-signal contigs from assembly FASTA...")
         requested = (
-            all_requested_contigs(args.assembly_fasta, blocks_by_contig, args)
+            all_requested_contigs(
+                args.assembly_fasta,
+                blocks_by_contig,
+                args,
+                progress=progress,
+            )
             if args.all_contigs
             else explicit_requested
         )
+        if not args.all_contigs:
+            progress.log(f"Selected {len(requested):,} explicit target contig(s).")
         plans = build_plans(
             args.assembly_fasta,
             requested,
             blocks_by_contig,
             args,
+            progress=progress,
         )
         apply_breakpoint_guard(plans, args)
-    write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args)
+    progress.log(f"Writing fixed FASTA: {args.output_fasta}")
+    write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args, progress)
+    progress.log(f"Writing fix report: {args.report}")
     write_report(args.report, requested, plans)
     if args.gfa:
+        progress.log(f"Reading graph context: {args.gfa}")
         graph = read_gfa(args.gfa)
+        progress.log(f"Writing graph report: {graph_report_path}")
         write_graph_report(graph_report_path, requested, plans, graph)
         if args.graph_guard:
             graph_guard_fix_warnings(requested, plans, graph)

@@ -69,6 +69,46 @@ def read_report(path):
 
 
 class FixContigsTests(unittest.TestCase):
+    def test_cli_reports_progress_to_stderr(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            output_fasta = tmp_path / "fixed.fa"
+            report = tmp_path / "fixed.tsv"
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(ROOT / "src")
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "chromosort.cli",
+                    "fix",
+                    "--assembly-fasta",
+                    str(DATA / "assembly.fa"),
+                    "--coords",
+                    str(DATA / "sample.coords"),
+                    "--contigs",
+                    "contig_04",
+                    "--output-fasta",
+                    str(output_fasta),
+                    "--report",
+                    str(report),
+                    "--min-segment-bp",
+                    "5",
+                ],
+                cwd=ROOT,
+                check=True,
+                env=env,
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertIn("Starting chromo fix:", result.stderr)
+            self.assertIn("Reading coords alignments:", result.stderr)
+            self.assertIn("Finished alignment scan:", result.stderr)
+            self.assertIn("Writing fixed FASTA:", result.stderr)
+            self.assertIn("Processed 1 requested contigs.", result.stderr)
+
     def test_graph_guard_warns_on_simple_split_target(self):
         from chromosort.fix_contigs import ContigPlan, graph_guard_fix_warnings
         from chromosort.graph import read_gfa
