@@ -121,6 +121,9 @@ event. If only one optional evidence file exists, only that panel appears. If
 GAF supports a different graph branch than the first GFA path, the row stays
 reviewable through fields such as `gaf_support_status`,
 `gaf_best_alt_path_nodes`, and `gaf_best_alt_support`.
+The [Architecture]({{ '/architecture/' | relative_url }}#algorithm-and-data-model-activation-map)
+page explains which algorithms and evidence streams are activated by each
+subcommand, mode, and parameter.
 
 ## Workflow 1: Reference-Order a Mostly Clean Assembly
 

@@ -40,7 +40,8 @@ before they are used as inputs to another alignment-dependent command.
 ## Running Analyses
 
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
-- [Architecture](https://rotheconrad.github.io/chromosort/architecture/)
+- [Architecture](https://rotheconrad.github.io/chromosort/architecture/) for
+  algorithm, data-model, evidence, and command-activation details.
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
 - [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/)
 
@@ -57,10 +58,12 @@ before they are used as inputs to another alignment-dependent command.
 3. For more complex cases, use `chromo plot` and the
    [dot-plot guide]({{ '/dot-plots/' | relative_url }}), then use
    `chromo manual` when helpful to inspect suspicious contigs.
-4. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
-5. Re-align the fixed assembly.
-6. Use `chromo sort` to assign, filter, orient, and order contigs.
-7. Re-align again if a later command should operate on `ordered.fa` rather than
+4. Use `chromo eval` and task-specific `chromo manual` dashboards when outlier
+   `fix`, `scaffold`, or `gapfill` decisions need table or GUI review.
+5. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
+6. Re-align the fixed assembly.
+7. Use `chromo sort` to assign, filter, orient, and order contigs.
+8. Re-align again if a later command should operate on `ordered.fa` rather than
    on the original assembly and its assignment report.
-8. Use `chromo scaffold` to build one scaffold per reference sequence.
-9. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.
+9. Use `chromo scaffold` to build one scaffold per reference sequence.
+10. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.

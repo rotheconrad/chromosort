@@ -146,10 +146,13 @@ sequence-changing commands cannot use them as trim lengths.
 
 ### GAF
 
-`chromo gapfill --gaf` reads graph-alignment rows with at least 12 columns. It
-uses the query name, path string, and MAPQ. The path string must encode oriented
-graph nodes, for example `>left>bridge_good>right`. GAF support is used only as
-conservative path evidence; it does not insert sequence by itself.
+Commands with `--gaf` read graph-alignment rows with at least 12 columns. They
+use the query name, path string, and MAPQ. The path string must encode oriented
+graph nodes, for example `>left>bridge_good>right`. In `chromo eval fix`, GAF is
+advisory node context. In `chromo eval scaffold`, `chromo eval gapfill`, and
+`chromo gapfill`, it reports candidate graph traversal support. GAF support
+does not insert sequence by itself; `chromo gapfill --apply` still requires a
+validated GFA path with usable segment sequences and overlaps.
 
 ### Hi-C Pair Table
 
@@ -341,6 +344,10 @@ Graph-aware ChromoSort commands use these graph-related evidence files:
 - Hi-C pairs: optional graph-node contact counts used by
   `chromo gapfill --hic-pairs` as an additional conservative branch-support
   signal.
+
+The [Architecture]({{ '/architecture/' | relative_url }}) page maps these
+evidence files to the subcommands, modes, and parameters that activate them,
+including which uses are report-only and which can affect sequence output.
 
 ### Where to Find the GFA
 

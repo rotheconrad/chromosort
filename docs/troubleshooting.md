@@ -65,7 +65,12 @@ Graph-aware commands expect GFA segment names to match the assembly FASTA or the
 
 ## Gapfill Plan Is Ambiguous
 
-`chromo gapfill` refuses to guess through ambiguous graph branches. Add GAF, Hi-C-like pair evidence, or reference-placement PAF when those evidence layers are trustworthy, then review the candidate-path table or HTML reviewer. Ties, weak support, conflicting evidence, missing sequence, invalid overlaps, and flank mismatches intentionally remain unresolved.
+`chromo gapfill` refuses to guess through ambiguous graph branches. Add GAF,
+Hi-C-like pair evidence, or reference-placement PAF when those evidence layers
+are trustworthy, then review the candidate-path table, `chromo eval gapfill`
+table, or HTML reviewer. Ties, weak support, conflicting evidence, missing
+sequence, invalid overlaps, and flank mismatches intentionally remain
+unresolved.
 
 ## Plots Are Empty Or Sparse
 

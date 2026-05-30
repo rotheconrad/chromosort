@@ -39,6 +39,11 @@ describes table workflows and task-specific `manual` dashboards for reviewed
 `chromo eval scaffold`, `chromo eval gapfill`, and task-specific
 `chromo manual` review modes are now available.
 
+For reviewer-facing implementation detail, the
+[Architecture]({{ '/architecture/' | relative_url }}) page maps algorithms,
+data models, evidence streams, and sequence-changing authority to the
+subcommands, modes, and parameters that activate them.
+
 ## Development Checks
 
 ```bash
