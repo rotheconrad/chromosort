@@ -21,10 +21,14 @@ from .reference_order import (
 
 PLUS_COLOR = "#2563eb"
 MINUS_COLOR = "#dc2626"
-POSITION_GRID_COLOR = "#e5e7eb"
-POSITION_GRID_WIDTH = 0.45
-POSITION_GRID_OPACITY = 0.48
-POSITION_GRID_DASH = (1.5, 4.5)
+MAJOR_POSITION_GRID_COLOR = "#cbd5e1"
+MAJOR_POSITION_GRID_WIDTH = 0.75
+MAJOR_POSITION_GRID_OPACITY = 0.82
+MAJOR_POSITION_GRID_DASH = (4, 4)
+MINOR_POSITION_GRID_COLOR = "#e5e7eb"
+MINOR_POSITION_GRID_WIDTH = 0.5
+MINOR_POSITION_GRID_OPACITY = 0.72
+MINOR_POSITION_GRID_DASH = (2, 5)
 BOUNDARY_GRID_COLOR = "#9ca3af"
 BOUNDARY_GRID_WIDTH = 0.9
 BOUNDARY_GRID_OPACITY = 0.82
@@ -38,6 +42,12 @@ AXIS_LABEL_SIZE = 18
 TICK_LABEL_SIZE = 13
 RECORD_LABEL_SIZE = 13
 LEGEND_LABEL_SIZE = 15
+MAJOR_TICK_LENGTH = 8
+MAJOR_TICK_WIDTH = 1.0
+MAJOR_TICK_OPACITY = 0.9
+MINOR_TICK_LENGTH = 5
+MINOR_TICK_WIDTH = 0.8
+MINOR_TICK_OPACITY = 0.65
 
 
 @dataclass(frozen=True)
@@ -368,6 +378,19 @@ def tick_values(total, target_ticks=6):
     return values
 
 
+def minor_tick_values(total, major_step, subdivisions=5):
+    if total <= 0 or major_step <= 1 or subdivisions <= 1:
+        return []
+    minor_step = max(1, int(round(major_step / subdivisions)))
+    if minor_step >= major_step:
+        return []
+    values = []
+    for value in range(minor_step, total + 1, minor_step):
+        if value % major_step != 0:
+            values.append(value)
+    return values
+
+
 def fmt_tick(value, unit_scale):
     if unit_scale == 1:
         return str(int(value))
@@ -458,6 +481,60 @@ def svg_rect(item):
 
 def draw_axis_ticks(elements, total, origin, size, is_x_axis):
     unit_scale, _unit = axis_unit(total)
+    major_step = nice_tick_step(total)
+    axis_origin = origin[0 if is_x_axis else 1]
+    axis_size = size[0 if is_x_axis else 1]
+    for value in minor_tick_values(total, major_step):
+        pos = scale(value, total, axis_origin, axis_size)
+        if is_x_axis:
+            elements.append(
+                make_line(
+                    pos,
+                    origin[1],
+                    pos,
+                    origin[1] + size[1],
+                    MINOR_POSITION_GRID_COLOR,
+                    MINOR_POSITION_GRID_WIDTH,
+                    MINOR_POSITION_GRID_OPACITY,
+                    MINOR_POSITION_GRID_DASH,
+                )
+            )
+            elements.append(
+                make_line(
+                    pos,
+                    origin[1] + size[1],
+                    pos,
+                    origin[1] + size[1] + MINOR_TICK_LENGTH,
+                    AXIS_COLOR,
+                    MINOR_TICK_WIDTH,
+                    MINOR_TICK_OPACITY,
+                )
+            )
+        else:
+            elements.append(
+                make_line(
+                    origin[0],
+                    pos,
+                    origin[0] + size[0],
+                    pos,
+                    MINOR_POSITION_GRID_COLOR,
+                    MINOR_POSITION_GRID_WIDTH,
+                    MINOR_POSITION_GRID_OPACITY,
+                    MINOR_POSITION_GRID_DASH,
+                )
+            )
+            elements.append(
+                make_line(
+                    origin[0] + size[0],
+                    pos,
+                    origin[0] + size[0] + MINOR_TICK_LENGTH,
+                    pos,
+                    AXIS_COLOR,
+                    MINOR_TICK_WIDTH,
+                    MINOR_TICK_OPACITY,
+                )
+            )
+
     for value in tick_values(total):
         pos = scale(value, total, origin[0 if is_x_axis else 1], size[0 if is_x_axis else 1])
         label = fmt_tick(value, unit_scale)
@@ -468,13 +545,23 @@ def draw_axis_ticks(elements, total, origin, size, is_x_axis):
                     origin[1],
                     pos,
                     origin[1] + size[1],
-                    POSITION_GRID_COLOR,
-                    POSITION_GRID_WIDTH,
-                    POSITION_GRID_OPACITY,
-                    POSITION_GRID_DASH,
+                    MAJOR_POSITION_GRID_COLOR,
+                    MAJOR_POSITION_GRID_WIDTH,
+                    MAJOR_POSITION_GRID_OPACITY,
+                    MAJOR_POSITION_GRID_DASH,
                 )
             )
-            elements.append(make_line(pos, origin[1] + size[1], pos, origin[1] + size[1] + 6, AXIS_COLOR, 0.8))
+            elements.append(
+                make_line(
+                    pos,
+                    origin[1] + size[1],
+                    pos,
+                    origin[1] + size[1] + MAJOR_TICK_LENGTH,
+                    AXIS_COLOR,
+                    MAJOR_TICK_WIDTH,
+                    MAJOR_TICK_OPACITY,
+                )
+            )
             elements.append(make_text(pos, origin[1] + size[1] + 24, label, size=TICK_LABEL_SIZE, anchor="middle", fill=MUTED_TEXT))
         else:
             elements.append(
@@ -483,13 +570,23 @@ def draw_axis_ticks(elements, total, origin, size, is_x_axis):
                     pos,
                     origin[0] + size[0],
                     pos,
-                    POSITION_GRID_COLOR,
-                    POSITION_GRID_WIDTH,
-                    POSITION_GRID_OPACITY,
-                    POSITION_GRID_DASH,
+                    MAJOR_POSITION_GRID_COLOR,
+                    MAJOR_POSITION_GRID_WIDTH,
+                    MAJOR_POSITION_GRID_OPACITY,
+                    MAJOR_POSITION_GRID_DASH,
                 )
             )
-            elements.append(make_line(origin[0] + size[0], pos, origin[0] + size[0] + 6, pos, AXIS_COLOR, 0.8))
+            elements.append(
+                make_line(
+                    origin[0] + size[0],
+                    pos,
+                    origin[0] + size[0] + MAJOR_TICK_LENGTH,
+                    pos,
+                    AXIS_COLOR,
+                    MAJOR_TICK_WIDTH,
+                    MAJOR_TICK_OPACITY,
+                )
+            )
             elements.append(make_text(origin[0] + size[0] + 12, pos + 4, label, size=TICK_LABEL_SIZE, fill=MUTED_TEXT))
 
 

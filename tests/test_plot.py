@@ -118,7 +118,8 @@ class PlotTests(unittest.TestCase):
         sys.path.insert(0, str(ROOT / "src"))
         from chromosort.plot import (
             BOUNDARY_GRID_COLOR,
-            POSITION_GRID_COLOR,
+            MAJOR_POSITION_GRID_COLOR,
+            MINOR_POSITION_GRID_COLOR,
             build_plot_items,
         )
         from chromosort.reference_order import FastaIndexRecord
@@ -128,21 +129,68 @@ class PlotTests(unittest.TestCase):
             FastaIndexRecord("chr2", 100, 0, 0, 0),
         ]
         elements = build_plot_items("test", records, records, [], 900, 700)
-        position_grid_lines = [
+        major_grid_lines = [
             item for item in elements
-            if item["type"] == "line" and item["stroke"] == POSITION_GRID_COLOR
+            if item["type"] == "line" and item["stroke"] == MAJOR_POSITION_GRID_COLOR
+        ]
+        minor_grid_lines = [
+            item for item in elements
+            if item["type"] == "line" and item["stroke"] == MINOR_POSITION_GRID_COLOR
         ]
         boundary_lines = [
             item for item in elements
             if item["type"] == "line" and item["stroke"] == BOUNDARY_GRID_COLOR
         ]
 
-        self.assertTrue(position_grid_lines)
+        self.assertTrue(major_grid_lines)
+        self.assertTrue(minor_grid_lines)
         self.assertTrue(boundary_lines)
-        self.assertTrue(all(item["dash"] for item in position_grid_lines))
+        self.assertTrue(all(item["dash"] for item in major_grid_lines))
+        self.assertTrue(all(item["dash"] for item in minor_grid_lines))
         self.assertTrue(all(item["dash"] is None for item in boundary_lines))
-        self.assertGreater(boundary_lines[0]["width"], position_grid_lines[0]["width"])
-        self.assertGreater(boundary_lines[0]["opacity"], position_grid_lines[0]["opacity"])
+        self.assertGreater(boundary_lines[0]["width"], major_grid_lines[0]["width"])
+        self.assertGreater(major_grid_lines[0]["width"], minor_grid_lines[0]["width"])
+        self.assertGreater(major_grid_lines[0]["opacity"], minor_grid_lines[0]["opacity"])
+
+    def test_major_and_minor_axis_ticks_are_drawn(self):
+        sys.path.insert(0, str(ROOT / "src"))
+        from chromosort.plot import (
+            AXIS_COLOR,
+            MAJOR_TICK_LENGTH,
+            MAJOR_TICK_WIDTH,
+            MINOR_TICK_LENGTH,
+            MINOR_TICK_WIDTH,
+            build_plot_items,
+        )
+        from chromosort.reference_order import FastaIndexRecord
+
+        records = [FastaIndexRecord("chr1", 200, 0, 0, 0)]
+        elements = build_plot_items("test", records, records, [], 900, 700)
+        plot_rect = next(
+            item for item in elements if item["type"] == "rect" and item["fill"] == "#f9fafb"
+        )
+        bottom = plot_rect["y"] + plot_rect["height"]
+        right = plot_rect["x"] + plot_rect["width"]
+        tick_lines = [
+            item for item in elements
+            if item["type"] == "line" and item["stroke"] == AXIS_COLOR
+        ]
+        x_tick_lengths = [
+            item["y2"] - item["y1"]
+            for item in tick_lines
+            if item["x1"] == item["x2"] and item["y1"] == bottom and item["y2"] > bottom
+        ]
+        y_tick_lengths = [
+            item["x2"] - item["x1"]
+            for item in tick_lines
+            if item["y1"] == item["y2"] and item["x1"] == right and item["x2"] > right
+        ]
+
+        self.assertIn(MAJOR_TICK_LENGTH, x_tick_lengths)
+        self.assertIn(MINOR_TICK_LENGTH, x_tick_lengths)
+        self.assertIn(MAJOR_TICK_LENGTH, y_tick_lengths)
+        self.assertIn(MINOR_TICK_LENGTH, y_tick_lengths)
+        self.assertGreater(MAJOR_TICK_WIDTH, MINOR_TICK_WIDTH)
 
     def test_paf_plot_writes_per_reference_svgs(self):
         with tempfile.TemporaryDirectory() as tmp:
