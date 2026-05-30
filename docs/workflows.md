@@ -124,6 +124,10 @@ reviewable through fields such as `gaf_support_status`,
 The [Architecture]({{ '/architecture/' | relative_url }}#algorithm-and-data-model-activation-map)
 page explains which algorithms and evidence streams are activated by each
 subcommand, mode, and parameter.
+For reproducible handoffs across datasets, see the
+[Agent and Review Playbook]({{ '/review-playbook/' | relative_url }}), which
+spells out how to choose one primary coords or PAF alignment, review
+same-reference inversions, and add long-read/GFA/GAF evidence.
 
 ## Workflow 1: Reference-Order a Mostly Clean Assembly
 

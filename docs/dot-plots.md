@@ -182,6 +182,10 @@ How to follow up:
 - Do not automatically split an inversion. A true inversion is not fixed by
   deleting sequence; it may be left as-is, reoriented, or explicitly reported
   depending on your goal.
+- For pangenome graph inputs, review the inversion as evidence before deciding
+  whether to keep it native or create a separate reference-normalized
+  experimental FASTA. See the
+  [Agent and Review Playbook]({{ '/review-playbook/' | relative_url }}#review-same-reference-inversions).
 
 ### Duplication, Haplotig, Or Repeat
 

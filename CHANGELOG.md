@@ -2,7 +2,7 @@
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | No changes yet. |
+| Unreleased | Added agent-ready review documentation: root `AGENTS.md`, a species-agnostic review playbook for choosing primary coords or PAF evidence, same-reference inversion review, long-read/GFA/GAF evidence, and handoff checklists. |
 | `0.2.27` | Refreshed publication-style architecture and user documentation: added algorithm/data-model activation maps, evidence authority mapping, updated eval/manual/GAF command guidance, synchronized input/output/workflow/status/troubleshooting docs, and verified docs/test consistency. |
 | `0.2.26` | Completed the GAF evidence and modular manual-panel upgrade: shared GAF parsing/traversal summaries, `--gaf` evidence in `chromo eval fix/scaffold/gapfill`, GAF status and selected-read fields in gapfill plans, optional `--read-paf`/`--gaf` panels in task-specific manual dashboards, and mixed GFA/PAF/GAF review fixtures/docs. |
 | `0.2.25` | Synchronized package, citation, Pixi, conda recipe, README, and docs version metadata; added the production-upgrade roadmap for paired `eval` table workflows and task-specific `manual` dashboards feeding reviewed `fix`, `scaffold`, and `gapfill` execution paths. |

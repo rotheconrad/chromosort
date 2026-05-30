@@ -20,6 +20,7 @@ before they are used as inputs to another alignment-dependent command.
 - [Installation](https://rotheconrad.github.io/chromosort/installation/)
 - [Input files](https://rotheconrad.github.io/chromosort/input-files/)
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
+- [Agent and review playbook]({{ '/review-playbook/' | relative_url }})
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
@@ -40,6 +41,9 @@ before they are used as inputs to another alignment-dependent command.
 ## Running Analyses
 
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
+- [Agent and review playbook]({{ '/review-playbook/' | relative_url }}) for
+  choosing one primary coords or PAF alignment, inversion review,
+  long-read/GFA/GAF evidence, and handoffs between chats or projects.
 - [Architecture](https://rotheconrad.github.io/chromosort/architecture/) for
   algorithm, data-model, evidence, and command-activation details.
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})

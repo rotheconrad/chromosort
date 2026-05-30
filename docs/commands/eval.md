@@ -62,6 +62,14 @@ contigs and slices to apply.
 Long-read evidence is summarized as spanning-read, split-read, edge-read, and
 nearby-read counts for candidate breakpoint rows.
 
+For same-reference inversion review, use `--mode comprehensive` to ask the fix
+planner to expose orientation-change rows in the review table without applying
+them. Pair the table with `--read-paf`, `--gfa`, and `--gaf` when you need to
+decide whether the inversion is a real assembly feature or an assembly error.
+The [Agent and Review Playbook]({{ '/review-playbook/' | relative_url }}#review-same-reference-inversions)
+describes this distinction and why real inversions should usually remain native
+for pangenome graph inputs.
+
 ## Run `chromo eval scaffold`
 
 ```bash

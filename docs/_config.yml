@@ -70,6 +70,19 @@ nav:
         url: /workflows/#handling-overlapping-contigs
       - title: Synthetic graph workflow
         url: /workflows/#synthetic-graph-workflow
+  - title: Review Playbook
+    url: /review-playbook/
+    children:
+      - title: Manifest
+        url: /review-playbook/#start-with-a-dataset-manifest
+      - title: Primary alignment
+        url: /review-playbook/#choose-one-primary-alignment-evidence
+      - title: Inversions
+        url: /review-playbook/#review-same-reference-inversions
+      - title: Long reads and graphs
+        url: /review-playbook/#add-long-read-and-graph-evidence
+      - title: Handoff
+        url: /review-playbook/#handoff-checklist-for-a-new-chat-or-agent
   - title: Dot Plot Guide
     url: /dot-plots/
     children:
