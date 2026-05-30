@@ -276,7 +276,7 @@ that architecture map so the project tells one coherent story.
 | Phase | Status | Notes |
 | --- | --- | --- |
 | A1. Add this architecture-docs roadmap chapter. | Done | Track the documentation refresh separately from the completed review and GAF implementation chapters. |
-| A2. Refresh `docs/architecture.md` with algorithm and data-model usage maps. | Planned | Add command/parameter activation details for sorting, fixing, eval modes, manual modes, scaffolding, gapfill branch resolution, review events, and evidence panels. |
+| A2. Refresh `docs/architecture.md` with algorithm and data-model usage maps. | Done | Added command/parameter activation maps for sorting, fixing, eval modes, manual modes, scaffolding, gapfill branch resolution, review events, long-read evidence, GAF summaries, and evidence authority. |
 | A3. Synchronize README and command docs with the architecture map. | Planned | Check `README.md`, `docs/commands/*.md`, and public command summaries for stale or incomplete references to eval/manual/GAF evidence. |
 | A4. Synchronize workflow, input, output, status, and troubleshooting docs. | Planned | Ensure evidence contracts, outputs, limitations, and recommended workflows match the updated architecture. |
 | A5. Run documentation and test consistency checks. | Planned | Use text searches, metadata checks, and the test suite to catch stale version strings, missing command references, and broken assumptions. |

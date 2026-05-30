@@ -93,13 +93,54 @@ The public command surface is the `chromo` dispatcher in
 | --- | --- | --- | --- | --- |
 | `chromo sort` | `reference_order.py` | Reference FASTA, assembly FASTA, coords or PAF, optional GFA | Assign contigs to reference sequences, classify low-confidence and duplicate-overlap records, order kept contigs by reference position, and write match/assignment summaries. | Writes an ordered FASTA for kept contigs. Optionally reverse-complements records with `--orient-to-reference`. |
 | `chromo clean` | `clean.py` | Reference FASTA, raw assembly FASTA, coords or PAF | Apply sort assignment/filtering to raw contigs, select retained raw contigs for conservative fix planning, reconcile retained unsplit contigs and split pieces, and write unified audit reports. | Writes a cleaned FASTA. Optionally reverse-complements emitted records with `--orient-to-reference`. |
+| `chromo eval fix` | `evaluate.py` and `fix_contigs.py` | Assembly FASTA, coords or PAF, selected contigs or `--all`, optional GFA, long-read PAF, and GAF | Prepare an editable review-event TSV for candidate split pieces using the fix planner plus optional graph and read evidence. | Does not change FASTA. Accepted rows can later be applied by `chromo fix --reviewed-plan`. |
+| `chromo eval scaffold` | `evaluate.py` and `scaffold.py` | Ordered FASTA, assignment TSV, optional GFA, long-read PAF, and GAF | Prepare an editable review-event TSV for adjacent scaffold junctions, inferred gaps/overlaps, graph context, GAF path support, and read-bridge support. | Does not change FASTA. Accepted rows can later pin gap lengths through `chromo scaffold --reviewed-plan`. |
+| `chromo eval gapfill` | `evaluate.py` and `gapfill.py` | Ordered FASTA, assignment TSV, GFA, optional GAF, Hi-C table, reference-placement PAF, and long-read PAF | Prepare an editable review-event TSV from the gapfill planner, including candidate path status, fillability, branch-support evidence, and read-bridge context. | Does not change FASTA. Accepted rows can later restrict `chromo gapfill --reviewed-plan --apply`. |
 | `chromo fix` | `fix_contigs.py` | Assembly FASTA, coords or PAF, selected contigs or `--all`, optional GFA | Detect and split selected chimeric contigs into reference-labeled pieces using mode-specific breakpoint planning. | Writes a fixed FASTA and split report. Optionally writes only pieces and/or reverse-complements pieces. |
 | `chromo cut` | `cut.py` | Assembly FASTA plus explicit cut positions | Apply reviewed 1-based cut positions and report emitted pieces. | Writes a cut FASTA. No cut is inferred from alignments. |
-| `chromo manual` | `manual.py` | Reference FASTA, assembly FASTA, coords or PAF, optional GFA | Build a self-contained review dashboard with alignment, contig, graph, and initial piece information. | Does not change FASTA. |
+| `chromo manual` | `manual.py` | Reference FASTA, assembly FASTA, coords or PAF, optional GFA, long-read PAF, GAF, and review table | Build a self-contained review dashboard with alignment, contig, graph, initial piece information, and optional evidence panels. | Does not change FASTA. |
+| `chromo manual fix/scaffold/gapfill` | `manual.py` and `review.py` | Same dashboard inputs plus task-specific `chromo eval` review table | Add a focused task-event queue and selected-event evidence panels for fix, scaffold, or gapfill review. | Does not change FASTA. Manual edits still require browser export plus `manual apply`; reviewed TSVs feed the matching executor. |
 | `chromo manual apply` | `manual.py` | Assembly FASTA and exported recipe JSON | Apply a dashboard recipe containing slices, orientation choices, removals, and optional scaffold grouping. | Writes a manually edited FASTA and optional report. |
-| `chromo scaffold` | `scaffold.py` | Ordered FASTA and `sort` assignment TSV, optional GFA | Join ordered contigs per reference with inferred or fixed gaps; report reference overlaps and graph adjacency. | Writes scaffold FASTA. Overlap trimming occurs only under explicit overlap policies. |
+| `chromo scaffold` | `scaffold.py` | Ordered FASTA and `sort` assignment TSV, optional GFA, optional reviewed plan | Join ordered contigs per reference with inferred, fixed, or reviewed gaps; report reference overlaps and graph adjacency. | Writes scaffold FASTA. Overlap trimming occurs only under explicit overlap policies. |
 | `chromo gapfill` | `gapfill.py` | Ordered FASTA, assignment TSV, GFA, optional GAF, Hi-C table, reference-placement PAF, reviewed plan | Plan graph-supported gap fills, annotate risk, resolve unique supported paths, and optionally apply fillable paths. | Writes gapfilled FASTA only with `--apply`; reviewed plans can further restrict which fillable gaps are applied. |
 | `chromo plot` | `plot.py` | Reference FASTA, assembly FASTA, coords or PAF, optional assignment TSV, optional selected reference IDs | Draw whole-genome, per-reference, and selected-reference dot plots from existing alignments. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation patterns. | Does not change FASTA. |
+
+## Algorithm And Data Model Activation Map
+
+This section makes explicit where each documented algorithm or data model is
+used. "Activation" means the command path, mode, or parameter that calls the
+logic; it does not imply that the evidence source is allowed to change
+sequence by itself.
+
+| Algorithm or data model | Activated by | Key parameter or mode controls | Main output fields or artifacts | Validation anchors |
+| --- | --- | --- | --- | --- |
+| Alignment normalization into `Segment` records | `sort`, `clean`, `fix`, `eval fix`, `manual`, and `plot` | `--coords` or `--paf`, `--min-segment-bp`, `--min-segment-idy`, `--min-mapq`, `--include-secondary-paf` | Match metrics, embedded alignment rows, dot-plot segments, fix blocks | `tests/test_reference_order.py`, `tests/test_fix_contigs.py`, `tests/test_plot.py`, `tests/test_manual.py` |
+| Match aggregation and best-reference ranking | `sort`, `clean`, `manual`, and `plot --assignments` indirectly through sort tables | `--min-aligned-bp`, `--min-query-cov`, `--min-best-ref-share` | `match_report.tsv`, `contig_assignments.tsv`, manual query records | `tests/test_reference_order.py`, `tests/test_clean.py`, `tests/test_manual.py` |
+| Duplicate-overlap filtering and terminal-extension rescue | `sort` and the sort/filter stage inside `clean` | `--no-overlap-filter`, `--overlap-mode`, `--min-novel-ref-bp`, `--min-novel-ref-frac`, `--novel-ref-criteria`, terminal-extension thresholds | Assignment statuses such as `duplicate_overlap`, `terminal_overlap`, and kept/rescued records | `tests/test_reference_order.py`, `tests/test_clean.py` |
+| Split-candidate protection before fixing | `sort` and `clean` | `--split-candidate-min-aligned-bp`, `--split-candidate-min-query-frac`, `--split-candidate-max-best-share` | `kept_split_candidate` assignment status and split-candidate annotations | `tests/test_reference_order.py`, `tests/test_clean.py` |
+| Fix breakpoint block planning | `fix`, `eval fix`, and the fix stage inside `clean` | `--mode sensitive/chromosome/comprehensive/conservative`, `--breakpoint-penalty-bp`, `--max-merge-gap`, piece support thresholds | `fix_report.tsv`, `fix_review.tsv`, cleaned FASTA pieces | `tests/test_fix_contigs.py`, `tests/test_eval.py`, `tests/test_clean.py` |
+| Reviewed fix-row application | `fix --reviewed-plan` | Accepted `chromosort-review-event-v1` rows with task `fix` and action `split_piece` | Fixed FASTA and report rows generated from reviewed slices | `tests/test_eval.py`, `tests/test_fix_contigs.py` |
+| Explicit cut planning | `cut` | `--cut`, `--cuts-file`, `--contig/--pos`, `--min-piece-bp` | Cut FASTA and cut report | `tests/test_cut.py` |
+| GFA node and link evidence | `sort --gfa`, `fix --gfa`, `eval fix --gfa`, `manual --gfa`, `scaffold --gfa`, `eval scaffold --gfa`, `gapfill`, and `eval gapfill` | `--graph-guard`, `--graph-report`, `--graph-overlap-policy`, graph path depth controls | Graph assignment/report TSVs, graph panels, graph gap fields, fill-path nodes | `tests/test_graph.py`, `tests/test_reference_order.py`, `tests/test_fix_contigs.py`, `tests/test_scaffold.py`, `tests/test_gapfill.py`, `tests/test_manual.py` |
+| Review-event TSV model | `eval fix/scaffold/gapfill`, `manual fix/scaffold/gapfill`, `fix --reviewed-plan`, `scaffold --reviewed-plan`, `gapfill --reviewed-plan` | `--review-table` in manual modes; `--reviewed-plan` in executors | `*.fix_review.tsv`, `*.scaffold_review.tsv`, `*.gapfill_review.tsv` using schema `chromosort-review-event-v1` | `tests/test_review.py`, `tests/test_eval.py`, executor tests |
+| Long-read PAF evidence summaries | `eval fix --read-paf`, `eval scaffold --read-paf`, `eval gapfill --read-paf`, `manual --read-paf` panels | `--min-read-mapq`, `--read-window-bp`, `--read-terminal-window-bp`, `--read-min-anchor-bp` | `longread_*` review fields for breakpoint, bridge, orientation, read order, and median read-gap support | `tests/test_longreads.py`, `tests/test_eval.py`, `tests/test_manual.py` |
+| GAF parsing and graph traversal summaries | `eval fix --gaf`, `eval scaffold --gaf`, `eval gapfill --gaf`, `manual --gaf` panels, and `gapfill --gaf` | `--min-gaf-mapq`, `--min-gaf-path-support`, candidate-path limits | `gaf_*` review fields, gapfill GAF support/status/read fields, selected-event GAF panel rows | `tests/test_gaf.py`, `tests/test_eval.py`, `tests/test_gapfill.py`, `tests/test_manual.py` |
+| Scaffold gap and overlap construction | `scaffold` and `eval scaffold` | `--fixed-gap-bp`, `--overlap-policy`, `--trim-sequence-min-identity`, `--reviewed-plan` | Scaffold FASTA, `scaffold_gaps.tsv`, `scaffold_review.tsv` | `tests/test_scaffold.py`, `tests/test_eval.py` |
+| Scaffold graph-junction reporting | `scaffold --gfa` and `eval scaffold --gfa` | `--graph-overlap-policy`, `--graph-max-path-edges`; `eval scaffold --gaf` adds path support context | `graph_gaps.tsv`, `graph_status`, `graph_path_nodes`, `gaf_*` review columns | `tests/test_scaffold.py`, `tests/test_eval.py` |
+| Gapfill path enumeration and branch resolution | `gapfill` and `eval gapfill` | Required `--gfa`; `--gaf`, `--hic-pairs`, `--ref-paf`, `--max-path-edges`, `--max-candidate-paths`, support thresholds | `gapfill_plan.tsv`, `gapfill_review.tsv`, optional review HTML, optional gapfilled FASTA | `tests/test_gapfill.py`, `tests/test_eval.py` |
+| Manual dashboard recipe model | `manual`, `manual fix/scaffold/gapfill`, and `manual apply` | Dashboard browser actions; `manual apply --scaffold/--no-scaffold`, `--gap-bp` | `chromosort-manual-v1` JSON recipe, manual FASTA, manual report | `tests/test_manual.py` |
+| Dot-plot rendering | `plot` and the canvas view in `manual` | `--formats`, `--per-ref`, `--sel-ref`, `--assignments`, segment filters | SVG/PDF/PNG plots and manual canvas lines | `tests/test_plot.py`, `tests/test_manual.py` |
+
+### Evidence Activation And Authority
+
+| Evidence stream | Where it enters | Where it is report-only | Where it can affect sequence output |
+| --- | --- | --- | --- |
+| Whole-genome coords or PAF | `sort`, `clean`, `fix`, `eval fix`, `manual`, `plot` | Manual and plot views; eval tables before execution | `sort`, `clean`, and planner-driven `fix`; reviewed `fix` rows can replace planner inputs |
+| GFA graph topology | `sort --gfa`, `fix --gfa`, `manual --gfa`, `scaffold --gfa`, `eval` modes, `gapfill` | Sort/fix/manual graph context; scaffold graph reports by default; eval advisory fields | `scaffold --graph-overlap-policy confirm` can confirm terminal overlap trimming; `gapfill --apply` can insert validated graph-path sequence |
+| Long-read PAF to assembly | `eval fix/scaffold/gapfill --read-paf`, `manual --read-paf` | Review-event fields and dashboard panels | Does not directly edit sequence; users may accept or edit reviewed rows informed by the fields |
+| Long-read GAF to graph | `eval fix/scaffold/gapfill --gaf`, `manual --gaf`, `gapfill --gaf` | Advisory in `eval fix`; support context in `eval scaffold` and manual panels | In `gapfill`, unique non-conflicting support can choose among candidate GFA paths before sequence validation |
+| Hi-C-like graph contacts | `gapfill --hic-pairs` and `eval gapfill --hic-pairs` | Candidate path support and risk annotations | In `gapfill`, unique non-conflicting support can choose a candidate path before sequence validation |
+| Reference-placement PAF for graph nodes | `gapfill --ref-paf` and `eval gapfill --ref-paf` | Candidate path support fields and review HTML | In `gapfill`, unique non-conflicting support can choose a candidate path before sequence validation |
 
 ## Formal Data Model
 
@@ -209,9 +250,35 @@ The command modules layer additional records over these primitives:
 - `FillPlan` records graph path status, support counts, risk flags, fill
   sequence, right-flank trim length, reviewed acceptance, and applied status
   for `gapfill`.
+- `ReviewEvent` records use schema `chromosort-review-event-v1` and carry
+  task type, candidate action, target, default acceptance, status, confidence,
+  reason, notes, and task-specific evidence fields. They are written by
+  `chromo eval fix/scaffold/gapfill`, embedded by `chromo manual
+  fix/scaffold/gapfill`, and consumed by `fix`, `scaffold`, or `gapfill`
+  through `--reviewed-plan`.
 - Manual recipes use schema `chromosort-manual-v1` and store 1-based inclusive
   source slices, output names, strand choices, scaffold labels, and removal
   flags.
+
+### Long-Read Evidence Records
+
+`longreads.py` parses long-read-to-assembly PAF records into read-level
+alignments keyed by read name and target contig. These records are not a
+general-purpose aligner replacement. They are used only by `chromo eval` modes
+to summarize breakpoint and contig-end support, and by `chromo manual` to label
+the optional long-read PAF evidence panel when review-table fields are present.
+
+`gaf.py` parses long-read-to-graph GAF rows into oriented node paths. The shared
+summary functions are used in four places:
+
+- `chromo eval fix --gaf` summarizes reads touching a candidate graph node.
+- `chromo eval scaffold --gaf` compares support for selected and alternate GFA
+  paths between adjacent contigs.
+- `chromo eval gapfill --gaf` and `chromo gapfill --gaf` summarize candidate
+  fill-path support from the same traversal logic.
+- `chromo manual --gaf` displays `gaf_*` review-table fields for the selected
+  event; it records the evidence input but does not independently recompute GAF
+  support in the browser generator.
 
 ## Core Algorithms
 
@@ -347,15 +414,40 @@ checks that emitted FASTA IDs will remain unique.
 ### Manual Review and Application
 
 `chromo manual` computes the same best-match metrics used by `sort`, embeds
-filtered alignment segments, optionally embeds graph node context, and writes
-a browser-based dashboard. Initial pieces cover each source contig completely,
+filtered alignment segments, optionally embeds graph node context, and writes a
+browser-based dashboard. Initial pieces cover each source contig completely,
 with the scaffold label initialized to the best reference or `unplaced`.
+Task-specific `manual fix`, `manual scaffold`, and `manual gapfill` modes load
+the shared review-event table with `--review-table`, open a focused event
+queue, and render selected-event evidence panels for alignment, GFA,
+long-read PAF, and GAF inputs when those data are available.
 
 `chromo manual apply` is schema-driven. It validates the recipe schema, verifies
 that requested source contigs and slices exist, reverse-complements pieces whose
 strand is `-`, omits removed pieces, and optionally groups active pieces into
 scaffolds joined by fixed `N` gaps. The recipe is therefore the sole authority
 for manual edits.
+
+### Eval Tables and Reviewed Execution
+
+`chromo eval` is the table-first counterpart to task-specific manual review.
+It does not introduce a separate decision algorithm; it reuses the algorithm
+that the matching executor already exposes, then serializes candidate decisions
+as `ReviewEvent` rows with enough evidence fields for spreadsheet or dashboard
+review.
+
+- `eval fix` activates the `fix` breakpoint planner and adds optional
+  `graph_*`, `gaf_*`, and `longread_*` fields. Accepted rows are executable only
+  through `fix --reviewed-plan`, which bypasses alignment re-planning and
+  applies the reviewed source slices.
+- `eval scaffold` activates scaffold gap/overlap calculation and optional graph
+  junction evidence. Accepted rows are executable only through
+  `scaffold --reviewed-plan`, where they override matching gap lengths but do
+  not reorder, orient, or trim contigs by themselves.
+- `eval gapfill` activates the gapfill planner and writes the same path,
+  support, validation, and fillability concepts as a review-event table.
+  Accepted rows are executable only through `gapfill --reviewed-plan --apply`,
+  where the current plan must still match the reviewed path.
 
 ### Scaffold Construction
 
@@ -456,7 +548,11 @@ are visible in reports.
 | Duplicate-overlap filtering | $N(I,C)$ and $F(I,C)$ | Absolute and fractional novel reference contribution relative to stronger kept contigs. |
 | Split-candidate protection | Number of supported references and best-reference share | Prevents strong multi-reference contigs from being discarded before `fix` review. |
 | Breakpoint smoothing | $\operatorname{cost}(\mathcal{P})$ and planner score | Balances discordant alignment support against a fixed breakpoint penalty. |
+| Long-read breakpoint support | Spanning, split, edge, and nearby read counts in `eval fix` | Reports support around candidate breakpoints without automatically changing the fix planner. |
 | Scaffold overlap trimming | $g(a,b)$, $o(a,b)$, overlap class, optional sequence identity | Determines gap length and whether an explicitly allowed trim is safe to perform. |
+| Long-read bridge support | Bridge count, orientation summary, read-order summary, and median read-space gap in `eval scaffold/gapfill` | Reports whether reads support adjacent contig ends in assembly-coordinate space. |
+| GAF node or path support | Node traversal counts, selected-path support, best alternate support, and support status | Reports graph-read support in eval/manual; can resolve gapfill branches only under gapfill support thresholds. |
+| Reviewed row acceptance | `accept` field in `chromosort-review-event-v1` rows | Allows human-reviewed rows to drive `fix`, `scaffold`, or `gapfill` after task-specific validation. |
 | Gapfill branch selection | Unique GAF, Hi-C, or reference-placement support | Resolves graph branches only when one path clears threshold and is not contradicted. |
 | Gapfill risk annotation | Branching, high-degree nodes, self-loops, unsequenced nodes, cycles, weak/tied support | Flags cases that need review even when a path is reported. |
 
@@ -514,6 +610,8 @@ TSV reports are not secondary decorations; they are command contracts. For
 example:
 
 - `sort` assignment tables feed `scaffold`, `gapfill`, and ordered plots.
+- `eval` review-event tables feed task-specific `manual` dashboards and the
+  matching `fix`, `scaffold`, or `gapfill` reviewed execution path.
 - `fix`, `cut`, and `manual apply` reports describe every emitted piece.
 - `scaffold_gaps.tsv` records raw inferred gaps, final gap sizes, overlap
   class, policy, action, trim length, and optional sequence identity.
@@ -533,8 +631,13 @@ tables:
 - Graph evidence resolves contig names conservatively. Scaffold and gapfill
   junctions try original contig names, ChromoSort `new_name` values, and FASTA
   record names when mapping records back to GFA segments.
+- Review-event rows are task-scoped. `manual fix/scaffold/gapfill` rejects
+  rows whose task does not match the selected mode, and executors consume only
+  accepted rows for their own task.
 - Manual-review recipes are validated against the original assembly FASTA; they
   do not inherit implicit state from the dashboard.
+- Reviewed scaffold gaps are checked against the current scaffold, left contig,
+  and right contig names before application.
 - Reviewed gapfill plans are checked against the current graph path before
   application, preventing stale accepted paths from being silently applied.
 - Sequence-editing stages can change contig IDs and coordinates. The intended
@@ -554,12 +657,17 @@ The source tree is a small Python package under `src/chromosort/`.
 | `cli.py` | Top-level `chromo` dispatcher and subcommand routing. |
 | `reference_order.py` | FASTA length scanning, alignment parsing, interval utilities, match aggregation, assignment decisions, duplicate-overlap filtering, ordered FASTA writing, and sort reports. |
 | `fix_contigs.py` | Chimeric-contig block collection, breakpoint planning, smoothing, split-piece writing, graph guard/report integration, and split reports. |
+| `evaluate.py` | Table-only review-event generation for `eval fix`, `eval scaffold`, and `eval gapfill`, reusing executor planners and adding optional graph, long-read PAF, and GAF evidence fields. |
+| `review.py` | Shared review-event schema, TSV column ordering, accept-value parsing, duplicate-id checks, and read/write helpers used by eval, manual, and reviewed executors. |
+| `longreads.py` | Long-read-to-assembly PAF parsing and summaries for breakpoint support and contig-end bridge evidence. |
+| `gaf.py` | Long-read-to-graph GAF parsing, oriented path matching, candidate traversal support summaries, and node-level advisory summaries. |
 | `cut.py` | Explicit cut parsing, validation, FASTA splitting, and cut reports. |
-| `manual.py` | Dashboard data construction, graph context embedding, recipe validation, manual piece/scaffold application, and manual reports. |
+| `manual.py` | Dashboard data construction, graph context embedding, task review-event queues, modular evidence panels, recipe validation, manual piece/scaffold application, and manual reports. |
 | `plot.py` | Alignment filtering, axis construction, SVG/PDF/PNG rendering, and per-reference plots. |
-| `scaffold.py` | Assignment-table reading, scaffold grouping, reference gap/overlap logic, graph junction reporting, and scaffold FASTA writing. |
-| `gapfill.py` | GAF/Hi-C/reference-placement support parsing, graph path enumeration, branch resolution, sequence reconstruction, review dashboard generation, and optional gapfilled FASTA writing. |
+| `scaffold.py` | Assignment-table reading, scaffold grouping, reviewed gap overrides, reference gap/overlap logic, graph junction reporting, and scaffold FASTA writing. |
+| `gapfill.py` | GAF/Hi-C/reference-placement support integration, graph path enumeration, branch resolution, sequence reconstruction, review dashboard generation, reviewed-plan validation, and optional gapfilled FASTA writing. |
 | `graph.py` | GFA `S`/`L` parser, oriented graph indexes, direct-edge queries, node evidence, and link evidence. |
+| `paths.py` | Output directory creation and small shared filesystem helpers. |
 
 Most dependencies are from the Python standard library. Pillow is used for PNG
 plot output. Jekyll-related files support the documentation site and are
@@ -582,6 +690,9 @@ adjacent scaffold gaps.
 | Fix smoothing DP | $O(B_q^2)$ per selected contig | DP table and interval-cost cache over block ranges. |
 | Cut planning | $O(C \log C)$ per cut contig plus FASTA streaming | Stores cut positions and FASTA length records. |
 | GFA parsing | $O(V+E)$ | Stores all parsed nodes, edges, and orientation indexes. |
+| Review-event TSV read/write | $O(R)$ for $R$ rows | Stores reviewed rows while checking task and event-id uniqueness. |
+| Long-read PAF support summaries | Proportional to read alignments for the queried contig or contig pair | Stores filtered read alignments grouped by read and target. |
+| GAF traversal summaries | Proportional to candidate paths times filtered GAF read-path length | Stores filtered GAF records and per-path read-name summaries. |
 | Scaffold construction | $O(Q+G)$ without graph path reporting | Stores ordered FASTA records and scaffold gap reports. |
 | Scaffold graph path report | $O(G \cdot d^D)$ in the bounded worst case | Bounded by `--graph-max-path-edges`; reports one shortest path per gap. |
 | Gapfill path enumeration | $O(G \cdot \min(P,d^D) \cdot D)$ | Bounded by `--max-candidate-paths` $P$ and `--max-path-edges` $D$. |
@@ -611,9 +722,17 @@ Validation coverage currently includes:
 - breakpoint smoothing, sensitive/comprehensive/conservative fix modes,
   inversion handling, noisy small-event rejection, contig-subset parity, and
   breakpoint guardrails.
+- review-event schema reading/writing, accepted/rejected value parsing,
+  duplicate-id rejection, and task mismatch rejection.
+- `eval fix`, `eval scaffold`, and `eval gapfill` table generation, including
+  reviewed executor handoff cases.
+- long-read PAF breakpoint and contig-bridge summaries.
+- GAF parsing, MAPQ filtering, node summaries, selected-path support, alternate
+  support, and mixed GFA/PAF/GAF scaffold evidence.
 - explicit cut validation for duplicate, terminal, and file-based cut inputs.
-- manual dashboard ordering, optional sequence embedding, graph context, recipe
-  slicing, reverse-complementing, removal, and scaffold grouping.
+- manual dashboard ordering, optional sequence embedding, graph context,
+  task-event queues, modular evidence panels, recipe slicing,
+  reverse-complementing, removal, and scaffold grouping.
 - plot generation for PDF, SVG, PNG, per-reference plots, and assignment-based
   query ordering.
 - scaffold inferred/fixed gaps, negative reference-gap overlap reporting,
@@ -676,16 +795,22 @@ models into the algorithms:
    math, match aggregation, sort assignment, and duplicate-overlap logic.
 3. `src/chromosort/fix_contigs.py` for breakpoint planning, smoothing, mode
    behavior, and emitted split pieces.
-4. `src/chromosort/graph.py` for GFA parsing and graph evidence constraints.
-5. `src/chromosort/scaffold.py` and `src/chromosort/gapfill.py` for
+4. `src/chromosort/evaluate.py` and `src/chromosort/review.py` for
+   review-event table generation, schema constraints, and reviewed handoff
+   fields.
+5. `src/chromosort/graph.py`, `src/chromosort/gaf.py`, and
+   `src/chromosort/longreads.py` for graph and read evidence constraints.
+6. `src/chromosort/scaffold.py` and `src/chromosort/gapfill.py` for
    junction-level gap, overlap, graph path, and fill behavior.
-6. `src/chromosort/manual.py`, `src/chromosort/cut.py`, and
+7. `src/chromosort/manual.py`, `src/chromosort/cut.py`, and
    `src/chromosort/plot.py` for review, explicit edit, and visualization
    surfaces.
-7. `tests/test_reference_order.py`, `tests/test_fix_contigs.py`,
-   `tests/test_scaffold.py`, `tests/test_gapfill.py`, `tests/test_graph.py`,
-   `tests/test_manual.py`, `tests/test_cut.py`, `tests/test_plot.py`, and
-   `tests/test_cli.py` for executable examples of the expected behavior.
+8. `tests/test_reference_order.py`, `tests/test_fix_contigs.py`,
+   `tests/test_eval.py`, `tests/test_review.py`, `tests/test_longreads.py`,
+   `tests/test_gaf.py`, `tests/test_scaffold.py`, `tests/test_gapfill.py`,
+   `tests/test_graph.py`, `tests/test_manual.py`, `tests/test_cut.py`,
+   `tests/test_plot.py`, and `tests/test_cli.py` for executable examples of
+   the expected behavior.
 
 For a methods review, the most important invariants to check are:
 
@@ -693,6 +818,9 @@ For a methods review, the most important invariants to check are:
 - conservative handling of ambiguous or duplicate alignments,
 - breakpoint smoothing and support thresholds,
 - explicitness of every sequence-changing operation,
+- review-event task scoping and accepted-row validation,
 - graph path validation before sequence insertion,
+- distinction between report-only evidence and evidence allowed to select or
+  apply a sequence-changing path,
 - stale-plan prevention for reviewed gap fills,
 - report schemas used as contracts between stages.
