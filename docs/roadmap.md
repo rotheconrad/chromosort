@@ -245,3 +245,39 @@ The sequence-changing commands should remain conservative:
 | G5. Refactor `chromo eval gapfill` to use the shared GAF evidence layer. | Done | Gapfill planning now uses the shared GAF traversal summary layer and exposes support status plus selected supporting reads while preserving existing branch-resolution behavior. |
 | G6. Add modular evidence panels to `chromo manual fix/scaffold/gapfill`. | Done | Manual task dashboards now accept optional `--read-paf` and `--gaf` paths and render alignment, GFA, long-read PAF, and long-read GAF evidence panels from provided inputs and selected review-event fields. |
 | G7. Add docs, fixtures, and regression tests for mixed GFA/PAF/GAF review. | Done | Added a mixed-evidence scaffold fixture and regression where long-read PAF supports the junction while GAF more strongly supports an alternate GFA branch, plus workflow/eval documentation for the resulting review fields. |
+
+## Next Chapter: Architecture And Documentation Consistency
+
+The architecture documentation now needs a publication-style refresh that
+describes not only what each algorithm does, but exactly where each algorithm,
+decision rule, data model, and evidence stream is used. The guiding question
+for reviewers should be:
+
+> Which subcommand, mode, or parameter activates this algorithm or data model?
+
+The update should keep the existing methods-oriented architecture style:
+precise claims, traceable command boundaries, conservative descriptions of
+failure modes, and explicit links between code modules, CLI parameters, and
+user-facing artifacts. The README and user docs should then be checked against
+that architecture map so the project tells one coherent story.
+
+### Architecture Coverage Targets
+
+| Coverage target | Documentation outcome |
+| --- | --- |
+| Algorithm activation map | A table or section in `docs/architecture.md` that maps algorithms and decision rules to commands, modes, parameters, outputs, and validation tests. |
+| Data-model usage map | Clear descriptions of where `Segment`, match metrics, graph records, review events, manual recipes, scaffold gaps, and fill plans enter and leave the workflow. |
+| Evidence-source map | Consistent descriptions of whole-genome alignments, GFA, long-read PAF, GAF, Hi-C-like pairs, and reference-placement PAF across architecture, input, eval, manual, scaffold, and gapfill docs. |
+| Executor policy map | Explicit notes on which evidence streams are report-only, which can alter reviewed rows, and which can directly change sequence under guarded parameters. |
+| Cross-doc consistency | README, status, workflows, command docs, input/output docs, and changelog should agree on current commands, optional inputs, reviewed-table paths, and version metadata. |
+
+### Documentation Refresh Phases
+
+| Phase | Status | Notes |
+| --- | --- | --- |
+| A1. Add this architecture-docs roadmap chapter. | Done | Track the documentation refresh separately from the completed review and GAF implementation chapters. |
+| A2. Refresh `docs/architecture.md` with algorithm and data-model usage maps. | Planned | Add command/parameter activation details for sorting, fixing, eval modes, manual modes, scaffolding, gapfill branch resolution, review events, and evidence panels. |
+| A3. Synchronize README and command docs with the architecture map. | Planned | Check `README.md`, `docs/commands/*.md`, and public command summaries for stale or incomplete references to eval/manual/GAF evidence. |
+| A4. Synchronize workflow, input, output, status, and troubleshooting docs. | Planned | Ensure evidence contracts, outputs, limitations, and recommended workflows match the updated architecture. |
+| A5. Run documentation and test consistency checks. | Planned | Use text searches, metadata checks, and the test suite to catch stale version strings, missing command references, and broken assumptions. |
+| A6. Bump the patch version and release metadata by 0.0.1. | Planned | Update package metadata, citation, Pixi, conda recipe, README/status/changelog, then tag and push the release. |
