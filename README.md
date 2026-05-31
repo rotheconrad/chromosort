@@ -47,6 +47,41 @@ re-aligning, but it is not a new alignment of the edited FASTA. To validate
 for that exact FASTA. For help reading the resulting visual patterns, use the
 [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/).
 
+## Choose PAF Or Coords
+
+For most new ChromoSort runs, minimap2 PAF is the recommended primary alignment
+input because it is fast and carries MAPQ. Use `-c --secondary=no`, then tune the
+minimap2 preset and ChromoSort filters for the species and assembly quality.
+MUMmer coords remains a good alternative and can provide a useful second
+perspective when benchmarking, tuning a new crop group, or debugging a marginal
+event.
+
+You usually do not need to run both. ChromoSort normalizes coords and PAF rows
+into the same internal alignment model before sorting, plotting, and fixing; the
+remaining differences usually come from minimap2-vs-MUMmer alignment algorithms,
+row fragmentation, primary/secondary handling, MAPQ, and identity fields rather
+than separate ChromoSort decision logic. In the soybean coords-vs-PAF fix
+benchmark, split counts differed by about 5-10%, while marginal split-contig
+sets differed by about 20-30%. Treat those as reasonable starting expectations,
+then use `chromo eval` with long-read PAF, GFA, and GAF evidence for stronger
+support on biological calls.
+
+## Fix Mode Summary
+
+`chromo fix` has four planner modes:
+
+| Mode | What it considers | Smoothing |
+| --- | --- | --- |
+| `chromosome` | Reference/chromosome changes only. | Yes |
+| `conservative` | Reference/chromosome changes, plus only complex same-reference orientation events. | Yes |
+| `comprehensive` | All reference/chromosome changes and all same-reference orientation changes. | Yes |
+| `sensitive` | Every passing reference/orientation transition after adjacent same-target collapse. | No |
+
+`comprehensive` is not guaranteed to be `conservative` plus extra calls. Because
+it treats orientation as part of the smoothed target signature, it can choose
+different candidate pieces or reject a plan that `conservative` would split.
+Use it for broader review, especially same-reference inversion candidates.
+
 ## Quick Start
 
 ```bash
@@ -152,7 +187,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | Added agent-ready review documentation: root `AGENTS.md`, a species-agnostic review playbook for choosing primary coords or PAF evidence, same-reference inversion review, long-read/GFA/GAF evidence, and handoff checklists. |
+| Unreleased | Added agent-ready review documentation and coords-vs-PAF guidance, including PAF-first input recommendations, expected alignment-format differences from soybean testing, and clearer `chromo fix` mode documentation for chromosome, conservative, comprehensive, and sensitive planners. |
 | `0.2.27` | Refreshed publication-style architecture and user documentation: added algorithm/data-model activation maps, evidence authority mapping, updated eval/manual/GAF command guidance, synchronized input/output/workflow/status/troubleshooting docs, and verified docs/test consistency. |
 | `0.2.26` | Completed the GAF evidence and modular manual-panel upgrade: shared GAF parsing/traversal summaries, `--gaf` evidence in `chromo eval fix/scaffold/gapfill`, GAF status and selected-read fields in gapfill plans, optional `--read-paf`/`--gaf` panels in task-specific manual dashboards, and mixed GFA/PAF/GAF review fixtures/docs. |
 | `0.2.25` | Synchronized package, citation, Pixi, conda recipe, README, and docs version metadata; added the production-upgrade roadmap for paired `eval` table workflows and task-specific `manual` dashboards feeding reviewed `fix`, `scaffold`, and `gapfill` execution paths. |

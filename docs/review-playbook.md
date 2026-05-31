@@ -45,10 +45,22 @@ not need both for a production run. Pick one primary alignment source, run
 evidence streams such as long-read PAF, GFA, and GAF when a biological decision
 needs more support.
 
+PAF is the recommended primary source for most new runs because it is much
+faster in large plant-genome tests and supports MAPQ filtering. MUMmer coords
+remains a good alternative, especially for projects with existing nucmer
+pipelines or for a second aligner perspective on a surprising candidate.
+
 Running both coords and PAF is still useful when benchmarking ChromoSort,
 checking parser parity, or tuning minimap2/MUMmer settings for a new genome
 group. Treat that comparison as a diagnostic, not as independent biological
 validation.
+
+As a loose expectation from the soybean coords-vs-PAF `chromo fix` benchmark,
+split counts were close, differing by about 5-10%, while the exact set of
+marginal split contigs differed by about 20-30%. Those differences appeared to
+come from aligner behavior and output structure, such as row fragmentation,
+secondary/primary handling, MAPQ, and identity fields, not from ChromoSort
+applying different post-normalization logic to coords and PAF.
 
 If you choose MUMmer, use a filtered reference-vs-assembly coords file:
 

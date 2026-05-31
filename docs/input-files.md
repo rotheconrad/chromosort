@@ -26,9 +26,12 @@ same FASTA records used by the command you are running.
 | Prepare gapfill review tables with `chromo eval gapfill` | Ordered FASTA, matching assignment TSV, and GFA | GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, long-read-to-assembly PAF |
 | Fill graph-supported gaps with `chromo gapfill` | Ordered FASTA, matching assignment TSV, and GFA | GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, reviewed plan TSV |
 
-When a command accepts `--coords` or `--paf`, provide exactly one of them. When
-a command takes an assignment report, use the report written by the same
-`chromo sort` run as the ordered FASTA.
+When a command accepts `--coords` or `--paf`, provide exactly one of them. For
+most new runs, use minimap2 PAF as the primary alignment input because it is
+fast, compact, and carries MAPQ; keep MUMmer coords as a good alternative when
+you want a different aligner perspective. When a command takes an assignment
+report, use the report written by the same `chromo sort` run as the ordered
+FASTA.
 
 ## Name Matching Rules
 
@@ -108,6 +111,12 @@ ChromoSort reads reference coordinates, query coordinates, row lengths,
 percent identity, reference length, query length, and sequence names. Coordinates
 are normalized internally before interval merging.
 
+MUMmer coords is a good primary input when a project already has a stable
+nucmer workflow or when minimap2 PAF gives a surprising result that deserves a
+second aligner view. It may produce a more fragmented row set than PAF on large
+plant genomes, so `chromo fix` can take longer even when the final biological
+interpretation is similar.
+
 ### minimap2 PAF
 
 ChromoSort expects standard PAF rows with at least the first 12 columns. It uses
@@ -118,7 +127,8 @@ skipped unless `--include-secondary-paf` or `--include-secondary-ref-paf` is
 set for the command reading that PAF.
 
 For normal reference ordering, minimap2 should be run with the reference FASTA
-as target and the assembly FASTA as query:
+as target and the assembly FASTA as query. This is the recommended starting
+point for most ChromoSort production runs:
 
 ```bash
 minimap2 -x asm5 -c -t 16 --secondary=no reference.fa assembly.fa \
@@ -281,6 +291,15 @@ orientation, and skips rows marked `tp:A:S` unless `--include-secondary-paf` is
 set. `--secondary=no` keeps those skipped secondary rows out of the PAF file in
 the first place, reducing file size and making downstream review less noisy. Use
 `--min-mapq` to ignore low-MAPQ PAF rows.
+
+PAF and coords are not expected to be byte-for-byte interchangeable. ChromoSort
+normalizes both formats into the same internal alignment records, but minimap2
+and MUMmer can differ in chaining, row fragmentation, secondary/primary
+classification, MAPQ availability, and identity reporting. In a soybean
+coords-vs-PAF `chromo fix` benchmark, split counts were within about 5-10%,
+while the exact set of marginal split contigs differed by about 20-30% depending
+on mode. Larger disagreements are a prompt to inspect plots, row counts, MAPQ,
+secondary rows, and preset/filter choices before treating the event as biology.
 
 ### Choosing `asm5`, `asm10`, or `asm20`
 

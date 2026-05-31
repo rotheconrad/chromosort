@@ -145,6 +145,8 @@ Inputs:
   [MUMmer coords]({{ '/input-files/' | relative_url }}#creating-input-files-with-mummer)
   or
   [minimap2 PAF]({{ '/input-files/' | relative_url }}#creating-input-files-with-minimap2).
+  PAF is the recommended default for most new runs because it is fast and
+  supports MAPQ filtering; coords is a useful alternative aligner view.
 
 Run the placement step:
 

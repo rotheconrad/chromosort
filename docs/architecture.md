@@ -353,13 +353,18 @@ reference and orientation can be merged when they are separated by at most the
 configured query gap. Candidate split signals are then planned differently by
 mode:
 
-- `sensitive` collapses adjacent runs with identical `(reference,
-  orientation)` and cuts all passing transitions.
-- `chromosome` considers reference changes but ignores orientation changes.
-- `comprehensive` considers both reference and orientation changes after
-  smoothing.
-- `conservative` considers reference changes and only same-reference
-  orientation changes that meet the complex-inversion criteria.
+| Mode | Candidate signal | Planner signature | Smoothing path | Consequence |
+| --- | --- | --- | --- | --- |
+| `chromosome` | Reference/chromosome changes only. | `reference` | Dynamic-programming breakpoint smoothing. | Same-reference orientation changes are absorbed into the dominant reference piece. |
+| `conservative` | Reference/chromosome changes, plus same-reference orientation events only when the orientation-aware pre-plan meets the complex-inversion criteria. | Usually `reference`; switches to `(reference, orientation)` only for qualifying same-reference complex orientation events. | Dynamic-programming breakpoint smoothing. | Default breakpoint-averse behavior: strong inter-reference chimeras are eligible, simple same-reference inversions are usually left intact. |
+| `comprehensive` | All reference/chromosome changes and all same-reference orientation changes. | `(reference, orientation)` | Dynamic-programming breakpoint smoothing. | Broader orientation-aware review mode. It can expose inversion candidates, but it is not a guaranteed superset of `conservative` because the target signature changes the smoothing model and piece-support checks. |
+| `sensitive` | Every passing reference/orientation transition after adjacent same-target collapse. | `(reference, orientation)` | No breakpoint-penalty smoothing; only direct run collapse, minimum emitted-piece length, and the breakpoint guard apply. | Debugging or intentionally aggressive scans where every passing transition should be visible. |
+
+The important implementation distinction is that `comprehensive` is not
+implemented as "`conservative` plus extra calls." It runs the smoothed planner
+with orientation included in every target signature. That can split the evidence
+into different candidate pieces or reject a plan for weak-piece support even
+when `conservative` would split the same contig using reference-only signatures.
 
 The smoothed planner uses identity-weighted bp:
 

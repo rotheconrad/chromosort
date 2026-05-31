@@ -17,6 +17,11 @@ with coords or PAF that were generated from `raw.fa`. After `chromo fix` writes
 FASTA. Use the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) when
 checking whether the repaired contigs now place cleanly.
 
+For most new fix runs, minimap2 PAF generated with `-c --secondary=no` is the
+recommended primary alignment input because it is fast and supports MAPQ
+filtering. MUMmer coords is still a good alternative and can provide a useful
+second aligner perspective during benchmarking or marginal-event review.
+
 ## What `chromo fix` Does
 
 For each selected contig, `chromo fix`:
@@ -81,9 +86,9 @@ gaps while still splitting strong large-scale chimeras.
 
 Use `--mode chromosome` when only reference/chromosome transitions should be
 eligible. Use `--mode comprehensive` when all same-reference orientation changes
-should also be considered. Use `--mode sensitive` for the earlier direct behavior
-that cuts every passing reference/orientation transition after collapsing
-adjacent same-target runs.
+should also be considered by the smoothed planner. Use `--mode sensitive` for
+the earlier direct behavior that cuts every passing reference/orientation
+transition after collapsing adjacent same-target runs.
 
 Optional graph context for the reviewed contigs:
 
@@ -249,14 +254,37 @@ operation auditable by limiting which contigs can receive a break. `--all` uses
 the same planner across the whole assembly after the alignment filters have
 been tuned.
 
+The four modes differ in which alignment transitions are eligible and whether
+breakpoint smoothing is applied:
+
+| Mode | Eligible transitions | Smoothing | Practical use |
+| --- | --- | --- | --- |
+| `chromosome` | Reference/chromosome changes only; same-reference orientation changes are ignored. | Yes | Strictest automated mode when only inter-reference chimeras should be cut. |
+| `conservative` | Reference/chromosome changes, plus same-reference orientation events only when they meet complex-inversion criteria. | Yes | Default mode for reviewed fixes and `--all`; breakpoint-averse but can handle strong complex orientation events. |
+| `comprehensive` | All reference/chromosome changes and all same-reference orientation changes. | Yes | Exploratory or review-table mode for finding inversion/orientation candidates. It is not a guaranteed superset of conservative because the orientation-aware smoothing model can choose different pieces or reject plans that conservative would split. |
+| `sensitive` | Every passing reference/orientation transition after adjacent same-target collapse. | No | Debugging or intentionally aggressive scans where every passing transition should be exposed. |
+
 `--mode conservative` prioritizes chromosome/reference transitions because
 these are the strongest signal for misjoined contigs. Same-reference orientation
 events are handled more carefully: simple contiguous inversions are ignored by
 default, while complex/nested events with large overlapping reference spans can
-be split. `--mode comprehensive` considers all same-reference orientation
-changes. `--mode chromosome` ignores same-reference orientation changes.
-`--mode sensitive` disables breakpoint-penalty smoothing and is mainly useful
-for debugging or intentionally aggressive exploratory scans.
+be split. `--mode comprehensive` switches the smoothed planner to treat
+orientation as part of the target signature for all events. That can expose more
+same-reference inversion candidates, but it can also split the evidence into
+different candidate pieces and fail piece-support thresholds. In other words,
+comprehensive is an orientation-aware algorithm, not "conservative plus all
+extras."
+
+### Coords And PAF Should Be Close, Not Identical
+
+Coords and PAF inputs flow through the same split planner after ChromoSort
+normalizes them into internal query blocks. Remaining differences usually come
+from MUMmer-vs-minimap2 behavior: chaining, row fragmentation,
+primary/secondary handling, MAPQ availability, and identity fields. In the
+soybean coords-vs-PAF fix benchmark, split counts differed by about 5-10%, and
+the exact set of marginal split contigs differed by about 20-30%. Larger
+differences should be reviewed with dot plots, MAPQ/secondary settings, and
+`chromo eval fix` evidence rather than treated as an automatic parser bug.
 
 ### Collapse Same-Target Runs Before Cutting
 

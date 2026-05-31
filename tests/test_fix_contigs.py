@@ -658,6 +658,76 @@ class FixContigsTests(unittest.TestCase):
                 ],
             )
 
+    def test_comprehensive_mode_is_not_conservative_superset(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            data = tmp_path / "data"
+            data.mkdir()
+            conservative_dir = tmp_path / "conservative"
+            comprehensive_dir = tmp_path / "comprehensive"
+            conservative_dir.mkdir()
+            comprehensive_dir.mkdir()
+            (data / "assembly.fa").write_text(
+                ">contig_ref_split_with_orientation_noise\n" + "A" * 300 + "\n"
+            )
+            (data / "sample.coords").write_text(
+                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "NUCMER\n\n"
+                "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
+                "===============================================================================================================================\n"
+                "       1      100  |       1      100  |      100      100  |    99.00  |      500      300  |    20.00    33.33  | chrom01\tcontig_ref_split_with_orientation_noise\n"
+                "     101      120  |     120      101  |       20       20  |    99.00  |      500      300  |     4.00     6.67  | chrom01\tcontig_ref_split_with_orientation_noise\n"
+                "       1      180  |     121      300  |      180      180  |    99.00  |      500      300  |    36.00    60.00  | chrom02\tcontig_ref_split_with_orientation_noise\n"
+            )
+            common_args = [
+                "--all",
+                "--simple-headers",
+                "--breakpoint-penalty-bp",
+                "1",
+                "--min-piece-aligned-bp",
+                "50",
+                "--min-piece-query-frac",
+                "0",
+            ]
+
+            conservative_fasta, _ = run_fix_contigs(
+                conservative_dir,
+                *common_args,
+                "--mode",
+                "conservative",
+                data=data,
+                contigs=[],
+            )
+            self.assertEqual(
+                list(read_fasta(conservative_fasta)),
+                [
+                    "chrom01-contig_ref_split_with_orientation_noise-a",
+                    "chrom02-contig_ref_split_with_orientation_noise-b",
+                ],
+            )
+
+            comprehensive_fasta, comprehensive_report = run_fix_contigs(
+                comprehensive_dir,
+                *common_args,
+                "--mode",
+                "comprehensive",
+                data=data,
+                contigs=[],
+            )
+            self.assertEqual(
+                list(read_fasta(comprehensive_fasta)),
+                ["contig_ref_split_with_orientation_noise"],
+            )
+            rows = read_report(comprehensive_report)
+            self.assertEqual(
+                [row["status"] for row in rows],
+                ["not_split_smooth"],
+            )
+            self.assertIn(
+                "piece failed support thresholds",
+                rows[0]["reason"],
+            )
+
     def test_contig_subset_uses_same_planner_as_all_scope(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

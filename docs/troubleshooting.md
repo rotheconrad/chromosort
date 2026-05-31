@@ -35,6 +35,15 @@ show-coords -r -c -l mummer/sample.filter > mummer/sample.coords
 
 By default ChromoSort skips secondary PAF rows marked `tp:A:S`. Add `--include-secondary-paf` only when secondary rows are part of the review plan. For noisy alignments, also check `--min-mapq`.
 
+## Coords And PAF Disagree
+
+Small disagreements are expected. In soybean `chromo fix` testing, coords and
+PAF split counts differed by about 5-10%, while marginal split-contig sets
+differed by about 20-30%. ChromoSort normalizes both formats before decision
+logic, so first check aligner settings, minimap2 preset, `-c --secondary=no`,
+MAPQ filters, MUMmer `delta-filter` settings, row counts, and dot plots. Use
+`chromo eval` with long-read PAF, GFA, or GAF for stronger event evidence.
+
 ## Edited FASTA Does Not Match Old Alignments
 
 After `chromo sort` writes `ordered.fa`, `chromo clean` writes `clean.fa`,

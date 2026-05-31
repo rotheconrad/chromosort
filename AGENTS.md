@@ -63,7 +63,9 @@ It is not a fresh alignment of `ordered.fa`, `fixed.fa`, or a scaffold FASTA.
 
 ## Recommended PAF Recipe
 
-For reference-vs-assembly PAF, keep `-c --secondary=no`:
+For reference-vs-assembly PAF, keep `-c --secondary=no`. PAF is the recommended
+primary alignment input for most new ChromoSort runs because it is fast and
+supports MAPQ filtering:
 
 ```bash
 minimap2 -x asm5 -c -t 16 --secondary=no reference.fa assembly.fa > sample.paf
@@ -85,8 +87,11 @@ Choose one primary whole-genome alignment source for ordinary ChromoSort runs:
 MUMmer coords or minimap2 PAF. These are alternative representations of
 reference-to-assembly alignment evidence, not independent biological
 validation of a candidate event. Running both can be useful for benchmarking,
-parser checks, or aligner-parameter tuning, but read-to-assembly PAF, GFA, GAF,
-and independent assemblies are stronger support for real biological decisions.
+parser checks, or aligner-parameter tuning; in soybean fix testing, split
+counts differed by about 5-10% and marginal split-contig sets by about 20-30%.
+Treat those as alignment/output differences unless plots or tests indicate a
+parser bug. Read-to-assembly PAF, GFA, GAF, and independent assemblies are
+stronger support for real biological decisions.
 
 - Multi-reference `kept_split_candidate` calls in the primary alignment are
   fix-review targets. Run targeted `chromo fix --contigs ...`, usually with
@@ -101,6 +106,8 @@ and independent assemblies are stronger support for real biological decisions.
   error. For pangenome graph inputs, preserve a real inversion as haplotype
   structure instead of reference-normalizing it. Use `chromo eval fix --mode
   comprehensive` plus read and graph evidence to decide whether it is real.
+  Comprehensive mode is orientation-aware after smoothing and may differ from
+  conservative mode; use it as review evidence, not as a guaranteed superset.
 - `chromo fix` does not resolve cross-contig terminal overlaps. Use sort and
   scaffold overlap reports, then choose an explicit scaffold overlap policy
   only after review.

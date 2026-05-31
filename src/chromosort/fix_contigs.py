@@ -182,9 +182,10 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
             "Breakpoint planner to use for selected contigs. conservative "
             "smooths weak discordance and cuts reference transitions plus "
             "complex same-reference orientation events; chromosome cuts only "
-            "reference transitions; comprehensive also considers all "
-            "same-reference orientation changes; sensitive disables smoothing "
-            "and cuts every passing reference/orientation transition."
+            "reference transitions; comprehensive considers all reference and "
+            "same-reference orientation transitions with smoothing; sensitive "
+            "disables smoothing and cuts every passing reference/orientation "
+            "transition."
         ),
     )
     ap.add_argument(
