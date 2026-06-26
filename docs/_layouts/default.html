@@ -40,6 +40,8 @@
             {% assign item_active = false %}
             {% if page.url == item.url %}
               {% assign item_active = true %}
+            {% elsif item.url != "/" and page.url contains item.url %}
+              {% assign item_active = true %}
             {% endif %}
             {% if item.children %}
               {% for child in item.children %}
@@ -72,9 +74,17 @@
                   {% for child in item.children %}
                     {% if child.children %}
                       {% assign child_base_url = child.url | split: "#" | first %}
-                      <div class="sidebar__nested-group{% if page.url == child.url or page.url == child_base_url %} sidebar__nested-group--active{% endif %}">
+                      {% assign child_active = false %}
+                      {% if page.url == child.url %}
+                        {% assign child_active = true %}
+                      {% elsif child.url contains "#" %}
+                        {% assign child_active = false %}
+                      {% elsif page.url == child_base_url %}
+                        {% assign child_active = true %}
+                      {% endif %}
+                      <div class="sidebar__nested-group{% if child_active %} sidebar__nested-group--active{% endif %}">
                         <a
-                          class="sidebar__link sidebar__child-link{% if page.url == child.url or page.url == child_base_url %} sidebar__link--active{% endif %}"
+                          class="sidebar__link sidebar__child-link{% if child_active %} sidebar__link--active{% endif %}"
                           href="{{ child.url | relative_url }}"
                         >
                           {{ child.title }}
@@ -91,8 +101,17 @@
                         </div>
                       </div>
                     {% else %}
+                      {% assign child_base_url = child.url | split: "#" | first %}
+                      {% assign child_active = false %}
+                      {% if page.url == child.url %}
+                        {% assign child_active = true %}
+                      {% elsif child.url contains "#" %}
+                        {% assign child_active = false %}
+                      {% elsif page.url == child_base_url %}
+                        {% assign child_active = true %}
+                      {% endif %}
                       <a
-                        class="sidebar__link sidebar__child-link{% if page.url == child.url %} sidebar__link--active{% endif %}"
+                        class="sidebar__link sidebar__child-link{% if child_active %} sidebar__link--active{% endif %}"
                         href="{{ child.url | relative_url }}"
                       >
                         {{ child.title }}

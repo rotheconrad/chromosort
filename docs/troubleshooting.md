@@ -7,6 +7,23 @@ description: Common ChromoSort setup, input, plotting, graph, and gapfill checks
 
 This page collects first-pass checks for common setup, alignment, and graph-review problems.
 
+## Troubleshooting Entry Points
+
+Use these entry points when a command runs but the evidence, plot, or reviewed
+plan does not look right.
+
+| Symptom | First check | Deeper guide |
+| --- | --- | --- |
+| `chromo` is not available | [Activate the installed environment](#chromo-command-not-found) | [Installation]({{ '/installation/' | relative_url }}) |
+| MUMmer coords fail to parse or PAF rows disappear | [Check coords and PAF format assumptions](#mummer-coordinates-do-not-parse) | [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }}) |
+| Coords and PAF disagree | [Compare aligner settings and filters](#coords-and-paf-disagree) | [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }}) |
+| Edited FASTA was paired with old coords or PAF | [Re-align the exact edited FASTA](#edited-fasta-does-not-match-old-alignments) | [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }}) |
+| Plot shows an old assembly | [Check plot provenance](#plot-shows-the-old-assembly) | [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }}) |
+| Plot is empty or sparse | [Check plot inputs and sequence names](#plots-are-empty-or-sparse) | [FASTA and evidence name matching]({{ '/guides/name-matching/' | relative_url }}) |
+| Audit or review status is confusing | Compare status labels before changing sequence | [Reading ChromoSort audit tables]({{ '/guides/audit-tables/' | relative_url }}) |
+| GFA nodes, overlays, or projections are missing | [Check graph and FASTA coordinate systems](#gfa-overlay-or-projection-is-empty) | [hifiasm unitig-to-contig projection]({{ '/guides/hifiasm-graph-projection/' | relative_url }}) |
+| Gapfill candidates remain unresolved | [Review ambiguity and support evidence](#gapfill-plan-is-ambiguous) | [Graph-supported gap filling]({{ '/guides/graph-gap-filling/' | relative_url }}) |
+
 ## `chromo` Command Not Found
 
 Activate the environment that installed ChromoSort:
@@ -35,6 +52,9 @@ show-coords -r -c -l mummer/sample.filter > mummer/sample.coords
 
 By default ChromoSort skips secondary PAF rows marked `tp:A:S`. Add `--include-secondary-paf` only when secondary rows are part of the review plan. For noisy alignments, also check `--min-mapq`.
 
+For broader alignment-evidence choices, see
+[Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }}).
+
 ## Coords And PAF Disagree
 
 Small disagreements are expected. In soybean `chromo fix` testing, coords and
@@ -43,6 +63,8 @@ differed by about 20-30%. ChromoSort normalizes both formats before decision
 logic, so first check aligner settings, minimap2 preset, `-c --secondary=no`,
 MAPQ filters, MUMmer `delta-filter` settings, row counts, and dot plots. Use
 `chromo eval` with long-read PAF, GFA, or GAF for stronger event evidence.
+The guide-level comparison is
+[Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }}).
 
 ## Edited FASTA Does Not Match Old Alignments
 
@@ -60,6 +82,9 @@ raw.coords` after inspecting `chromo sort --assembly-fasta raw.fa --coords
 raw.coords`. It is not safe to run that same `raw.coords` against
 `sample.ordered.fa` or `sample.fixed.fa`.
 
+For the full rule and stage-by-stage examples, see
+[Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }}).
+
 ## Plot Shows The Old Assembly
 
 `chromo plot --assignments` draws the original alignment rows and uses a
@@ -68,9 +93,18 @@ reviewing sort decisions. It does not validate `ordered.fa`, `fixed.fa`, or a
 manual FASTA unless the coords or PAF were generated from that exact FASTA. The
 same rule applies to `clean.fa` from `chromo clean`.
 
+Use [How to interpret dot plots]({{ '/dot-plots/' | relative_url }}) for plot
+patterns, and
+[Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }})
+when the plotted FASTA pair is uncertain.
+
 ## GFA Nodes Are Reported Missing
 
 Graph-aware commands expect GFA segment names to match the assembly FASTA or the original contig names in the assignment report. If another tool renamed, polished, split, or scaffolded the FASTA after graph export, keep a name map or regenerate graph evidence for the renamed sequences.
+
+See [FASTA and evidence name matching]({{ '/guides/name-matching/' | relative_url }})
+and [Assembly graph evidence]({{ '/guides/assembly-graph-evidence/' | relative_url }})
+for the guide-level view of these checks.
 
 ## GFA Overlay Or Projection Is Empty
 
@@ -95,6 +129,10 @@ and read-alignment `A` records. Those files are still useful for topology and
 junction context, but they cannot define contig-axis unitig intervals for
 `chromo plot --gfa-overlay`.
 
+See
+[hifiasm unitig-to-contig projection]({{ '/guides/hifiasm-graph-projection/' | relative_url }})
+for the coordinate-system model behind this warning.
+
 ## Gapfill Plan Is Ambiguous
 
 `chromo gapfill` refuses to guess through ambiguous graph branches. Add GAF,
@@ -104,6 +142,9 @@ table, or HTML reviewer. Ties, weak support, conflicting evidence, missing
 sequence, invalid overlaps, and flank mismatches intentionally remain
 unresolved.
 
+See [Graph-supported gap filling]({{ '/guides/graph-gap-filling/' | relative_url }})
+for the candidate-path and risk-flag interpretation workflow.
+
 ## Plots Are Empty Or Sparse
 
 Check that the reference and assembly FASTA IDs match the alignment file exactly. If you applied strict filters upstream, try plotting the unfiltered or less strictly filtered coords/PAF file first, then add `--min-segment-bp`, `--min-segment-idy`, or `--min-mapq` only after confirming the expected rows are present.
@@ -112,3 +153,6 @@ If the plot is not empty but the pattern is hard to classify, use
 [How to Interpret Dot Plots]({{ '/dot-plots/' | relative_url }}) to compare it
 against common clean, reversed, chimeric, inversion, duplicate, gap, and
 repeat-like examples.
+
+If the plot is empty because rows do not connect to the FASTA records, use
+[FASTA and evidence name matching]({{ '/guides/name-matching/' | relative_url }}).

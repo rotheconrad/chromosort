@@ -21,11 +21,8 @@ before they are used as inputs to another alignment-dependent command.
 - [Input files](https://rotheconrad.github.io/chromosort/input-files/)
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }})
-- [Guides]({{ '/guides/' | relative_url }}) for the FASTA/alignment rule,
-  PAF-vs-coords choices, name matching, audit tables, sorting decisions,
-  command choice, breakpoint review, inversions, manual review, review tables,
-  scaffolding decisions, graph evidence, long-read evidence, graph gap filling,
-  worked examples, handoff checklists, and dot plots.
+- [Guides]({{ '/guides/' | relative_url }}) for portable concept guides,
+  ChromoSort-specific operating guides, worked examples, and dot plots.
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
@@ -47,9 +44,8 @@ before they are used as inputs to another alignment-dependent command.
 ## Running Analyses
 
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
-- [Guides]({{ '/guides/' | relative_url }}) for educational explanations of
-  evidence files, audit reports, command decisions, review interfaces, and
-  graph-aware visual review, plus worked examples and handoff checklists.
+- [Guides]({{ '/guides/' | relative_url }}) for concept guides, ChromoSort
+  guide material, worked examples, and handoff checklists.
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }}) for
   choosing one primary coords or PAF alignment, inversion review,
   long-read/GFA/GAF evidence, and handoffs between chats or projects.
