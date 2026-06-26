@@ -1,3 +1,4 @@
+import csv
 import os
 import subprocess
 import sys
@@ -35,6 +36,37 @@ def run_plot(tmp_path, *alignment_args, formats=None):
     env["PYTHONPATH"] = str(ROOT / "src")
     subprocess.run(cmd, cwd=ROOT, check=True, env=env)
     return prefix
+
+
+def run_plot_with_overlay(tmp_path, gfa, *alignment_args, formats=None):
+    prefix = tmp_path / "sample_plot"
+    report = tmp_path / "sample_plot.gfa_overlay.tsv"
+    cmd = [
+        sys.executable,
+        "-m",
+        "chromosort.plot",
+        "--ref-fasta",
+        str(DATA / "ref.fa"),
+        "--assembly-fasta",
+        str(DATA / "assembly.fa"),
+        *alignment_args,
+        "--gfa-overlay",
+        str(gfa),
+        "--gfa-overlay-report",
+        str(report),
+        "--output-prefix",
+        str(prefix),
+        "--width",
+        "900",
+        "--height",
+        "700",
+    ]
+    if formats:
+        cmd.extend(["--formats", *formats])
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "src")
+    subprocess.run(cmd, cwd=ROOT, check=True, env=env)
+    return prefix, report
 
 
 def run_sort_for_assignments(tmp_path):
@@ -205,6 +237,32 @@ class PlotTests(unittest.TestCase):
             self.assertEqual(prefix.with_suffix(".png").read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
             self.assertTrue(Path(f"{prefix}.chr1.svg").exists())
             self.assertTrue(Path(f"{prefix}.chr2.png").exists())
+
+    def test_gfa_overlay_writes_report_and_svg_boundary_lines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            gfa = tmp_path / "overlay.gfa"
+            gfa.write_text(
+                "S\tutgA1\t*\tLN:i:30\n"
+                "S\tutgA2\t*\tLN:i:50\n"
+                "S\tutgB1\t*\tLN:i:40\n"
+                "P\tcontigA\tutgA1+,utgA2+\t0M\n"
+                "P\tcontigB\tutgB1+\t*\n"
+            )
+            prefix, report = run_plot_with_overlay(
+                tmp_path,
+                gfa,
+                "--paf",
+                str(DATA / "sample.paf"),
+                formats=["svg"],
+            )
+            svg = prefix.with_suffix(".svg").read_text()
+            with open(report, newline="") as fh:
+                rows = list(csv.DictReader(fh, delimiter="\t"))
+
+        self.assertIn("#0f766e", svg)
+        self.assertEqual([row["unitig"] for row in rows], ["utgA1", "utgA2", "utgB1"])
+        self.assertEqual(rows[1]["contig_start_0"], "30")
 
     def test_sel_ref_limits_whole_and_per_reference_plots(self):
         with tempfile.TemporaryDirectory() as tmp:

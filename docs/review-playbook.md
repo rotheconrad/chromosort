@@ -235,6 +235,17 @@ GraphAligner \
 read counts. GFA and GAF fields are advisory context for fix review. They do
 not change sequence by themselves.
 
+When using hifiasm unitig graphs with contig FASTA dot plots, first confirm
+that the GFA can bridge the coordinate systems. `p_ctg.fa` and
+`hap*.p_ctg.fa` dot plots are in contig coordinates; `p_utg.gfa`, `r_utg.gfa`,
+and `.noseq.gfa` files are often in unitig coordinates. Use `chromo graph-map`
+to verify that the GFA contains `P` path or `W` walk records matching the
+contig FASTA names before treating unitig intervals as contig-axis evidence.
+When projection is available, `chromo eval fix` reports the containing graph
+unitig and nearest projected unitig boundaries around proposed breakpoints, and
+`chromo plot --gfa-overlay` can draw those projected unitig spans on the query
+axis.
+
 For scaffold and gapfill review, GFA and GAF become more central because the
 question is often whether graph paths connect adjacent contigs or explain a
 gap. Use `chromo eval scaffold` and `chromo eval gapfill` when the decision is

@@ -1566,6 +1566,14 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
         ["status", firstPresent(fields.graph_status, fields.graph_node_status, graph && graph.graphNodeStatus)],
         ["complexity", graph && graph.graphComplexity],
         ["path", fieldValue(fields, ["graph_path_nodes", "path_nodes"])],
+        ["unitig", fields.graph_unitig],
+        ["unitig strand", fields.graph_unitig_orientation],
+        ["unitig offset", fields.graph_unitig_offset_0],
+        ["boundary distance", fields.graph_unitig_boundary_distance_bp],
+        ["near path boundary", fields.graph_near_path_boundary],
+        ["nearest junction", fields.graph_nearest_junction],
+        ["unitig in-degree", fields.graph_unitig_in_degree],
+        ["unitig out-degree", fields.graph_unitig_out_degree],
         ["direct edge", fields.graph_direct_edge]
       ]));
     }

@@ -45,6 +45,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("scaffold", result.stdout)
         self.assertIn("gapfill", result.stdout)
         self.assertIn("plot", result.stdout)
+        self.assertIn("graph-map", result.stdout)
 
     def test_subcommand_help_dispatches_to_full_commands(self):
         sort_help = run_cli("sort", "--help").stdout
@@ -63,6 +64,7 @@ class CliTests(unittest.TestCase):
         scaffold_help = run_cli("scaffold", "--help").stdout
         gapfill_help = run_cli("gapfill", "--help").stdout
         plot_help = run_cli("plot", "--help").stdout
+        graph_map_help = run_cli("graph-map", "--help").stdout
         self.assertIn("--output-prefix", sort_help)
         self.assertIn("--paf", sort_help)
         self.assertIn("--gfa", sort_help)
@@ -127,6 +129,10 @@ class CliTests(unittest.TestCase):
         self.assertIn("--sel-ref", plot_help)
         self.assertIn("--paf", plot_help)
         self.assertIn("--formats", plot_help)
+        self.assertIn("--gfa-overlay", plot_help)
+        self.assertIn("--ctg-fasta", graph_map_help)
+        self.assertIn("--utg-gfa", graph_map_help)
+        self.assertIn("--output-prefix", graph_map_help)
 
     def test_alignment_inputs_are_mutually_exclusive(self):
         result = run_cli_raw(

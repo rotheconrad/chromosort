@@ -103,7 +103,8 @@ The public command surface is the `chromo` dispatcher in
 | `chromo manual apply` | `manual.py` | Assembly FASTA and exported recipe JSON | Apply a dashboard recipe containing slices, orientation choices, removals, and optional scaffold grouping. | Writes a manually edited FASTA and optional report. |
 | `chromo scaffold` | `scaffold.py` | Ordered FASTA and `sort` assignment TSV, optional GFA, optional reviewed plan | Join ordered contigs per reference with inferred, fixed, or reviewed gaps; report reference overlaps and graph adjacency. | Writes scaffold FASTA. Overlap trimming occurs only under explicit overlap policies. |
 | `chromo gapfill` | `gapfill.py` | Ordered FASTA, assignment TSV, GFA, optional GAF, Hi-C table, reference-placement PAF, reviewed plan | Plan graph-supported gap fills, annotate risk, resolve unique supported paths, and optionally apply fillable paths. | Writes gapfilled FASTA only with `--apply`; reviewed plans can further restrict which fillable gaps are applied. |
-| `chromo plot` | `plot.py` | Reference FASTA, assembly FASTA, coords or PAF, optional assignment TSV, optional selected reference IDs | Draw whole-genome, per-reference, and selected-reference dot plots from existing alignments. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation patterns. | Does not change FASTA. |
+| `chromo plot` | `plot.py` | Reference FASTA, assembly FASTA, coords or PAF, optional assignment TSV, optional selected reference IDs, optional GFA overlay | Draw whole-genome, per-reference, and selected-reference dot plots from existing alignments, with optional projected query-axis graph boundaries. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation patterns. | Does not change FASTA. |
+| `chromo graph-map` | `graph_map.py` and `graph.py` | Contig FASTA and unitig or contig GFA | Project GFA path/walk segment intervals into matching contig FASTA coordinates and write projection, summary, and warning reports. | Does not change FASTA. |
 
 ## Algorithm And Data Model Activation Map
 
@@ -224,8 +225,13 @@ where $r^\*$ is the best-ranked reference for query $q$.
 - `L` records become `GraphEdge` objects with source node, target node,
   orientations, raw overlap CIGAR, parsed overlap bp when exact, tags, and line
   number.
+- `P` and `W` records become `GraphPath` objects with ordered
+  `GraphPathStep` entries, path/walk tags, and source line number.
 - `AssemblyGraph` indexes outgoing and incoming edges by oriented key
   $(node, orientation)$ where $orientation \in \{+,-\}$.
+- `GraphProjection` records store the conservative unitig-to-contig coordinate
+  projection used by `chromo graph-map`, `chromo plot --gfa-overlay`, and
+  projected graph context in `chromo eval fix`.
 
 The parser is strict for missing linked segments and inconsistent `LN:i`
 lengths when sequence is present. It only converts simple overlap CIGARs made
@@ -540,6 +546,13 @@ segments map to common review patterns such as clean collinearity, reversed
 contigs, internal inversions, chimeric candidates, duplicate signal, and
 alignment gaps.
 
+When `--gfa-overlay` is supplied, unitig-level graph intervals are first
+projected through GFA `P` path or `W` walk records whose names match query FASTA
+contigs. The overlay then draws query-axis graph boundaries in the same
+coordinate system as the alignment rows; if projection is impossible,
+ChromoSort reports that rather than comparing unitig and contig coordinates
+directly.
+
 ## Evidence, Scoring, Ranking, or Decision Logic
 
 ChromoSort does not currently implement a probabilistic confidence model.
@@ -777,8 +790,10 @@ locally but is not represented as a repository CI workflow.
   under-supported or classified for review.
 - Duplicate-overlap filtering is per reference and based on reference interval
   novelty. It is not a global assembly graph optimization.
-- GFA support is limited to segment (`S`) and link (`L`) records. GFA path/walk
-  records are not used by the core graph parser.
+- GFA support covers segment (`S`), link (`L`), path (`P`), and walk (`W`)
+  records. Path/walk records are used for coordinate projection when their
+  names match contig FASTA records; GFA files without those records can still
+  provide topology but cannot project unitig intervals onto contig coordinates.
 - Sequence-changing graph fills require segment sequences and simple exact link
   overlap lengths. Missing sequences, complex overlap CIGARs, flank mismatches,
   invalid overlaps, overly long fills, or ambiguous/conflicting branches prevent

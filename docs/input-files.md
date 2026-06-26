@@ -20,7 +20,8 @@ same FASTA records used by the command you are running.
 | Fix chimeric contigs with `chromo fix` | Assembly FASTA and either MUMmer coords or minimap2 PAF | GFA for report-only graph context |
 | Cut reviewed coordinates with `chromo cut` | Assembly FASTA and explicit cut positions | Assembly FAI |
 | Review manually with `chromo manual` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | GFA, long-read-to-assembly PAF, long-read-to-graph GAF, FASTA indexes, embedded sequences, `chromo eval` review table for task modes |
-| Plot alignments with `chromo plot` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | Assignment TSV for ChromoSort query ordering, FASTA indexes. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation examples. |
+| Plot alignments with `chromo plot` | Reference FASTA, assembly FASTA, and either MUMmer coords or minimap2 PAF | Assignment TSV for ChromoSort query ordering, GFA overlay with matching path/walk records, FASTA indexes. See the [dot-plot guide]({{ '/dot-plots/' | relative_url }}) for interpretation examples. |
+| Map graph coordinates with `chromo graph-map` | Contig FASTA and GFA with path/walk records | FASTA index, selected path names |
 | Prepare scaffold review tables with `chromo eval scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for graph junction context, long-read-to-assembly PAF, long-read-to-graph GAF |
 | Scaffold sorted contigs with `chromo scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for report-only graph junction evidence |
 | Prepare gapfill review tables with `chromo eval gapfill` | Ordered FASTA, matching assignment TSV, and GFA | GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, long-read-to-assembly PAF |
@@ -42,9 +43,13 @@ between FASTA, alignments, reports, and graph files.
 - Query names in coords or PAF must match records in `--assembly-fasta`.
 - If you run `chromo clean`, `chromo fix`, `chromo cut`, or `chromo manual apply`,
   re-align the new FASTA before running downstream alignment-dependent commands.
-- GFA `S` record names should match the assembly FASTA records used for graph
-  review. For scaffold and gapfill, ChromoSort also tries ChromoSort `new_name`
-  values from the assignment report when resolving graph nodes.
+- GFA `S` record names should match the assembly FASTA records used for direct
+  graph-node review. For scaffold and gapfill, ChromoSort also tries ChromoSort
+  `new_name` values from the assignment report when resolving graph nodes.
+- Unitig-level GFA coordinates are not contig FASTA coordinates. For hifiasm
+  `p_utg.gfa`, `r_utg.gfa`, or `.noseq.gfa` evidence on a `p_ctg.fa` dot plot,
+  use GFA `P` path or `W` walk records to project unitigs onto matching contig
+  names with `chromo graph-map` or `chromo plot --gfa-overlay`.
 - `chromo gapfill --ref-paf` scores intermediate graph nodes, so the PAF query
   names must match GFA segment names for those nodes.
 - Reviewed gapfill plans are tied to current `scaffold`, `left_contig`,
@@ -144,11 +149,23 @@ minimap2 divergence tags indicate a close match.
 
 ### GFA
 
-ChromoSort reads GFA segment (`S`) and link (`L`) records. Unknown record types
-are ignored. Segment sequences may be `*` for report-only graph context when
-`LN:i` length tags are present. Segment sequences are required for
-`chromo gapfill --apply`, because the command must validate flank sequences and
-construct inserted graph sequence.
+ChromoSort reads GFA segment (`S`), link (`L`), path (`P`), and walk (`W`)
+records. Unknown record types are ignored. Segment sequences may be `*` for
+report-only graph context when `LN:i` length tags are present. Segment sequences
+are required for `chromo gapfill --apply`, because the command must validate
+flank sequences and construct inserted graph sequence.
+
+Contig FASTA/GFA coordinates and unitig GFA coordinates are different coordinate
+systems. A `p_ctg.fa` dot plot uses contig coordinates. A `p_utg.gfa` feature is
+local to one unitig `S` segment. ChromoSort only overlays unitig features on a
+contig dot plot after projecting them through matching GFA `P` path or `W` walk
+records. If those path/walk records are absent, ChromoSort warns instead of
+treating the coordinates as interchangeable.
+
+For hifiasm graph topology, boundaries, and junction evidence, `.noseq.gfa` is
+usually preferred when nucleotide sequence is not needed. It preserves segment
+names, `LN:i` lengths, links, paths/walks, and tags while avoiding huge embedded
+sequence strings. Use a full `.gfa` or FASTA only when sequence is required.
 
 Only simple link overlap CIGARs made from `M`, `=`, and `X` operations are
 treated as exact overlap lengths. Complex overlaps are preserved as unknown so
@@ -348,7 +365,8 @@ Graph-aware ChromoSort commands use these graph-related evidence files:
 
 - GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
   `chromo eval fix/scaffold/gapfill`, `chromo fix --gfa`,
-  `chromo scaffold --gfa`, and `chromo gapfill --gfa`.
+  `chromo scaffold --gfa`, `chromo gapfill --gfa`, `chromo graph-map`, and
+  `chromo plot --gfa-overlay`.
 - reference-to-assembly PAF: the minimap2 alignment format used by
   `chromo sort`, `chromo fix`, `chromo manual`, and `chromo plot`; for
   `chromo gapfill --ref-paf`, the PAF query names must match the GFA graph
@@ -388,10 +406,26 @@ assembly.fa              # FASTA passed to chromo sort/fix/gapfill
 assembly_graph.gfa       # GFA whose S records match assembly.fa sequence IDs
 ```
 
-ChromoSort currently reads GFA `S` segment records and `L` link records. Segment
-sequences are required only when `chromo gapfill --apply` may insert graph
-sequence. Report-only graph evidence can still use segments with `*` sequence
-fields when lengths are provided with `LN:i`.
+ChromoSort reads GFA `S` segment records, `L` link records, and `P`/`W`
+path/walk records. Segment sequences are required only when
+`chromo gapfill --apply` may insert graph sequence. Report-only graph evidence
+can still use segments with `*` sequence fields when lengths are provided with
+`LN:i`.
+
+When alignments and dot plots use `p_ctg.fa` but graph evidence comes from
+`p_utg.gfa` or `p_utg.noseq.gfa`, first check whether the GFA has path/walk
+records whose names match the contig FASTA:
+
+```bash
+chromo graph-map \
+  --ctg-fasta assembly.p_ctg.fa \
+  --utg-gfa assembly.p_utg.noseq.gfa \
+  --output-prefix results/sample.graphmap
+```
+
+If the GFA contains only `S`, `L`, and assembler read-alignment records, it can
+still be useful as topology evidence, but it cannot by itself project unitig
+coordinates onto contigs.
 
 ### Which PAF Files to Keep
 

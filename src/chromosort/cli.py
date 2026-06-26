@@ -3,7 +3,18 @@
 import argparse
 import sys
 
-from . import clean, cut, evaluate, fix_contigs, gapfill, manual, plot, reference_order, scaffold
+from . import (
+    clean,
+    cut,
+    evaluate,
+    fix_contigs,
+    gapfill,
+    graph_map,
+    manual,
+    plot,
+    reference_order,
+    scaffold,
+)
 
 
 def main(argv=None):
@@ -14,7 +25,7 @@ def main(argv=None):
         prog="chromo",
         description=(
             "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, "
-            "plot, and review genome assembly contigs."
+            "plot, map graph coordinates, and review genome assembly contigs."
         ),
     )
     parser.add_argument(
@@ -30,6 +41,7 @@ def main(argv=None):
             "scaffold",
             "gapfill",
             "plot",
+            "graph-map",
         ],
         help="Subcommand to run.",
     )
@@ -58,6 +70,8 @@ def main(argv=None):
         gapfill.main(remaining, prog="chromo gapfill")
     elif command == "plot":
         plot.main(remaining, prog="chromo plot")
+    elif command == "graph-map":
+        graph_map.main(remaining, prog="chromo graph-map")
     else:
         parser.error(f"unknown command: {command}")
 

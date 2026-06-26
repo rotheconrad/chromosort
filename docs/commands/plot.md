@@ -73,6 +73,26 @@ Use `--sel-ref` when you only want to replot one or a few reference sequences.
 For example, `--sel-ref Gm6 Gm12 Gm15` limits the main plot to those reference
 sequences and, with `--per-ref`, writes only those per-reference panels.
 
+To overlay hifiasm unitig boundaries on the query axis, provide a GFA with
+path/walk records whose names match the plotted assembly FASTA contigs:
+
+```bash
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.p_ctg.fa \
+  --paf paf/sample.ref_vs_p_ctg.paf \
+  --gfa-overlay assembly.p_utg.noseq.gfa \
+  --gfa-overlay-mode unitig-boundaries \
+  --output-prefix plots/sample.with_graph \
+  --formats svg pdf
+```
+
+The overlay is drawn in query coordinates. If the GFA is unitig-level,
+ChromoSort projects unitig steps through GFA `P` path or `W` walk records before
+drawing subtle horizontal boundary lines. If the GFA lacks path/walk records and
+its segment names do not directly match the query FASTA, ChromoSort writes a
+warning and an empty overlay report.
+
 ## `chromo plot` Outputs
 
 | Output | Description |
@@ -81,6 +101,7 @@ sequences and, with `--per-ref`, writes only those per-reference panels.
 | `<prefix>.svg` | Whole-genome SVG dot plot when `--formats svg` is set. |
 | `<prefix>.png` | Whole-genome PNG dot plot when `--formats png` is set. |
 | `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set; restricted to selected references when `--sel-ref` is also set. |
+| `<prefix>.gfa_overlay.tsv` | Projected GFA interval report when `--gfa-overlay` is used and `--gfa-overlay-report` is not provided. |
 
 ### Example `chromo plot` Output
 
@@ -112,6 +133,10 @@ and, with `--per-ref`, one plot per reference sequence in each requested format.
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
 | `--formats` | `pdf` | One or more output formats: `pdf`, `svg`, `png`. |
 | `--assignments` | none | Optional `chromo sort` assignment report for ordering the query axis by kept sorted contigs. |
+| `--gfa-overlay` | none | Optional GFA to project onto the query axis before drawing graph boundary overlays. |
+| `--gfa-overlay-mode` | `unitig-boundaries` | Draw `unitig-boundaries`, `junctions`, `tips`, or `all` projected graph intervals. |
+| `--gfa-overlay-axis` | `query` | Overlay axis. Query-axis overlays are currently supported. |
+| `--gfa-overlay-report` | `<prefix>.gfa_overlay.tsv` | TSV path for projected overlay intervals. |
 | `--per-ref` | off | Also write one plot per reference sequence with plotted alignments. |
 | `--sel-ref` | none | Limit the main plot and `--per-ref` output to one or more reference IDs, such as `--sel-ref Gm6 Gm12 Gm15`. |
 | `--per-ref-query-order` | `fasta` | Use FASTA order or first reference-hit order for per-reference query axes. |

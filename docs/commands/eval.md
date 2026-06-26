@@ -54,13 +54,26 @@ contigs and slices to apply.
 
 `chromo eval fix` can include report-only context from:
 
-- `--gfa`: assembly graph node status and local complexity fields.
+- `--gfa`: assembly graph node status, local complexity fields, and
+  projection-aware unitig context when the GFA has path/walk records matching
+  the assembly contigs.
 - `--gaf`: advisory graph traversal context for candidate contig graph nodes.
 - `--read-paf`: long-read-to-assembly PAF evidence around candidate
   breakpoints.
 
 Long-read evidence is summarized as spanning-read, split-read, edge-read, and
 nearby-read counts for candidate breakpoint rows.
+
+When a split candidate has a contig breakpoint coordinate and `--gfa` contains
+matching `P` path or `W` walk records, the fix review table also reports the
+containing unitig, unitig orientation, unitig-local offset, distance to the
+nearest unitig/path-step boundary, nearest junction-like unitig, and containing
+unitig in/out degree. These fields are designed for manual review: a suspicious
+alignment transition at a real hifiasm unitig boundary is different from one
+that cuts through the middle of a simple, well-supported unitig.
+
+Those same `graph_unitig*` and boundary fields are displayed in the GFA evidence
+panel when the table is opened with `chromo manual fix --review-table`.
 
 For same-reference inversion review, use `--mode comprehensive` to ask the fix
 planner to expose orientation-change rows in the review table without applying

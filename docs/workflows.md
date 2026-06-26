@@ -21,6 +21,7 @@ chromo fix --help
 chromo cut --help
 chromo manual --help
 chromo plot --help
+chromo graph-map --help
 chromo scaffold --help
 chromo gapfill --help
 ```
@@ -68,6 +69,41 @@ it draws the original alignment rows and orders the query axis by the
 `chromo sort` assignment report. To validate the actual `ordered.fa`,
 `fixed.fa`, or manually edited FASTA, generate fresh coords or PAF for that
 exact FASTA.
+
+## hifiasm Unitig Graphs On Contig Dot Plots
+
+When alignments are made from hifiasm contig FASTA such as `p_ctg.fa` or
+`hap*.p_ctg.fa`, the dot-plot query axis is in contig coordinates. Unitig graph
+features from `p_utg.gfa`, `r_utg.gfa`, or `.noseq.gfa` are in unitig-local
+coordinates and must be projected through GFA `P` path or `W` walk records
+before they can be compared to contig breakpoints.
+
+First write a reusable projection report:
+
+```bash
+chromo graph-map \
+  --ctg-fasta assembly.p_ctg.fa \
+  --utg-gfa assembly.p_utg.noseq.gfa \
+  --output-prefix results/sample.graphmap
+```
+
+Then draw graph boundaries on the query axis:
+
+```bash
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.p_ctg.fa \
+  --paf paf/sample.ref_vs_p_ctg.paf \
+  --gfa-overlay assembly.p_utg.noseq.gfa \
+  --output-prefix plots/sample.graph_overlay \
+  --formats svg pdf
+```
+
+For breakpoint review, pass the same GFA to `chromo eval fix`; matching path or
+walk records let the review table report the containing unitig and distance to
+the nearest unitig boundary. A `.noseq.gfa` is usually the best input for this
+topology-oriented review because it keeps names, lengths, links, paths/walks,
+and tags without carrying large sequence strings.
 
 ## Mixed Algorithmic Plus Reviewed Decisions
 

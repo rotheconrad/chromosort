@@ -72,6 +72,29 @@ same rule applies to `clean.fa` from `chromo clean`.
 
 Graph-aware commands expect GFA segment names to match the assembly FASTA or the original contig names in the assignment report. If another tool renamed, polished, split, or scaffolded the FASTA after graph export, keep a name map or regenerate graph evidence for the renamed sequences.
 
+## GFA Overlay Or Projection Is Empty
+
+For hifiasm outputs, check whether your FASTA and GFA use the same coordinate
+system. Dot plots made from `p_ctg.fa` or `hap*.p_ctg.fa` are in contig
+coordinates, while `p_utg.gfa`, `r_utg.gfa`, and their `.noseq.gfa`
+equivalents are usually in unitig coordinates. ChromoSort can project unitigs
+onto contigs only when the GFA includes `P` path records or `W` walk records
+whose names match the contig FASTA records.
+
+Run `chromo graph-map` first when you are unsure:
+
+```bash
+chromo graph-map \
+  --ctg-fasta assembly.p_ctg.fa \
+  --utg-gfa assembly.p_utg.noseq.gfa \
+  --output-prefix review/sample.graphmap
+```
+
+If the warning table says paths are missing, the GFA may contain only `S`, `L`,
+and read-alignment `A` records. Those files are still useful for topology and
+junction context, but they cannot define contig-axis unitig intervals for
+`chromo plot --gfa-overlay`.
+
 ## Gapfill Plan Is Ambiguous
 
 `chromo gapfill` refuses to guess through ambiguous graph branches. Add GAF,

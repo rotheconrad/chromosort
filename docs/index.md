@@ -21,6 +21,7 @@ before they are used as inputs to another alignment-dependent command.
 - [Input files](https://rotheconrad.github.io/chromosort/input-files/)
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }})
+- [Educational guide roadmap]({{ '/guides/' | relative_url }})
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
@@ -35,12 +36,15 @@ before they are used as inputs to another alignment-dependent command.
 - [chromo manual](https://rotheconrad.github.io/chromosort/commands/manual/)
 - [chromo plot](https://rotheconrad.github.io/chromosort/commands/plot/) and
   [dot-plot interpretation]({{ '/dot-plots/' | relative_url }})
+- [chromo graph-map](https://rotheconrad.github.io/chromosort/commands/graph-map/)
 - [chromo scaffold](https://rotheconrad.github.io/chromosort/commands/scaffold/)
 - [chromo gapfill](https://rotheconrad.github.io/chromosort/commands/gapfill/)
 
 ## Running Analyses
 
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
+- [Educational guide roadmap]({{ '/guides/' | relative_url }}) for the planned
+  concept guides that will sit beside the dot-plot tutorial.
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }}) for
   choosing one primary coords or PAF alignment, inversion review,
   long-read/GFA/GAF evidence, and handoffs between chats or projects.
@@ -69,5 +73,7 @@ before they are used as inputs to another alignment-dependent command.
 7. Use `chromo sort` to assign, filter, orient, and order contigs.
 8. Re-align again if a later command should operate on `ordered.fa` rather than
    on the original assembly and its assignment report.
-9. Use `chromo scaffold` to build one scaffold per reference sequence.
-10. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.
+9. Use `chromo graph-map` or `chromo plot --gfa-overlay` when unitig-level GFA
+   features need to be projected onto contig FASTA coordinates.
+10. Use `chromo scaffold` to build one scaffold per reference sequence.
+11. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.

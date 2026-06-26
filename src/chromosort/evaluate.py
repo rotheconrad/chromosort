@@ -10,7 +10,13 @@ from . import fix_contigs
 from . import gapfill as gapfill_mod
 from . import scaffold as scaffold_mod
 from .gaf import read_gaf, summarize_gaf_node, summarize_gaf_traversal
-from .graph import graph_node_evidence, read_gfa
+from .graph import (
+    build_direct_projection,
+    build_path_projection,
+    graph_coordinate_evidence,
+    graph_node_evidence,
+    read_gfa,
+)
 from .longreads import read_long_read_paf, summarize_breakpoint, summarize_contig_bridge
 from .paths import ensure_output_dirs
 from .reference_order import alignment_source_from_args
@@ -39,6 +45,15 @@ FIX_REVIEW_COLUMNS = [
     "graph_node_status",
     "graph_neighbor_count",
     "graph_self_loop",
+    "graph_unitig",
+    "graph_unitig_orientation",
+    "graph_unitig_offset_0",
+    "graph_unitig_boundary_distance_bp",
+    "graph_nearest_junction",
+    "graph_unitig_in_degree",
+    "graph_unitig_out_degree",
+    "graph_near_path_boundary",
+    "graph_path_boundary_distance_bp",
     "gaf_node",
     "gaf_node_reads",
     "gaf_node_traversals",
@@ -277,6 +292,42 @@ def graph_fields(graph, contig):
     }
 
 
+def empty_graph_coordinate_fields():
+    return {
+        "graph_unitig": ".",
+        "graph_unitig_orientation": ".",
+        "graph_unitig_offset_0": ".",
+        "graph_unitig_boundary_distance_bp": ".",
+        "graph_nearest_junction": ".",
+        "graph_unitig_in_degree": ".",
+        "graph_unitig_out_degree": ".",
+        "graph_near_path_boundary": ".",
+        "graph_path_boundary_distance_bp": ".",
+    }
+
+
+def graph_coordinate_fields(graph, projections, contig, position):
+    if graph is None or not projections or position is None:
+        return empty_graph_coordinate_fields()
+    evidence = graph_coordinate_evidence(graph, projections, contig, position)
+    if evidence.status != "present":
+        return empty_graph_coordinate_fields()
+    return {
+        "graph_unitig": evidence.containing_unitig,
+        "graph_unitig_orientation": evidence.unitig_orientation,
+        "graph_unitig_offset_0": fmt(evidence.unitig_offset_0, 0),
+        "graph_unitig_boundary_distance_bp": fmt(
+            evidence.distance_to_nearest_unitig_boundary,
+            0,
+        ),
+        "graph_nearest_junction": evidence.nearest_graph_junction,
+        "graph_unitig_in_degree": fmt(evidence.graph_in_degree, 0),
+        "graph_unitig_out_degree": fmt(evidence.graph_out_degree, 0),
+        "graph_near_path_boundary": bool_text(evidence.near_path_step_boundary),
+        "graph_path_boundary_distance_bp": fmt(evidence.path_step_boundary_distance, 0),
+    }
+
+
 def empty_gaf_node_fields():
     return {
         "gaf_node": ".",
@@ -343,7 +394,7 @@ def read_support_fields(read_evidence, contig, position, args):
     }
 
 
-def split_piece_event(plan, piece, index, graph, gaf_records, read_evidence, args):
+def split_piece_event(plan, piece, index, graph, graph_projections, gaf_records, read_evidence, args):
     is_last = index == len(plan.pieces) - 1
     breakpoint_position = None if is_last else piece.slice_end
     fields = {
@@ -366,6 +417,14 @@ def split_piece_event(plan, piece, index, graph, gaf_records, read_evidence, arg
         "planner_score": fmt(plan.planner_score, 1),
     }
     fields.update(graph_fields(graph, piece.original_contig))
+    fields.update(
+        graph_coordinate_fields(
+            graph,
+            graph_projections,
+            piece.original_contig,
+            breakpoint_position,
+        )
+    )
     fields.update(gaf_node_fields(gaf_records, graph, piece.original_contig))
     fields.update(read_support_fields(read_evidence, piece.original_contig, breakpoint_position, args))
     return ReviewEvent(
@@ -408,6 +467,7 @@ def no_split_event(contig, plan, graph, gaf_records):
         "longread_nearby_reads": ".",
     }
     fields.update(graph_fields(graph, contig))
+    fields.update(empty_graph_coordinate_fields())
     fields.update(gaf_node_fields(gaf_records, graph, contig))
     return ReviewEvent(
         event_id=f"fix:{contig}:no_split",
@@ -452,6 +512,20 @@ def build_fix_events(args):
     fix_contigs.apply_breakpoint_guard(plans, args)
 
     graph = read_gfa(args.gfa) if args.gfa else None
+    graph_projections = []
+    if graph is not None:
+        projection_warnings = []
+        graph_projections = build_path_projection(
+            graph,
+            path_names=requested,
+            warnings=projection_warnings,
+        )
+        if not graph_projections:
+            graph_projections = build_direct_projection(
+                graph,
+                requested,
+                warnings=projection_warnings,
+            )
     gaf_records = read_gaf(args.gaf, args.min_gaf_mapq) if args.gaf else []
     read_evidence = (
         read_long_read_paf(args.read_paf, min_mapq=args.min_read_mapq)
@@ -464,7 +538,18 @@ def build_fix_events(args):
         plan = plans[contig]
         if plan.status == "split":
             for index, piece in enumerate(plan.pieces):
-                events.append(split_piece_event(plan, piece, index, graph, gaf_records, read_evidence, args))
+                events.append(
+                    split_piece_event(
+                        plan,
+                        piece,
+                        index,
+                        graph,
+                        graph_projections,
+                        gaf_records,
+                        read_evidence,
+                        args,
+                    )
+                )
         else:
             events.append(no_split_event(contig, plan, graph, gaf_records))
     return events

@@ -24,6 +24,7 @@ command-specific output sections below.
 | [`chromo cut`](#chromo-cut-outputs) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
 | [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
 | [`chromo plot`](#chromo-plot-outputs) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG, with interpretation examples in the [dot-plot guide]({{ '/dot-plots/' | relative_url }}). |
+| [`chromo graph-map`](#chromo-graph-map-outputs) | `<prefix>.utg_to_ctg.tsv`, `<prefix>.path_summary.tsv`, and `<prefix>.warnings.tsv`. |
 | [`chromo scaffold`](#chromo-scaffold-outputs) | `<prefix>.scaffold.fa`, `<prefix>.scaffold_gaps.tsv`, optional `<prefix>.graph_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, and `<prefix>.run_summary.txt`. |
 | [`chromo gapfill`](#chromo-gapfill-outputs) | `<prefix>.gapfill_plan.tsv`, optional review HTML, optional `<prefix>.gapfilled.fa`, and `<prefix>.run_summary.txt`. |
 
@@ -233,6 +234,7 @@ references and `--per-ref` writes only those selected reference panels.
 | `<prefix>.svg` | Whole-genome SVG dot plot when `--formats svg` is set. |
 | `<prefix>.png` | Whole-genome PNG dot plot when `--formats png` is set. |
 | `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set; restricted to selected references when `--sel-ref` is also set. |
+| `<prefix>.gfa_overlay.tsv` | Projected GFA interval report when `--gfa-overlay` is used and `--gfa-overlay-report` is not provided. |
 
 **Table 7. Example plot file set.** A single run can write a whole-genome plot
 and, with `--per-ref`, one plot per reference sequence in each requested format.
@@ -253,6 +255,18 @@ and, with `--per-ref`, one plot per reference sequence in each requested format.
   <img src="https://rotheconrad.github.io/chromosort/assets/chromo_plot_example.chr1.png" alt="ChromoSort per-reference dot plot for chr1." width="900">
   <figcaption><strong>Figure 3. Example per-reference dot-plot output.</strong> Per-reference output for <code>chr1</code> generated with <code>--per-ref</code>, useful for inspecting one chromosome-level slice without re-running an aligner.</figcaption>
 </figure>
+
+## `chromo graph-map` Outputs
+
+Use `chromo graph-map` outputs when a unitig-level GFA must be projected onto
+contig FASTA coordinates before graph evidence can be compared to dot plots or
+breakpoint candidates.
+
+| Output | Description |
+| --- | --- |
+| `<prefix>.utg_to_ctg.tsv` | One row per projected path/walk step with contig coordinates, unitig name, orientation, segment length, overlap fields, source GFA, sequence-present flag, and reuse flag. |
+| `<prefix>.path_summary.tsv` | One row per requested path/contig with projected bp, FASTA length, length-difference status, missing/zero-length step counts, and reused segment count. |
+| `<prefix>.warnings.tsv` | Structured warnings for absent paths, missing segments, no-sequence/no-`LN:i` lengths, and path-vs-FASTA length mismatches. |
 
 ## `chromo scaffold` Outputs
 

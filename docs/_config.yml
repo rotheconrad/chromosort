@@ -83,17 +83,19 @@ nav:
         url: /review-playbook/#add-long-read-and-graph-evidence
       - title: Handoff
         url: /review-playbook/#handoff-checklist-for-a-new-chat-or-agent
-  - title: Dot Plot Guide
-    url: /dot-plots/
+  - title: Guides
+    url: /guides/
     children:
-      - title: Anatomy
+      - title: Roadmap
+        url: /guides/#guide-build-roadmap
+      - title: Dot plots
+        url: /dot-plots/
+      - title: Dot plot anatomy
         url: /dot-plots/#dot-plot-anatomy
       - title: Pattern gallery
         url: /dot-plots/#pattern-gallery
-      - title: Review workflow
-        url: /dot-plots/#a-practical-review-workflow
-      - title: Common traps
-        url: /dot-plots/#common-traps
+      - title: Guide candidates
+        url: /guides/#concept-inventory
   - title: Commands
     url: /commands/
     children:
@@ -111,6 +113,8 @@ nav:
         url: /commands/manual/
       - title: plot
         url: /commands/plot/
+      - title: graph-map
+        url: /commands/graph-map/
       - title: scaffold
         url: /commands/scaffold/
       - title: gapfill

@@ -5,7 +5,7 @@ cleaning mostly-correct assemblies, splitting selected contigs or all detected
 chimeric contigs, reviewing assembly-graph evidence, scaffolding final ordered
 contigs with N gaps, and applying reviewed graph-supported gap fills.
 
-ChromoSort provides one command, `chromo`, with eight subcommands:
+ChromoSort provides one command, `chromo`, with ten subcommands:
 
 - `chromo sort` assigns assembly contigs to reference chromosomes, removes
   low-value duplicate overlaps, labels and can rescue terminal overlaps,
@@ -16,6 +16,9 @@ ChromoSort provides one command, `chromo`, with eight subcommands:
 - `chromo clean` applies sort-style filtering to raw contigs, conservatively
   fixes retained raw contigs, orients and orders the emitted records, and writes
   a cleaned FASTA plus audit reports for mostly-correct assemblies.
+- `chromo eval` prepares editable TSV review tables for algorithm-assisted
+  `fix`, `scaffold`, and `gapfill` decisions, with optional GFA, long-read PAF,
+  and GAF context that can be reviewed in task-specific manual dashboards.
 - `chromo fix` splits contigs with chromosome transitions or reviewed inversion
   blocks into reference-labeled pieces. Use `--contigs` to inspect a reviewed
   subset or `--all` to scan every contig; both scopes use the same `--mode`
@@ -47,6 +50,9 @@ ChromoSort provides one command, `chromo`, with eight subcommands:
   PAF alignments, so each fix/sort/scaffold step can be visually reviewed
   without re-running an aligner just to make a plot. The
   [dot-plot guide](docs/dot-plots.md) explains how to read those patterns.
+- `chromo graph-map` projects GFA path/walk segment intervals from unitig graph
+  coordinates onto matching contig FASTA coordinates, especially for hifiasm
+  `p_utg.gfa` or `.noseq.gfa` evidence on `p_ctg.fa` dot plots.
 
 The sorting, fixing, plotting, and manual dashboard workflows use standard
 MUMmer `show-coords` output or minimap2 PAF. Graph evidence and gap filling use
@@ -92,6 +98,9 @@ overlaps, flank sequence mismatches, and stale reviewed gapfill-plan paths.
   - [Apply a Manual Recipe](#apply-a-manual-recipe)
   - [`chromo manual` Outputs](#chromo-manual-outputs)
   - [`chromo manual` Parameters](#chromo-manual-parameters)
+- [chromo eval](#chromo-eval)
+  - [Run `chromo eval fix`](#run-chromo-eval-fix)
+  - [`chromo eval` Outputs](#chromo-eval-outputs)
 - [chromo fix](#chromo-fix)
   - [What `chromo fix` Does](#what-chromo-fix-does)
   - [Run `chromo fix` With Selected Contigs](#run-chromo-fix-with-selected-contigs)
@@ -105,6 +114,9 @@ overlaps, flank sequence mismatches, and stale reviewed gapfill-plan paths.
   - [Run `chromo plot`](#run-chromo-plot)
   - [`chromo plot` Outputs](#chromo-plot-outputs)
   - [`chromo plot` Parameters](#chromo-plot-parameters)
+- [chromo graph-map](#chromo-graph-map)
+  - [Run `chromo graph-map`](#run-chromo-graph-map)
+  - [`chromo graph-map` Outputs](#chromo-graph-map-outputs)
 - [chromo scaffold](#chromo-scaffold)
   - [What `chromo scaffold` Does](#what-chromo-scaffold-does)
   - [Run `chromo scaffold` With Inferred Gaps](#run-chromo-scaffold-with-inferred-gaps)
@@ -141,10 +153,12 @@ mamba activate chromosort
 chromo --help
 chromo sort --help
 chromo clean --help
+chromo eval --help
 chromo fix --help
 chromo cut --help
 chromo manual --help
 chromo plot --help
+chromo graph-map --help
 chromo scaffold --help
 chromo gapfill --help
 ```
@@ -507,7 +521,9 @@ set. Use `--min-mapq` to ignore low-MAPQ PAF rows.
 Graph-aware ChromoSort commands use these graph-related evidence files:
 
 - GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
-  `chromo fix --gfa`, `chromo scaffold --gfa`, and `chromo gapfill --gfa`.
+  `chromo eval fix/scaffold/gapfill`, `chromo fix --gfa`,
+  `chromo scaffold --gfa`, `chromo gapfill --gfa`, `chromo graph-map`, and
+  `chromo plot --gfa-overlay`.
 - reference-to-assembly PAF: the same minimap2 alignment format used by
   `chromo sort`, `chromo fix`, `chromo manual`, `chromo gapfill --ref-paf`, and
   `chromo plot`.
@@ -537,10 +553,19 @@ assembly.fa              # FASTA passed to chromo sort/fix/gapfill
 assembly_graph.gfa       # GFA whose S records match assembly.fa sequence IDs
 ```
 
-ChromoSort currently reads GFA `S` segment records and `L` link records. Segment
-sequences are required only when `chromo gapfill --apply` may insert graph
-sequence. Report-only graph evidence can still use segments with `*` sequence
-fields when lengths are provided with `LN:i`.
+ChromoSort reads GFA `S` segment records, `L` link records, and `P`/`W`
+path/walk records. Segment sequences are required only when
+`chromo gapfill --apply` may insert graph sequence. Report-only graph evidence
+can still use segments with `*` sequence fields when lengths are provided with
+`LN:i`.
+
+Contig FASTA coordinates and unitig GFA coordinates are different coordinate
+systems. If alignments and dot plots use `p_ctg.fa` but graph evidence comes
+from `p_utg.gfa` or `p_utg.noseq.gfa`, use `chromo graph-map` or
+`chromo plot --gfa-overlay` to project unitig intervals through matching GFA
+path/walk records before comparing them to contig breakpoints. `.noseq.gfa` is
+usually preferred for topology, boundary, and junction evidence when nucleotide
+sequence is not needed.
 
 ### Which PAF Files to Keep
 
@@ -1110,6 +1135,45 @@ Use `--scaffold` or `--no-scaffold` to override the recipe export mode, and
 | `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
 | `--max-segments` | `0` | Maximum number of alignment rows to embed; 0 means no limit. |
 
+## chromo eval
+
+Use `chromo eval` when you want a spreadsheet-first review table before a
+sequence-changing command applies fix, scaffold, or gapfill decisions. The
+available modes are `chromo eval fix`, `chromo eval scaffold`, and
+`chromo eval gapfill`.
+
+The review tables use the shared `chromosort-review-event-v1` schema and can be
+loaded into `chromo manual fix`, `chromo manual scaffold`, or
+`chromo manual gapfill` as a focused event queue. Accepted rows can later feed
+the matching executor through `--reviewed-plan`.
+
+### Run `chromo eval fix`
+
+```bash
+chromo eval fix \
+  --assembly-fasta assembly.fa \
+  --coords mummer/raw.coords \
+  --contigs suspect_contig_1 suspect_contig_2 \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_assembly.paf \
+  --gaf reads_to_graph.gaf \
+  --output-prefix results/sample.eval_fix
+```
+
+When the GFA contains path/walk records matching the assembly contigs, split
+candidate rows also report the containing unitig, distance to the nearest
+unitig boundary, nearest junction-like unitig, and containing unitig in/out
+degree. This helps separate alignment transitions that coincide with real graph
+boundaries from transitions that cut through the middle of a simple unitig.
+
+### `chromo eval` Outputs
+
+| Mode | Output |
+| --- | --- |
+| `fix` | `<prefix>.fix_review.tsv` |
+| `scaffold` | `<prefix>.scaffold_review.tsv` |
+| `gapfill` | `<prefix>.gapfill_review.tsv` |
+
 ## chromo fix
 
 Use `chromo fix` when the goal is to split chimeric or structurally inconsistent
@@ -1434,6 +1498,25 @@ Use `--sel-ref` when you only want to replot one or a few reference sequences.
 For example, `--sel-ref Gm6 Gm12 Gm15` limits the main plot to those reference
 sequences and, with `--per-ref`, writes only those per-reference panels.
 
+To overlay hifiasm unitig boundaries on the query axis, provide a GFA with
+path/walk records whose names match the plotted assembly FASTA contigs:
+
+```bash
+chromo plot \
+  --ref-fasta reference.fa \
+  --assembly-fasta assembly.p_ctg.fa \
+  --paf paf/sample.ref_vs_p_ctg.paf \
+  --gfa-overlay assembly.p_utg.noseq.gfa \
+  --gfa-overlay-mode unitig-boundaries \
+  --output-prefix plots/sample.with_graph \
+  --formats svg pdf
+```
+
+The overlay is drawn in query coordinates after unitig-level GFA intervals are
+projected through matching `P` path or `W` walk records. If projection is not
+possible, ChromoSort writes a warning instead of treating unitig and contig
+coordinates as interchangeable.
+
 ### `chromo plot` Outputs
 
 | Output | Description |
@@ -1442,6 +1525,7 @@ sequences and, with `--per-ref`, writes only those per-reference panels.
 | `<prefix>.svg` | Whole-genome SVG dot plot when `--formats svg` is set. |
 | `<prefix>.png` | Whole-genome PNG dot plot when `--formats png` is set. |
 | `<prefix>.<ref>.<format>` | Per-reference plots when `--per-ref` is set; restricted to selected references when `--sel-ref` is also set. |
+| `<prefix>.gfa_overlay.tsv` | Projected GFA interval report when `--gfa-overlay` is used and `--gfa-overlay-report` is not provided. |
 
 ### `chromo plot` Parameters
 
@@ -1451,6 +1535,10 @@ sequences and, with `--per-ref`, writes only those per-reference panels.
 | `--paf` | required unless `--coords` | minimap2 PAF alignment file. |
 | `--formats` | `pdf` | One or more output formats: `pdf`, `svg`, `png`. |
 | `--assignments` | none | Optional `chromo sort` assignment report for ordering the query axis by kept sorted contigs. |
+| `--gfa-overlay` | none | Optional GFA to project onto the query axis before drawing graph boundary overlays. |
+| `--gfa-overlay-mode` | `unitig-boundaries` | Draw `unitig-boundaries`, `junctions`, `tips`, or `all` projected graph intervals. |
+| `--gfa-overlay-axis` | `query` | Overlay axis. Query-axis overlays are currently supported. |
+| `--gfa-overlay-report` | `<prefix>.gfa_overlay.tsv` | TSV path for projected overlay intervals. |
 | `--per-ref` | off | Also write one plot per reference sequence with plotted alignments. |
 | `--sel-ref` | none | Limit the main plot and `--per-ref` output to one or more reference IDs, such as `--sel-ref Gm6 Gm12 Gm15`. |
 | `--per-ref-query-order` | `fasta` | Use FASTA order or first reference-hit order for per-reference query axes. |
@@ -1459,6 +1547,36 @@ sequences and, with `--per-ref`, writes only those per-reference panels.
 | `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
 | `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
 | `--max-segments` | `0` | Maximum drawn alignment rows after filtering; 0 means no limit. |
+
+## chromo graph-map
+
+Use `chromo graph-map` when graph evidence is in unitig coordinates but your
+FASTA, alignments, and dot plots are in contig coordinates. This is common with
+hifiasm outputs where dot plots are made from `p_ctg.fa` or `hap*.p_ctg.fa`,
+while graph evidence comes from `p_utg.gfa`, `r_utg.gfa`, or `.noseq.gfa`.
+
+Unitig and contig coordinates are not directly comparable. ChromoSort projects
+unitig intervals onto contig coordinates only through GFA `P` path records or
+`W` walk records whose path names match FASTA contig names. For topology,
+boundary, and junction evidence, `.noseq.gfa` is usually preferred when
+sequence is not needed.
+
+### Run `chromo graph-map`
+
+```bash
+chromo graph-map \
+  --ctg-fasta assembly.p_ctg.fa \
+  --utg-gfa assembly.p_utg.noseq.gfa \
+  --output-prefix results/sample.graphmap
+```
+
+### `chromo graph-map` Outputs
+
+| Output | Description |
+| --- | --- |
+| `<prefix>.utg_to_ctg.tsv` | One row per projected path/walk step with contig coordinates, unitig name, orientation, segment length, overlap fields, source GFA, sequence-present flag, and reuse flag. |
+| `<prefix>.path_summary.tsv` | One row per requested path/contig with projected bp, FASTA length, length-difference status, missing/zero-length step counts, and reused segment count. |
+| `<prefix>.warnings.tsv` | Structured warnings for absent paths, missing segments, no-sequence/no-`LN:i` lengths, and path-vs-FASTA length mismatches. |
 
 ## chromo scaffold
 
@@ -1949,6 +2067,7 @@ scaffolding tools.
 | Version | Notes |
 | --- | --- |
 | Unreleased | No changes yet. |
+| `0.2.28` | Added hifiasm GFA path/walk support: noseq-aware P/W parsing, unitig-to-contig projection reports via `chromo graph-map`, query-axis GFA overlays in `chromo plot`, projected unitig/boundary context in `chromo eval fix` and manual review panels, and synchronized command, workflow, troubleshooting, architecture, and review-playbook documentation. |
 | `0.2.27` | Refreshed publication-style architecture and user documentation: added algorithm/data-model activation maps, evidence authority mapping, updated eval/manual/GAF command guidance, synchronized input/output/workflow/status/troubleshooting docs, and verified docs/test consistency. |
 | `0.2.26` | Completed the GAF evidence and modular manual-panel upgrade: shared GAF parsing/traversal summaries, `--gaf` evidence in `chromo eval fix/scaffold/gapfill`, GAF status and selected-read fields in gapfill plans, optional `--read-paf`/`--gaf` panels in task-specific manual dashboards, and mixed GFA/PAF/GAF review fixtures/docs. |
 | `0.2.25` | Synchronized package, citation, Pixi, conda recipe, README, and docs version metadata; added the production-upgrade roadmap for paired `eval` table workflows and task-specific `manual` dashboards feeding reviewed `fix`, `scaffold`, and `gapfill` execution paths. |

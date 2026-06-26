@@ -11,6 +11,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Sequence
 
+from .graph import (
+    build_direct_projection,
+    build_path_projection,
+    graph_node_evidence,
+    read_gfa,
+    write_projection_tsv,
+)
 from .paths import ensure_parent_dir
 from .reference_order import (
     alignment_source_from_args,
@@ -48,6 +55,10 @@ MAJOR_TICK_OPACITY = 0.9
 MINOR_TICK_LENGTH = 5
 MINOR_TICK_WIDTH = 0.8
 MINOR_TICK_OPACITY = 0.65
+GFA_OVERLAY_COLOR = "#0f766e"
+GFA_OVERLAY_WIDTH = 0.8
+GFA_OVERLAY_OPACITY = 0.48
+GFA_OVERLAY_DASH = (1.5, 4)
 
 
 @dataclass(frozen=True)
@@ -131,6 +142,34 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
             "Optional chromo sort <prefix>.contig_assignments.tsv. When provided, "
             "the query axis is ordered by the kept contigs in the assignment report "
             "instead of by assembly FASTA order."
+        ),
+    )
+    ap.add_argument(
+        "--gfa-overlay",
+        default=None,
+        help=(
+            "Optional GFA whose path/walk or direct segment coordinates should be "
+            "overlaid on the query axis."
+        ),
+    )
+    ap.add_argument(
+        "--gfa-overlay-mode",
+        choices=["unitig-boundaries", "junctions", "tips", "all"],
+        default="unitig-boundaries",
+        help="Graph features to draw from --gfa-overlay.",
+    )
+    ap.add_argument(
+        "--gfa-overlay-axis",
+        choices=["query"],
+        default="query",
+        help="Axis for graph overlays. Query-axis overlays are currently supported.",
+    )
+    ap.add_argument(
+        "--gfa-overlay-report",
+        default=None,
+        help=(
+            "TSV path for exported projected overlay intervals. Defaults to "
+            "<output-prefix>.gfa_overlay.tsv when --gfa-overlay is used."
         ),
     )
     ap.add_argument(
@@ -313,6 +352,17 @@ def axis_offset(position, intervals, is_end=False):
             return offset + 1 if is_end else offset
         cursor += end - start + 1
     return cursor
+
+
+def axis_offset_0(position_0, intervals):
+    cursor = 0
+    for start, end in intervals:
+        interval_start_0 = start - 1
+        interval_end_0 = end
+        if interval_start_0 <= position_0 <= interval_end_0:
+            return cursor + position_0 - interval_start_0
+        cursor += interval_end_0 - interval_start_0
+    return None
 
 
 def segment_coords(seg, x_offsets, y_offsets, x_intervals=None, y_intervals=None):
@@ -648,7 +698,51 @@ def draw_separators(elements, records, offsets, total, origin, size, is_x_axis, 
                 )
 
 
-def build_plot_items(title, ref_records, query_records, segments, width, height):
+def draw_gfa_query_overlay(elements, projections, query_offsets, query_total, query_intervals, origin, size):
+    if not projections or query_total <= 0:
+        return
+
+    seen = set()
+    for projection in projections:
+        if projection.contig not in query_offsets:
+            continue
+        intervals = query_intervals.get(
+            projection.contig,
+            ((1, max(1, projection.contig_end_0)),),
+        )
+        for boundary in (projection.contig_start_0, projection.contig_end_0):
+            key = (projection.contig, boundary)
+            if key in seen:
+                continue
+            seen.add(key)
+            local_offset = axis_offset_0(boundary, intervals)
+            if local_offset is None:
+                continue
+            y_axis = query_offsets[projection.contig] + local_offset
+            y = scale(y_axis, query_total, origin[1], size[1])
+            elements.append(
+                make_line(
+                    origin[0],
+                    y,
+                    origin[0] + size[0],
+                    y,
+                    GFA_OVERLAY_COLOR,
+                    width=GFA_OVERLAY_WIDTH,
+                    opacity=GFA_OVERLAY_OPACITY,
+                    dash=GFA_OVERLAY_DASH,
+                )
+            )
+
+
+def build_plot_items(
+    title,
+    ref_records,
+    query_records,
+    segments,
+    width,
+    height,
+    gfa_overlays=None,
+):
     margin_left = 170
     margin_right = 230
     margin_top = 124
@@ -685,6 +779,15 @@ def build_plot_items(title, ref_records, query_records, segments, width, height)
     draw_axis_ticks(elements, query_total, origin, size, False)
     draw_separators(elements, ref_records, ref_offsets, ref_total, origin, size, True)
     draw_separators(elements, query_records, query_offsets, query_total, origin, size, False)
+    draw_gfa_query_overlay(
+        elements,
+        gfa_overlays or [],
+        query_offsets,
+        query_total,
+        query_intervals,
+        origin,
+        size,
+    )
 
     for seg in segments:
         r0, q0, r1, q1 = segment_coords(
@@ -944,8 +1047,26 @@ def write_png(path, elements, width, height):
     image.save(path)
 
 
-def draw_plot(path, title, ref_records, query_records, segments, width, height, output_format):
-    elements = build_plot_items(title, ref_records, query_records, segments, width, height)
+def draw_plot(
+    path,
+    title,
+    ref_records,
+    query_records,
+    segments,
+    width,
+    height,
+    output_format,
+    gfa_overlays=None,
+):
+    elements = build_plot_items(
+        title,
+        ref_records,
+        query_records,
+        segments,
+        width,
+        height,
+        gfa_overlays=gfa_overlays,
+    )
     if output_format == "svg":
         write_svg(path, elements, width, height)
     elif output_format == "pdf":
@@ -1002,6 +1123,56 @@ def per_ref_query_records(ref_name, segments, query_records, order):
     ]
 
 
+def _is_junction_projection(graph, projection):
+    evidence = graph_node_evidence(graph, [projection.segment])
+    if evidence.graph_node_status != "present":
+        return False
+    return bool(
+        evidence.graph_self_loop
+        or (evidence.graph_in_degree or 0) > 1
+        or (evidence.graph_out_degree or 0) > 1
+        or (evidence.graph_neighbor_count or 0) > 2
+    )
+
+
+def _is_tip_projection(graph, projection):
+    evidence = graph_node_evidence(graph, [projection.segment])
+    if evidence.graph_node_status != "present":
+        return False
+    return (evidence.graph_in_degree or 0) == 0 or (evidence.graph_out_degree or 0) == 0
+
+
+def filter_overlay_projections(graph, projections, mode):
+    if mode in {"unitig-boundaries", "all"}:
+        return projections
+    if mode == "junctions":
+        return [row for row in projections if _is_junction_projection(graph, row)]
+    if mode == "tips":
+        return [row for row in projections if _is_tip_projection(graph, row)]
+    return projections
+
+
+def load_gfa_overlay(args, query_records, report_path):
+    if not args.gfa_overlay:
+        return [], []
+
+    graph = read_gfa(args.gfa_overlay)
+    query_names = [rec.name for rec in query_records]
+    warnings = []
+    projections = build_path_projection(graph, path_names=query_names, warnings=warnings)
+    if not projections:
+        direct = build_direct_projection(graph, query_names, warnings=warnings)
+        if direct:
+            projections = direct
+
+    query_name_set = set(query_names)
+    projections = [row for row in projections if row.contig in query_name_set]
+    projections = filter_overlay_projections(graph, projections, args.gfa_overlay_mode)
+    ensure_parent_dir(report_path)
+    write_projection_tsv(report_path, projections)
+    return projections, warnings
+
+
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
     prefix = Path(args.output_prefix)
@@ -1021,6 +1192,13 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         selected_query_names = {seg.query for seg in segments}
         query_records = [rec for rec in query_records if rec.name in selected_query_names]
 
+    overlay_report = (
+        Path(args.gfa_overlay_report)
+        if args.gfa_overlay_report
+        else Path(f"{prefix}.gfa_overlay.tsv")
+    )
+    gfa_overlays, gfa_warnings = load_gfa_overlay(args, query_records, overlay_report)
+
     written = []
     for output_format in args.formats:
         whole_plot = Path(f"{prefix}.{output_format}")
@@ -1033,6 +1211,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             args.width,
             args.height,
             output_format,
+            gfa_overlays=gfa_overlays,
         )
         written.append(whole_plot)
 
@@ -1067,6 +1246,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
                     args.width,
                     args.height,
                     output_format,
+                    gfa_overlays=gfa_overlays,
                 )
                 written.append(ref_plot)
 
@@ -1074,6 +1254,11 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     for label, count in skipped.items():
         if count:
             sys.stderr.write(f"  {label}: {count}\n")
+    if args.gfa_overlay:
+        sys.stderr.write(f"Wrote GFA overlay report: {overlay_report}\n")
+        sys.stderr.write(f"Overlayed {len(gfa_overlays)} GFA interval row(s).\n")
+        for warning in gfa_warnings:
+            sys.stderr.write(f"  {warning.code}: {warning.message}\n")
     for path in written:
         sys.stderr.write(f"Wrote plot: {path}\n")
 

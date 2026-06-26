@@ -2,7 +2,7 @@
 
 Reference-guided genome assembly utilities for sorting contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot review, plotting alignments, scaffolding final ordered contigs, and applying reviewed graph-supported gap fills.
 
-ChromoSort provides one command, `chromo`, with nine subcommands:
+ChromoSort provides one command, `chromo`, with ten subcommands:
 
 | Command | Purpose |
 | --- | --- |
@@ -13,6 +13,7 @@ ChromoSort provides one command, `chromo`, with nine subcommands:
 | `chromo cut` | Apply exact reviewed breakpoint edits when you already know the cut positions, replacing each requested contig with numbered pieces while copying uncut contigs unchanged and recording every emitted slice ([cut docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
 | `chromo manual` | Build a self-contained browser dashboard for dot-plot curation, task-specific `fix`/`scaffold`/`gapfill` review-event queues, contig editing, optional GFA and long-read evidence panels, FASTA export, and reproducible recipe application ([manual docs](https://rotheconrad.github.io/chromosort/commands/manual/), [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/)). |
 | `chromo plot` | Draw whole-genome, per-reference, or selected-reference dot plots from existing MUMmer coords or minimap2 PAF alignments, optionally ordered by a `chromo sort` assignment report, without re-running an aligner ([plot docs](https://rotheconrad.github.io/chromosort/commands/plot/), [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/)). |
+| `chromo graph-map` | Project GFA unitig path/walk coordinates onto matching contig FASTA coordinates, especially for hifiasm unitig GFA evidence on contig FASTA dot plots ([graph-map docs](https://rotheconrad.github.io/chromosort/commands/graph-map/)). |
 | `chromo scaffold` | Join the final sorted contigs into one scaffold FASTA record per assigned reference, infer or fix N-gap lengths, report overlaps and gap decisions, and optionally add report-only GFA junction evidence ([scaffold docs](https://rotheconrad.github.io/chromosort/commands/scaffold/)). |
 | `chromo gapfill` | Plan graph-supported fills between adjacent sorted contigs using GFA paths plus optional GAF, Hi-C-like, or reference-placement PAF evidence, then apply only fillable and reviewed paths while unresolved junctions fall back to N gaps ([gapfill docs](https://rotheconrad.github.io/chromosort/commands/gapfill/)). |
 
@@ -156,7 +157,7 @@ pixi run test
 
 ## Current Status
 
-Current version: `0.2.27`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `plot`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
+Current version: `0.2.28`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
 
 ## Citation
 
@@ -187,7 +188,8 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | Added agent-ready review documentation and coords-vs-PAF guidance, including PAF-first input recommendations, expected alignment-format differences from soybean testing, and clearer `chromo fix` mode documentation for chromosome, conservative, comprehensive, and sensitive planners. |
+| Unreleased | No changes yet. |
+| `0.2.28` | Added hifiasm GFA path/walk support: noseq-aware P/W parsing, unitig-to-contig projection reports via `chromo graph-map`, query-axis GFA overlays in `chromo plot`, projected unitig/boundary context in `chromo eval fix` and manual review panels, and synchronized command, workflow, troubleshooting, architecture, and review-playbook documentation. |
 | `0.2.27` | Refreshed publication-style architecture and user documentation: added algorithm/data-model activation maps, evidence authority mapping, updated eval/manual/GAF command guidance, synchronized input/output/workflow/status/troubleshooting docs, and verified docs/test consistency. |
 | `0.2.26` | Completed the GAF evidence and modular manual-panel upgrade: shared GAF parsing/traversal summaries, `--gaf` evidence in `chromo eval fix/scaffold/gapfill`, GAF status and selected-read fields in gapfill plans, optional `--read-paf`/`--gaf` panels in task-specific manual dashboards, and mixed GFA/PAF/GAF review fixtures/docs. |
 | `0.2.25` | Synchronized package, citation, Pixi, conda recipe, README, and docs version metadata; added the production-upgrade roadmap for paired `eval` table workflows and task-specific `manual` dashboards feeding reviewed `fix`, `scaffold`, and `gapfill` execution paths. |

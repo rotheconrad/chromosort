@@ -155,6 +155,43 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["gaf_node_orientations"], "+:1")
         self.assertEqual(rows[1]["slice_start"], "21")
 
+    def test_eval_fix_reports_projected_unitig_breakpoint_context(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = Path(tmp) / "sample"
+            graph = Path(tmp) / "unitigs.gfa"
+            graph.write_text(
+                "S\tutgL\t*\tLN:i:20\n"
+                "S\tutgR\t*\tLN:i:20\n"
+                "L\tutgL\t+\tutgR\t+\t0M\n"
+                "P\tcontig_04\tutgL+,utgR+\t0M\n"
+            )
+            run_cli(
+                "eval",
+                "fix",
+                "--assembly-fasta",
+                str(DATA / "assembly.fa"),
+                "--coords",
+                str(DATA / "sample.coords"),
+                "--contigs",
+                "contig_04",
+                "--gfa",
+                str(graph),
+                "--output-prefix",
+                str(prefix),
+                "--min-segment-bp",
+                "5",
+                "--mode",
+                "sensitive",
+            )
+
+            rows = read_tsv(Path(str(prefix) + ".fix_review.tsv"))
+
+        self.assertEqual(rows[0]["graph_node_status"], "missing_node")
+        self.assertEqual(rows[0]["graph_unitig"], "utgL")
+        self.assertEqual(rows[0]["graph_unitig_orientation"], "+")
+        self.assertEqual(rows[0]["graph_unitig_boundary_distance_bp"], "1")
+        self.assertEqual(rows[0]["graph_near_path_boundary"], "yes")
+
     def test_fix_can_apply_eval_fix_review_table_without_alignment(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = Path(tmp) / "sample"
