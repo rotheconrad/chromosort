@@ -104,6 +104,12 @@ nav:
         url: /guides/breakpoint-review/
       - title: Inversions
         url: /guides/inversions-orientation/
+      - title: Manual review
+        url: /guides/manual-dashboard-review/
+      - title: Review tables
+        url: /guides/spreadsheet-review-tables/
+      - title: Scaffolding
+        url: /guides/scaffolding-gaps-overlaps/
       - title: Dot plots
         url: /dot-plots/
         children:

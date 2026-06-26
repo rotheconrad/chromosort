@@ -18,8 +18,8 @@ sequence.
 
 ## Available Guides
 
-Start with the foundation and core decision guides when you are setting up or
-checking a workflow:
+Start with the foundation, core decision, and review-interface guides when you
+are setting up or checking a workflow:
 
 - [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }})
 - [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }})
@@ -29,6 +29,9 @@ checking a workflow:
 - [Sort, clean, fix, cut, or manual?]({{ '/guides/choosing-commands/' | relative_url }})
 - [Chimeric contig and breakpoint review]({{ '/guides/breakpoint-review/' | relative_url }})
 - [Inversions and orientation changes]({{ '/guides/inversions-orientation/' | relative_url }})
+- [Manual dashboard review]({{ '/guides/manual-dashboard-review/' | relative_url }})
+- [Spreadsheet review tables]({{ '/guides/spreadsheet-review-tables/' | relative_url }})
+- [Scaffolding, gaps, and overlaps]({{ '/guides/scaffolding-gaps-overlaps/' | relative_url }})
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 
 ## Dot-Plot Guide Review
@@ -107,9 +110,9 @@ Build guides for human-in-the-loop workflows.
 
 | Priority | Guide | Deliverable |
 | --- | --- | --- |
-| 9 | Manual dashboard review | A guide for browsing dot plots, staging breakpoints, removing/restoring contigs, labeling scaffolds, exporting FASTA, and applying recipes. |
-| 10 | Spreadsheet review tables | A guide for `chromo eval fix/scaffold/gapfill`, accepted rows, stale-row validation, reviewed executor paths, and task-specific manual queues. |
-| 11 | Scaffolding, gaps, and overlaps | A guide for inferred gaps, fixed gaps, negative gaps, terminal versus internal overlaps, sequence-confirmed trimming, and reviewed gap overrides. |
+| 9 | [Manual dashboard review]({{ '/guides/manual-dashboard-review/' | relative_url }}) | Available. Covers browsing dot plots, staging breakpoints, removing/restoring contigs, labeling scaffolds, exporting FASTA, and applying recipes. |
+| 10 | [Spreadsheet review tables]({{ '/guides/spreadsheet-review-tables/' | relative_url }}) | Available. Covers `chromo eval fix/scaffold/gapfill`, accepted rows, stale-row validation, reviewed executor paths, and task-specific manual queues. |
+| 11 | [Scaffolding, gaps, and overlaps]({{ '/guides/scaffolding-gaps-overlaps/' | relative_url }}) | Available. Covers inferred gaps, fixed gaps, negative gaps, terminal versus internal overlaps, sequence-confirmed trimming, and reviewed gap overrides. |
 
 ### Phase 4: Graph And Long-Read Evidence
 
