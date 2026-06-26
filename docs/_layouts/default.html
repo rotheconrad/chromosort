@@ -40,8 +40,6 @@
             {% assign item_active = false %}
             {% if page.url == item.url %}
               {% assign item_active = true %}
-            {% elsif item.url != "/" and page.url contains item.url %}
-              {% assign item_active = true %}
             {% endif %}
             {% if item.children %}
               {% for child in item.children %}

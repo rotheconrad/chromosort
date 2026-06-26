@@ -20,10 +20,14 @@ before they are used as inputs to another alignment-dependent command.
 - [Installation](https://rotheconrad.github.io/chromosort/installation/)
 - [Input files](https://rotheconrad.github.io/chromosort/input-files/)
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
+- [Examples]({{ '/examples/' | relative_url }}) for worked cleanup,
+  chimeric-contig, graph-aware scaffold/gapfill, and handoff paths.
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }})
-- [Guides]({{ '/guides/' | relative_url }}) for portable concept guides,
-  ChromoSort-specific operating guides, worked examples, and dot plots.
-- [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
+- [Concepts]({{ '/concepts/' | relative_url }}) for dot plots,
+  PAF-vs-coords choices, inversions, graph evidence, projections, and
+  long-read support.
+- [Guides]({{ '/guides/' | relative_url }}) for ChromoSort-specific operating
+  guides.
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
 
@@ -44,8 +48,12 @@ before they are used as inputs to another alignment-dependent command.
 ## Running Analyses
 
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
-- [Guides]({{ '/guides/' | relative_url }}) for concept guides, ChromoSort
-  guide material, worked examples, and handoff checklists.
+- [Concepts]({{ '/concepts/' | relative_url }}) for broadly useful
+  sequence-analysis ideas.
+- [Guides]({{ '/guides/' | relative_url }}) for ChromoSort command decisions,
+  reports, reviewed plans, and sequence-changing outputs.
+- [Examples]({{ '/examples/' | relative_url }}) for worked review paths and
+  handoff checklists.
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }}) for
   choosing one primary coords or PAF alignment, inversion review,
   long-read/GFA/GAF evidence, and handoffs between chats or projects.

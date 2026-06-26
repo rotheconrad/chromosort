@@ -70,6 +70,17 @@ nav:
         url: /workflows/#handling-overlapping-contigs
       - title: Synthetic graph workflow
         url: /workflows/#synthetic-graph-workflow
+  - title: Examples
+    url: /examples/
+    children:
+      - title: Cleanup example
+        url: /guides/mostly-correct-cleanup/
+      - title: Chimeric example
+        url: /guides/chimeric-contig-walkthrough/
+      - title: Graph walkthrough
+        url: /guides/graph-scaffold-gapfill-walkthrough/
+      - title: Handoff
+        url: /guides/dataset-handoff-checklist/
   - title: Review Playbook
     url: /review-playbook/
     children:
@@ -83,28 +94,44 @@ nav:
         url: /review-playbook/#add-long-read-and-graph-evidence
       - title: Handoff
         url: /review-playbook/#handoff-checklist-for-a-new-chat-or-agent
+  - title: Concepts
+    url: /concepts/
+    children:
+      - title: Dot plots
+        url: /dot-plots/
+      - title: PAF or coords
+        url: /guides/paf-vs-coords/
+      - title: Inversions
+        url: /guides/inversions-orientation/
+      - title: Graph evidence
+        url: /guides/assembly-graph-evidence/
+      - title: hifiasm projection
+        url: /guides/hifiasm-graph-projection/
+      - title: Read evidence
+        url: /guides/long-read-paf-gaf/
   - title: Guides
     url: /guides/
     children:
-      - title: Concept guides
-        url: /guides/#concept-guides
-      - title: ChromoSort guides
-        url: /guides/#chromosort-guides
-      - title: Worked examples
-        url: /guides/#worked-examples
-      - title: Troubleshooting paths
-        url: /guides/#troubleshooting-paths
-      - title: Dot plots
-        url: /dot-plots/
-        children:
-          - title: Anatomy
-            url: /dot-plots/#dot-plot-anatomy
-          - title: Pattern gallery
-            url: /dot-plots/#pattern-gallery
-          - title: Review workflow
-            url: /dot-plots/#a-practical-review-workflow
-          - title: Common traps
-            url: /dot-plots/#common-traps
+      - title: FASTA rule
+        url: /guides/alignment-evidence/
+      - title: Name matching
+        url: /guides/name-matching/
+      - title: Audit tables
+        url: /guides/audit-tables/
+      - title: Sorting decisions
+        url: /guides/sorting-decisions/
+      - title: Choose command
+        url: /guides/choosing-commands/
+      - title: Breakpoint review
+        url: /guides/breakpoint-review/
+      - title: Manual review
+        url: /guides/manual-dashboard-review/
+      - title: Review tables
+        url: /guides/spreadsheet-review-tables/
+      - title: Scaffolding
+        url: /guides/scaffolding-gaps-overlaps/
+      - title: Graph gapfill
+        url: /guides/graph-gap-filling/
   - title: Commands
     url: /commands/
     children:
@@ -203,12 +230,12 @@ nav:
         url: /troubleshooting/#troubleshooting-entry-points
       - title: FASTA/alignment
         url: /troubleshooting/#edited-fasta-does-not-match-old-alignments
+      - title: Coords vs PAF
+        url: /troubleshooting/#coords-and-paf-disagree
+      - title: Old plots
+        url: /troubleshooting/#plot-shows-the-old-assembly
       - title: Empty plots
         url: /troubleshooting/#plots-are-empty-or-sparse
-      - title: Name matching
-        url: /guides/name-matching/
-      - title: Audit tables
-        url: /guides/audit-tables/
       - title: Graph projection
         url: /troubleshooting/#gfa-overlay-or-projection-is-empty
       - title: Gapfill ambiguity
