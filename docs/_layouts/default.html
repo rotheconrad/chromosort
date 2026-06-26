@@ -43,8 +43,17 @@
             {% endif %}
             {% if item.children %}
               {% for child in item.children %}
-                {% if page.url == child.url %}
+                {% assign child_base_url = child.url | split: "#" | first %}
+                {% if page.url == child.url or page.url == child_base_url %}
                   {% assign item_active = true %}
+                {% endif %}
+                {% if child.children %}
+                  {% for grandchild in child.children %}
+                    {% assign grandchild_base_url = grandchild.url | split: "#" | first %}
+                    {% if page.url == grandchild.url or page.url == grandchild_base_url %}
+                      {% assign item_active = true %}
+                    {% endif %}
+                  {% endfor %}
                 {% endif %}
               {% endfor %}
             {% endif %}
@@ -61,12 +70,34 @@
                 </summary>
                 <div class="sidebar__children">
                   {% for child in item.children %}
-                    <a
-                      class="sidebar__link sidebar__child-link{% if page.url == child.url %} sidebar__link--active{% endif %}"
-                      href="{{ child.url | relative_url }}"
-                    >
-                      {{ child.title }}
-                    </a>
+                    {% if child.children %}
+                      {% assign child_base_url = child.url | split: "#" | first %}
+                      <div class="sidebar__nested-group{% if page.url == child.url or page.url == child_base_url %} sidebar__nested-group--active{% endif %}">
+                        <a
+                          class="sidebar__link sidebar__child-link{% if page.url == child.url or page.url == child_base_url %} sidebar__link--active{% endif %}"
+                          href="{{ child.url | relative_url }}"
+                        >
+                          {{ child.title }}
+                        </a>
+                        <div class="sidebar__grandchildren">
+                          {% for grandchild in child.children %}
+                            <a
+                              class="sidebar__link sidebar__grandchild-link{% if page.url == grandchild.url %} sidebar__link--active{% endif %}"
+                              href="{{ grandchild.url | relative_url }}"
+                            >
+                              {{ grandchild.title }}
+                            </a>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% else %}
+                      <a
+                        class="sidebar__link sidebar__child-link{% if page.url == child.url %} sidebar__link--active{% endif %}"
+                        href="{{ child.url | relative_url }}"
+                      >
+                        {{ child.title }}
+                      </a>
+                    {% endif %}
                   {% endfor %}
                 </div>
               </details>

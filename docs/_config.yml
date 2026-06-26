@@ -98,10 +98,15 @@ nav:
         url: /guides/audit-tables/
       - title: Dot plots
         url: /dot-plots/
-      - title: Dot plot anatomy
-        url: /dot-plots/#dot-plot-anatomy
-      - title: Pattern gallery
-        url: /dot-plots/#pattern-gallery
+        children:
+          - title: Anatomy
+            url: /dot-plots/#dot-plot-anatomy
+          - title: Pattern gallery
+            url: /dot-plots/#pattern-gallery
+          - title: Review workflow
+            url: /dot-plots/#a-practical-review-workflow
+          - title: Common traps
+            url: /dot-plots/#common-traps
       - title: Guide candidates
         url: /guides/#concept-inventory
   - title: Commands

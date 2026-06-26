@@ -198,6 +198,22 @@ a:hover {
   font-size: 0.86rem;
 }
 
+.sidebar__nested-group {
+  margin: 1px 0 4px;
+}
+
+.sidebar__grandchildren {
+  margin: 0 0 4px 14px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
+
+.sidebar__grandchild-link {
+  padding: 5px 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .sidebar__link:hover,
 .sidebar__link--active {
   background: #e8f1ee;
