@@ -18,8 +18,8 @@ sequence.
 
 ## Available Guides
 
-Start with the foundation, core decision, review-interface, and evidence
-guides when you are setting up or checking a workflow:
+Start with the foundation, core decision, review-interface, evidence, and
+worked-example guides when you are setting up or checking a workflow:
 
 - [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }})
 - [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }})
@@ -36,6 +36,10 @@ guides when you are setting up or checking a workflow:
 - [hifiasm unitig-to-contig projection]({{ '/guides/hifiasm-graph-projection/' | relative_url }})
 - [Long-read PAF and GAF support]({{ '/guides/long-read-paf-gaf/' | relative_url }})
 - [Graph-supported gap filling]({{ '/guides/graph-gap-filling/' | relative_url }})
+- [Mostly-correct assembly cleanup]({{ '/guides/mostly-correct-cleanup/' | relative_url }})
+- [Suspected chimeric contig review]({{ '/guides/chimeric-contig-walkthrough/' | relative_url }})
+- [Graph-aware scaffold and gapfill review]({{ '/guides/graph-scaffold-gapfill-walkthrough/' | relative_url }})
+- [Dataset handoff checklist]({{ '/guides/dataset-handoff-checklist/' | relative_url }})
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 
 ## Dot-Plot Guide Review
@@ -136,10 +140,10 @@ Finish the section with example-driven walkthroughs that combine concepts.
 
 | Priority | Guide | Deliverable |
 | --- | --- | --- |
-| 16 | Mostly-correct assembly cleanup | A guided `chromo clean` path from raw FASTA to validation plots, including when to re-align. |
-| 17 | Suspected chimeric contig review | A worked example from dot-plot signal to `eval fix`, manual review, reviewed split, re-alignment, sort, and plot. |
-| 18 | Graph-aware scaffold and gapfill review | A worked example using the synthetic graph fixture to compare GFA, GAF, Hi-C, reference-placement PAF, and final reviewed application. |
-| 19 | Dataset handoff checklist | A guide for packaging FASTA, coords/PAF, GFA/GAF, review tables, plots, run summaries, and notes for a new review session. |
+| 16 | [Mostly-correct assembly cleanup]({{ '/guides/mostly-correct-cleanup/' | relative_url }}) | Available. Guides `chromo clean` from raw FASTA to validation plots, including when to re-align. |
+| 17 | [Suspected chimeric contig review]({{ '/guides/chimeric-contig-walkthrough/' | relative_url }}) | Available. Walks from dot-plot signal to `eval fix`, manual review, reviewed split, re-alignment, sort, and plot. |
+| 18 | [Graph-aware scaffold and gapfill review]({{ '/guides/graph-scaffold-gapfill-walkthrough/' | relative_url }}) | Available. Uses the synthetic graph fixture to compare GFA, GAF, Hi-C, reference-placement PAF, and final reviewed application. |
+| 19 | [Dataset handoff checklist]({{ '/guides/dataset-handoff-checklist/' | relative_url }}) | Available. Packages FASTA, coords/PAF, GFA/GAF, review tables, plots, run summaries, and notes for a new review session. |
 
 ## Definition Of Done
 

@@ -25,7 +25,7 @@ before they are used as inputs to another alignment-dependent command.
   PAF-vs-coords choices, name matching, audit tables, sorting decisions,
   command choice, breakpoint review, inversions, manual review, review tables,
   scaffolding decisions, graph evidence, long-read evidence, graph gap filling,
-  and dot plots.
+  worked examples, handoff checklists, and dot plots.
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
@@ -49,7 +49,7 @@ before they are used as inputs to another alignment-dependent command.
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
 - [Guides]({{ '/guides/' | relative_url }}) for educational explanations of
   evidence files, audit reports, command decisions, review interfaces, and
-  graph-aware visual review.
+  graph-aware visual review, plus worked examples and handoff checklists.
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }}) for
   choosing one primary coords or PAF alignment, inversion review,
   long-read/GFA/GAF evidence, and handoffs between chats or projects.

@@ -118,6 +118,14 @@ nav:
         url: /guides/long-read-paf-gaf/
       - title: Graph gapfill
         url: /guides/graph-gap-filling/
+      - title: Cleanup example
+        url: /guides/mostly-correct-cleanup/
+      - title: Chimeric example
+        url: /guides/chimeric-contig-walkthrough/
+      - title: Graph walkthrough
+        url: /guides/graph-scaffold-gapfill-walkthrough/
+      - title: Handoff
+        url: /guides/dataset-handoff-checklist/
       - title: Dot plots
         url: /dot-plots/
         children:
