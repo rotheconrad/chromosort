@@ -169,6 +169,9 @@ Fillable rows are accepted by default in the review-event table; unresolved,
 ambiguous, stale, or unfillable rows remain visible but are not accepted by
 default. `chromo gapfill --reviewed-plan` validates accepted rows against the
 current scaffold, contig pair, and `path_nodes` before applying sequence.
+Use `--ordered-fasta --assignments` for pre-scaffold review, or
+`--scaffold-fasta --agp` when reviewing candidate fills in an existing
+scaffold-first workflow.
 
 `chromo eval gapfill` can include report-only context from:
 
@@ -176,6 +179,8 @@ current scaffold, contig pair, and `path_nodes` before applying sequence.
 - `--hic-pairs`: graph-node contact support.
 - `--ref-paf`: reference-placement support for intermediate graph nodes.
 - `--read-paf`: long-read-to-assembly bridge evidence between contig ends.
+- `--patch-table` and optional `--patch-fasta`: external patch candidates
+  compared to graph fills as review evidence.
 
 ## Parameters
 
@@ -185,15 +190,21 @@ current scaffold, contig pair, and `path_nodes` before applying sequence.
 | `fix` | `--coords` / `--paf` | required | Whole-genome reference-to-assembly alignment used by the fix planner. |
 | `fix` | `--contigs`, `--contigs-file`, `--all` | none | Evaluate selected contigs or all split-signal contigs. |
 | `fix` | `--mode` | `conservative` | Fix planner mode used to prepare candidate rows. |
-| `scaffold`, `gapfill` | `--ordered-fasta` | required | Final ordered FASTA from `chromo sort`. |
-| `scaffold`, `gapfill` | `--assignments` | required | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`. |
+| `scaffold`, `gapfill` | `--ordered-fasta` | input mode | Final ordered FASTA from `chromo sort`; required with `--assignments`. |
+| `scaffold`, `gapfill` | `--assignments` | input mode | Matching `<prefix>.contig_assignments.tsv` from `chromo sort`; required with `--ordered-fasta`. |
+| `gapfill` | `--scaffold-fasta` | input mode | Existing scaffold FASTA; required with `--agp` for scaffold-first review. |
+| `gapfill` | `--agp` | input mode | AGP map for `--scaffold-fasta`, used to recover component identities and N-gap spans. |
 | `scaffold` | `--fixed-gap-bp` | none | Prepare rows using fixed gaps instead of inferred gaps. |
 | `scaffold` | `--gfa` | none | Optional assembly graph GFA for direct-link and short-path junction context; required when `--gaf` is provided. |
 | `gapfill` | `--gfa` | required | Assembly graph GFA for candidate fill paths. |
+| `gapfill` | `--project-gfa-paths` | off | Project component IDs through matching GFA `P`/`W` paths and report terminal-unitig gapfill plans; sequence-bearing projected paths can be fillable. |
+| `gapfill` | `--projection-trim-overlaps` | off | With `--project-gfa-paths`, subtract path-step overlaps while building the projection. |
 | all modes | `--output-prefix` | required | Prefix for the mode-specific review TSV. |
 | all modes | `--read-paf` | none | Optional long-read-to-assembly PAF for breakpoint or contig-end bridge support fields. |
 | all modes | `--gaf` | none | Optional long-read graph traversal evidence. In `fix`, GAF is advisory node context; in `scaffold` and `gapfill`, it reports candidate path support. |
 | `gapfill` | `--hic-pairs`, `--ref-paf` | none | Optional graph-path support evidence for gapfill branch resolution. |
+| `gapfill` | `--patch-table` | none | Optional external patch candidate TSV keyed by `scaffold`, `left_contig`, and `right_contig`; compared to graph-derived fills. |
+| `gapfill` | `--patch-fasta` | none | Optional FASTA containing `patch_id` sequences referenced by `--patch-table`. |
 | `gapfill` | `--include-fill-sequences` | off | Include candidate fill sequence in the review table. |
 
 The planner threshold options mirror the corresponding executor command.

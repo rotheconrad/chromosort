@@ -221,18 +221,51 @@ def parse_gapfill_args(argv=None, prog=None):
         description="Prepare an editable TSV of candidate chromo gapfill decisions.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    ap.add_argument("-f", "--ordered-fasta", required=True, help="Final ordered FASTA from chromo sort.")
+    ap.add_argument(
+        "-f",
+        "--ordered-fasta",
+        default=None,
+        help="Final ordered FASTA from chromo sort. Use with --assignments.",
+    )
     ap.add_argument(
         "-a",
         "--assignments",
-        required=True,
-        help="Matching <prefix>.contig_assignments.tsv from chromo sort.",
+        default=None,
+        help=(
+            "Matching <prefix>.contig_assignments.tsv from chromo sort. "
+            "Use with --ordered-fasta."
+        ),
+    )
+    ap.add_argument(
+        "--scaffold-fasta",
+        default=None,
+        help="Existing scaffold FASTA. Use with --agp.",
+    )
+    ap.add_argument(
+        "--agp",
+        default=None,
+        help="AGP map for --scaffold-fasta.",
     )
     ap.add_argument("--gfa", required=True, help="Assembly graph GFA containing segment sequences and links.")
+    ap.add_argument(
+        "--project-gfa-paths",
+        action="store_true",
+        help=(
+            "Project ordered or AGP component names through matching GFA P/W "
+            "path records, then plan from terminal unitigs."
+        ),
+    )
+    ap.add_argument(
+        "--projection-trim-overlaps",
+        action="store_true",
+        help="Subtract path-step overlaps while building --project-gfa-paths projections.",
+    )
     ap.add_argument("--gaf", default=None, help="Optional GAF graph alignments for read-path support.")
     ap.add_argument("--hic-pairs", default=None, help="Optional graph-node contact count TSV.")
     ap.add_argument("--ref-paf", default=None, help="Optional reference-to-assembly PAF for graph-node placement.")
     ap.add_argument("--read-paf", default=None, help="Optional long-read-to-assembly PAF for contig-end bridge support.")
+    ap.add_argument("--patch-table", default=None, help="Optional TSV of external patch candidates keyed by scaffold/left/right.")
+    ap.add_argument("--patch-fasta", default=None, help="Optional FASTA for patch_id records referenced by --patch-table.")
     ap.add_argument("--min-read-mapq", type=int, default=0, help="Minimum MAPQ for --read-paf rows.")
     ap.add_argument("--read-terminal-window-bp", type=int, default=5_000)
     ap.add_argument("--read-min-anchor-bp", type=int, default=500)

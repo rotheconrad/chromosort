@@ -94,6 +94,7 @@ Review:
 | `scaffold.scaffold_gaps.tsv` | Inferred gaps, overlaps, gap modes, and overlap actions. |
 | `scaffold.graph_gaps.tsv` | Direct edges, short graph paths, missing nodes, and orientations. |
 | `scaffold.scaffold_summary.tsv` | Scaffold lengths, gap totals, and ordered contig lists. |
+| `scaffold.submission_checklist.tsv` | FASTA/AGP consistency, gap counts, and handoff checks. |
 
 Graph scaffold reports are still report-only by default.
 
@@ -165,6 +166,7 @@ Review:
 
 - `gapfill.reviewed.gapfill_plan.tsv` for `applied=yes`,
 - `gapfill.reviewed.gapfilled.fa` for the filled scaffold record,
+- `gapfill.reviewed.submission_checklist.tsv` for FASTA/AGP handoff checks,
 - `gapfill.reviewed.run_summary.txt` for fill-status counts.
 
 ## What This Example Teaches

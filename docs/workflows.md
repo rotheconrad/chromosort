@@ -479,6 +479,8 @@ Review these outputs before publishing a filled scaffold:
 - `results/sample.gapfill.review.html`: side-by-side review of candidate paths.
 - `results/sample.reviewed_gapfill.gapfilled.fa`: final FASTA after accepted
   fills only.
+- `results/sample.reviewed_gapfill.submission_checklist.tsv`: FASTA/AGP
+  consistency, unresolved gap totals, graph-fill totals, and handoff manifest.
 
 ## Handling Overlapping Contigs
 
@@ -508,7 +510,8 @@ deduplicate them.
 zero-length gaps: no Ns are inserted and neither contig is trimmed. The raw
 negative inferred gap, overlap bp, overlap class, overlap fractions, policy, and
 action are reported in `<prefix>.scaffold_gaps.tsv`, and scaffold-level overlap
-and trimming totals are reported in `<prefix>.scaffold_summary.tsv`.
+and trimming totals are reported in `<prefix>.scaffold_summary.tsv`. The
+submission checklist records whether the emitted FASTA and AGP agree.
 
 When you want sequence surgery at scaffolding time, choose an explicit overlap
 policy:

@@ -116,6 +116,132 @@ def write_gapfill_fixture(tmp_path):
     return ordered, assignments, graph
 
 
+def write_projected_gapfill_fixture(tmp_path):
+    ordered = tmp_path / "projected_ordered.fa"
+    assignments = tmp_path / "projected_assignments.tsv"
+    graph = tmp_path / "projected_unitigs.noseq.gfa"
+
+    ordered.write_text(">chr1_left\nAAAACC\n>chr1_right\nTTCCCC\n")
+    with open(assignments, "w", newline="") as fh:
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=[
+                "contig",
+                "kept",
+                "new_name",
+                "assigned_ref",
+                "order_in_ref",
+                "ref_start",
+                "ref_end",
+                "orientation",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        writer.writerows(
+            [
+                {
+                    "contig": "left",
+                    "kept": "yes",
+                    "new_name": "chr1_left",
+                    "assigned_ref": "chr1",
+                    "order_in_ref": 1,
+                    "ref_start": 1,
+                    "ref_end": 6,
+                    "orientation": "+",
+                },
+                {
+                    "contig": "right",
+                    "kept": "yes",
+                    "new_name": "chr1_right",
+                    "assigned_ref": "chr1",
+                    "order_in_ref": 2,
+                    "ref_start": 21,
+                    "ref_end": 26,
+                    "orientation": "+",
+                },
+            ]
+        )
+    graph.write_text(
+        "H\tVN:Z:1.0\n"
+        "S\tutg_left_a\t*\tLN:i:3\n"
+        "S\tutg_left_terminal\t*\tLN:i:3\n"
+        "S\tutg_bridge\t*\tLN:i:4\n"
+        "S\tutg_right_terminal\t*\tLN:i:3\n"
+        "S\tutg_right_b\t*\tLN:i:3\n"
+        "L\tutg_left_a\t+\tutg_left_terminal\t+\t0M\n"
+        "L\tutg_left_terminal\t+\tutg_bridge\t+\t0M\n"
+        "L\tutg_bridge\t+\tutg_right_terminal\t+\t0M\n"
+        "L\tutg_right_terminal\t+\tutg_right_b\t+\t0M\n"
+        "P\tleft\tutg_left_a+,utg_left_terminal+\t0M\n"
+        "P\tright\tutg_right_terminal+,utg_right_b+\t0M\n"
+    )
+    return ordered, assignments, graph
+
+
+def write_projected_sequence_gapfill_fixture(tmp_path):
+    ordered = tmp_path / "projected_sequence_ordered.fa"
+    assignments = tmp_path / "projected_sequence_assignments.tsv"
+    graph = tmp_path / "projected_sequence_unitigs.gfa"
+
+    ordered.write_text(">chr1_left\nAAAACC\n>chr1_right\nTTCCCC\n")
+    with open(assignments, "w", newline="") as fh:
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=[
+                "contig",
+                "kept",
+                "new_name",
+                "assigned_ref",
+                "order_in_ref",
+                "ref_start",
+                "ref_end",
+                "orientation",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        writer.writerows(
+            [
+                {
+                    "contig": "left",
+                    "kept": "yes",
+                    "new_name": "chr1_left",
+                    "assigned_ref": "chr1",
+                    "order_in_ref": 1,
+                    "ref_start": 1,
+                    "ref_end": 6,
+                    "orientation": "+",
+                },
+                {
+                    "contig": "right",
+                    "kept": "yes",
+                    "new_name": "chr1_right",
+                    "assigned_ref": "chr1",
+                    "order_in_ref": 2,
+                    "ref_start": 21,
+                    "ref_end": 26,
+                    "orientation": "+",
+                },
+            ]
+        )
+    graph.write_text(
+        "H\tVN:Z:1.0\n"
+        "S\tutg_left_body\tAAAA\tLN:i:4\n"
+        "S\tutg_left_terminal\tCC\tLN:i:2\n"
+        "S\tutg_bridge\tCCGGGGTT\tLN:i:8\n"
+        "S\tutg_right_terminal\tTT\tLN:i:2\n"
+        "S\tutg_right_body\tCCCC\tLN:i:4\n"
+        "L\tutg_left_body\t+\tutg_left_terminal\t+\t0M\n"
+        "L\tutg_left_terminal\t+\tutg_bridge\t+\t2M\n"
+        "L\tutg_bridge\t+\tutg_right_terminal\t+\t2M\n"
+        "L\tutg_right_terminal\t+\tutg_right_body\t+\t0M\n"
+        "P\tleft\tutg_left_body+,utg_left_terminal+\t0M\n"
+        "P\tright\tutg_right_terminal+,utg_right_body+\t0M\n"
+    )
+    return ordered, assignments, graph
+
+
 class EvalTests(unittest.TestCase):
     def test_eval_fix_writes_review_table(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -383,6 +509,183 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["fill_sequence"], "GGGGTT")
         self.assertEqual(rows[0]["gaf_support_status"], ".")
         self.assertEqual(rows[0]["longread_bridge_reads"], "1")
+        self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
+
+    def test_eval_gapfill_reports_external_patch_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered, assignments, graph = write_gapfill_fixture(tmp_path)
+            patch_table = tmp_path / "patches.tsv"
+            prefix = tmp_path / "eval_patch"
+            patch_table.write_text(
+                "scaffold\tleft_contig\tright_contig\tpatch_id\tsource\tpatch_sequence\n"
+                "chr1\tchr1_left\tchr1_right\tpatch_eval\tLR_Gapcloser\tGGGGTT\n"
+            )
+
+            run_cli(
+                "eval",
+                "gapfill",
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--patch-table",
+                str(patch_table),
+                "--include-fill-sequences",
+                "--output-prefix",
+                str(prefix),
+            )
+            rows = read_tsv(Path(str(prefix) + ".gapfill_review.tsv"))
+
+        self.assertEqual(rows[0]["patch_candidate_count"], "1")
+        self.assertEqual(rows[0]["patch_best_id"], "patch_eval")
+        self.assertEqual(rows[0]["patch_best_source"], "LR_Gapcloser")
+        self.assertEqual(rows[0]["patch_graph_status"], "exact_graph_match")
+        self.assertEqual(rows[0]["patch_best_sequence"], "GGGGTT")
+
+    def test_eval_gapfill_accepts_scaffold_fasta_with_agp(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            _ordered, _assignments, graph = write_gapfill_fixture(tmp_path)
+            scaffold = tmp_path / "scaffold.fa"
+            agp = tmp_path / "scaffold.agp"
+            eval_prefix = tmp_path / "eval_scaffold"
+            applied_prefix = tmp_path / "applied_scaffold"
+
+            scaffold.write_text(">chr1\nAAAACC" + "N" * 14 + "TTCCCC\n")
+            agp.write_text(
+                "##agp-version\t2.1\n"
+                "chr1\t1\t6\t1\tW\tleft\t1\t6\t+\n"
+                "chr1\t7\t20\t2\tN\t14\tscaffold\tyes\talign_genus\n"
+                "chr1\t21\t26\t3\tW\tright\t1\t6\t+\n"
+            )
+
+            run_cli(
+                "eval",
+                "gapfill",
+                "--scaffold-fasta",
+                str(scaffold),
+                "--agp",
+                str(agp),
+                "--gfa",
+                str(graph),
+                "--include-fill-sequences",
+                "--output-prefix",
+                str(eval_prefix),
+            )
+            review = Path(str(eval_prefix) + ".gapfill_review.tsv")
+            rows = read_tsv(review)
+
+            run_cli(
+                "gapfill",
+                "--scaffold-fasta",
+                str(scaffold),
+                "--agp",
+                str(agp),
+                "--gfa",
+                str(graph),
+                "--reviewed-plan",
+                str(review),
+                "--output-prefix",
+                str(applied_prefix),
+                "--apply",
+                "--simple-headers",
+            )
+
+            records = read_fasta(Path(str(applied_prefix) + ".gapfilled.fa"))
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["task"], "gapfill")
+        self.assertEqual(rows[0]["left_contig"], "left")
+        self.assertEqual(rows[0]["right_contig"], "right")
+        self.assertEqual(rows[0]["accept"], "yes")
+        self.assertEqual(rows[0]["fill_status"], "fillable")
+        self.assertEqual(rows[0]["path_nodes"], "left+,gapper+,right+")
+        self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
+
+    def test_eval_gapfill_reports_projected_unitig_plan(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered, assignments, graph = write_projected_gapfill_fixture(tmp_path)
+            prefix = tmp_path / "eval_projected"
+
+            run_cli(
+                "eval",
+                "gapfill",
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--project-gfa-paths",
+                "--output-prefix",
+                str(prefix),
+            )
+            rows = read_tsv(Path(str(prefix) + ".gapfill_review.tsv"))
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["task"], "gapfill")
+        self.assertEqual(rows[0]["accept"], "no")
+        self.assertEqual(rows[0]["left_graph_node"], "utg_left_terminal")
+        self.assertEqual(rows[0]["right_graph_node"], "utg_right_terminal")
+        self.assertEqual(rows[0]["fill_status"], "projected_path_planning_only")
+        self.assertEqual(
+            rows[0]["path_nodes"],
+            "utg_left_terminal+,utg_bridge+,utg_right_terminal+",
+        )
+
+    def test_eval_gapfill_projected_sequence_review_can_drive_apply(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ordered, assignments, graph = write_projected_sequence_gapfill_fixture(tmp_path)
+            eval_prefix = tmp_path / "eval_projected_sequence"
+            applied_prefix = tmp_path / "applied_projected_sequence"
+
+            run_cli(
+                "eval",
+                "gapfill",
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--project-gfa-paths",
+                "--include-fill-sequences",
+                "--output-prefix",
+                str(eval_prefix),
+            )
+            review = Path(str(eval_prefix) + ".gapfill_review.tsv")
+            rows = read_tsv(review)
+
+            run_cli(
+                "gapfill",
+                "--ordered-fasta",
+                str(ordered),
+                "--assignments",
+                str(assignments),
+                "--gfa",
+                str(graph),
+                "--project-gfa-paths",
+                "--reviewed-plan",
+                str(review),
+                "--output-prefix",
+                str(applied_prefix),
+                "--apply",
+                "--simple-headers",
+            )
+            records = read_fasta(Path(str(applied_prefix) + ".gapfilled.fa"))
+
+        self.assertEqual(rows[0]["accept"], "yes")
+        self.assertEqual(rows[0]["fill_status"], "fillable")
+        self.assertEqual(rows[0]["fill_sequence"], "GGGGTT")
+        self.assertEqual(
+            rows[0]["path_nodes"],
+            "utg_left_terminal+,utg_bridge+,utg_right_terminal+",
+        )
         self.assertEqual(records["chr1"], "AAAACCGGGGTTCCCC")
 
 

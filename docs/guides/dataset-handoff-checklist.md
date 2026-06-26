@@ -67,10 +67,12 @@ handoff/
     sample.scaffold.fa
     sample.scaffold_gaps.tsv
     sample.graph_gaps.tsv
+    sample.submission_checklist.tsv
   gapfill/
     sample.gapfill_plan.tsv
     sample.gapfill.review.html
     sample.reviewed_gapfill.gapfilled.fa
+    sample.reviewed_gapfill.submission_checklist.tsv
 ```
 
 The exact folder names do not matter. Stage separation matters.

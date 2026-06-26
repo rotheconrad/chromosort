@@ -137,6 +137,10 @@ chromo eval gapfill \
   --output-prefix review/sample.gapfill
 ```
 
+For scaffold-first workflows, replace `--ordered-fasta --assignments` with
+`--scaffold-fasta --agp` so the review table is built from AGP component
+flanks around scaffold N gaps.
+
 Apply accepted fill paths:
 
 ```bash

@@ -111,6 +111,23 @@ def read_tsv(path):
         return list(csv.DictReader(fh, delimiter="\t"))
 
 
+def read_agp(path):
+    rows = []
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith("#"):
+                continue
+            rows.append(line.rstrip("\n").split("\t"))
+    return rows
+
+
+def checklist_by_item(path):
+    return {
+        (row["section"], row["item"]): row
+        for row in read_tsv(path)
+    }
+
+
 class ScaffoldTests(unittest.TestCase):
     def test_scaffold_uses_inferred_reference_gap_by_default(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -133,6 +150,30 @@ class ScaffoldTests(unittest.TestCase):
             self.assertEqual(summary["chr1"]["contigs"], "2")
             self.assertEqual(summary["chr1"]["gap_bp"], "5")
             self.assertEqual(summary["chr1"]["scaffold_bp"], "12")
+
+            agp = read_agp(Path(str(prefix) + ".scaffold.agp"))
+            self.assertEqual(
+                agp[:3],
+                [
+                    ["chr1", "1", "4", "1", "W", "chr1_contigA", "1", "4", "+"],
+                    ["chr1", "5", "9", "2", "N", "5", "scaffold", "yes", "align_genus"],
+                    ["chr1", "10", "12", "3", "W", "chr1_contigB", "1", "3", "+"],
+                ],
+            )
+            components = read_tsv(Path(str(prefix) + ".scaffold_components.tsv"))
+            self.assertEqual(components[1]["part_type"], "gap")
+            self.assertEqual(components[1]["gap_length"], "5")
+
+            checklist = checklist_by_item(Path(str(prefix) + ".submission_checklist.tsv"))
+            self.assertEqual(checklist[("fasta", "non_acgtn_bases")]["status"], "ok")
+            self.assertEqual(checklist[("fasta", "non_acgtn_bases")]["value"], "0")
+            self.assertEqual(checklist[("checks", "agp_gap_spans_are_ns")]["status"], "ok")
+            self.assertEqual(checklist[("provenance", "unresolved_gap_parts")]["value"], "1")
+            self.assertEqual(checklist[("provenance", "graph_fill_parts")]["value"], "0")
+            self.assertIn(
+                "keep_with_submission",
+                checklist[("files", "scaffold_fasta")]["detail"],
+            )
 
     def test_scaffold_can_use_fixed_gap(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -151,6 +151,68 @@ The shared evidence layer should summarize:
   them.
 - Ambiguous or stale evidence should remain reviewable rather than guessed.
 
+## NCBI-Ready Scaffold And Gapfill Buildout
+
+The next product chapter is to make `chromo scaffold` and `chromo gapfill`
+ready for standard scaffold-first assembly workflows and NCBI-style submission
+handoffs. The core principle is provenance: every emitted scaffold base should
+trace back to an ordered contig component, an N gap, or an accepted graph-fill
+component.
+
+### Product Goals
+
+- `chromo scaffold` emits FASTA, AGP, component provenance, gap reports, graph
+  context, and run summaries.
+- `chromo gapfill` can operate either before scaffolding from
+  `ordered.fa + assignments`, or after scaffolding from `scaffold.fa + AGP`.
+- Graph-aware filling remains explicit and reviewable: scaffold graph reports
+  stay report-only, while gapfill inserts sequence only from accepted,
+  validated graph paths.
+- `--read-paf` is documented and implemented as long-read bridge evidence, not
+  as the source of inserted bases.
+- Direct contig-level GFA support and projected unitig-level GFA support are
+  documented as separate graph modes.
+
+### Build Phases
+
+| Phase | Status | Notes |
+| --- | --- | --- |
+| 1. Emit AGP and component provenance from `chromo scaffold`. | Done | `scaffold` now writes `<prefix>.scaffold.agp` and `<prefix>.scaffold_components.tsv` beside the FASTA and gap reports. |
+| 2. Emit AGP and component provenance from `chromo gapfill`. | Done | `gapfill` now writes `<prefix>.gapfilled.agp` and `<prefix>.gapfilled_components.tsv`, including fallback gaps, graph-fill segment slices, and trimmed right-flank coordinates. |
+| 3. Add `chromo gapfill --read-paf` bridge evidence. | Done | Long-read PAF bridge counts and summaries appear in gapfill plans; reads do not provide inserted sequence. |
+| 4. Add post-scaffold `chromo gapfill --scaffold-fasta --agp` input mode. | Done | `gapfill` can now parse scaffold FASTA plus AGP, convert AGP component flanks into plans, and fill AGP N-gap rows against direct contig-level GFA. |
+| 5. Add stale/mismatched AGP guardrails. | Done | Scaffold/AGP mode fails clearly when AGP object spans do not match FASTA lengths, gap spans are not Ns, component lengths are inconsistent, component IDs are ambiguous within an object, or accepted reviewed paths no longer match. |
+| 6. Make apply semantics explicit. | Done | `gapfill --apply` now requires either `--reviewed-plan` for accepted reviewed rows or `--apply-all-fillable` for deliberate all-fillable exploratory/benchmark runs. |
+| 7. Add scaffold/AGP gapfill docs and examples. | Done | Command, guide, input, and output docs now show the standard scaffold-first workflow, explain why scaffold FASTA alone is lossy, and describe AGP/read-PAF expectations. |
+| 8. Add projected unitig-GFA gapfill planning. | Done | `gapfill` and `eval gapfill` support `--project-gfa-paths`, which projects ordered or AGP component names through matching GFA `P`/`W` paths and searches from terminal unitigs. |
+| 9. Add sequence-bearing unitig-GFA apply mode. | Done | Sequence-bearing projected paths can now reconstruct fills from unitig segments after terminal sequence validation; `.noseq.gfa` paths remain `projected_path_planning_only` topology evidence. |
+| 10. Add external patch comparison/import. | Done | `gapfill` and `eval gapfill` now import external patch tables/FASTA, compare best candidates against graph-derived fill sequence, report concordance/mismatch fields, and keep external patches review-only. |
+| 11. Add submission checklist/report. | Done | `scaffold` and `gapfill` now write `<prefix>.submission_checklist.tsv` with file manifest rows, FASTA hygiene checks, AGP consistency checks, unresolved gap counts, graph-filled span totals, and external-validation reminder. |
+| 12. Release the completed buildout. | Done | Bumped ChromoSort to `0.2.29`, synchronized release docs, and prepared the GitHub tag/push. |
+
+### Graph Mode Policy
+
+| Graph input | Current role | Target role |
+| --- | --- | --- |
+| Contig-level GFA with matching segment names and sequences | Direct `--gfa` planning and apply. | Keep as the simplest production gapfill path. |
+| Contig-level `.noseq.gfa` with lengths | Report-only topology context. | Keep topology-only; no sequence insertion. |
+| Unitig-level GFA with `P`/`W` contig paths and sequences | Projection-backed planning and apply with `--project-gfa-paths` when terminal sequence validation passes. | Keep sequence validation and AGP provenance mandatory. |
+| Unitig-level `.noseq.gfa` with `P`/`W` paths | Topology-only projected planning with `--project-gfa-paths` or standalone projection through `chromo graph-map`. | Keep topology-only; never sequence insertion. |
+| Scaffold FASTA without AGP/component map | Too lossy for safe graph-aware filling. | Continue to reject; require AGP or component provenance. |
+
+### Submission Guardrails
+
+- AGP rows must cover scaffold objects contiguously.
+- AGP gap rows must match N-only spans in scaffold FASTA.
+- Component object spans must match component coordinate lengths.
+- Applied graph fills must emit component provenance for the exact GFA segment
+  slices inserted.
+- Right-flank trims must be reflected in component coordinates.
+- Long-read PAF, GAF, Hi-C, reference-placement PAF, and external patch tables
+  remain evidence streams; the inserted sequence source must be explicit.
+- Submission checklists are review aids. Final release packages should still be
+  checked with the relevant NCBI submission validator or table2asn workflow.
+
 ## Next Chapter: GAF Evidence And Modular Manual Panels
 
 The next review upgrade should fully surface long-read GAF graph alignments

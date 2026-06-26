@@ -25,8 +25,8 @@ command-specific output sections below.
 | [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
 | [`chromo plot`](#chromo-plot-outputs) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG, with interpretation examples in the [dot-plot guide]({{ '/dot-plots/' | relative_url }}). |
 | [`chromo graph-map`](#chromo-graph-map-outputs) | `<prefix>.utg_to_ctg.tsv`, `<prefix>.path_summary.tsv`, and `<prefix>.warnings.tsv`. |
-| [`chromo scaffold`](#chromo-scaffold-outputs) | `<prefix>.scaffold.fa`, `<prefix>.scaffold_gaps.tsv`, optional `<prefix>.graph_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, and `<prefix>.run_summary.txt`. |
-| [`chromo gapfill`](#chromo-gapfill-outputs) | `<prefix>.gapfill_plan.tsv`, optional review HTML, optional `<prefix>.gapfilled.fa`, and `<prefix>.run_summary.txt`. |
+| [`chromo scaffold`](#chromo-scaffold-outputs) | `<prefix>.scaffold.fa`, `<prefix>.scaffold.agp`, `<prefix>.scaffold_components.tsv`, `<prefix>.scaffold_gaps.tsv`, optional `<prefix>.graph_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, `<prefix>.submission_checklist.tsv`, and `<prefix>.run_summary.txt`. |
+| [`chromo gapfill`](#chromo-gapfill-outputs) | `<prefix>.gapfill_plan.tsv`, `<prefix>.gapfilled.agp`, `<prefix>.gapfilled_components.tsv`, optional review HTML, optional `<prefix>.gapfilled.fa`, `<prefix>.submission_checklist.tsv`, and `<prefix>.run_summary.txt`. |
 
 ## `chromo sort` Outputs
 
@@ -277,9 +277,12 @@ junction evidence.
 | Output | Description |
 | --- | --- |
 | `<prefix>.scaffold.fa` | One FASTA record per assigned reference sequence, with ordered contigs joined by Ns. |
+| `<prefix>.scaffold.agp` | AGP 2.1 map of emitted scaffold objects, ordered contig components, and written N gaps. |
+| `<prefix>.scaffold_components.tsv` | Human-readable provenance table mirroring the AGP rows, including component coordinates, gap lengths, source labels, and status fields. |
 | `<prefix>.scaffold_gaps.tsv` | One row per inserted gap with flanking contigs, inferred gap, written gap, overlap bp/class/fractions, overlap policy/action, trimmed bp, and sequence-overlap identity when checked. |
 | `<prefix>.graph_gaps.tsv` | Optional report-only GFA evidence for adjacent scaffold junctions when `--gfa` is provided, including direct links, short paths, orientations, overlap bp, and missing-node statuses. |
 | `<prefix>.scaffold_summary.tsv` | One row per scaffold with contig count, scaffold length, sequence bp, gap bp, overlap totals, trimming totals, and ordered contig list. |
+| `<prefix>.submission_checklist.tsv` | Spreadsheet-friendly submission checklist with output-file manifest rows, FASTA character/terminal-N checks, AGP continuity and FASTA/AGP consistency checks, gap/component counts, unresolved gap totals, and graph-fill span totals. |
 | `<prefix>.run_summary.txt` | Inputs, gap model, output paths, and total scaffold counts. |
 
 **Table 8. Example `scaffold_gaps.tsv` row.** The gap report records the flanking
@@ -315,10 +318,20 @@ optional sequence-changing application.
 
 | Output | Description |
 | --- | --- |
-| `<prefix>.gapfill_plan.tsv` | One row per adjacent sorted contig pair with graph status, path nodes, GAF, Hi-C, and reference-placement support counts, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. |
+| `<prefix>.gapfill_plan.tsv` | One row per adjacent sorted contig pair, or per adjacent AGP component pair in scaffold/AGP mode, with graph status, path nodes, GAF, Hi-C, reference-placement, optional long-read bridge support counts, optional external patch comparison fields, risk flags, branch-complexity score, high-degree/self-loop/unsequenced node lists, fill status, inserted bp, right-trim bp, fallback gap bp, editable `accept_fill`, and whether the fill was applied. With `--project-gfa-paths`, `left_graph_node` and `right_graph_node` are projected terminal unitigs; sequence-bearing projected rows can be `fillable`, while no-sequence rows remain `projected_path_planning_only`. |
+| `<prefix>.gapfilled.agp` | AGP 2.1 map of ordered or AGP-derived components, fallback N gaps, and applied graph-fill component slices. In planning mode it describes the all-fallback map; in apply mode it describes `gapfilled.fa`. |
+| `<prefix>.gapfilled_components.tsv` | Human-readable provenance table mirroring the AGP rows, including graph-fill segment coordinates, trimmed right-flank coordinates, gap lengths, source labels, and status fields. |
 | `--review-html` path | Optional self-contained HTML table for reviewing gapfill-plan rows, comparing candidate paths, and exporting a reviewed-plan TSV. |
 | `<prefix>.gapfilled.fa` | Optional FASTA written only with `--apply`, containing one record per assigned reference plus unassigned records. |
-| `<prefix>.run_summary.txt` | Inputs, parameters, output paths, and fill-status counts. |
+| `<prefix>.submission_checklist.tsv` | Spreadsheet-friendly submission checklist with output-file manifest rows, FASTA/AGP checks when a final FASTA exists, planning-mode warnings when it does not, unresolved gap totals, graph-filled span totals, non-ACGTN counts, and external-validation reminder. |
+| `<prefix>.run_summary.txt` | Inputs, `graph_mode` (`direct_gfa_nodes` or `projected_gfa_paths`), parameters, output paths, and fill-status counts. |
+
+Patch comparison columns are populated when `--patch-table` is provided:
+`patch_candidate_count`, `patch_best_id`, `patch_best_source`, `patch_best_bp`,
+`patch_graph_status`, `patch_best_notes`, and, with `--include-fill-sequences`,
+`patch_best_sequence`. `patch_graph_status` values include
+`exact_graph_match`, `same_length_graph_mismatch`, `graph_mismatch`, and
+`patch_only_no_graph_sequence`.
 
 **Table 10. Example `gapfill_plan.tsv` row.** Selected columns from a graph
 fixture show a junction resolved by reference-placement PAF support. The default
@@ -329,9 +342,10 @@ application.
 | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- | ---: | ---: | --- | --- |
 | `chr1` | `chr1_left` | `chr1_right` | `ref_paf_resolved_paths` | `left+,bridge_good+,right+` | `2` | `8` | `6` | `branching,high_degree` | `fillable` | `4` | `4` | `no` | `no` |
 
-**Listing 6. Example applied gapfilled FASTA output.** With `--apply`, fillable
-paths insert graph sequence and trim the right flank by the terminal GFA
-overlap; unresolved junctions use fallback N gaps.
+**Listing 6. Example applied gapfilled FASTA output.** With
+`--apply --reviewed-plan`, accepted fillable paths insert graph sequence and
+trim the right flank by the terminal GFA overlap; unresolved or unaccepted
+junctions use fallback N gaps.
 
 ```text
 >chr1 contigs=2 filled_gaps=1 fallback_gaps=0 fill_bp=4 fallback_gap_bp=0 trimmed_bp=4
@@ -354,7 +368,7 @@ Only a subset of commands change sequence:
 - `chromo cut` replaces selected contigs with pieces cut at exact reviewed positions.
 - `chromo manual apply` reproduces a reviewed browser recipe.
 - `chromo scaffold` joins sorted contigs with inferred or fixed N gaps and only trims overlaps when an explicit overlap policy asks it to.
-- `chromo gapfill --apply` inserts graph sequence only for fillable and accepted paths.
+- `chromo gapfill --apply --reviewed-plan` inserts graph sequence only for fillable and accepted paths; `--apply --apply-all-fillable` is the explicit exploratory all-fillable mode.
 
 `chromo eval`, `chromo manual`, `chromo plot`, and report-only graph or
 long-read evidence modes do not trim, polish, or rewrite sequence. `chromo sort`

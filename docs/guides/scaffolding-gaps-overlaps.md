@@ -40,6 +40,7 @@ It writes:
 - `<prefix>.scaffold_gaps.tsv`,
 - optional `<prefix>.graph_gaps.tsv`,
 - `<prefix>.scaffold_summary.tsv`,
+- `<prefix>.submission_checklist.tsv`,
 - `<prefix>.run_summary.txt`.
 
 After scaffolding, align the scaffold FASTA if scaffold-level validation is
@@ -140,7 +141,8 @@ Review:
 2. `raw_inferred_gap_bp`, `gap_bp`, and `gap_mode`.
 3. `overlap_class`, `overlap_action`, `trimmed_bp`, and sequence identity.
 4. `results/sample.scaffold_summary.tsv` for scaffold length and gap totals.
-5. Optional `results/sample.graph_gaps.tsv` for report-only graph context.
+5. `results/sample.submission_checklist.tsv` for FASTA/AGP and handoff checks.
+6. Optional `results/sample.graph_gaps.tsv` for report-only graph context.
 
 If a few junctions need human gap-length overrides, create a review table:
 

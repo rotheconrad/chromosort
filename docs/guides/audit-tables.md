@@ -54,8 +54,8 @@ Then ask two questions:
 | `chromo cut` | The `--report` TSV | Which exact requested cut positions produced which pieces? |
 | `chromo manual apply` | The `--report` TSV | Which browser-reviewed pieces were emitted or removed? |
 | `chromo graph-map` | `<prefix>.utg_to_ctg.tsv`, `<prefix>.path_summary.tsv`, `<prefix>.warnings.tsv` | Did unitig graph coordinates project cleanly onto contig FASTA coordinates? |
-| `chromo scaffold` | `<prefix>.scaffold_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, optional `<prefix>.graph_gaps.tsv` | What gaps, overlaps, trims, and graph context were recorded at scaffold junctions? |
-| `chromo gapfill` | `<prefix>.gapfill_plan.tsv` | Which graph paths are fillable, ambiguous, risky, accepted, or applied? |
+| `chromo scaffold` | `<prefix>.scaffold_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, `<prefix>.submission_checklist.tsv`, optional `<prefix>.graph_gaps.tsv` | What gaps, overlaps, trims, graph context, and FASTA/AGP handoff checks were recorded? |
+| `chromo gapfill` | `<prefix>.gapfill_plan.tsv`, `<prefix>.submission_checklist.tsv` | Which graph paths are fillable, ambiguous, risky, accepted, or applied, and what final handoff checks remain? |
 
 ## Status Gallery
 

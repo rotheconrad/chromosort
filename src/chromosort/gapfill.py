@@ -5,22 +5,34 @@ import argparse
 import csv
 import json
 import sys
-from collections import defaultdict, deque
+from collections import OrderedDict, defaultdict, deque
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, Sequence
 
+from .agp import (
+    component_part,
+    gap_part,
+    group_parts_by_object,
+    read_agp,
+    write_agp,
+    write_component_tsv,
+)
 from .gaf import (
     choose_gaf_supported_path,
     path_oriented_nodes,
     read_gaf,
     summarize_gaf_traversal,
 )
-from .graph import read_gfa
+from .graph import build_path_projection, projections_by_contig, read_gfa
+from .longreads import read_long_read_paf, summarize_contig_bridge
 from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import iter_paf, reverse_complement, write_wrapped
 from .review import read_review_events
 from .scaffold import (
+    AssignmentRow,
+    FastaRecord,
+    ScaffoldMember,
     classify_adjacent_overlap,
     graph_intermediate_nodes,
     graph_node_name,
@@ -33,6 +45,7 @@ from .scaffold import (
     read_assignments,
     read_ordered_fasta,
 )
+from .submission import write_submission_checklist
 
 
 @dataclass
@@ -62,6 +75,17 @@ class FillPlan:
     hic_best_alt_support: Optional[int] = None
     ref_path_support: Optional[int] = None
     ref_best_alt_support: Optional[int] = None
+    longread_bridge_reads: Optional[int] = None
+    longread_orientation_summary: str = "."
+    longread_read_order_summary: str = "."
+    longread_median_read_gap_bp: str = "."
+    patch_candidate_count: int = 0
+    patch_best_id: str = "."
+    patch_best_source: str = "."
+    patch_best_bp: Optional[int] = None
+    patch_graph_status: str = "."
+    patch_best_notes: str = "."
+    patch_best_sequence: str = ""
     risk_flags: str = "."
     branch_complexity_score: int = 0
     high_degree_nodes: str = "."
@@ -75,6 +99,7 @@ class FillPlan:
     applied: bool = False
     reason: str = "."
     candidate_details: list = field(default_factory=list)
+    graph_path: list = field(default_factory=list)
 
 
 @dataclass
@@ -95,6 +120,27 @@ class GraphPathSearchResult:
     cycles_avoided: int = 0
 
 
+@dataclass(frozen=True)
+class ProjectedTerminal:
+    status: str
+    node: str = "."
+    orientation: str = "."
+    path_name: str = "."
+    step_index: Optional[int] = None
+    side: str = "."
+
+
+@dataclass(frozen=True)
+class PatchCandidate:
+    scaffold: str
+    left_contig: str
+    right_contig: str
+    patch_id: str
+    source: str
+    sequence: str
+    notes: str = "."
+
+
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     ap = argparse.ArgumentParser(
         prog=prog,
@@ -107,19 +153,58 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
     ap.add_argument(
         "-f",
         "--ordered-fasta",
-        required=True,
-        help="Final ordered FASTA from chromo sort, optionally after chromo fix.",
+        default=None,
+        help=(
+            "Final ordered FASTA from chromo sort, optionally after chromo fix. "
+            "Use together with --assignments."
+        ),
     )
     ap.add_argument(
         "-a",
         "--assignments",
-        required=True,
-        help="Corresponding <prefix>.contig_assignments.tsv from chromo sort.",
+        default=None,
+        help=(
+            "Corresponding <prefix>.contig_assignments.tsv from chromo sort. "
+            "Use together with --ordered-fasta."
+        ),
+    )
+    ap.add_argument(
+        "--scaffold-fasta",
+        default=None,
+        help=(
+            "Existing scaffold FASTA whose component and N-gap layout is "
+            "described by --agp. This is the post-scaffold input mode."
+        ),
+    )
+    ap.add_argument(
+        "--agp",
+        default=None,
+        help=(
+            "AGP 2.1 component/gap map for --scaffold-fasta. Required when "
+            "using post-scaffold gapfill mode."
+        ),
     )
     ap.add_argument(
         "--gfa",
         required=True,
         help="Assembly graph GFA containing segment sequences and links.",
+    )
+    ap.add_argument(
+        "--project-gfa-paths",
+        action="store_true",
+        help=(
+            "Project ordered or AGP component names through matching GFA P/W "
+            "path records, then plan from terminal unitigs. Sequence-bearing "
+            "projected paths can be applied; no-sequence GFAs remain topology-only."
+        ),
+    )
+    ap.add_argument(
+        "--projection-trim-overlaps",
+        action="store_true",
+        help=(
+            "When --project-gfa-paths is used, subtract path-step overlaps "
+            "while building the GFA path projection."
+        ),
     )
     ap.add_argument(
         "--gaf",
@@ -148,19 +233,75 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         ),
     )
     ap.add_argument(
+        "--read-paf",
+        default=None,
+        help=(
+            "Optional long-read-to-contig/ordered-FASTA PAF. Used as bridge "
+            "evidence across adjacent contigs; it does not supply inserted "
+            "gapfill sequence."
+        ),
+    )
+    ap.add_argument(
+        "--min-read-mapq",
+        type=int,
+        default=0,
+        help="Minimum MAPQ for --read-paf rows.",
+    )
+    ap.add_argument(
+        "--read-terminal-window-bp",
+        type=int,
+        default=5_000,
+        help="Terminal window used when counting long-read bridges.",
+    )
+    ap.add_argument(
+        "--read-min-anchor-bp",
+        type=int,
+        default=500,
+        help="Minimum terminal anchor length required for a long-read bridge.",
+    )
+    ap.add_argument(
+        "--patch-table",
+        default=None,
+        help=(
+            "Optional TSV of external patch candidates keyed by scaffold, "
+            "left_contig, and right_contig. Rows may include patch_sequence "
+            "directly or patch_id plus --patch-fasta."
+        ),
+    )
+    ap.add_argument(
+        "--patch-fasta",
+        default=None,
+        help=(
+            "Optional FASTA containing external patch sequences referenced by "
+            "--patch-table patch_id values."
+        ),
+    )
+    ap.add_argument(
         "-o",
         "--output-prefix",
         required=True,
         help=(
-            "Output prefix. Writes <prefix>.gapfill_plan.tsv and "
-            "<prefix>.run_summary.txt; with --apply also writes "
-            "<prefix>.gapfilled.fa."
+            "Output prefix. Writes <prefix>.gapfill_plan.tsv, "
+            "<prefix>.gapfilled.agp, <prefix>.gapfilled_components.tsv, "
+            "<prefix>.submission_checklist.tsv, and <prefix>.run_summary.txt; "
+            "with --apply also writes <prefix>.gapfilled.fa."
         ),
     )
     ap.add_argument(
         "--apply",
         action="store_true",
-        help="Write <prefix>.gapfilled.fa using only fillable graph paths.",
+        help=(
+            "Write <prefix>.gapfilled.fa. Requires either --reviewed-plan or "
+            "--apply-all-fillable."
+        ),
+    )
+    ap.add_argument(
+        "--apply-all-fillable",
+        action="store_true",
+        help=(
+            "With --apply, apply every currently fillable graph path without a "
+            "reviewed plan. Intended for deliberate exploratory or benchmark runs."
+        ),
     )
     ap.add_argument(
         "--reviewed-plan",
@@ -837,6 +978,70 @@ def reconstruct_fill_sequence(graph, path, left, right, max_fill_bp):
     return fill_sequence, right_trim_bp, "."
 
 
+def sequence_has_suffix(observed, expected):
+    return observed.upper().endswith(expected.upper())
+
+
+def sequence_has_prefix(observed, expected):
+    return observed.upper().startswith(expected.upper())
+
+
+def projected_fill_status(fill_sequence, reason):
+    if fill_sequence is not None:
+        return "fillable"
+    if reason and reason.startswith("unsequenced"):
+        return "projected_path_planning_only"
+    return reason
+
+
+def reconstruct_projected_fill_sequence(graph, path, left, right, max_fill_bp):
+    if not path:
+        return None, 0, "no_graph_path"
+
+    left_seq = oriented_sequence(
+        graph.nodes[path[0].source].sequence,
+        path[0].source_orientation,
+    )
+    right_seq = oriented_sequence(
+        graph.nodes[path[-1].target].sequence,
+        path[-1].target_orientation,
+    )
+    if left_seq is None or right_seq is None:
+        return None, 0, "unsequenced_flank_node"
+    if not sequence_has_suffix(left.record.seq, left_seq):
+        return None, 0, "left_terminal_sequence_mismatch"
+    if not sequence_has_prefix(right.record.seq, right_seq):
+        return None, 0, "right_terminal_sequence_mismatch"
+
+    parts = []
+    for index, edge in enumerate(path[:-1]):
+        overlap_bp = edge.overlap_bp
+        if overlap_bp is None:
+            return None, 0, "unknown_overlap"
+        node = graph.nodes[edge.target]
+        seq = oriented_sequence(node.sequence, edge.target_orientation)
+        if seq is None:
+            return None, 0, "unsequenced_intermediate_node"
+        if overlap_bp > len(seq):
+            return None, 0, "invalid_overlap"
+        parts.append(seq[overlap_bp:])
+
+        next_edge = path[index + 1]
+        if next_edge.overlap_bp is None:
+            return None, 0, "unknown_overlap"
+
+    right_trim_bp = path[-1].overlap_bp
+    if right_trim_bp is None:
+        return None, 0, "unknown_overlap"
+    if right_trim_bp > len(right_seq) or right_trim_bp > len(right.record.seq):
+        return None, 0, "invalid_overlap"
+
+    fill_sequence = "".join(parts)
+    if max_fill_bp >= 0 and len(fill_sequence) > max_fill_bp:
+        return None, 0, "fill_too_long"
+    return fill_sequence, right_trim_bp, "."
+
+
 def plan_gap(
     scaffold_name,
     left,
@@ -1160,6 +1365,7 @@ def plan_gap(
         right_trim_bp=right_trim_bp,
         reason=reason,
         candidate_details=candidates,
+        graph_path=path,
         **risk,
     )
 
@@ -1188,6 +1394,1025 @@ def build_fill_plans(
                 )
             )
     return plans
+
+
+AGP_ORIENTATIONS = {"+", "-", "?", "0", "na", "."}
+
+
+def part_length(part):
+    return part.object_end - part.object_start + 1
+
+
+def records_by_name(records, path):
+    by_name = OrderedDict()
+    for record in records:
+        if record.name in by_name:
+            raise ValueError(f"Duplicate FASTA record {record.name!r} in {path}")
+        by_name[record.name] = record
+    return by_name
+
+
+def validate_agp_against_scaffold(records, agp_parts, scaffold_fasta):
+    if not agp_parts:
+        raise ValueError("--agp did not contain any component or gap rows")
+
+    record_map = records_by_name(records, scaffold_fasta)
+    grouped_parts = group_parts_by_object(agp_parts)
+
+    missing_records = [name for name in record_map if name not in grouped_parts]
+    if missing_records:
+        preview = ", ".join(missing_records[:5])
+        suffix = "..." if len(missing_records) > 5 else ""
+        raise ValueError(
+            "Scaffold FASTA record(s) missing from AGP: "
+            f"{preview}{suffix}."
+        )
+
+    unknown_objects = [name for name in grouped_parts if name not in record_map]
+    if unknown_objects:
+        preview = ", ".join(unknown_objects[:5])
+        suffix = "..." if len(unknown_objects) > 5 else ""
+        raise ValueError(
+            "AGP object(s) missing from scaffold FASTA: "
+            f"{preview}{suffix}."
+        )
+
+    for object_name, parts in grouped_parts.items():
+        if not parts:
+            continue
+        if parts[0].part_type != "component" or parts[-1].part_type != "component":
+            raise ValueError(
+                f"AGP object {object_name!r} must start and end with component rows "
+                "for scaffold/AGP gapfill mode."
+            )
+
+        record = record_map[object_name]
+        cursor = 1
+        seen_components = set()
+        for expected_part_number, part in enumerate(parts, start=1):
+            if part.part_number != expected_part_number:
+                raise ValueError(
+                    f"AGP object {object_name!r} has non-sequential part number "
+                    f"{part.part_number}; expected {expected_part_number}."
+                )
+            if part.object_start != cursor:
+                raise ValueError(
+                    f"AGP object {object_name!r} is not contiguous at part "
+                    f"{part.part_number}: expected object_start {cursor}, "
+                    f"found {part.object_start}."
+                )
+
+            length = part_length(part)
+            if part.part_type == "gap":
+                if part.gap_length != length:
+                    raise ValueError(
+                        f"AGP object {object_name!r} gap part {part.part_number} "
+                        f"has gap_length {part.gap_length}, but object span is {length}."
+                    )
+                observed = record.seq[part.object_start - 1 : part.object_end]
+                if observed.upper() != "N" * length:
+                    raise ValueError(
+                        f"AGP object {object_name!r} gap part {part.part_number} "
+                        "does not correspond to an N-only span in --scaffold-fasta."
+                    )
+            else:
+                if not part.component_id or part.component_id == ".":
+                    raise ValueError(
+                        f"AGP object {object_name!r} component part {part.part_number} "
+                        "has an empty component ID."
+                    )
+                if part.component_id in seen_components:
+                    raise ValueError(
+                        f"AGP object {object_name!r} uses component ID "
+                        f"{part.component_id!r} more than once; direct scaffold/AGP "
+                        "gapfill currently requires unique component IDs per object."
+                    )
+                seen_components.add(part.component_id)
+                component_length = part.component_end - part.component_start + 1
+                if component_length != length:
+                    raise ValueError(
+                        f"AGP object {object_name!r} component part {part.part_number} "
+                        f"has component span {component_length}, but object span is {length}."
+                    )
+                if (part.orientation or ".").lower() not in AGP_ORIENTATIONS:
+                    raise ValueError(
+                        f"AGP object {object_name!r} component part {part.part_number} "
+                        f"has unsupported orientation {part.orientation!r}."
+                    )
+            cursor = part.object_end + 1
+
+        if cursor != len(record.seq) + 1:
+            raise ValueError(
+                f"AGP object {object_name!r} covers {cursor - 1} bp, but scaffold "
+                f"FASTA record length is {len(record.seq)} bp."
+            )
+
+    return grouped_parts, record_map
+
+
+def agp_orientation_for_graph(part):
+    return part.orientation if part.orientation in {"+", "-"} else "."
+
+
+def member_from_agp_part(part, scaffold_seq):
+    seq = scaffold_seq[part.object_start - 1 : part.object_end]
+    assignment = AssignmentRow(
+        contig=part.component_id,
+        new_name=part.component_id,
+        ref=part.object_name,
+        order_in_ref=part.part_number,
+        ref_start=part.object_start,
+        ref_end=part.object_end,
+        orientation=agp_orientation_for_graph(part),
+    )
+    member = ScaffoldMember(
+        assignment=assignment,
+        record=FastaRecord(
+            name=part.component_id,
+            header=f">{part.component_id}",
+            seq=seq,
+        ),
+    )
+    member.agp_component_id = part.component_id
+    member.agp_component_start = part.component_start
+    member.agp_component_end = part.component_end
+    member.agp_component_orientation = part.orientation
+    member.agp_component_type = part.component_type
+    member.agp_source = "agp_component"
+    member.agp_notes = f"{part.object_name}:{part.object_start}-{part.object_end}"
+    return member
+
+
+def build_scaffold_agp_groups(records, agp_parts, scaffold_fasta):
+    grouped_parts, record_map = validate_agp_against_scaffold(
+        records,
+        agp_parts,
+        scaffold_fasta,
+    )
+    groups = OrderedDict()
+    gap_parts_by_pair = {}
+
+    for object_name, parts in grouped_parts.items():
+        members = []
+        pending_gaps = []
+        previous_member = None
+        scaffold_seq = record_map[object_name].seq
+
+        for part in parts:
+            if part.part_type == "gap":
+                pending_gaps.append(part)
+                continue
+
+            member = member_from_agp_part(part, scaffold_seq)
+            if previous_member is not None:
+                key = (
+                    object_name,
+                    previous_member.assignment.new_name,
+                    member.assignment.new_name,
+                )
+                gap_parts_by_pair[key] = tuple(pending_gaps)
+            pending_gaps = []
+            members.append(member)
+            previous_member = member
+
+        groups[object_name] = members
+
+    return groups, gap_parts_by_pair
+
+
+def attach_agp_gap_metadata(plan, gap_parts):
+    if not gap_parts:
+        return plan
+    first = gap_parts[0]
+    plan.agp_gap_type = first.gap_type
+    plan.agp_linkage = first.linkage
+    plan.agp_linkage_evidence = first.linkage_evidence
+    plan.agp_gap_part_count = len(gap_parts)
+    return plan
+
+
+def blocked_agp_junction_plan(
+    scaffold_name,
+    left,
+    right,
+    graph,
+    reason,
+    fallback_gap_bp=0,
+):
+    raw_gap = inferred_gap(left, right)
+    overlap_bp = max(0, -raw_gap)
+    left_node = graph_node_name(left, graph)
+    right_node = graph_node_name(right, graph)
+    return FillPlan(
+        scaffold=scaffold_name,
+        left_contig=left.assignment.new_name,
+        right_contig=right.assignment.new_name,
+        left_graph_node=left_node,
+        right_graph_node=right_node,
+        left_orientation=graph_orientation(left),
+        right_orientation=graph_orientation(right),
+        raw_inferred_gap_bp=raw_gap,
+        fallback_gap_bp=fallback_gap_bp,
+        overlap_bp=overlap_bp,
+        overlap_class=classify_adjacent_overlap(left, right, overlap_bp),
+        graph_status=reason,
+        path_edges=None,
+        path_nodes=".",
+        intermediate_nodes=".",
+        candidate_paths=0,
+        fill_status=reason,
+        reason=reason,
+    )
+
+
+def build_agp_fill_plans(
+    groups,
+    gap_parts_by_pair,
+    graph,
+    args,
+    gaf_records=None,
+    hic_contacts=None,
+    ref_placements=None,
+):
+    plans = []
+    for scaffold_name, members in groups.items():
+        for left, right in zip(members, members[1:]):
+            key = (scaffold_name, left.assignment.new_name, right.assignment.new_name)
+            gap_parts = gap_parts_by_pair.get(key, ())
+            if not gap_parts:
+                plans.append(
+                    blocked_agp_junction_plan(
+                        scaffold_name,
+                        left,
+                        right,
+                        graph,
+                        "not_agp_gap",
+                        fallback_gap_bp=0,
+                    )
+                )
+                continue
+            plan = plan_gap(
+                scaffold_name,
+                left,
+                right,
+                graph,
+                args,
+                gaf_records,
+                hic_contacts,
+                ref_placements,
+            )
+            plans.append(attach_agp_gap_metadata(plan, gap_parts))
+    return plans
+
+
+def member_name_candidates(member):
+    candidates = [
+        member.assignment.new_name,
+        member.assignment.contig,
+        member.record.name,
+    ]
+    ordered = []
+    for candidate in candidates:
+        if candidate and candidate != "." and candidate not in ordered:
+            ordered.append(candidate)
+    return ordered
+
+
+def requested_projection_names(groups):
+    names = []
+    for members in groups.values():
+        for member in members:
+            for candidate in member_name_candidates(member):
+                if candidate not in names:
+                    names.append(candidate)
+    return names
+
+
+def flip_orientation(orientation):
+    if orientation == "+":
+        return "-"
+    if orientation == "-":
+        return "+"
+    return orientation
+
+
+def member_projection_rows(member, projections):
+    for candidate in member_name_candidates(member):
+        rows = projections.get(candidate)
+        if rows:
+            return candidate, sorted(rows, key=lambda row: row.step_index)
+    return ".", []
+
+
+def projection_terminal_for_member(member, projections, side):
+    path_name, rows = member_projection_rows(member, projections)
+    if not rows:
+        return ProjectedTerminal(status="missing_projection", side=side)
+
+    line_numbers = {
+        row.path_line_number for row in rows
+        if row.path_line_number is not None
+    }
+    if len(line_numbers) > 1:
+        return ProjectedTerminal(
+            status="ambiguous_projection",
+            path_name=path_name,
+            side=side,
+        )
+
+    member_orientation = graph_orientation(member)
+    use_forward_order = member_orientation != "-"
+    if side == "right":
+        row = rows[-1] if use_forward_order else rows[0]
+    else:
+        row = rows[0] if use_forward_order else rows[-1]
+
+    orientation = row.segment_orientation
+    if member_orientation == "-":
+        orientation = flip_orientation(orientation)
+    return ProjectedTerminal(
+        status="present",
+        node=row.segment,
+        orientation=orientation,
+        path_name=path_name,
+        step_index=row.step_index,
+        side=side,
+    )
+
+
+def projected_terminal_status(left_terminal, right_terminal):
+    left_missing = left_terminal.status != "present"
+    right_missing = right_terminal.status != "present"
+    if left_missing and right_missing:
+        if left_terminal.status == right_terminal.status:
+            return f"both_{left_terminal.status}s"
+        return "missing_or_ambiguous_projections"
+    if left_missing:
+        return f"left_{left_terminal.status}"
+    if right_missing:
+        return f"right_{right_terminal.status}"
+    return None
+
+
+def projected_candidate_path_details(
+    graph,
+    paths,
+    selected_index,
+    left,
+    right,
+    args,
+    gaf_supports=None,
+    hic_supports=None,
+    ref_supports=None,
+    cycles_avoided=0,
+):
+    details = []
+    gaf_supports = gaf_supports or []
+    hic_supports = hic_supports or []
+    ref_supports = ref_supports or []
+    for index, path in enumerate(paths):
+        fill_sequence, right_trim_bp, reason = reconstruct_projected_fill_sequence(
+            graph,
+            path,
+            left,
+            right,
+            args.max_fill_bp,
+        )
+        candidate_status = projected_fill_status(fill_sequence, reason)
+        extra_flags = ["projected_unitig"]
+        if fill_sequence is None and candidate_status != "projected_path_planning_only":
+            extra_flags.append("sequence_validation_failed")
+        risk = path_risk_annotations(
+            graph,
+            [path],
+            len(paths),
+            cycles_avoided,
+            extra_flags=extra_flags,
+        )
+        details.append(
+            {
+                "candidate_index": index + 1,
+                "reported": "yes" if index == selected_index else "no",
+                "path_nodes": graph_path_nodes(path),
+                "intermediate_nodes": graph_intermediate_nodes(path),
+                "path_edges": len(path),
+                "gaf_support": support_value(gaf_supports, index),
+                "hic_support": support_value(hic_supports, index),
+                "ref_support": support_value(ref_supports, index),
+                "candidate_status": candidate_status,
+                "fill_bp": len(fill_sequence or ""),
+                "right_trim_bp": right_trim_bp,
+                "risk_flags": risk["risk_flags"],
+                "branch_complexity_score": risk["branch_complexity_score"],
+                "fill_sequence": fill_sequence or ".",
+            }
+        )
+    return details
+
+
+def projected_projection_reason(left_terminal, right_terminal):
+    parts = []
+    for label, terminal in (("left", left_terminal), ("right", right_terminal)):
+        if terminal.status != "present":
+            parts.append(f"{label}:{terminal.status}")
+        else:
+            parts.append(
+                f"{label}:{terminal.path_name}:{terminal.step_index}:{terminal.node}{terminal.orientation}"
+            )
+    return ";".join(parts)
+
+
+def plan_projected_gap(
+    scaffold_name,
+    left,
+    right,
+    graph,
+    projections,
+    args,
+    gaf_records=None,
+    hic_contacts=None,
+    ref_placements=None,
+):
+    gaf_records = gaf_records or []
+    hic_contacts = hic_contacts or {}
+    ref_placements = ref_placements or {}
+    raw_gap = inferred_gap(left, right)
+    overlap_bp = max(0, -raw_gap)
+    fallback_gap_bp = args.fixed_gap_bp if args.fixed_gap_bp is not None else max(0, raw_gap)
+    overlap_class = classify_adjacent_overlap(left, right, overlap_bp)
+    left_terminal = projection_terminal_for_member(left, projections, "right")
+    right_terminal = projection_terminal_for_member(right, projections, "left")
+    projection_status = projected_terminal_status(left_terminal, right_terminal)
+
+    if projection_status is not None:
+        return FillPlan(
+            scaffold=scaffold_name,
+            left_contig=left.assignment.new_name,
+            right_contig=right.assignment.new_name,
+            left_graph_node=left_terminal.node,
+            right_graph_node=right_terminal.node,
+            left_orientation=left_terminal.orientation,
+            right_orientation=right_terminal.orientation,
+            raw_inferred_gap_bp=raw_gap,
+            fallback_gap_bp=fallback_gap_bp,
+            overlap_bp=overlap_bp,
+            overlap_class=overlap_class,
+            graph_status=projection_status,
+            path_edges=None,
+            path_nodes=".",
+            intermediate_nodes=".",
+            candidate_paths=0,
+            fill_status="missing_projection",
+            risk_flags="projected_unitig",
+            branch_complexity_score=1,
+            reason=projected_projection_reason(left_terminal, right_terminal),
+        )
+
+    missing_status = graph_status_for_nodes(left_terminal.node, right_terminal.node)
+    if missing_status is not None:
+        return FillPlan(
+            scaffold=scaffold_name,
+            left_contig=left.assignment.new_name,
+            right_contig=right.assignment.new_name,
+            left_graph_node=left_terminal.node,
+            right_graph_node=right_terminal.node,
+            left_orientation=left_terminal.orientation,
+            right_orientation=right_terminal.orientation,
+            raw_inferred_gap_bp=raw_gap,
+            fallback_gap_bp=fallback_gap_bp,
+            overlap_bp=overlap_bp,
+            overlap_class=overlap_class,
+            graph_status=missing_status,
+            path_edges=None,
+            path_nodes=".",
+            intermediate_nodes=".",
+            candidate_paths=0,
+            fill_status="missing_node",
+            risk_flags="projected_unitig",
+            branch_complexity_score=1,
+            reason=missing_status,
+        )
+
+    path_search = enumerate_graph_paths(
+        graph,
+        left_terminal.node,
+        right_terminal.node,
+        left_terminal.orientation,
+        right_terminal.orientation,
+        args.max_path_edges,
+        args.max_candidate_paths,
+    )
+    paths = path_search.paths
+    if not paths:
+        risk = path_risk_annotations(
+            graph,
+            [],
+            0,
+            path_search.cycles_avoided,
+            extra_flags=["projected_unitig"],
+        )
+        return FillPlan(
+            scaffold=scaffold_name,
+            left_contig=left.assignment.new_name,
+            right_contig=right.assignment.new_name,
+            left_graph_node=left_terminal.node,
+            right_graph_node=right_terminal.node,
+            left_orientation=left_terminal.orientation,
+            right_orientation=right_terminal.orientation,
+            raw_inferred_gap_bp=raw_gap,
+            fallback_gap_bp=fallback_gap_bp,
+            overlap_bp=overlap_bp,
+            overlap_class=overlap_class,
+            graph_status="projected_no_path",
+            path_edges=None,
+            path_nodes=".",
+            intermediate_nodes=".",
+            candidate_paths=0,
+            fill_status="no_graph_path",
+            reason="projected_no_graph_path",
+            **risk,
+        )
+
+    gaf_summary = gaf_summary_for(gaf_records, paths, 0, args)
+    supports = gaf_summary_supports(gaf_summary)
+    hic_supports = hic_path_supports(hic_contacts, paths) if hic_contacts else []
+    ref_supports = ref_path_supports(
+        ref_placements,
+        paths,
+        left,
+        right,
+        scaffold_name,
+    )
+    selected_index = 0
+    graph_status = "projected_direct_edge" if len(paths[0]) == 1 else "projected_short_path"
+
+    if len(paths) > 1:
+        gaf_choice = choose_gaf_supported_path(
+            paths,
+            supports,
+            args.min_gaf_path_support,
+        )
+        hic_choice = choose_unique_supported_path(
+            hic_supports,
+            args.min_hic_path_support,
+        )
+        ref_choice = choose_unique_supported_path(
+            ref_supports,
+            args.min_ref_path_support,
+        )
+        support_choices = [
+            (label, choice)
+            for label, choice in (
+                ("gaf", gaf_choice),
+                ("hic", hic_choice),
+                ("ref_paf", ref_choice),
+            )
+            if choice is not None
+        ]
+        if len({choice for _label, choice in support_choices}) > 1:
+            risk = path_risk_annotations(
+                graph,
+                paths,
+                len(paths),
+                path_search.cycles_avoided,
+                extra_flags=["projected_unitig", "conflicting_support"],
+            )
+            selected_support, alt_support = selected_and_alt_support(supports, 0)
+            selected_hic_support, alt_hic_support = selected_and_alt_support(hic_supports, 0)
+            selected_ref_support, alt_ref_support = selected_and_alt_support(ref_supports, 0)
+            candidates = projected_candidate_path_details(
+                graph,
+                paths,
+                0,
+                left,
+                right,
+                args,
+                supports,
+                hic_supports,
+                ref_supports,
+                path_search.cycles_avoided,
+            )
+            return FillPlan(
+                scaffold=scaffold_name,
+                left_contig=left.assignment.new_name,
+                right_contig=right.assignment.new_name,
+                left_graph_node=left_terminal.node,
+                right_graph_node=right_terminal.node,
+                left_orientation=left_terminal.orientation,
+                right_orientation=right_terminal.orientation,
+                raw_inferred_gap_bp=raw_gap,
+                fallback_gap_bp=fallback_gap_bp,
+                overlap_bp=overlap_bp,
+                overlap_class=overlap_class,
+                graph_status="projected_ambiguous_paths",
+                path_edges=len(paths[0]),
+                path_nodes=graph_path_nodes(paths[0]),
+                intermediate_nodes=graph_intermediate_nodes(paths[0]),
+                candidate_paths=len(paths),
+                fill_status="ambiguous_paths",
+                gaf_path_support=selected_support,
+                gaf_best_alt_support=alt_support,
+                gaf_support_status=gaf_summary.support_status if gaf_summary else ".",
+                gaf_selected_reads=gaf_selected_reads(gaf_summary),
+                hic_path_support=selected_hic_support,
+                hic_best_alt_support=alt_hic_support,
+                ref_path_support=selected_ref_support,
+                ref_best_alt_support=alt_ref_support,
+                reason=support_conflict_reason(support_choices),
+                candidate_details=candidates,
+                **risk,
+            )
+        if not support_choices:
+            risk = path_risk_annotations(
+                graph,
+                paths,
+                len(paths),
+                path_search.cycles_avoided,
+                extra_flags=["projected_unitig"]
+                + support_risk_flags(supports, hic_supports, ref_supports, args),
+            )
+            selected_support, alt_support = selected_and_alt_support(supports, 0)
+            selected_hic_support, alt_hic_support = selected_and_alt_support(hic_supports, 0)
+            selected_ref_support, alt_ref_support = selected_and_alt_support(ref_supports, 0)
+            candidates = projected_candidate_path_details(
+                graph,
+                paths,
+                0,
+                left,
+                right,
+                args,
+                supports,
+                hic_supports,
+                ref_supports,
+                path_search.cycles_avoided,
+            )
+            return FillPlan(
+                scaffold=scaffold_name,
+                left_contig=left.assignment.new_name,
+                right_contig=right.assignment.new_name,
+                left_graph_node=left_terminal.node,
+                right_graph_node=right_terminal.node,
+                left_orientation=left_terminal.orientation,
+                right_orientation=right_terminal.orientation,
+                raw_inferred_gap_bp=raw_gap,
+                fallback_gap_bp=fallback_gap_bp,
+                overlap_bp=overlap_bp,
+                overlap_class=overlap_class,
+                graph_status="projected_ambiguous_paths",
+                path_edges=len(paths[0]),
+                path_nodes=graph_path_nodes(paths[0]),
+                intermediate_nodes=graph_intermediate_nodes(paths[0]),
+                candidate_paths=len(paths),
+                fill_status="ambiguous_paths",
+                gaf_path_support=selected_support,
+                gaf_best_alt_support=alt_support,
+                gaf_support_status=gaf_summary.support_status if gaf_summary else ".",
+                gaf_selected_reads=gaf_selected_reads(gaf_summary),
+                hic_path_support=selected_hic_support,
+                hic_best_alt_support=alt_hic_support,
+                ref_path_support=selected_ref_support,
+                ref_best_alt_support=alt_ref_support,
+                reason="multiple_projected_candidate_paths",
+                candidate_details=candidates,
+                **risk,
+            )
+        selected_index = support_choices[0][1]
+        graph_status = "projected_" + support_graph_status(support_choices)
+
+    path = paths[selected_index]
+    selected_gaf_summary = gaf_summary_for(gaf_records, paths, selected_index, args)
+    selected_support, alt_support = selected_and_alt_support(
+        gaf_summary_supports(selected_gaf_summary),
+        selected_index,
+    )
+    selected_hic_support, alt_hic_support = selected_and_alt_support(
+        hic_supports,
+        selected_index,
+    )
+    selected_ref_support, alt_ref_support = selected_and_alt_support(
+        ref_supports,
+        selected_index,
+    )
+    fill_sequence, right_trim_bp, reason = reconstruct_projected_fill_sequence(
+        graph,
+        path,
+        left,
+        right,
+        args.max_fill_bp,
+    )
+    fill_status = projected_fill_status(fill_sequence, reason)
+    extra_flags = ["projected_unitig"]
+    if fill_sequence is None and fill_status != "projected_path_planning_only":
+        extra_flags.append("sequence_validation_failed")
+    risk = path_risk_annotations(
+        graph,
+        [path],
+        len(paths),
+        path_search.cycles_avoided,
+        extra_flags=extra_flags,
+    )
+    candidates = projected_candidate_path_details(
+        graph,
+        paths,
+        selected_index,
+        left,
+        right,
+        args,
+        gaf_summary_supports(selected_gaf_summary),
+        hic_supports,
+        ref_supports,
+        path_search.cycles_avoided,
+    )
+    return FillPlan(
+        scaffold=scaffold_name,
+        left_contig=left.assignment.new_name,
+        right_contig=right.assignment.new_name,
+        left_graph_node=left_terminal.node,
+        right_graph_node=right_terminal.node,
+        left_orientation=left_terminal.orientation,
+        right_orientation=right_terminal.orientation,
+        raw_inferred_gap_bp=raw_gap,
+        fallback_gap_bp=fallback_gap_bp,
+        overlap_bp=overlap_bp,
+        overlap_class=overlap_class,
+        graph_status=graph_status,
+        path_edges=len(path),
+        path_nodes=graph_path_nodes(path),
+        intermediate_nodes=graph_intermediate_nodes(path),
+        candidate_paths=len(paths),
+        fill_status=fill_status,
+        gaf_path_support=selected_support,
+        gaf_best_alt_support=alt_support,
+        gaf_support_status=selected_gaf_summary.support_status if selected_gaf_summary else ".",
+        gaf_selected_reads=gaf_selected_reads(selected_gaf_summary),
+        hic_path_support=selected_hic_support,
+        hic_best_alt_support=alt_hic_support,
+        ref_path_support=selected_ref_support,
+        ref_best_alt_support=alt_ref_support,
+        fill_sequence=fill_sequence or "",
+        fill_bp=len(fill_sequence or ""),
+        right_trim_bp=right_trim_bp,
+        reason=reason,
+        candidate_details=candidates,
+        graph_path=path,
+        **risk,
+    )
+
+
+def build_projected_fill_plans(
+    groups,
+    graph,
+    projections,
+    args,
+    gaf_records=None,
+    hic_contacts=None,
+    ref_placements=None,
+):
+    plans = []
+    for scaffold_name, members in groups.items():
+        for left, right in zip(members, members[1:]):
+            plans.append(
+                plan_projected_gap(
+                    scaffold_name,
+                    left,
+                    right,
+                    graph,
+                    projections,
+                    args,
+                    gaf_records,
+                    hic_contacts,
+                    ref_placements,
+                )
+            )
+    return plans
+
+
+def build_projected_agp_fill_plans(
+    groups,
+    gap_parts_by_pair,
+    graph,
+    projections,
+    args,
+    gaf_records=None,
+    hic_contacts=None,
+    ref_placements=None,
+):
+    plans = []
+    for scaffold_name, members in groups.items():
+        for left, right in zip(members, members[1:]):
+            key = (scaffold_name, left.assignment.new_name, right.assignment.new_name)
+            gap_parts = gap_parts_by_pair.get(key, ())
+            if not gap_parts:
+                plans.append(
+                    blocked_agp_junction_plan(
+                        scaffold_name,
+                        left,
+                        right,
+                        graph,
+                        "not_agp_gap",
+                        fallback_gap_bp=0,
+                    )
+                )
+                continue
+            plan = plan_projected_gap(
+                scaffold_name,
+                left,
+                right,
+                graph,
+                projections,
+                args,
+                gaf_records,
+                hic_contacts,
+                ref_placements,
+            )
+            plans.append(attach_agp_gap_metadata(plan, gap_parts))
+    return plans
+
+
+def best_read_bridge(read_evidence, left_member, right_member, args):
+    supports = []
+    for left_name in member_name_candidates(left_member):
+        for right_name in member_name_candidates(right_member):
+            supports.append(
+                summarize_contig_bridge(
+                    read_evidence,
+                    left_name,
+                    right_name,
+                    terminal_window_bp=args.read_terminal_window_bp,
+                    min_anchor_bp=args.read_min_anchor_bp,
+                )
+            )
+    return max(supports, key=lambda item: item.bridge_count) if supports else None
+
+
+def annotate_longread_bridge_support(groups, plans, read_evidence, args):
+    if read_evidence is None:
+        return
+    pair_by_key = {}
+    for scaffold_name, members in groups.items():
+        for left, right in zip(members, members[1:]):
+            pair_by_key[(scaffold_name, left.assignment.new_name, right.assignment.new_name)] = (
+                left,
+                right,
+            )
+
+    for plan in plans:
+        pair = pair_by_key.get(fill_plan_key(plan))
+        if pair is None:
+            plan.longread_bridge_reads = 0
+            continue
+        support = best_read_bridge(read_evidence, pair[0], pair[1], args)
+        if support is None:
+            plan.longread_bridge_reads = 0
+            continue
+        plan.longread_bridge_reads = support.bridge_count
+        plan.longread_orientation_summary = support.orientation_summary
+        plan.longread_read_order_summary = support.read_order_summary
+        median_gap = support.median_read_gap_bp
+        plan.longread_median_read_gap_bp = "." if median_gap is None else str(median_gap)
+
+
+PATCH_FIELD_ALIASES = {
+    "scaffold": ("scaffold", "object", "object_name", "chrom", "chromosome"),
+    "left_contig": ("left_contig", "left_component", "left", "component_left"),
+    "right_contig": ("right_contig", "right_component", "right", "component_right"),
+    "patch_id": ("patch_id", "id", "name", "record", "patch"),
+    "source": ("source", "tool", "method", "caller"),
+    "sequence": ("patch_sequence", "sequence", "seq", "fill_sequence"),
+    "notes": ("notes", "note", "status", "description"),
+}
+
+
+def row_value(row, aliases, default="."):
+    for alias in aliases:
+        value = row.get(alias)
+        if value is not None and str(value).strip() not in {"", "."}:
+            return str(value).strip()
+    return default
+
+
+def read_patch_fasta(path):
+    if not path:
+        return {}
+    records = read_ordered_fasta(path)
+    return {record.name: record.seq for record in records}
+
+
+def normalize_patch_sequence(sequence, row_label):
+    sequence = (sequence or "").strip().upper()
+    if not sequence or sequence == ".":
+        raise ValueError(f"External patch {row_label} is missing a sequence")
+    return sequence
+
+
+def read_patch_candidates(path, fasta_path=None):
+    fasta_records = read_patch_fasta(fasta_path)
+    candidates = []
+    with open(path, newline="") as fh:
+        reader = csv.DictReader(fh, delimiter="\t")
+        if not reader.fieldnames:
+            raise ValueError(f"Patch table {path} is empty or missing a header")
+        for line_number, row in enumerate(reader, start=2):
+            scaffold = row_value(row, PATCH_FIELD_ALIASES["scaffold"], "")
+            left = row_value(row, PATCH_FIELD_ALIASES["left_contig"], "")
+            right = row_value(row, PATCH_FIELD_ALIASES["right_contig"], "")
+            if not (scaffold and left and right):
+                raise ValueError(
+                    f"Patch table row {line_number} is missing scaffold, "
+                    "left_contig, or right_contig"
+                )
+            patch_id = row_value(
+                row,
+                PATCH_FIELD_ALIASES["patch_id"],
+                f"patch_row_{line_number}",
+            )
+            sequence = row_value(row, PATCH_FIELD_ALIASES["sequence"], "")
+            if not sequence and patch_id in fasta_records:
+                sequence = fasta_records[patch_id]
+            sequence = normalize_patch_sequence(sequence, patch_id)
+            candidates.append(
+                PatchCandidate(
+                    scaffold=scaffold,
+                    left_contig=left,
+                    right_contig=right,
+                    patch_id=patch_id,
+                    source=row_value(row, PATCH_FIELD_ALIASES["source"], "."),
+                    sequence=sequence,
+                    notes=row_value(row, PATCH_FIELD_ALIASES["notes"], "."),
+                )
+            )
+    return candidates
+
+
+def patch_candidate_key(candidate):
+    return candidate.scaffold, candidate.left_contig, candidate.right_contig
+
+
+def patch_candidates_by_key(candidates):
+    grouped = defaultdict(list)
+    for candidate in candidates:
+        grouped[patch_candidate_key(candidate)].append(candidate)
+    return dict(grouped)
+
+
+def patch_compare_status(plan, candidate):
+    if not candidate:
+        return "."
+    if not plan.fill_sequence:
+        return "patch_only_no_graph_sequence"
+    if candidate.sequence.upper() == plan.fill_sequence.upper():
+        return "exact_graph_match"
+    if len(candidate.sequence) == len(plan.fill_sequence):
+        return "same_length_graph_mismatch"
+    return "graph_mismatch"
+
+
+def patch_sort_key(plan, candidate):
+    status = patch_compare_status(plan, candidate)
+    status_rank = {
+        "exact_graph_match": 0,
+        "same_length_graph_mismatch": 1,
+        "graph_mismatch": 2,
+        "patch_only_no_graph_sequence": 3,
+    }.get(status, 4)
+    graph_length = len(plan.fill_sequence or "")
+    length_delta = abs(len(candidate.sequence) - graph_length) if graph_length else 0
+    return status_rank, length_delta, candidate.patch_id
+
+
+def add_risk_flag(plan, flag):
+    if not flag:
+        return
+    flags = [] if plan.risk_flags in {"", "."} else plan.risk_flags.split(",")
+    if flag not in flags:
+        flags.append(flag)
+        plan.risk_flags = ",".join(flags) if flags else "."
+        plan.branch_complexity_score += 1
+
+
+def annotate_patch_candidates(plans, patch_candidates):
+    if not patch_candidates:
+        return
+    grouped = patch_candidates_by_key(patch_candidates)
+    for plan in plans:
+        candidates = grouped.get(fill_plan_key(plan), [])
+        if not candidates:
+            continue
+        best = min(candidates, key=lambda candidate: patch_sort_key(plan, candidate))
+        status = patch_compare_status(plan, best)
+        plan.patch_candidate_count = len(candidates)
+        plan.patch_best_id = best.patch_id
+        plan.patch_best_source = best.source
+        plan.patch_best_bp = len(best.sequence)
+        plan.patch_graph_status = status
+        plan.patch_best_notes = best.notes
+        plan.patch_best_sequence = best.sequence
+        if len(candidates) > 1:
+            add_risk_flag(plan, "multiple_external_patches")
+        if status in {"same_length_graph_mismatch", "graph_mismatch"}:
+            add_risk_flag(plan, "external_patch_graph_mismatch")
+        elif status == "patch_only_no_graph_sequence":
+            add_risk_flag(plan, "external_patch_only")
 
 
 def plans_by_scaffold(plans):
@@ -1219,7 +2444,7 @@ def build_filled_scaffolds(groups, unassigned, plans, args):
         trimmed_bp = 0
         for plan, member in zip(grouped_plans.get(scaffold_name, []), members[1:]):
             if plan.fill_status == "fillable" and (
-                not args.reviewed_plan or plan.accept_fill
+                plan.accept_fill or getattr(args, "apply_all_fillable", False)
             ):
                 plan.applied = True
                 pieces.append(plan.fill_sequence)
@@ -1262,6 +2487,195 @@ def build_filled_scaffolds(groups, unassigned, plans, args):
     return records
 
 
+def add_component_part(parts, object_name, cursor, part_number, component_id, start, end, orientation, source, status=".", notes="."):
+    length = end - start + 1
+    if length <= 0:
+        return cursor, part_number
+    parts.append(
+        component_part(
+            object_name=object_name,
+            object_start=cursor,
+            object_end=cursor + length - 1,
+            part_number=part_number,
+            component_id=component_id,
+            component_start=start,
+            component_end=end,
+            orientation=orientation,
+            source=source,
+            status=status,
+            notes=notes,
+        )
+    )
+    return cursor + length, part_number + 1
+
+
+def add_gap_part(
+    parts,
+    object_name,
+    cursor,
+    part_number,
+    gap_bp,
+    source,
+    status=".",
+    notes=".",
+    gap_type="scaffold",
+    linkage="yes",
+    linkage_evidence="align_genus",
+):
+    if gap_bp <= 0:
+        return cursor, part_number
+    parts.append(
+        gap_part(
+            object_name=object_name,
+            object_start=cursor,
+            object_end=cursor + gap_bp - 1,
+            part_number=part_number,
+            gap_length=gap_bp,
+            gap_type=gap_type,
+            linkage=linkage,
+            linkage_evidence=linkage_evidence,
+            source=source,
+            status=status,
+            notes=notes,
+        )
+    )
+    return cursor + gap_bp, part_number + 1
+
+
+def component_fields_for_member(member, trim_left_bp=0):
+    component_id = getattr(member, "agp_component_id", member.assignment.new_name)
+    start = getattr(member, "agp_component_start", 1)
+    end = getattr(member, "agp_component_end", len(member.record.seq))
+    orientation = getattr(member, "agp_component_orientation", "+")
+    source = getattr(member, "agp_source", "ordered_contig")
+    notes = getattr(member, "agp_notes", member.assignment.contig)
+
+    trim = min(max(trim_left_bp or 0, 0), len(member.record.seq))
+    if trim:
+        if hasattr(member, "agp_component_orientation") and orientation not in {"+", "-"}:
+            raise ValueError(
+                "Cannot emit trimmed AGP coordinates for component "
+                f"{component_id!r} with orientation {orientation!r}."
+            )
+        if orientation == "-":
+            end -= trim
+        else:
+            start += trim
+
+    return component_id, start, end, orientation, source, notes
+
+
+def oriented_component_span(node_length, orientation, trim_left_bp):
+    trim = min(max(trim_left_bp or 0, 0), node_length)
+    if orientation == "-":
+        return 1, node_length - trim
+    return trim + 1, node_length
+
+
+def graph_fill_parts(graph, plan):
+    parts = []
+    for edge in plan.graph_path[:-1]:
+        overlap_bp = edge.overlap_bp or 0
+        node = graph.nodes[edge.target]
+        start, end = oriented_component_span(node.length, edge.target_orientation, overlap_bp)
+        if end >= start:
+            parts.append((edge.target, start, end, edge.target_orientation))
+    return parts
+
+
+def build_gapfill_agp_parts(groups, unassigned, plans, graph):
+    grouped_plans = plans_by_scaffold(plans)
+    parts = []
+    for scaffold_name, members in groups.items():
+        if not members:
+            continue
+        cursor = 1
+        part_number = 1
+        first = members[0]
+        component_id, start, end, orientation, source, notes = component_fields_for_member(first)
+        cursor, part_number = add_component_part(
+            parts,
+            scaffold_name,
+            cursor,
+            part_number,
+            component_id,
+            start,
+            end,
+            orientation,
+            source=source,
+            status="unchanged",
+            notes=notes,
+        )
+        for plan, member in zip(grouped_plans.get(scaffold_name, []), members[1:]):
+            trim_left_bp = 0
+            if plan.applied:
+                for node, start, end, orientation in graph_fill_parts(graph, plan):
+                    cursor, part_number = add_component_part(
+                        parts,
+                        scaffold_name,
+                        cursor,
+                        part_number,
+                        node,
+                        start,
+                        end,
+                        orientation,
+                        source="graph_fill",
+                        status=plan.graph_status,
+                        notes=plan.path_nodes,
+                    )
+                trim_left_bp = plan.right_trim_bp
+            else:
+                cursor, part_number = add_gap_part(
+                    parts,
+                    scaffold_name,
+                    cursor,
+                    part_number,
+                    plan.fallback_gap_bp,
+                    source="fallback_gap",
+                    status=plan.fill_status,
+                    notes=f"{plan.left_contig}|{plan.right_contig}",
+                    gap_type=getattr(plan, "agp_gap_type", "scaffold"),
+                    linkage=getattr(plan, "agp_linkage", "yes"),
+                    linkage_evidence=getattr(
+                        plan,
+                        "agp_linkage_evidence",
+                        "align_genus",
+                    ),
+                )
+            component_id, start, end, orientation, source, notes = component_fields_for_member(
+                member,
+                trim_left_bp,
+            )
+            cursor, part_number = add_component_part(
+                parts,
+                scaffold_name,
+                cursor,
+                part_number,
+                component_id,
+                start,
+                end,
+                orientation,
+                source=source,
+                status="trimmed" if trim_left_bp else "unchanged",
+                notes=notes,
+            )
+
+    for record in unassigned:
+        add_component_part(
+            parts,
+            record.name,
+            1,
+            1,
+            record.name,
+            1,
+            len(record.seq),
+            "+",
+            source="unassigned_record",
+            status="unchanged",
+        )
+    return parts
+
+
 def fill_plan_header():
     return [
         "scaffold",
@@ -1288,6 +2702,16 @@ def fill_plan_header():
         "hic_best_alt_support",
         "ref_path_support",
         "ref_best_alt_support",
+        "longread_bridge_reads",
+        "longread_orientation_summary",
+        "longread_read_order_summary",
+        "longread_median_read_gap_bp",
+        "patch_candidate_count",
+        "patch_best_id",
+        "patch_best_source",
+        "patch_best_bp",
+        "patch_graph_status",
+        "patch_best_notes",
         "risk_flags",
         "branch_complexity_score",
         "high_degree_nodes",
@@ -1301,6 +2725,7 @@ def fill_plan_header():
         "applied",
         "reason",
         "fill_sequence",
+        "patch_best_sequence",
     ]
 
 
@@ -1330,6 +2755,16 @@ def fill_plan_row(plan, include_sequences):
         plan.hic_best_alt_support if plan.hic_best_alt_support is not None else ".",
         plan.ref_path_support if plan.ref_path_support is not None else ".",
         plan.ref_best_alt_support if plan.ref_best_alt_support is not None else ".",
+        plan.longread_bridge_reads if plan.longread_bridge_reads is not None else ".",
+        plan.longread_orientation_summary,
+        plan.longread_read_order_summary,
+        plan.longread_median_read_gap_bp,
+        plan.patch_candidate_count,
+        plan.patch_best_id,
+        plan.patch_best_source,
+        plan.patch_best_bp if plan.patch_best_bp is not None else ".",
+        plan.patch_graph_status,
+        plan.patch_best_notes,
         plan.risk_flags,
         plan.branch_complexity_score,
         plan.high_degree_nodes,
@@ -1343,6 +2778,7 @@ def fill_plan_row(plan, include_sequences):
         "yes" if plan.applied else "no",
         plan.reason,
         plan.fill_sequence if include_sequences and plan.fill_sequence else ".",
+        plan.patch_best_sequence if include_sequences and plan.patch_best_sequence else ".",
     ]
 
 
@@ -1441,15 +2877,31 @@ def write_run_summary(path, args, output_paths, plans, filled_records):
     with open(path, "w") as out:
         out.write("chromo gapfill\n")
         out.write("\nInputs\n")
-        out.write(f"ordered_fasta\t{args.ordered_fasta}\n")
-        out.write(f"assignments\t{args.assignments}\n")
+        out.write(
+            "input_mode\t"
+            f"{'scaffold_agp' if args.scaffold_fasta else 'ordered_fasta'}\n"
+        )
+        out.write(f"ordered_fasta\t{args.ordered_fasta if args.ordered_fasta else '.'}\n")
+        out.write(f"assignments\t{args.assignments if args.assignments else '.'}\n")
+        out.write(f"scaffold_fasta\t{args.scaffold_fasta if args.scaffold_fasta else '.'}\n")
+        out.write(f"agp\t{args.agp if args.agp else '.'}\n")
         out.write(f"gfa\t{args.gfa}\n")
+        out.write(
+            "graph_mode\t"
+            f"{'projected_gfa_paths' if getattr(args, 'project_gfa_paths', False) else 'direct_gfa_nodes'}\n"
+        )
         out.write(f"gaf\t{args.gaf if args.gaf else '.'}\n")
         out.write(f"hic_pairs\t{args.hic_pairs if args.hic_pairs else '.'}\n")
         out.write(f"ref_paf\t{args.ref_paf if args.ref_paf else '.'}\n")
+        out.write(f"read_paf\t{args.read_paf if args.read_paf else '.'}\n")
+        out.write(f"patch_table\t{args.patch_table if args.patch_table else '.'}\n")
+        out.write(f"patch_fasta\t{args.patch_fasta if args.patch_fasta else '.'}\n")
         out.write(f"reviewed_plan\t{args.reviewed_plan if args.reviewed_plan else '.'}\n")
         out.write("\nParameters\n")
         out.write(f"apply\t{args.apply}\n")
+        out.write(f"apply_all_fillable\t{getattr(args, 'apply_all_fillable', False)}\n")
+        out.write(f"project_gfa_paths\t{getattr(args, 'project_gfa_paths', False)}\n")
+        out.write(f"projection_trim_overlaps\t{getattr(args, 'projection_trim_overlaps', False)}\n")
         out.write(f"fixed_gap_bp\t{args.fixed_gap_bp if args.fixed_gap_bp is not None else '.'}\n")
         out.write(f"max_path_edges\t{args.max_path_edges}\n")
         out.write(f"max_candidate_paths\t{args.max_candidate_paths}\n")
@@ -1461,6 +2913,9 @@ def write_run_summary(path, args, output_paths, plans, filled_records):
         out.write(f"min_ref_paf_mapq\t{args.min_ref_paf_mapq}\n")
         out.write(f"min_ref_paf_idy\t{args.min_ref_paf_idy}\n")
         out.write(f"include_secondary_ref_paf\t{args.include_secondary_ref_paf}\n")
+        out.write(f"min_read_mapq\t{args.min_read_mapq}\n")
+        out.write(f"read_terminal_window_bp\t{args.read_terminal_window_bp}\n")
+        out.write(f"read_min_anchor_bp\t{args.read_min_anchor_bp}\n")
         out.write("\nOutputs\n")
         for label, output_path in output_paths.items():
             out.write(f"{label}\t{output_path}\n")
@@ -1485,6 +2940,37 @@ def status_counts(plans):
 
 
 def validate_plan_args(args):
+    ordered_mode = bool(args.ordered_fasta or args.assignments)
+    scaffold_agp_mode = bool(args.scaffold_fasta or args.agp)
+    apply_all_fillable = getattr(args, "apply_all_fillable", False)
+    apply_output = getattr(args, "apply", False)
+    reviewed_plan = getattr(args, "reviewed_plan", None)
+    if ordered_mode and scaffold_agp_mode:
+        raise ValueError(
+            "Choose either --ordered-fasta/--assignments or --scaffold-fasta/--agp, "
+            "not both."
+        )
+    if not ordered_mode and not scaffold_agp_mode:
+        raise ValueError(
+            "Provide either --ordered-fasta with --assignments, or "
+            "--scaffold-fasta with --agp."
+        )
+    if ordered_mode and not (args.ordered_fasta and args.assignments):
+        raise ValueError("--ordered-fasta and --assignments must be provided together")
+    if scaffold_agp_mode and not (args.scaffold_fasta and args.agp):
+        raise ValueError("--scaffold-fasta and --agp must be provided together")
+    if getattr(args, "patch_fasta", None) and not getattr(args, "patch_table", None):
+        raise ValueError("--patch-fasta requires --patch-table")
+    if apply_all_fillable and not apply_output:
+        raise ValueError("--apply-all-fillable requires --apply")
+    if apply_output and not reviewed_plan and not apply_all_fillable:
+        raise ValueError(
+            "--apply requires --reviewed-plan or --apply-all-fillable. "
+            "Use --reviewed-plan for production runs, or --apply-all-fillable "
+            "when you intentionally want every currently fillable path applied."
+        )
+    if reviewed_plan and apply_all_fillable:
+        raise ValueError("Use either --reviewed-plan or --apply-all-fillable, not both")
     if args.fixed_gap_bp is not None and args.fixed_gap_bp < 0:
         raise ValueError("--fixed-gap-bp must be zero or greater")
     if args.max_path_edges < 1:
@@ -1503,6 +2989,12 @@ def validate_plan_args(args):
         raise ValueError("--min-ref-paf-mapq must be zero or greater")
     if args.min_ref_paf_idy < 0:
         raise ValueError("--min-ref-paf-idy must be zero or greater")
+    if args.min_read_mapq < 0:
+        raise ValueError("--min-read-mapq must be zero or greater")
+    if args.read_terminal_window_bp < 1:
+        raise ValueError("--read-terminal-window-bp must be at least 1")
+    if args.read_min_anchor_bp < 1:
+        raise ValueError("--read-min-anchor-bp must be at least 1")
 
 
 def build_plan_context(args):
@@ -1520,17 +3012,84 @@ def build_plan_context(args):
         if args.ref_paf
         else {}
     )
-    assignments = read_assignments(args.assignments)
-    records = read_ordered_fasta(args.ordered_fasta)
-    groups, unassigned = group_scaffold_members(records, assignments)
-    plans = build_fill_plans(
-        groups,
-        graph,
-        args,
-        gaf_records,
-        hic_contacts,
-        ref_placements,
+    read_evidence = (
+        read_long_read_paf(args.read_paf, min_mapq=args.min_read_mapq)
+        if args.read_paf
+        else None
     )
+    patch_candidates = (
+        read_patch_candidates(args.patch_table, getattr(args, "patch_fasta", None))
+        if getattr(args, "patch_table", None)
+        else []
+    )
+    if args.scaffold_fasta:
+        records = read_ordered_fasta(args.scaffold_fasta)
+        groups, gap_parts_by_pair = build_scaffold_agp_groups(
+            records,
+            read_agp(args.agp),
+            args.scaffold_fasta,
+        )
+        unassigned = []
+        if getattr(args, "project_gfa_paths", False):
+            projections = projections_by_contig(
+                build_path_projection(
+                    graph,
+                    path_names=requested_projection_names(groups),
+                    trim_overlaps=getattr(args, "projection_trim_overlaps", False),
+                )
+            )
+            plans = build_projected_agp_fill_plans(
+                groups,
+                gap_parts_by_pair,
+                graph,
+                projections,
+                args,
+                gaf_records,
+                hic_contacts,
+                ref_placements,
+            )
+        else:
+            plans = build_agp_fill_plans(
+                groups,
+                gap_parts_by_pair,
+                graph,
+                args,
+                gaf_records,
+                hic_contacts,
+                ref_placements,
+            )
+    else:
+        assignments = read_assignments(args.assignments)
+        records = read_ordered_fasta(args.ordered_fasta)
+        groups, unassigned = group_scaffold_members(records, assignments)
+        if getattr(args, "project_gfa_paths", False):
+            projections = projections_by_contig(
+                build_path_projection(
+                    graph,
+                    path_names=requested_projection_names(groups),
+                    trim_overlaps=getattr(args, "projection_trim_overlaps", False),
+                )
+            )
+            plans = build_projected_fill_plans(
+                groups,
+                graph,
+                projections,
+                args,
+                gaf_records,
+                hic_contacts,
+                ref_placements,
+            )
+        else:
+            plans = build_fill_plans(
+                groups,
+                graph,
+                args,
+                gaf_records,
+                hic_contacts,
+                ref_placements,
+            )
+    annotate_longread_bridge_support(groups, plans, read_evidence, args)
+    annotate_patch_candidates(plans, patch_candidates)
     return groups, unassigned, plans
 
 
@@ -1539,6 +3098,9 @@ def run(args):
 
     output_paths = {
         "fill_plan": Path(str(prefix) + ".gapfill_plan.tsv"),
+        "agp": Path(str(prefix) + ".gapfilled.agp"),
+        "components": Path(str(prefix) + ".gapfilled_components.tsv"),
+        "submission_checklist": Path(str(prefix) + ".submission_checklist.tsv"),
         "run_summary": Path(str(prefix) + ".run_summary.txt"),
     }
     if args.apply:
@@ -1556,15 +3118,29 @@ def run(args):
         filled_records = build_filled_scaffolds(groups, unassigned, plans, args)
         write_filled_fasta(output_paths["filled_fasta"], filled_records, args.simple_headers)
 
+    graph = read_gfa(args.gfa)
+    agp_parts = build_gapfill_agp_parts(groups, unassigned, plans, graph)
+    write_agp(output_paths["agp"], agp_parts)
+    write_component_tsv(output_paths["components"], agp_parts)
     write_fill_plan(output_paths["fill_plan"], plans, args.include_fill_sequences)
     if args.review_html:
         write_review_html(output_paths["review_html"], plans, args.include_fill_sequences)
+    write_submission_checklist(
+        output_paths["submission_checklist"],
+        "chromo gapfill",
+        output_paths,
+        filled_records,
+        agp_parts,
+    )
     write_run_summary(output_paths["run_summary"], args, output_paths, plans, filled_records)
 
     sys.stderr.write(f"Planned {len(plans)} graph gap fill(s).\n")
     for status, count in sorted(status_counts(plans).items()):
         sys.stderr.write(f"  {status}: {count}\n")
     sys.stderr.write(f"Wrote gapfill plan: {output_paths['fill_plan']}\n")
+    sys.stderr.write(f"Wrote gapfilled AGP: {output_paths['agp']}\n")
+    sys.stderr.write(f"Wrote gapfilled components: {output_paths['components']}\n")
+    sys.stderr.write(f"Wrote submission checklist: {output_paths['submission_checklist']}\n")
     if args.review_html:
         sys.stderr.write(f"Wrote review HTML: {output_paths['review_html']}\n")
     if args.apply:

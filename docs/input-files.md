@@ -1,14 +1,15 @@
 ---
 title: Input Files
-description: Prepare MUMmer, minimap2, GFA, GAF, and Hi-C-like inputs for ChromoSort.
+description: Prepare MUMmer, minimap2, GFA, GAF, Hi-C-like, and patch-candidate inputs for ChromoSort.
 ---
 
 # Input Files
 
 ChromoSort does not run aligners or graph tools for you. It consumes files from
-MUMmer, minimap2, assembly graph outputs, graph aligners, and optional contact
-tables. The most important rule is that each evidence file must describe the
-same FASTA records used by the command you are running.
+MUMmer, minimap2, assembly graph outputs, graph aligners, optional contact
+tables, and optional patch-candidate workflows. The most important rule is that
+each evidence file must describe the same FASTA records used by the command you
+are running.
 
 ## Input Sets By Task
 
@@ -24,8 +25,8 @@ same FASTA records used by the command you are running.
 | Map graph coordinates with `chromo graph-map` | Contig FASTA and GFA with path/walk records | FASTA index, selected path names |
 | Prepare scaffold review tables with `chromo eval scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for graph junction context, long-read-to-assembly PAF, long-read-to-graph GAF |
 | Scaffold sorted contigs with `chromo scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for report-only graph junction evidence |
-| Prepare gapfill review tables with `chromo eval gapfill` | Ordered FASTA, matching assignment TSV, and GFA | GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, long-read-to-assembly PAF |
-| Fill graph-supported gaps with `chromo gapfill` | Ordered FASTA, matching assignment TSV, and GFA | GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, reviewed plan TSV |
+| Prepare gapfill review tables with `chromo eval gapfill` | Ordered FASTA plus matching assignment TSV, or scaffold FASTA plus AGP; GFA | `--project-gfa-paths` for unitig-level GFA `P`/`W` projection, GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, long-read-to-assembly PAF, external patch table/FASTA |
+| Fill graph-supported gaps with `chromo gapfill` | Ordered FASTA plus matching assignment TSV, or scaffold FASTA plus AGP; GFA | `--project-gfa-paths` for unitig projection, GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, external patch table/FASTA, reviewed plan TSV |
 
 When a command accepts `--coords` or `--paf`, provide exactly one of them. For
 most new runs, use minimap2 PAF as the primary alignment input because it is
@@ -194,6 +195,42 @@ bridge_good  right  22
 
 The first data row may be a header. Contacts are treated as undirected and are
 summed across adjacent node pairs on each candidate graph path.
+
+### External Patch Candidate Table
+
+`chromo eval gapfill --patch-table` and `chromo gapfill --patch-table` import
+candidate patches from external gap closers or patching workflows as review
+evidence. Typical sources include TGS-GapCloser, LR_Gapcloser, Sealer, RagTag
+patch, or a custom consensus workflow. ChromoSort compares each candidate patch
+to the graph-derived fill sequence for the same gap, but it does not insert
+external patch sequence in this mode.
+
+The table is tab-delimited and keyed by scaffold object plus the two flanking
+components:
+
+```text
+scaffold  left_contig  right_contig  patch_id  source  patch_sequence
+chr1      ctgA         ctgB          patch_01  TGS-GapCloser  ACGTACGT
+```
+
+Required fields are `scaffold`, `left_contig`, and `right_contig`. Provide
+either an inline `patch_sequence` column or a `patch_id` column plus
+`--patch-fasta` containing matching FASTA records. Optional `source` and
+`notes` columns are copied into the plan. Common aliases such as `object`,
+`left_component`, `right_component`, `tool`, `method`, `sequence`, and `seq`
+are also accepted.
+
+Use the component names ChromoSort reports for the current gapfill mode. In
+ordered-FASTA mode, these are the adjacent ordered contig IDs. In
+scaffold/AGP mode, they are AGP component IDs around each N gap. A patch table
+keyed only by scaffold record names cannot identify which N block it describes.
+
+Patch evidence adds columns such as `patch_candidate_count`, `patch_best_id`,
+`patch_best_source`, `patch_best_bp`, `patch_graph_status`, and
+`patch_best_notes`. With `--include-fill-sequences`, the best external sequence
+is also written as `patch_best_sequence`. Graph comparison statuses are
+`exact_graph_match`, `same_length_graph_mismatch`, `graph_mismatch`, or
+`patch_only_no_graph_sequence`.
 
 ## Creating Input Files With MUMmer
 
@@ -374,13 +411,17 @@ Graph-aware ChromoSort commands use these graph-related evidence files:
 - long-read-to-assembly PAF: optional read alignments used by
   `chromo eval fix`, `chromo eval scaffold`, `chromo eval gapfill`, and
   `chromo manual --read-paf` task dashboards to report split, bridge, and
-  contig-end support.
+  contig-end support. `chromo gapfill --read-paf` also reports bridge evidence
+  across adjacent contig ends, but does not use reads as the inserted sequence.
 - GAF: optional read-to-graph alignments used by `chromo eval fix`,
   `chromo eval scaffold`, `chromo eval gapfill`, `chromo manual --gaf`, and
   `chromo gapfill --gaf` to report or resolve graph traversal support.
 - Hi-C pairs: optional graph-node contact counts used by
   `chromo gapfill --hic-pairs` as an additional conservative branch-support
   signal.
+- external patch candidates: optional table/FASTA pairs used by
+  `chromo eval gapfill --patch-table` and `chromo gapfill --patch-table` to
+  compare outside patch sequences with graph-derived fills as review evidence.
 
 The [Architecture]({{ '/architecture/' | relative_url }}) page maps these
 evidence files to the subcommands, modes, and parameters that activate them,
@@ -399,7 +440,8 @@ works naturally. If the FASTA was renamed, polished, split, or scaffolded by
 another tool, keep a name map or regenerate graph evidence for the renamed
 sequences.
 
-For graph review, use the graph closest to the FASTA being sorted or filled:
+For graph review, use the graph closest to the FASTA being sorted or filled.
+The simplest case is a contig-level GFA whose `S` segment names match the FASTA:
 
 ```text
 assembly.fa              # FASTA passed to chromo sort/fix/gapfill
@@ -426,6 +468,25 @@ chromo graph-map \
 If the GFA contains only `S`, `L`, and assembler read-alignment records, it can
 still be useful as topology evidence, but it cannot by itself project unitig
 coordinates onto contigs.
+
+For graph-aware gap filling, the same rule applies more strictly:
+
+| Graph input | Planning use | Applied sequence use |
+| --- | --- | --- |
+| Contig-level GFA with matching segment names and sequences | Direct graph-path planning. | Yes. |
+| Contig-level `.noseq.gfa` with matching segment names and `LN:i` lengths | Topology and report-only context. | No. |
+| Unitig-level GFA with matching `P`/`W` contig paths and sequences | Projection-backed planning with `chromo gapfill --project-gfa-paths`, optionally confirmed first with `chromo graph-map`. | Yes, when terminal unitig sequence validates against component ends. |
+| Unitig-level `.noseq.gfa` with matching `P`/`W` paths | Projection and topology review. | No. |
+| Unitig-level GFA without matching `P`/`W` paths | Limited node-level context only. | No. |
+
+If you already have a scaffold FASTA, keep or create an AGP/component map that
+connects scaffold gaps back to the original contigs. The scaffold record itself
+usually will not match the assembler graph, but `chromo gapfill` with
+`--scaffold-fasta --agp` uses AGP to recover the component identities needed
+for direct contig-level graph filling or, with `--project-gfa-paths`, the path
+names needed to project component ends onto terminal unitigs. Scaffold FASTA
+without AGP is rejected for graph-aware filling because the N gaps can no longer
+be tied safely to graph segments.
 
 ### Which PAF Files to Keep
 
@@ -499,6 +560,15 @@ chromo gapfill \
 
 Use the PAF whose query names match the GFA segment names being evaluated by
 gapfill.
+
+For `chromo gapfill --read-paf`, use long reads mapped back to the pre-scaffold
+contig FASTA or ordered FASTA records. The target names should match the
+assignment `new_name`, original `contig`, or ordered FASTA names. In
+`--scaffold-fasta --agp` mode, target names should match AGP component IDs.
+This PAF is used to count reads that anchor on both sides of an adjacent
+component junction. It is bridge evidence only; inserted bases still come from
+a sequence-bearing GFA path. PAF targets that are only scaffold record names are
+not currently interpreted as reads spanning scaffold N blocks.
 
 ### Creating GAF Read-to-Graph Alignments
 

@@ -15,10 +15,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Sequence
 
+from .agp import component_part, gap_part, write_agp, write_component_tsv
 from .graph import ORIENTATIONS, format_oriented_node, read_gfa
 from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import iter_fasta_records, write_wrapped
 from .review import accepted_events, read_review_events
+from .submission import write_submission_checklist
 
 
 REQUIRED_ASSIGNMENT_COLUMNS = {
@@ -166,8 +168,10 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--output-prefix",
         required=True,
         help=(
-            "Output prefix. Writes <prefix>.scaffold.fa, <prefix>.scaffold_gaps.tsv, "
-            "<prefix>.scaffold_summary.tsv, and <prefix>.run_summary.txt."
+            "Output prefix. Writes <prefix>.scaffold.fa, <prefix>.scaffold.agp, "
+            "<prefix>.scaffold_components.tsv, <prefix>.scaffold_gaps.tsv, "
+            "<prefix>.scaffold_summary.tsv, <prefix>.submission_checklist.tsv, "
+            "and <prefix>.run_summary.txt."
         ),
     )
     ap.add_argument(
@@ -776,6 +780,99 @@ def write_scaffold_fasta(path, scaffolds, unassigned, simple_headers, gap_mode):
             write_wrapped(out, record.seq)
 
 
+def component_span(member):
+    start = member.trim_left_bp + 1
+    end = len(member.record.seq) - member.trim_right_bp
+    return start, end
+
+
+def add_component(parts, object_name, cursor, part_number, component_id, start, end, source, status=".", notes="."):
+    length = end - start + 1
+    if length <= 0:
+        return cursor, part_number
+    parts.append(
+        component_part(
+            object_name=object_name,
+            object_start=cursor,
+            object_end=cursor + length - 1,
+            part_number=part_number,
+            component_id=component_id,
+            component_start=start,
+            component_end=end,
+            orientation="+",
+            source=source,
+            status=status,
+            notes=notes,
+        )
+    )
+    return cursor + length, part_number + 1
+
+
+def add_gap(parts, object_name, cursor, part_number, gap_bp, source, status=".", notes="."):
+    if gap_bp <= 0:
+        return cursor, part_number
+    parts.append(
+        gap_part(
+            object_name=object_name,
+            object_start=cursor,
+            object_end=cursor + gap_bp - 1,
+            part_number=part_number,
+            gap_length=gap_bp,
+            source=source,
+            status=status,
+            notes=notes,
+        )
+    )
+    return cursor + gap_bp, part_number + 1
+
+
+def build_scaffold_agp_parts(scaffolds, unassigned):
+    parts = []
+    for scaffold in scaffolds:
+        cursor = 1
+        part_number = 1
+        for index, member in enumerate(scaffold.members):
+            if index:
+                gap = scaffold.gaps[index - 1]
+                cursor, part_number = add_gap(
+                    parts,
+                    scaffold.name,
+                    cursor,
+                    part_number,
+                    gap.gap_bp,
+                    source="scaffold_gap",
+                    status=gap.gap_mode,
+                    notes=f"{gap.left_contig}|{gap.right_contig}",
+                )
+            start, end = component_span(member)
+            cursor, part_number = add_component(
+                parts,
+                scaffold.name,
+                cursor,
+                part_number,
+                member.assignment.new_name,
+                start,
+                end,
+                source="ordered_contig",
+                status="trimmed" if member.trimmed_bp else "unchanged",
+                notes=member.assignment.contig,
+            )
+
+    for record in unassigned:
+        add_component(
+            parts,
+            record.name,
+            1,
+            1,
+            record.name,
+            1,
+            len(record.seq),
+            source="unassigned_record",
+            status="unchanged",
+        )
+    return parts
+
+
 def write_gap_report(path, scaffolds):
     header = [
         "scaffold",
@@ -964,8 +1061,11 @@ def run(args):
 
     output_paths = {
         "scaffold_fasta": Path(str(prefix) + ".scaffold.fa"),
+        "agp": Path(str(prefix) + ".scaffold.agp"),
+        "components": Path(str(prefix) + ".scaffold_components.tsv"),
         "gap_report": Path(str(prefix) + ".scaffold_gaps.tsv"),
         "scaffold_summary": Path(str(prefix) + ".scaffold_summary.tsv"),
+        "submission_checklist": Path(str(prefix) + ".submission_checklist.tsv"),
         "run_summary": Path(str(prefix) + ".run_summary.txt"),
     }
     if args.gfa:
@@ -1000,17 +1100,30 @@ def run(args):
         )
 
     write_scaffold_fasta(output_paths["scaffold_fasta"], scaffolds, unassigned, args.simple_headers, gap_mode)
+    agp_parts = build_scaffold_agp_parts(scaffolds, unassigned)
+    write_agp(output_paths["agp"], agp_parts)
+    write_component_tsv(output_paths["components"], agp_parts)
     write_gap_report(output_paths["gap_report"], scaffolds)
     if graph is not None:
         write_graph_gap_report(output_paths["graph_gap_report"], graph_gap_records)
     write_summary(output_paths["scaffold_summary"], scaffolds, unassigned)
+    write_submission_checklist(
+        output_paths["submission_checklist"],
+        "chromo scaffold",
+        output_paths,
+        [*scaffolds, *unassigned],
+        agp_parts,
+    )
     write_run_summary(output_paths["run_summary"], args, output_paths, scaffolds, unassigned)
 
     sys.stderr.write(f"Wrote scaffold FASTA: {output_paths['scaffold_fasta']}\n")
+    sys.stderr.write(f"Wrote scaffold AGP: {output_paths['agp']}\n")
+    sys.stderr.write(f"Wrote scaffold components: {output_paths['components']}\n")
     sys.stderr.write(f"Wrote gap report: {output_paths['gap_report']}\n")
     if graph is not None:
         sys.stderr.write(f"Wrote graph gap report: {output_paths['graph_gap_report']}\n")
     sys.stderr.write(f"Wrote scaffold summary: {output_paths['scaffold_summary']}\n")
+    sys.stderr.write(f"Wrote submission checklist: {output_paths['submission_checklist']}\n")
 
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):

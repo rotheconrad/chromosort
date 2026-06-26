@@ -25,7 +25,8 @@ Given a final `chromo sort` ordered FASTA and its matching
 9. Optionally writes a report-only GFA graph-evidence table for adjacent
    scaffold junctions.
 10. Optionally applies accepted gap overrides from `chromo eval scaffold`.
-11. Writes scaffold FASTA, gap report, scaffold summary, and run summary files.
+11. Writes scaffold FASTA, AGP, component provenance, gap report, scaffold
+    summary, and run summary files.
 
 The intended input is the final ordered FASTA from the same `chromo sort` run as
 the assignment report. If you run `chromo fix`, re-run `chromo sort` on the
@@ -144,9 +145,12 @@ missing nodes, orientation mismatches, and indirect paths remain report-only.
 | Output | Description |
 | --- | --- |
 | `<prefix>.scaffold.fa` | One FASTA record per assigned reference sequence, with ordered contigs joined by Ns. |
+| `<prefix>.scaffold.agp` | AGP 2.1 scaffold map with ordered contig components and written N gaps. |
+| `<prefix>.scaffold_components.tsv` | Human-readable provenance table mirroring the AGP rows, including source, status, component coordinates, gap lengths, linkage evidence, and notes. |
 | `<prefix>.scaffold_gaps.tsv` | One row per inserted gap with flanking contigs, inferred gap, written gap, overlap bp/class/fractions, overlap policy/action, trimmed bp, and sequence-overlap identity when checked. |
 | `<prefix>.graph_gaps.tsv` | Optional report-only GFA evidence for adjacent scaffold junctions when `--gfa` is provided, including direct links, short paths, orientations, overlap bp, and missing-node statuses. |
 | `<prefix>.scaffold_summary.tsv` | One row per scaffold with contig count, scaffold length, sequence bp, gap bp, overlap totals, trimming totals, and ordered contig list. |
+| `<prefix>.submission_checklist.tsv` | Submission-oriented checklist with FASTA character checks, AGP continuity checks, gap/component counts, unresolved gap counts, and files to keep together. |
 | `<prefix>.run_summary.txt` | Inputs, gap model, output paths, and total scaffold counts. |
 
 ### Example `chromo scaffold` Output
@@ -226,6 +230,15 @@ overlaps are reported for review rather than trimmed automatically.
 Some downstream tools and submission workflows prefer a constant gap size. The
 `--fixed-gap-bp` option supports that convention while preserving the inferred
 gap estimate in the report for transparency.
+
+### Keep Submission Provenance
+
+`chromo scaffold` writes AGP and component-provenance tables beside the FASTA.
+The AGP maps each emitted scaffold record back to ordered contig components and
+written N gaps. When overlap trimming is enabled, the component coordinates
+reflect the trimmed component slice. Keep the AGP, component TSV, gap report,
+and input ordered FASTA together when preparing NCBI-style submission material
+or handing the scaffold to another reviewer.
 
 ### Keep Graph Evidence Report-Only
 
