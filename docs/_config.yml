@@ -88,6 +88,14 @@ nav:
     children:
       - title: Roadmap
         url: /guides/#guide-build-roadmap
+      - title: FASTA rule
+        url: /guides/alignment-evidence/
+      - title: PAF or coords
+        url: /guides/paf-vs-coords/
+      - title: Name matching
+        url: /guides/name-matching/
+      - title: Audit tables
+        url: /guides/audit-tables/
       - title: Dot plots
         url: /dot-plots/
       - title: Dot plot anatomy

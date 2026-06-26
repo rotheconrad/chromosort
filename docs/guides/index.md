@@ -16,6 +16,17 @@ reader decide what they are seeing, which evidence files are trustworthy for
 that decision, and which ChromoSort command should or should not change
 sequence.
 
+## Available Guides
+
+Start with the foundation guides when you are setting up or checking a
+workflow:
+
+- [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }})
+- [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }})
+- [FASTA and evidence name matching]({{ '/guides/name-matching/' | relative_url }})
+- [Reading ChromoSort audit tables]({{ '/guides/audit-tables/' | relative_url }})
+- [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
+
 ## Dot-Plot Guide Review
 
 The dot-plot guide should be the template for future guides because it:
@@ -70,10 +81,10 @@ Build the guides that prevent the most expensive mistakes.
 
 | Priority | Guide | Deliverable |
 | --- | --- | --- |
-| 1 | Alignment evidence and the exact FASTA rule | A guide explaining raw, fixed, sorted, manual, scaffolded, and gapfilled FASTA stages; when old coords/PAF can be reused; and when re-alignment is mandatory. |
-| 2 | Choosing PAF or MUMmer coords | A guide comparing minimap2 PAF and MUMmer coords, including `asm5`/`asm10`/`asm20`, `-c`, secondary rows, MAPQ, identity, and expected disagreement. |
-| 3 | FASTA and evidence name matching | A guide with quick checks for FASTA IDs, PAF columns, coords query/reference names, GFA `S` names, GAF path nodes, and Hi-C node names. |
-| 4 | Reading audit tables | A guide for `contig_assignments.tsv`, fix reports, review-event TSVs, scaffold gap reports, graph reports, and gapfill plans. |
+| 1 | [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }}) | Available. Explains raw, fixed, sorted, manual, scaffolded, and gapfilled FASTA stages; when old coords/PAF can be reused; and when re-alignment is mandatory. |
+| 2 | [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }}) | Available. Compares minimap2 PAF and MUMmer coords, including `asm5`/`asm10`/`asm20`, `-c`, secondary rows, MAPQ, identity, and expected disagreement. |
+| 3 | [FASTA and evidence name matching]({{ '/guides/name-matching/' | relative_url }}) | Available. Gives quick checks for FASTA IDs, PAF columns, coords query/reference names, GFA `S` names, GAF path nodes, and Hi-C node names. |
+| 4 | [Reading ChromoSort audit tables]({{ '/guides/audit-tables/' | relative_url }}) | Available. Covers `contig_assignments.tsv`, fix reports, review-event TSVs, scaffold gap reports, graph reports, and gapfill plans. |
 
 ### Phase 2: Core Decision Guides
 
