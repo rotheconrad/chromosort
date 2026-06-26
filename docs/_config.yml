@@ -96,6 +96,14 @@ nav:
         url: /guides/name-matching/
       - title: Audit tables
         url: /guides/audit-tables/
+      - title: Sorting decisions
+        url: /guides/sorting-decisions/
+      - title: Choose command
+        url: /guides/choosing-commands/
+      - title: Breakpoint review
+        url: /guides/breakpoint-review/
+      - title: Inversions
+        url: /guides/inversions-orientation/
       - title: Dot plots
         url: /dot-plots/
         children:

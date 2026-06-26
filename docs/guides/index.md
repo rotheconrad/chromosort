@@ -18,13 +18,17 @@ sequence.
 
 ## Available Guides
 
-Start with the foundation guides when you are setting up or checking a
-workflow:
+Start with the foundation and core decision guides when you are setting up or
+checking a workflow:
 
 - [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }})
 - [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }})
 - [FASTA and evidence name matching]({{ '/guides/name-matching/' | relative_url }})
 - [Reading ChromoSort audit tables]({{ '/guides/audit-tables/' | relative_url }})
+- [Sorting decisions and duplicate-overlap filtering]({{ '/guides/sorting-decisions/' | relative_url }})
+- [Sort, clean, fix, cut, or manual?]({{ '/guides/choosing-commands/' | relative_url }})
+- [Chimeric contig and breakpoint review]({{ '/guides/breakpoint-review/' | relative_url }})
+- [Inversions and orientation changes]({{ '/guides/inversions-orientation/' | relative_url }})
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 
 ## Dot-Plot Guide Review
@@ -92,10 +96,10 @@ Build guides that help users pick the right ChromoSort action.
 
 | Priority | Guide | Deliverable |
 | --- | --- | --- |
-| 5 | Sorting and duplicate-overlap decisions | Explain best-reference share, query coverage, novel reference span, terminal overlap rescue, split-candidate protection, and graph guardrails. |
-| 6 | Sort, clean, fix, cut, or manual? | A decision tree for choosing conservative cleanup, automatic sorting, reviewed splitting, exact cuts, or browser curation. |
-| 7 | Chimeric contig and breakpoint review | A pattern/status guide for `chromo fix`, planner modes, smoothing, breakpoint penalties, and selected-contig versus `--all` workflows. |
-| 8 | Inversions and orientation changes | A guide distinguishing reverse orientation, internal inversion, complex same-reference orientation events, and biological/reference differences. |
+| 5 | [Sorting and duplicate-overlap decisions]({{ '/guides/sorting-decisions/' | relative_url }}) | Available. Explains best-reference share, query coverage, novel reference span, terminal overlap rescue, split-candidate protection, and graph guardrails. |
+| 6 | [Sort, clean, fix, cut, or manual?]({{ '/guides/choosing-commands/' | relative_url }}) | Available. Provides a decision tree for choosing conservative cleanup, automatic sorting, reviewed splitting, exact cuts, or browser curation. |
+| 7 | [Chimeric contig and breakpoint review]({{ '/guides/breakpoint-review/' | relative_url }}) | Available. Covers `chromo fix`, planner modes, smoothing, breakpoint penalties, and selected-contig versus `--all` workflows. |
+| 8 | [Inversions and orientation changes]({{ '/guides/inversions-orientation/' | relative_url }}) | Available. Distinguishes reverse orientation, internal inversion, complex same-reference orientation events, and biological/reference differences. |
 
 ### Phase 3: Review Interfaces
 

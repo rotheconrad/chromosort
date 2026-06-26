@@ -22,7 +22,8 @@ before they are used as inputs to another alignment-dependent command.
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }})
 - [Guides]({{ '/guides/' | relative_url }}) for the FASTA/alignment rule,
-  PAF-vs-coords choices, name matching, audit tables, and dot plots.
+  PAF-vs-coords choices, name matching, audit tables, sorting decisions,
+  command choice, breakpoint review, inversions, and dot plots.
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 - [Command reference](https://rotheconrad.github.io/chromosort/commands/)
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})
@@ -45,7 +46,7 @@ before they are used as inputs to another alignment-dependent command.
 
 - [Output files](https://rotheconrad.github.io/chromosort/outputs/)
 - [Guides]({{ '/guides/' | relative_url }}) for educational explanations of
-  evidence files, audit reports, and visual review.
+  evidence files, audit reports, command decisions, and visual review.
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }}) for
   choosing one primary coords or PAF alignment, inversion review,
   long-read/GFA/GAF evidence, and handoffs between chats or projects.
