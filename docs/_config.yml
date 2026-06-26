@@ -110,6 +110,14 @@ nav:
         url: /guides/spreadsheet-review-tables/
       - title: Scaffolding
         url: /guides/scaffolding-gaps-overlaps/
+      - title: Graph evidence
+        url: /guides/assembly-graph-evidence/
+      - title: hifiasm projection
+        url: /guides/hifiasm-graph-projection/
+      - title: Read evidence
+        url: /guides/long-read-paf-gaf/
+      - title: Graph gapfill
+        url: /guides/graph-gap-filling/
       - title: Dot plots
         url: /dot-plots/
         children:

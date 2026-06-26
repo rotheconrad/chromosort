@@ -18,8 +18,8 @@ sequence.
 
 ## Available Guides
 
-Start with the foundation, core decision, and review-interface guides when you
-are setting up or checking a workflow:
+Start with the foundation, core decision, review-interface, and evidence
+guides when you are setting up or checking a workflow:
 
 - [Alignment evidence and the exact FASTA rule]({{ '/guides/alignment-evidence/' | relative_url }})
 - [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }})
@@ -32,6 +32,10 @@ are setting up or checking a workflow:
 - [Manual dashboard review]({{ '/guides/manual-dashboard-review/' | relative_url }})
 - [Spreadsheet review tables]({{ '/guides/spreadsheet-review-tables/' | relative_url }})
 - [Scaffolding, gaps, and overlaps]({{ '/guides/scaffolding-gaps-overlaps/' | relative_url }})
+- [Assembly graph evidence]({{ '/guides/assembly-graph-evidence/' | relative_url }})
+- [hifiasm unitig-to-contig projection]({{ '/guides/hifiasm-graph-projection/' | relative_url }})
+- [Long-read PAF and GAF support]({{ '/guides/long-read-paf-gaf/' | relative_url }})
+- [Graph-supported gap filling]({{ '/guides/graph-gap-filling/' | relative_url }})
 - [How to interpret dot plots]({{ '/dot-plots/' | relative_url }})
 
 ## Dot-Plot Guide Review
@@ -121,10 +125,10 @@ overinterpret.
 
 | Priority | Guide | Deliverable |
 | --- | --- | --- |
-| 12 | Assembly graph evidence | Explain GFA `S`, `L`, `P`, and `W` records, noseq graphs, graph complexity labels, report-only evidence, and graph guardrails. |
-| 13 | hifiasm unitig-to-contig projection | Explain why unitig coordinates need projection, how `chromo graph-map` and plot overlays use path/walk records, and how to review projection warnings. |
-| 14 | Long-read PAF and GAF support | Explain breakpoint support, contig-end bridge support, read traversal support, MAPQ thresholds, and advisory versus executor-changing evidence. |
-| 15 | Graph-supported gap filling | Explain path enumeration, candidate paths, GAF/Hi-C/reference-placement support, risk flags, flank validation, reviewed application, and unresolved fallbacks. |
+| 12 | [Assembly graph evidence]({{ '/guides/assembly-graph-evidence/' | relative_url }}) | Available. Explains GFA `S`, `L`, `P`, and `W` records, noseq graphs, graph complexity labels, report-only evidence, and graph guardrails. |
+| 13 | [hifiasm unitig-to-contig projection]({{ '/guides/hifiasm-graph-projection/' | relative_url }}) | Available. Explains why unitig coordinates need projection, how `chromo graph-map` and plot overlays use path/walk records, and how to review projection warnings. |
+| 14 | [Long-read PAF and GAF support]({{ '/guides/long-read-paf-gaf/' | relative_url }}) | Available. Explains breakpoint support, contig-end bridge support, read traversal support, MAPQ thresholds, and advisory versus executor-changing evidence. |
+| 15 | [Graph-supported gap filling]({{ '/guides/graph-gap-filling/' | relative_url }}) | Available. Explains path enumeration, candidate paths, GAF/Hi-C/reference-placement support, risk flags, flank validation, reviewed application, and unresolved fallbacks. |
 
 ### Phase 5: Worked Examples
 
