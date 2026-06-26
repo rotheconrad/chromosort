@@ -365,3 +365,41 @@ The strongest dot-plot interpretations combine visual pattern, alignment
 metrics, and biological context. The plot tells you where to look. The decision
 comes from checking whether the visual pattern is supported by the rest of the
 evidence.
+
+## Brief History And Further Reading
+
+Dot plots are one of the older ideas in sequence analysis. Before whole-genome
+alignment viewers, genome browsers, and interactive pangenome tools, a
+dot-matrix comparison gave researchers a direct way to see whether two
+sequences shared order, orientation, repeats, insertions, deletions, or
+rearrangements. The core visual idea has stayed useful because it is simple:
+plot matching intervals between two coordinate systems and let large-scale
+structure become visible.
+
+As genomes became larger, dot plots became tied to faster whole-genome
+alignment methods. Tools such as MUMmer made chromosome-scale sequence
+comparison practical, minimap2 made compact PAF-based assembly alignments fast
+and common, and modern interactive tools made large dot plots easier to browse.
+ChromoSort uses the same conceptual tradition: the plot is not the decision,
+but it is often the fastest way to notice where the decision should begin.
+
+Further reading:
+
+- Gibbs and McIntyre 1970. [The diagram, a method for comparing sequences](https://doi.org/10.1111/j.1432-1033.1970.tb00791.x).
+- Delcher et al. 1999. [Alignment of whole genomes](https://doi.org/10.1093/nar/27.11.2369).
+- Kurtz et al. 2004. [Versatile and open software for comparing large genomes](https://doi.org/10.1186/gb-2004-5-2-r12).
+- Li 2018. [Minimap2: pairwise alignment for nucleotide sequences](https://doi.org/10.1093/bioinformatics/bty191).
+- Cabanettes and Klopp 2018. [D-GENIES: dot plot large genomes in an interactive, efficient and simple way](https://doi.org/10.7717/peerj.4958).
+
+## What To Read Next
+
+- [How to decide when to fix a contig]({{ '/concepts/fixing-contigs/' | relative_url }})
+  for deciding when a suspicious dot-plot pattern is strong enough to justify
+  changing sequence.
+- [How scaffolding works]({{ '/concepts/scaffolding/' | relative_url }}) for
+  turning ordered contigs into scaffold records while keeping uncertainty
+  visible.
+- [How gap filling works]({{ '/concepts/gap-filling/' | relative_url }}) for
+  deciding when graph or read evidence can replace scaffold Ns with sequence.
+- [Choosing PAF or MUMmer coords]({{ '/guides/paf-vs-coords/' | relative_url }})
+  for choosing the alignment evidence that produces the plot.
