@@ -70,17 +70,6 @@ nav:
         url: /workflows/#handling-overlapping-contigs
       - title: Synthetic graph workflow
         url: /workflows/#synthetic-graph-workflow
-  - title: Examples
-    url: /examples/
-    children:
-      - title: Cleanup example
-        url: /guides/mostly-correct-cleanup/
-      - title: Chimeric example
-        url: /guides/chimeric-contig-walkthrough/
-      - title: Graph walkthrough
-        url: /guides/graph-scaffold-gapfill-walkthrough/
-      - title: Handoff
-        url: /guides/dataset-handoff-checklist/
   - title: Review Playbook
     url: /review-playbook/
     children:
@@ -99,16 +88,12 @@ nav:
     children:
       - title: Dot plots
         url: /dot-plots/
-      - title: PAF or coords
-        url: /guides/paf-vs-coords/
-      - title: Inversions
-        url: /guides/inversions-orientation/
-      - title: Graph evidence
-        url: /guides/assembly-graph-evidence/
-      - title: hifiasm projection
-        url: /guides/hifiasm-graph-projection/
-      - title: Read evidence
-        url: /guides/long-read-paf-gaf/
+      - title: Fix contigs
+        url: /concepts/fixing-contigs/
+      - title: Scaffolding
+        url: /concepts/scaffolding/
+      - title: Gap filling
+        url: /concepts/gap-filling/
   - title: Guides
     url: /guides/
     children:
@@ -116,6 +101,8 @@ nav:
         url: /guides/alignment-evidence/
       - title: Name matching
         url: /guides/name-matching/
+      - title: PAF or coords
+        url: /guides/paf-vs-coords/
       - title: Audit tables
         url: /guides/audit-tables/
       - title: Sorting decisions
@@ -124,14 +111,30 @@ nav:
         url: /guides/choosing-commands/
       - title: Breakpoint review
         url: /guides/breakpoint-review/
+      - title: Inversions
+        url: /guides/inversions-orientation/
       - title: Manual review
         url: /guides/manual-dashboard-review/
       - title: Review tables
         url: /guides/spreadsheet-review-tables/
       - title: Scaffolding
         url: /guides/scaffolding-gaps-overlaps/
+      - title: Graph evidence
+        url: /guides/assembly-graph-evidence/
+      - title: hifiasm projection
+        url: /guides/hifiasm-graph-projection/
+      - title: Read evidence
+        url: /guides/long-read-paf-gaf/
       - title: Graph gapfill
         url: /guides/graph-gap-filling/
+      - title: Cleanup example
+        url: /guides/mostly-correct-cleanup/
+      - title: Chimeric example
+        url: /guides/chimeric-contig-walkthrough/
+      - title: Graph walkthrough
+        url: /guides/graph-scaffold-gapfill-walkthrough/
+      - title: Handoff
+        url: /guides/dataset-handoff-checklist/
   - title: Commands
     url: /commands/
     children:

@@ -295,6 +295,26 @@ a:hover {
   text-align: center;
 }
 
+.content .concept-figure {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfbf8;
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+  padding: 12px;
+}
+
+.content .concept-figure svg {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+}
+
+.content .concept-figure figcaption {
+  margin-top: 0.6rem;
+}
+
 code {
   background: var(--code-bg);
   padding: 0.12rem 0.28rem;
