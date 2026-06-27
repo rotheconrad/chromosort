@@ -27,6 +27,7 @@ are running.
 | Scaffold sorted contigs with `chromo scaffold` | Ordered FASTA and matching `chromo sort` assignment TSV | GFA for report-only graph junction evidence |
 | Prepare gapfill review tables with `chromo eval gapfill` | Ordered FASTA plus matching assignment TSV, or scaffold FASTA plus AGP; GFA | `--project-gfa-paths` for unitig-level GFA `P`/`W` projection, GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, long-read-to-assembly PAF, external patch table/FASTA |
 | Fill graph-supported gaps with `chromo gapfill` | Ordered FASTA plus matching assignment TSV, or scaffold FASTA plus AGP; GFA | `--project-gfa-paths` for unitig projection, GAF read paths, Hi-C-like graph-node contacts, reference-placement PAF, external patch table/FASTA, reviewed plan TSV |
+| Prepare targeted GraphAligner inputs with `chromo gafprep` | Assembly FASTA, assembly GFA, long-read-to-assembly PAF, read FASTQ, and one or more ChromoSort review TSVs | Optional target/background sampling limits and GraphAligner script settings |
 
 When a command accepts `--coords` or `--paf`, provide exactly one of them. For
 most new runs, use minimap2 PAF as the primary alignment input because it is
@@ -51,6 +52,9 @@ between FASTA, alignments, reports, and graph files.
   `p_utg.gfa`, `r_utg.gfa`, or `.noseq.gfa` evidence on a `p_ctg.fa` dot plot,
   use GFA `P` path or `W` walk records to project unitigs onto matching contig
   names with `chromo graph-map` or `chromo plot --gfa-overlay`.
+- `chromo gafprep --read-paf` expects reads as PAF queries and assembly contigs
+  as PAF targets. This is different from the reference-to-assembly PAF used by
+  `chromo sort`, `chromo fix`, `chromo manual`, and `chromo plot`.
 - `chromo gapfill --ref-paf` scores intermediate graph nodes, so the PAF query
   names must match GFA segment names for those nodes.
 - Reviewed gapfill plans are tied to current `scaffold`, `left_contig`,
@@ -181,6 +185,10 @@ advisory node context. In `chromo eval scaffold`, `chromo eval gapfill`, and
 `chromo gapfill`, it reports candidate graph traversal support. GAF support
 does not insert sequence by itself; `chromo gapfill --apply` still requires a
 validated GFA path with usable segment sequences and overlaps.
+
+`chromo gafprep` is different: it prepares a smaller read FASTQ, a sanitized
+GFA, and a GraphAligner shell script. GraphAligner still produces the actual
+GAF file.
 
 ### Hi-C Pair Table
 
@@ -402,8 +410,8 @@ Graph-aware ChromoSort commands use these graph-related evidence files:
 
 - GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
   `chromo eval fix/scaffold/gapfill`, `chromo fix --gfa`,
-  `chromo scaffold --gfa`, `chromo gapfill --gfa`, `chromo graph-map`, and
-  `chromo plot --gfa-overlay`.
+  `chromo scaffold --gfa`, `chromo gapfill --gfa`, `chromo graph-map`,
+  `chromo gafprep --assembly-gfa`, and `chromo plot --gfa-overlay`.
 - reference-to-assembly PAF: the minimap2 alignment format used by
   `chromo sort`, `chromo fix`, `chromo manual`, and `chromo plot`; for
   `chromo gapfill --ref-paf`, the PAF query names must match the GFA graph
@@ -593,6 +601,40 @@ contigs. In `chromo eval gapfill` and `chromo gapfill --gaf`, one candidate
 path with unique support above `--min-gaf-path-support` can resolve an
 otherwise ambiguous GFA branch. Tied, weak, absent, or conflicting support
 keeps the event reviewable instead of forcing a hidden choice.
+
+For large full-depth HiFi datasets, running GraphAligner against the whole GFA
+can be expensive. Use `chromo gafprep` when you already have a
+read-to-assembly PAF and want GAF evidence only near ChromoSort review targets:
+
+```bash
+minimap2 -x map-hifi -c -t 16 --secondary=no assembly.fa reads.fastq.gz \
+  > reads_to_assembly.paf
+
+chromo gafprep \
+  --assembly-fasta assembly.fa \
+  --assembly-gfa assembly_graph.gfa \
+  --read-paf reads_to_assembly.paf \
+  --reads reads.fastq.gz \
+  --eval-review-table sample.fix_review.tsv \
+  --eval-review-table sample.scaffold_review.tsv \
+  --eval-review-table sample.gapfill_review.tsv \
+  --output-prefix results/sample.gafprep
+
+bash results/sample.gafprep.graphaligner.sh
+```
+
+This workflow writes selected reads and a sanitized GFA first; GraphAligner
+still writes `results/sample.gafprep.gaf`. Targeted GAF is review evidence, not
+automatic sequence validation.
+
+Choose the graph for the question being asked. A contig-level `ctg.gfa` whose
+`S` names match the assembly FASTA is best for direct contig-node and junction
+review. A unitig-level `utg.gfa` can be more informative for branch structure,
+but unitig coordinates are not contig coordinates; use matching `P`/`W` paths,
+`chromo graph-map`, or `chromo plot --gfa-overlay` when you need to relate
+unitig context back to contig breakpoints. A `.noseq.gfa` is useful for
+topology reports, but a sequence-bearing graph is normally needed for
+GraphAligner read-to-graph alignment.
 
 ### Optional Hi-C Pair Evidence
 

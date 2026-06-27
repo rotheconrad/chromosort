@@ -23,6 +23,7 @@ command-specific output sections below.
 | [`chromo fix`](#chromo-fix-outputs) | Reviewed fixed FASTA at `--output-fasta`, split report at `--report`, and optional graph report. |
 | [`chromo cut`](#chromo-cut-outputs) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
 | [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
+| [`chromo gafprep`](#chromo-gafprep-outputs) | `<prefix>.targets.tsv`, `<prefix>.selected_reads.tsv`, `<prefix>.selected_read_review_links.tsv`, `<prefix>.selected.fastq.gz`, `<prefix>.graphaligner.gfa`, `<prefix>.graphaligner.sh`, sanitization reports, and `<prefix>.summary.tsv`. |
 | [`chromo plot`](#chromo-plot-outputs) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG, with interpretation examples in the [dot-plot guide]({{ '/dot-plots/' | relative_url }}). |
 | [`chromo graph-map`](#chromo-graph-map-outputs) | `<prefix>.utg_to_ctg.tsv`, `<prefix>.path_summary.tsv`, and `<prefix>.warnings.tsv`. |
 | [`chromo scaffold`](#chromo-scaffold-outputs) | `<prefix>.scaffold.fa`, `<prefix>.scaffold.agp`, `<prefix>.scaffold_components.tsv`, `<prefix>.scaffold_gaps.tsv`, optional `<prefix>.graph_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, `<prefix>.submission_checklist.tsv`, and `<prefix>.run_summary.txt`. |
@@ -218,6 +219,28 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 >contigB_manual002 original=contigB slice=1-40 strand=+ scaffold=chr1
 TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 ```
+
+## `chromo gafprep` Outputs
+
+Use `chromo gafprep` outputs when you want targeted read-to-graph evidence
+without aligning every read to the full graph. The command writes inputs for
+GraphAligner and audit tables explaining why each read was selected.
+
+| Output | Description |
+| --- | --- |
+| `<prefix>.targets.tsv` | One row per review-derived target interval, including source review table, review type, row ID, contig, coordinates, target type, reason, and source fields. |
+| `<prefix>.selected_reads.tsv` | One row per deduplicated selected read with best read-to-assembly PAF alignment, selection reasons, linked target IDs, linked review row IDs, and target/background flags. |
+| `<prefix>.selected_read_review_links.tsv` | One row per selected-read-to-review-row association with event type, target ID, distance, overlap, and selection reason. |
+| `<prefix>.selected_read_ids.txt` | Selected read IDs, one per line. |
+| `<prefix>.selected.fastq.gz` | FASTQ subset streamed from `.fastq`, `.fq`, `.fastq.gz`, or `.fq.gz` input. |
+| `<prefix>.graphaligner.gfa` | GraphAligner-oriented GFA with sequences preserved, hifiasm `A` records removed, and pathological full-consuming links dropped. |
+| `<prefix>.graphaligner.sh` | Executable shell script that runs GraphAligner on the selected FASTQ and sanitized GFA. |
+| `<prefix>.summary.tsv` | PAF filter counts, selected/extracted read counts, output paths, and graph-sanitization warnings. |
+| `<prefix>.dropped_gfa_links.tsv` | One row per dropped full-consuming `L` link with node names, orientations, lengths, CIGAR, overlap length, and reason. |
+| `<prefix>.gfa_sanitize_summary.tsv` | GFA record counters and warnings, including whether sanitization touched a selected target contig. |
+
+If summary files include `GAF evidence limited by graph sanitization near
+target`, treat GAF results for that region as limited review evidence.
 
 ## `chromo plot` Outputs
 

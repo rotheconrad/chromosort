@@ -92,6 +92,39 @@ GAF path strings encode oriented graph traversal, such as:
 ChromoSort parses those paths, filters by `--min-gaf-mapq`, and counts reads
 that contain selected or alternate oriented graph paths.
 
+### Preparing Targeted GraphAligner Inputs
+
+For large HiFi datasets, full-depth read-to-graph alignment can take much
+longer than the review question needs. If you already have read-to-assembly PAF
+and one or more ChromoSort review tables, use `chromo gafprep` to select reads
+near review-relevant intervals:
+
+```bash
+chromo gafprep \
+  --assembly-fasta assembly.fa \
+  --assembly-gfa assembly_graph.gfa \
+  --read-paf reads_to_assembly.paf \
+  --reads reads.fastq.gz \
+  --eval-review-table sample.fix_review.tsv \
+  --eval-review-table sample.scaffold_review.tsv \
+  --eval-review-table sample.gapfill_review.tsv \
+  --output-prefix results/sample.gafprep
+
+bash results/sample.gafprep.graphaligner.sh
+```
+
+`chromo gafprep` writes a selected FASTQ, a sanitized GFA, a GraphAligner shell
+script, and TSV audit tables linking reads back to review rows. GraphAligner
+still creates the actual GAF. The resulting targeted GAF is evidence for
+manual or table review; it is not automatic sequence validation.
+
+Use a contig-level `ctg.gfa` when segment names match the assembly FASTA and
+the question is about contig nodes or direct junctions. Use a unitig-level
+`utg.gfa` when branch structure matters, but remember that unitig coordinates
+must be related back to contig coordinates through matching paths/walks or
+`chromo graph-map`. A sequence-bearing graph is normally required for
+GraphAligner; `.noseq.gfa` is mainly topology evidence.
+
 ## GAF Support Status
 
 Review tables can include:
@@ -126,6 +159,7 @@ Status values include:
 | `eval scaffold` | Contig-end bridge support fields. | Selected versus alternate graph path support. |
 | `manual scaffold` | Displays bridge and graph support fields. | Displays path support fields. |
 | `eval gapfill` | Contig-end bridge support fields. | Candidate graph path support. |
+| `gafprep` | Uses read-to-assembly PAF as the sampling frame. | Prepares selected reads and a GraphAligner script; GraphAligner writes the GAF. |
 | `gapfill --gaf` | Not used to insert sequence directly. | Can resolve an otherwise ambiguous graph branch only with unique support above threshold. |
 
 Even when GAF helps select a candidate path in gapfill, the path still must
@@ -139,8 +173,11 @@ length.
 2. Check MAPQ thresholds and whether secondary alignments were included.
 3. For breakpoints, compare spanning and split-read counts to the dot plot.
 4. For scaffold junctions, compare bridge reads to inferred gap or overlap.
-5. For graph paths, compare selected and alternate GAF support.
-6. If GAF, Hi-C, and reference-placement support point to different paths,
+5. If full read-to-graph alignment is too expensive, use `chromo gafprep` to
+   generate targeted GraphAligner inputs from the read-to-assembly PAF and
+   review tables.
+6. For graph paths, compare selected and alternate GAF support.
+7. If GAF, Hi-C, and reference-placement support point to different paths,
    leave the junction unresolved for review.
 
 ## Cheat Sheet
@@ -158,6 +195,10 @@ length.
 
 Do not pass the reference-to-assembly PAF as `--read-paf`. Read PAF uses reads
 as queries and assembly contigs as targets.
+
+Do not treat `chromo gafprep` as a replacement for GraphAligner. It prepares a
+smaller FASTQ, sanitized GFA, and runnable script; the generated GAF appears
+only after the script is run.
 
 Do not assume many nearby reads equal breakpoint support. Look for the type of
 support: spanning, split, edge, or bridge.

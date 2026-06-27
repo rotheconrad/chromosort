@@ -42,6 +42,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("fix", result.stdout)
         self.assertIn("cut", result.stdout)
         self.assertIn("manual", result.stdout)
+        self.assertIn("gafprep", result.stdout)
         self.assertIn("scaffold", result.stdout)
         self.assertIn("gapfill", result.stdout)
         self.assertIn("plot", result.stdout)
@@ -61,6 +62,7 @@ class CliTests(unittest.TestCase):
         manual_fix_help = run_cli("manual", "fix", "--help").stdout
         manual_scaffold_help = run_cli("manual", "scaffold", "--help").stdout
         manual_gapfill_help = run_cli("manual", "gapfill", "--help").stdout
+        gafprep_help = run_cli("gafprep", "--help").stdout
         scaffold_help = run_cli("scaffold", "--help").stdout
         gapfill_help = run_cli("gapfill", "--help").stdout
         plot_help = run_cli("plot", "--help").stdout
@@ -109,6 +111,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("--review-table", manual_gapfill_help)
         self.assertIn("--read-paf", manual_gapfill_help)
         self.assertIn("--gaf", manual_gapfill_help)
+        self.assertIn("--assembly-gfa", gafprep_help)
+        self.assertIn("--eval-review-table", gafprep_help)
+        self.assertIn("--graphaligner-threads", gafprep_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--reviewed-plan", scaffold_help)
         self.assertIn("--gfa", scaffold_help)

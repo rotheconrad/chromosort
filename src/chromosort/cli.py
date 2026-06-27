@@ -8,6 +8,7 @@ from . import (
     cut,
     evaluate,
     fix_contigs,
+    gafprep,
     gapfill,
     graph_map,
     manual,
@@ -25,7 +26,8 @@ def main(argv=None):
         prog="chromo",
         description=(
             "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, "
-            "plot, map graph coordinates, and review genome assembly contigs."
+            "plot, map graph coordinates, prepare targeted GAF inputs, and review "
+            "genome assembly contigs."
         ),
     )
     parser.add_argument(
@@ -38,6 +40,7 @@ def main(argv=None):
             "fix",
             "cut",
             "manual",
+            "gafprep",
             "scaffold",
             "gapfill",
             "plot",
@@ -64,6 +67,8 @@ def main(argv=None):
         cut.main(remaining, prog="chromo cut")
     elif command == "manual":
         manual.main(remaining, prog="chromo manual")
+    elif command == "gafprep":
+        gafprep.main(remaining, prog="chromo gafprep")
     elif command == "scaffold":
         scaffold.main(remaining, prog="chromo scaffold")
     elif command == "gapfill":

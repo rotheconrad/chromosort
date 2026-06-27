@@ -36,6 +36,7 @@ before they are used as inputs to another alignment-dependent command.
 - [chromo fix](https://rotheconrad.github.io/chromosort/commands/fix/)
 - [chromo cut](https://rotheconrad.github.io/chromosort/commands/cut/)
 - [chromo manual](https://rotheconrad.github.io/chromosort/commands/manual/)
+- [chromo gafprep](https://rotheconrad.github.io/chromosort/commands/gafprep/)
 - [chromo plot](https://rotheconrad.github.io/chromosort/commands/plot/) and
   [dot-plot interpretation]({{ '/dot-plots/' | relative_url }})
 - [chromo graph-map](https://rotheconrad.github.io/chromosort/commands/graph-map/)
@@ -73,12 +74,14 @@ before they are used as inputs to another alignment-dependent command.
    `chromo manual` when helpful to inspect suspicious contigs.
 4. Use `chromo eval` and task-specific `chromo manual` dashboards when outlier
    `fix`, `scaffold`, or `gapfill` decisions need table or GUI review.
-5. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
-6. Re-align the fixed assembly.
-7. Use `chromo sort` to assign, filter, orient, and order contigs.
-8. Re-align again if a later command should operate on `ordered.fa` rather than
+5. Use `chromo gafprep` when targeted GAF evidence is needed without a
+   full-depth read-to-graph alignment.
+6. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
+7. Re-align the fixed assembly.
+8. Use `chromo sort` to assign, filter, orient, and order contigs.
+9. Re-align again if a later command should operate on `ordered.fa` rather than
    on the original assembly and its assignment report.
-9. Use `chromo graph-map` or `chromo plot --gfa-overlay` when unitig-level GFA
+10. Use `chromo graph-map` or `chromo plot --gfa-overlay` when unitig-level GFA
    features need to be projected onto contig FASTA coordinates.
-10. Use `chromo scaffold` to build one scaffold per reference sequence.
-11. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.
+11. Use `chromo scaffold` to build one scaffold per reference sequence.
+12. Use `chromo gapfill` only when reviewed GFA paths should replace N gaps.

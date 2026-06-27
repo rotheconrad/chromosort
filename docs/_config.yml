@@ -150,6 +150,8 @@ nav:
         url: /commands/cut/
       - title: manual
         url: /commands/manual/
+      - title: gafprep
+        url: /commands/gafprep/
       - title: plot
         url: /commands/plot/
       - title: graph-map
@@ -171,6 +173,8 @@ nav:
         url: /outputs/#chromo-cut-outputs
       - title: manual outputs
         url: /outputs/#chromo-manual-outputs
+      - title: gafprep outputs
+        url: /outputs/#chromo-gafprep-outputs
       - title: plot outputs
         url: /outputs/#chromo-plot-outputs
       - title: scaffold outputs
