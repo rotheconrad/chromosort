@@ -128,6 +128,15 @@ def read_report(path):
         return list(csv.DictReader(fh, delimiter="\t"))
 
 
+def read_agp_rows(path):
+    with open(path) as fh:
+        return [
+            line.rstrip("\n").split("\t")
+            for line in fh
+            if line.strip() and not line.startswith("#")
+        ]
+
+
 class ManualTests(unittest.TestCase):
     def test_manual_dashboard_orders_all_contigs_without_filtering(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -345,6 +354,15 @@ class ManualTests(unittest.TestCase):
             rows = read_report(report)
             self.assertEqual(rows[-1]["removed"], "yes")
             self.assertEqual(rows[-1]["output_name"], ".")
+            agp_rows = read_agp_rows(Path(str(output_fasta) + ".agp"))
+            self.assertEqual(agp_rows[1][0], "ctg1_right_rc")
+            self.assertEqual(agp_rows[1][5], "ctg1")
+            self.assertEqual(agp_rows[1][6], "5")
+            self.assertEqual(agp_rows[1][7], "8")
+            self.assertEqual(agp_rows[1][8], "-")
+            self.assertTrue(Path(str(output_fasta) + ".components.tsv").exists())
+            checklist = Path(str(output_fasta) + ".submission_checklist.tsv").read_text()
+            self.assertIn("fasta_agp_object_match\tok\t0", checklist)
 
     def test_manual_apply_can_scaffold_active_pieces(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -398,6 +416,13 @@ class ManualTests(unittest.TestCase):
                     "chr2": "GGGCCC",
                 },
             )
+            agp_rows = read_agp_rows(Path(str(output_fasta) + ".agp"))
+            gap_row = next(row for row in agp_rows if row[4] == "N")
+            self.assertEqual(gap_row[0], "chr1")
+            self.assertEqual(gap_row[5], "3")
+            self.assertEqual(gap_row[6], "contig")
+            self.assertEqual(gap_row[7], "no")
+            self.assertEqual(gap_row[8], "na")
 
 
 if __name__ == "__main__":

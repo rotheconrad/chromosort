@@ -37,6 +37,8 @@ sequence. The assignment report provides reference coordinates.
 It writes:
 
 - `<prefix>.scaffold.fa`,
+- `<prefix>.scaffold.agp`,
+- `<prefix>.scaffold_components.tsv`,
 - `<prefix>.scaffold_gaps.tsv`,
 - optional `<prefix>.graph_gaps.tsv`,
 - `<prefix>.scaffold_summary.tsv`,

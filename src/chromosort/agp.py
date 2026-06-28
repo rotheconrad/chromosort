@@ -1,4 +1,4 @@
-"""AGP and component-provenance helpers for scaffold-like outputs."""
+"""AGP and component-provenance helpers for FASTA-changing outputs."""
 
 from collections import OrderedDict
 from dataclasses import dataclass
@@ -28,7 +28,17 @@ class AgpPart:
     notes: str = "."
 
 
+@dataclass(frozen=True)
+class AgpFastaRecord:
+    name: str
+    seq: str
+
+
 GAP_COMPONENT_TYPES = {"N", "U"}
+
+
+def default_sidecar_path(path, suffix):
+    return f"{path}{suffix}"
 
 
 def parse_int(value, field, line_number):

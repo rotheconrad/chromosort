@@ -79,9 +79,12 @@ chromo sort \
 | Output | Description |
 | --- | --- |
 | `<prefix>.ordered.fa` | Retained contigs, ordered by reference chromosome and position. |
+| `<prefix>.ordered.agp` | AGP 2.1 map for the ordered FASTA, mapping each emitted record back to its original contig and orientation. |
+| `<prefix>.ordered_components.tsv` | Human-readable provenance table mirroring the ordered AGP rows. |
 | `<prefix>.contig_assignments.tsv` | One row per assembly contig with final status and assignment metrics. |
 | `<prefix>.contig_ref_matches.tsv` | One row per contig-reference match before final assignment. |
 | `<prefix>.chromosome_summary.tsv` | One row per reference sequence with ordered contig lists and covered reference bp. |
+| `<prefix>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 | `<prefix>.graph_assignments.tsv` | Optional report-only graph evidence for assignment and duplicate-overlap decisions when `--gfa` is provided. |
 | `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, status counts, and PAF diagnostics when `--paf` is used. |
 

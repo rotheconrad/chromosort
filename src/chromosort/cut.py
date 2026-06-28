@@ -6,8 +6,16 @@ import sys
 from collections import defaultdict
 from typing import Optional, Sequence
 
+from .agp import (
+    AgpFastaRecord,
+    component_part,
+    default_sidecar_path,
+    write_agp,
+    write_component_tsv,
+)
 from .paths import ensure_parent_dir
 from .reference_order import iter_fasta_records, read_fasta_lengths, write_wrapped
+from .submission import write_submission_checklist
 
 
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -73,6 +81,24 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--report",
         required=True,
         help="TSV report describing every emitted cut piece.",
+    )
+    ap.add_argument(
+        "--agp",
+        default=None,
+        help="Output AGP map. Defaults to <output-fasta>.agp.",
+    )
+    ap.add_argument(
+        "--components",
+        default=None,
+        help="Output component provenance TSV. Defaults to <output-fasta>.components.tsv.",
+    )
+    ap.add_argument(
+        "--submission-checklist",
+        default=None,
+        help=(
+            "Output submission-oriented checklist TSV. Defaults to "
+            "<output-fasta>.submission_checklist.tsv."
+        ),
     )
     ap.add_argument(
         "--min-piece-bp",
@@ -268,6 +294,24 @@ def ensure_unique_output_names(records, cuts_by_contig, separator):
         )
 
 
+def cut_sidecar_paths(args):
+    paths = {
+        "agp": default_sidecar_path(args.output_fasta, ".agp"),
+        "components": default_sidecar_path(args.output_fasta, ".components.tsv"),
+        "submission_checklist": default_sidecar_path(
+            args.output_fasta,
+            ".submission_checklist.tsv",
+        ),
+    }
+    if args.agp:
+        paths["agp"] = args.agp
+    if args.components:
+        paths["components"] = args.components
+    if args.submission_checklist:
+        paths["submission_checklist"] = args.submission_checklist
+    return paths
+
+
 def cut_header(original_name, new_name, start, end, cut_positions, simple_headers):
     if simple_headers:
         return new_name
@@ -283,12 +327,29 @@ def cut_header(original_name, new_name, start, end, cut_positions, simple_header
 
 def write_cut_fasta(path, fasta_path, cuts_by_contig, separator, simple_headers):
     ensure_parent_dir(path)
+    fasta_records = []
+    agp_parts = []
     with open(path, "w") as out:
         for name, header, seq in iter_fasta_records(fasta_path):
             cut_positions = cuts_by_contig.get(name)
             if not cut_positions:
                 out.write(header + "\n")
                 write_wrapped(out, seq)
+                fasta_records.append(AgpFastaRecord(name, seq))
+                agp_parts.append(
+                    component_part(
+                        object_name=name,
+                        object_start=1,
+                        object_end=len(seq),
+                        part_number=1,
+                        component_id=name,
+                        component_start=1,
+                        component_end=len(seq),
+                        orientation="+",
+                        source="unchanged_record",
+                        status="unchanged",
+                    )
+                )
                 continue
 
             starts = [0] + cut_positions
@@ -298,7 +359,25 @@ def write_cut_fasta(path, fasta_path, cuts_by_contig, separator, simple_headers)
                 out.write(
                     f">{cut_header(name, new_name, start, end, cut_positions, simple_headers)}\n"
                 )
-                write_wrapped(out, seq[start:end])
+                piece_seq = seq[start:end]
+                write_wrapped(out, piece_seq)
+                fasta_records.append(AgpFastaRecord(new_name, piece_seq))
+                agp_parts.append(
+                    component_part(
+                        object_name=new_name,
+                        object_start=1,
+                        object_end=len(piece_seq),
+                        part_number=1,
+                        component_id=name,
+                        component_start=start + 1,
+                        component_end=end,
+                        orientation="+",
+                        source="manual_cut_piece",
+                        status="manual",
+                        notes=f"cut_after={','.join(str(pos) for pos in cut_positions)}",
+                    )
+                )
+    return fasta_records, agp_parts
 
 
 def write_report(path, records, cuts_by_contig, separator):
@@ -338,10 +417,13 @@ def run(args):
     records, _ = read_fasta_lengths(args.assembly_fasta, args.assembly_fai)
     cuts_by_contig = normalize_cuts(raw_cuts, records, args.min_piece_bp)
     ensure_unique_output_names(records, cuts_by_contig, args.name_separator)
+    sidecar_paths = cut_sidecar_paths(args)
 
     ensure_parent_dir(args.output_fasta)
     ensure_parent_dir(args.report)
-    write_cut_fasta(
+    for path in sidecar_paths.values():
+        ensure_parent_dir(path)
+    fasta_records, agp_parts = write_cut_fasta(
         args.output_fasta,
         args.assembly_fasta,
         cuts_by_contig,
@@ -349,6 +431,19 @@ def run(args):
         args.simple_headers,
     )
     write_report(args.report, records, cuts_by_contig, args.name_separator)
+    write_agp(sidecar_paths["agp"], agp_parts)
+    write_component_tsv(sidecar_paths["components"], agp_parts)
+    write_submission_checklist(
+        sidecar_paths["submission_checklist"],
+        "chromo cut",
+        {
+            "cut_fasta": args.output_fasta,
+            "report": args.report,
+            **sidecar_paths,
+        },
+        fasta_records,
+        agp_parts,
+    )
 
     cut_contigs = len(cuts_by_contig)
     cut_positions = sum(len(positions) for positions in cuts_by_contig.values())
@@ -359,6 +454,9 @@ def run(args):
     )
     sys.stderr.write(f"Wrote cut FASTA: {args.output_fasta}\n")
     sys.stderr.write(f"Wrote cut report: {args.report}\n")
+    sys.stderr.write(f"Wrote cut AGP: {sidecar_paths['agp']}\n")
+    sys.stderr.write(f"Wrote cut components: {sidecar_paths['components']}\n")
+    sys.stderr.write(f"Wrote submission checklist: {sidecar_paths['submission_checklist']}\n")
 
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):

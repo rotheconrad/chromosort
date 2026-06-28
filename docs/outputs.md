@@ -10,6 +10,21 @@ outputs are intended for downstream assembly workflows; TSV, HTML, plot, and
 text reports are intended to make every keep, reject, split, cut, scaffold, or
 graph-fill decision inspectable.
 
+## AGP And Provenance Sidecars
+
+Every ChromoSort command that writes a modified FASTA also writes a fresh AGP
+2.1 map for that FASTA, a component-provenance TSV mirroring the AGP rows, and
+a submission-oriented checklist. Downstream commands should compose a new AGP
+for their own output rather than appending rows to an upstream AGP, because each
+FASTA-changing step creates a new object coordinate system.
+
+The AGP file is the structural map: output objects, component slices, inserted
+N gaps, orientations, and part numbers. The component TSV and command-specific
+reports carry the richer audit trail: whether a row was unchanged, algorithmic,
+reviewed, manual, graph-filled, or a fallback gap. For submission workflows,
+keep the final FASTA, final AGP, component TSV, command reports, and
+`*.submission_checklist.tsv` together.
+
 ## Output Index
 
 **Table 1. ChromoSort command output map.** Use this as a quick index to the
@@ -17,12 +32,12 @@ command-specific output sections below.
 
 | Command | Primary outputs |
 | --- | --- |
-| [`chromo sort`](#chromo-sort-outputs) | `<prefix>.ordered.fa`, `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv`, optional `<prefix>.graph_assignments.tsv`, and `<prefix>.run_summary.txt`. |
-| [`chromo clean`](#chromo-clean-outputs) | `<prefix>.clean.fa`, initial-sort reports, `<prefix>.fix_targets.txt`, `<prefix>.fix_report.tsv`, `<prefix>.clean_contigs.tsv`, `<prefix>.clean_chromosome_summary.tsv`, optional discarded FASTA, and `<prefix>.run_summary.txt`. |
+| [`chromo sort`](#chromo-sort-outputs) | `<prefix>.ordered.fa`, `<prefix>.ordered.agp`, `<prefix>.ordered_components.tsv`, assignment/match/chromosome reports, `<prefix>.submission_checklist.tsv`, optional `<prefix>.graph_assignments.tsv`, and `<prefix>.run_summary.txt`. |
+| [`chromo clean`](#chromo-clean-outputs) | `<prefix>.clean.fa`, `<prefix>.clean.agp`, `<prefix>.clean_components.tsv`, initial-sort reports, `<prefix>.fix_targets.txt`, `<prefix>.fix_report.tsv`, `<prefix>.clean_contigs.tsv`, `<prefix>.clean_chromosome_summary.tsv`, optional discarded FASTA, `<prefix>.submission_checklist.tsv`, and `<prefix>.run_summary.txt`. |
 | [`chromo eval`](#chromo-eval-outputs) | Task-specific review-event TSVs: `<prefix>.fix_review.tsv`, `<prefix>.scaffold_review.tsv`, or `<prefix>.gapfill_review.tsv`; `chromo eval all` writes all three plus `<prefix>.eval_all_outputs.tsv`. |
-| [`chromo fix`](#chromo-fix-outputs) | Reviewed fixed FASTA at `--output-fasta`, split report at `--report`, and optional graph report. |
-| [`chromo cut`](#chromo-cut-outputs) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
-| [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
+| [`chromo fix`](#chromo-fix-outputs) | Fixed FASTA at `--output-fasta`, split report at `--report`, default sidecars `<output-fasta>.agp`, `<output-fasta>.components.tsv`, `<output-fasta>.submission_checklist.tsv`, and optional graph report. |
+| [`chromo cut`](#chromo-cut-outputs) | Cut FASTA at `--output-fasta`, cut-piece report at `--report`, and default sidecars `<output-fasta>.agp`, `<output-fasta>.components.tsv`, and `<output-fasta>.submission_checklist.tsv`. |
+| [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs with AGP/component/checklist sidecars. |
 | [`chromo gafprep`](#chromo-gafprep-outputs) | `<prefix>.targets.tsv`, `<prefix>.selected_reads.tsv`, `<prefix>.selected_read_review_links.tsv`, `<prefix>.selected.fastq.gz`, `<prefix>.graphaligner.gfa`, `<prefix>.graphaligner.sh`, sanitization reports, and `<prefix>.summary.tsv`. |
 | [`chromo plot`](#chromo-plot-outputs) | Whole-genome and optional per-reference dot plots in PDF, SVG, or PNG, with interpretation examples in the [dot-plot guide]({{ '/dot-plots/' | relative_url }}). |
 | [`chromo graph-map`](#chromo-graph-map-outputs) | `<prefix>.utg_to_ctg.tsv`, `<prefix>.path_summary.tsv`, and `<prefix>.warnings.tsv`. |
@@ -37,10 +52,13 @@ filtering, reference coverage, and the final reference-ordered FASTA.
 | Output | Description |
 | --- | --- |
 | `<prefix>.ordered.fa` | Retained contigs ordered by reference chromosome and position. |
+| `<prefix>.ordered.agp` | AGP 2.1 map for the ordered FASTA. Each row maps an emitted record to its original contig and orientation. |
+| `<prefix>.ordered_components.tsv` | Human-readable provenance table mirroring the ordered AGP rows. |
 | `<prefix>.contig_assignments.tsv` | One row per assembly contig with final status, assignment metrics, overlap classification, and split-candidate flags. |
 | `<prefix>.contig_ref_matches.tsv` | One row per contig-reference match before final assignment. |
 | `<prefix>.chromosome_summary.tsv` | One row per reference sequence with retained contig lists and covered reference bp. |
 | `<prefix>.graph_assignments.tsv` | Optional report-only graph evidence for assignment and duplicate-overlap decisions when `--gfa` is provided. |
+| `<prefix>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 | `<prefix>.run_summary.txt` | Inputs, thresholds, output paths, status counts, and PAF diagnostics when `--paf` is used. |
 
 **Table 2. Example `contig_assignments.tsv` rows.** Selected columns from the
@@ -81,6 +99,8 @@ records were emitted into the cleaned FASTA.
 | Output | Description |
 | --- | --- |
 | `<prefix>.clean.fa` | Cleaned FASTA with retained unsplit contigs and accepted split pieces, oriented if requested and ordered by reference placement. |
+| `<prefix>.clean.agp` | AGP 2.1 map for the cleaned FASTA, mapping each emitted record to its raw source-contig slice and orientation. |
+| `<prefix>.clean_components.tsv` | Human-readable provenance table mirroring the clean AGP rows, with clean status for each component. |
 | `<prefix>.initial_sort.contig_assignments.tsv` | Initial raw-contig sort assignment report. |
 | `<prefix>.initial_sort.contig_ref_matches.tsv` | Initial raw-contig per-reference match report. |
 | `<prefix>.initial_sort.chromosome_summary.tsv` | Initial sort chromosome summary. |
@@ -88,6 +108,7 @@ records were emitted into the cleaned FASTA.
 | `<prefix>.fix_report.tsv` | `chromo fix`-style report for selected retained contigs. |
 | `<prefix>.clean_contigs.tsv` | Unified row-level audit table for discarded contigs, retained unsplit contigs, and split pieces. |
 | `<prefix>.clean_chromosome_summary.tsv` | Final cleaned-record summary grouped by reference sequence. |
+| `<prefix>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 | `<prefix>.run_summary.txt` | Inputs, outputs, sort/fix/clean status counts, and a reminder to re-align the cleaned FASTA for validation. |
 | `--discarded-fasta` path | Optional FASTA containing raw contigs discarded by sort filtering. |
 
@@ -111,6 +132,9 @@ was accepted or rejected.
 | --- | --- |
 | `--output-fasta` | Full fixed assembly FASTA by default, with split pieces replacing fixed contigs. |
 | `--report` | TSV report describing split pieces and unsplit requested contigs. |
+| `--agp` / default `<output-fasta>.agp` | AGP 2.1 map for the fixed FASTA. Unchanged records are identity rows; split pieces map back to source-contig slices. |
+| `--components` / default `<output-fasta>.components.tsv` | Human-readable provenance table mirroring the fixed AGP rows. |
+| `--submission-checklist` / default `<output-fasta>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 | `--graph-report` | Optional graph context TSV when `--gfa` is provided. Defaults to the `--report` path with a `.graph.tsv` suffix. |
 
 **Table 4. Example split report rows.** Selected columns from a sensitive-mode
@@ -159,6 +183,9 @@ without invoking the alignment-based `chromo fix` planner.
 | --- | --- |
 | `--output-fasta` | Full assembly FASTA with requested contigs replaced by cut pieces. Uncut contigs are copied unchanged. |
 | `--report` | TSV report describing every emitted cut piece, including original contig, new contig, slice coordinates, piece length, and cut positions. |
+| `--agp` / default `<output-fasta>.agp` | AGP 2.1 map for the cut FASTA. Cut pieces map back to original contig slices; uncut records are identity rows. |
+| `--components` / default `<output-fasta>.components.tsv` | Human-readable provenance table mirroring the cut AGP rows. |
+| `--submission-checklist` / default `<output-fasta>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 
 **Table 5. Example cut report rows.** Cutting `contigA` after bases 20 and 50
 emits three adjacent slices and records the complete cut set on each row.
@@ -195,6 +222,14 @@ and reproduced from the command line.
 | Browser recipe download | JSON recipe describing the current manual edits. |
 | `chromo manual apply --output-fasta` | FASTA generated by applying a recipe from the command line. |
 | `chromo manual apply --report` | Optional TSV report of emitted pieces and removed pieces. |
+| `chromo manual apply --agp` / default `<output-fasta>.agp` | AGP 2.1 map for the manual-apply FASTA. In scaffold mode, active pieces become component rows and inserted N gaps become AGP gap rows. |
+| `chromo manual apply --components` / default `<output-fasta>.components.tsv` | Human-readable provenance table mirroring the manual AGP rows. |
+| `chromo manual apply --submission-checklist` / default `<output-fasta>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
+
+Manual scaffold-mode gaps default to AGP `contig/no/na`, which records an
+unlinked N gap without claiming evidence. When a reviewed manual scaffold join
+does have support, set `--agp-gap-type`, `--agp-linkage`, and
+`--agp-linkage-evidence` explicitly during `chromo manual apply`.
 
 <figure>
   <img src="https://rotheconrad.github.io/chromosort/assets/chromo_manual_graph_review.png" alt="Screenshot-style view of chromo manual showing contig graph filters, a selected-contig dot plot, and a graph-neighborhood panel." width="900">

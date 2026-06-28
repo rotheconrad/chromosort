@@ -28,8 +28,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+from .agp import AgpFastaRecord, component_part, write_agp, write_component_tsv
 from .graph import graph_link_evidence, graph_node_evidence, read_gfa
 from .paths import ensure_output_dirs, ensure_parent_dir
+from .submission import write_submission_checklist
 
 
 @dataclass
@@ -172,9 +174,10 @@ def parse_args(argv=None, prog=None):
         "--output-prefix",
         required=True,
         help=(
-            "Output prefix. Writes <prefix>.ordered.fa, <prefix>.contig_assignments.tsv, "
+            "Output prefix. Writes <prefix>.ordered.fa, <prefix>.ordered.agp, "
+            "<prefix>.ordered_components.tsv, <prefix>.contig_assignments.tsv, "
             "<prefix>.contig_ref_matches.tsv, <prefix>.chromosome_summary.tsv, "
-            "and <prefix>.run_summary.txt."
+            "<prefix>.submission_checklist.tsv, and <prefix>.run_summary.txt."
         ),
     )
     ap.add_argument(
@@ -1277,6 +1280,43 @@ def write_ordered_fasta(path, fasta_path, kept_assignments, assembly_fai, simple
         reader.close()
 
 
+def build_ordered_fasta_records(fasta_path, kept_assignments, assembly_fai):
+    records = []
+    reader = FastaReader(fasta_path, assembly_fai)
+    try:
+        for assignment in kept_assignments:
+            seq = reader.fetch(assignment.query)
+            if assignment.reverse_complemented:
+                seq = reverse_complement(seq)
+            records.append(AgpFastaRecord(assignment.new_name, seq))
+    finally:
+        reader.close()
+    return records
+
+
+def build_ordered_agp_parts(kept_assignments):
+    parts = []
+    for assignment in kept_assignments:
+        best = assignment.best
+        notes = "." if best is None else f"{best.ref}:{best.ref_start}-{best.ref_end}"
+        parts.append(
+            component_part(
+                object_name=assignment.new_name,
+                object_start=1,
+                object_end=assignment.query_length,
+                part_number=1,
+                component_id=assignment.query,
+                component_start=1,
+                component_end=assignment.query_length,
+                orientation="-" if assignment.reverse_complemented else "+",
+                source="sort_ordered_contig",
+                status=assignment.status,
+                notes=notes,
+            )
+        )
+    return parts
+
+
 def write_discarded_fasta(path, fasta_path, assignments, assembly_fai):
     ensure_parent_dir(path)
     discard_ids = [name for name, assignment in assignments.items() if not assignment.kept]
@@ -1725,9 +1765,12 @@ def main(argv=None, prog=None):
 
     output_paths = {
         "ordered_fasta": Path(str(prefix) + ".ordered.fa"),
+        "ordered_agp": Path(str(prefix) + ".ordered.agp"),
+        "ordered_components": Path(str(prefix) + ".ordered_components.tsv"),
         "contig_assignments": Path(str(prefix) + ".contig_assignments.tsv"),
         "contig_ref_matches": Path(str(prefix) + ".contig_ref_matches.tsv"),
         "chromosome_summary": Path(str(prefix) + ".chromosome_summary.tsv"),
+        "submission_checklist": Path(str(prefix) + ".submission_checklist.tsv"),
         "run_summary": Path(str(prefix) + ".run_summary.txt"),
     }
     if args.discarded_fasta:
@@ -1781,6 +1824,11 @@ def main(argv=None, prog=None):
         paf_metadata,
     )
 
+    agp_parts = build_ordered_agp_parts(kept_assignments)
+    write_agp(output_paths["ordered_agp"], agp_parts)
+    write_component_tsv(output_paths["ordered_components"], agp_parts)
+
+    fasta_records = None
     if not args.reports_only:
         write_ordered_fasta(
             output_paths["ordered_fasta"],
@@ -1789,6 +1837,11 @@ def main(argv=None, prog=None):
             args.assembly_fai,
             args.simple_headers,
         )
+        fasta_records = build_ordered_fasta_records(
+            args.assembly_fasta,
+            kept_assignments,
+            args.assembly_fai,
+        )
         if args.discarded_fasta:
             write_discarded_fasta(
                 output_paths["discarded_fasta"],
@@ -1796,6 +1849,13 @@ def main(argv=None, prog=None):
                 assignments,
                 args.assembly_fai,
             )
+    write_submission_checklist(
+        output_paths["submission_checklist"],
+        "chromo sort",
+        output_paths,
+        fasta_records,
+        agp_parts,
+    )
 
     status_counts = Counter(a.status for a in assignments.values())
     sys.stderr.write(
@@ -1811,6 +1871,9 @@ def main(argv=None, prog=None):
         sys.stderr.write("Skipped FASTA output because --reports-only was set.\n")
     else:
         sys.stderr.write(f"Wrote ordered FASTA: {output_paths['ordered_fasta']}\n")
+    sys.stderr.write(f"Wrote ordered AGP: {output_paths['ordered_agp']}\n")
+    sys.stderr.write(f"Wrote ordered components: {output_paths['ordered_components']}\n")
+    sys.stderr.write(f"Wrote submission checklist: {output_paths['submission_checklist']}\n")
 
 
 if __name__ == "__main__":

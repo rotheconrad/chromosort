@@ -1,4 +1,4 @@
-"""Submission-oriented checklist helpers for scaffold-like outputs."""
+"""Submission-oriented checklist helpers for FASTA-changing outputs."""
 
 from collections import Counter
 

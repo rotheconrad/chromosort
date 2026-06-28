@@ -1,6 +1,6 @@
 # ChromoSort
 
-Reference-guided genome assembly utilities for sorting contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot review, plotting alignments, scaffolding final ordered contigs, and applying reviewed graph-supported gap fills.
+Reference-guided genome assembly utilities for sorting contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot review, plotting alignments, scaffolding final ordered contigs, applying reviewed graph-supported gap fills, and writing AGP provenance sidecars for FASTA-changing outputs.
 
 ChromoSort provides one command, `chromo`, with eleven subcommands:
 
@@ -25,6 +25,16 @@ Full documentation is available at <https://rotheconrad.github.io/chromosort/>.
 New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. The [Agent and Review Playbook](https://rotheconrad.github.io/chromosort/review-playbook/) gives reproducible patterns for choosing one primary coords or PAF alignment, same-reference inversion review, long-read/GFA/GAF evidence, and handoffs between datasets or assistant chats. The [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/) is a mini tutorial for reading whole-genome and per-reference dot plots. The [Architecture](https://rotheconrad.github.io/chromosort/architecture/) page maps algorithms and data models to the subcommands, modes, and parameters that activate them, while the [Production Upgrade Roadmap](https://rotheconrad.github.io/chromosort/roadmap/) tracks completed and follow-up review-layer work. Command-specific pages are linked in the table above.
 
 For interpreting results, see [Output Files](https://rotheconrad.github.io/chromosort/outputs/) and [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/).
+
+## FASTA Provenance Sidecars
+
+Every ChromoSort command that writes a modified FASTA also writes a fresh AGP
+2.1 map, component-provenance TSV, and submission-oriented checklist for that
+FASTA. Downstream steps create new AGP sidecars for their own outputs rather
+than appending to upstream AGP files, because each FASTA-changing step creates a
+new output coordinate system. Keep the final FASTA, AGP, component TSV, command
+reports, and submission checklist together for NCBI submission preparation and
+external validation.
 
 ## Alignment Evidence Matches One FASTA
 
@@ -182,7 +192,7 @@ pixi run test
 
 ## Current Status
 
-Current version: `0.2.31`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
+Current version: `0.3.0`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
 
 ## Citation
 
@@ -214,6 +224,7 @@ scaffolding tools.
 | Version | Notes |
 | --- | --- |
 | Unreleased | No changes yet. |
+| `0.3.0` | Added fresh AGP 2.1, component-provenance, and submission-checklist sidecars for every FASTA-changing command, including `sort`, `clean`, `fix`, `cut`, and `manual apply`; documented stage-local AGP provenance rules; and synchronized command docs, tests, and release metadata. |
 | `0.2.31` | Added `chromo eval all` to emit fix, scaffold, and gapfill review tables plus a `gafprep` manifest from one input bundle, updated `chromo gafprep` help to recommend the three-table workflow, and synchronized docs, tests, and version metadata. |
 | `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |
 | `0.2.29` | Completed the NCBI-ready scaffold/gapfill buildout: scaffold and gapfill AGP/component provenance, post-scaffold AGP input mode, long-read PAF bridge evidence, projected unitig-GFA planning and apply support, external patch concordance fields, explicit apply controls, submission checklist TSVs, and synchronized command/workflow/output docs. |

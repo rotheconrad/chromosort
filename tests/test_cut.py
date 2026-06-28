@@ -75,6 +75,15 @@ def read_report(path):
         return list(csv.DictReader(fh, delimiter="\t"))
 
 
+def read_agp_rows(path):
+    with open(path) as fh:
+        return [
+            line.rstrip("\n").split("\t")
+            for line in fh
+            if line.strip() and not line.startswith("#")
+        ]
+
+
 class CutTests(unittest.TestCase):
     def write_assembly(self, tmp_path):
         assembly = tmp_path / "assembly.fa"
@@ -126,6 +135,15 @@ class CutTests(unittest.TestCase):
                 ],
             )
             self.assertTrue(all(row["cut_after_positions"] == "4,7" for row in rows))
+            agp_rows = read_agp_rows(Path(str(output_fasta) + ".agp"))
+            self.assertEqual(agp_rows[0][0], "contig_1_cut001")
+            self.assertEqual(agp_rows[0][5], "contig_1")
+            self.assertEqual(agp_rows[0][6], "1")
+            self.assertEqual(agp_rows[0][7], "4")
+            self.assertEqual(agp_rows[-1][0], "contig_3")
+            self.assertTrue(Path(str(output_fasta) + ".components.tsv").exists())
+            checklist = Path(str(output_fasta) + ".submission_checklist.tsv").read_text()
+            self.assertIn("fasta_agp_length_match\tok\t0", checklist)
 
     def test_repeated_cut_specs_cut_multiple_contigs(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -21,6 +21,7 @@ Create a small manifest before handing off files:
 | --- | --- |
 | Reference FASTA | Path, version, source, and `.fai` status. |
 | Assembly FASTA stages | Raw, clean, fixed, manual, sorted, scaffolded, or gapfilled FASTA paths. |
+| FASTA provenance sidecars | AGP, component TSV, and submission checklist emitted beside each ChromoSort FASTA-changing output. |
 | Primary alignment | Exact coords or PAF file for each FASTA stage being reviewed. |
 | ChromoSort commands | Commands used to produce reports, plots, FASTA outputs, and dashboards. |
 | Run summaries | Every `<prefix>.run_summary.txt`. |
@@ -44,17 +45,26 @@ handoff/
     plots/
   clean/
     sample.clean.fa
+    sample.clean.agp
+    sample.clean_components.tsv
     sample.clean_contigs.tsv
+    sample.submission_checklist.tsv
     sample.run_summary.txt
     sample.clean.ref_vs_asm.paf
   fixed/
     sample.fixed.fa
+    sample.fixed.fa.agp
+    sample.fixed.fa.components.tsv
     sample.fixed.tsv
+    sample.fixed.fa.submission_checklist.tsv
     sample.fixed.ref_vs_asm.paf
   sort/
     sample.ordered.fa
+    sample.ordered.agp
+    sample.ordered_components.tsv
     sample.contig_assignments.tsv
     sample.contig_ref_matches.tsv
+    sample.submission_checklist.tsv
   review/
     sample.fix_review.tsv
     sample.manual_fix.html
@@ -65,11 +75,15 @@ handoff/
     graph_nodes_to_ref.paf
   scaffold/
     sample.scaffold.fa
+    sample.scaffold.agp
+    sample.scaffold_components.tsv
     sample.scaffold_gaps.tsv
     sample.graph_gaps.tsv
     sample.submission_checklist.tsv
   gapfill/
     sample.gapfill_plan.tsv
+    sample.reviewed_gapfill.gapfilled.agp
+    sample.reviewed_gapfill.gapfilled_components.tsv
     sample.gapfill.review.html
     sample.reviewed_gapfill.gapfilled.fa
     sample.reviewed_gapfill.submission_checklist.tsv
@@ -85,7 +99,7 @@ A simple TSV is enough:
 | --- | --- |
 | `stage` | `raw`, `clean`, `fixed`, `sort`, `scaffold`, `gapfill` |
 | `file` | `clean/sample.clean.fa` |
-| `file_type` | `fasta`, `paf`, `gfa`, `review_tsv`, `plot`, `html`, `summary` |
+| `file_type` | `fasta`, `agp`, `component_tsv`, `paf`, `gfa`, `review_tsv`, `plot`, `html`, `summary` |
 | `describes_fasta` | `clean/sample.clean.fa` |
 | `created_by` | `chromo clean`, `minimap2`, `chromo plot` |
 | `created_from` | `raw/assembly.raw.fa + raw/raw.ref_vs_asm.paf` |
@@ -94,6 +108,8 @@ A simple TSV is enough:
 
 The `describes_fasta` column is the important one. It prevents raw alignments
 from being mistaken for validation of cleaned, fixed, or scaffolded FASTA.
+For AGP and component TSV sidecars, set `describes_fasta` to the exact FASTA
+written in the same stage.
 
 ## Decision Table
 

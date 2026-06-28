@@ -187,7 +187,7 @@ component.
 | 8. Add projected unitig-GFA gapfill planning. | Done | `gapfill` and `eval gapfill` support `--project-gfa-paths`, which projects ordered or AGP component names through matching GFA `P`/`W` paths and searches from terminal unitigs. |
 | 9. Add sequence-bearing unitig-GFA apply mode. | Done | Sequence-bearing projected paths can now reconstruct fills from unitig segments after terminal sequence validation; `.noseq.gfa` paths remain `projected_path_planning_only` topology evidence. |
 | 10. Add external patch comparison/import. | Done | `gapfill` and `eval gapfill` now import external patch tables/FASTA, compare best candidates against graph-derived fill sequence, report concordance/mismatch fields, and keep external patches review-only. |
-| 11. Add submission checklist/report. | Done | `scaffold` and `gapfill` now write `<prefix>.submission_checklist.tsv` with file manifest rows, FASTA hygiene checks, AGP consistency checks, unresolved gap counts, graph-filled span totals, and external-validation reminder. |
+| 11. Add submission checklist/report. | Done | `scaffold` and `gapfill` write `<prefix>.submission_checklist.tsv` with file manifest rows, FASTA hygiene checks, AGP consistency checks, unresolved gap counts, graph-filled span totals, and external-validation reminder. As of `0.3.0`, the same checklist pattern is emitted by every FASTA-changing command. |
 | 12. Release the completed buildout. | Done | Bumped ChromoSort to `0.2.29`, synchronized release docs, and prepared the GitHub tag/push. |
 
 ### Graph Mode Policy

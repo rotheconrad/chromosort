@@ -17,6 +17,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 
+from .agp import (
+    AgpFastaRecord,
+    component_part,
+    default_sidecar_path,
+    write_agp,
+    write_component_tsv,
+)
 from .graph import graph_node_evidence, read_gfa
 from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import (
@@ -27,6 +34,7 @@ from .reference_order import (
     write_wrapped,
 )
 from .review import accepted_events, parse_accept, read_review_events
+from .submission import write_submission_checklist
 
 
 @dataclass
@@ -223,6 +231,24 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         "--report",
         required=True,
         help="TSV report describing split pieces and unsplit requested contigs.",
+    )
+    ap.add_argument(
+        "--agp",
+        default=None,
+        help="Output AGP map. Defaults to <output-fasta>.agp.",
+    )
+    ap.add_argument(
+        "--components",
+        default=None,
+        help="Output component provenance TSV. Defaults to <output-fasta>.components.tsv.",
+    )
+    ap.add_argument(
+        "--submission-checklist",
+        default=None,
+        help=(
+            "Output submission-oriented checklist TSV. Defaults to "
+            "<output-fasta>.submission_checklist.tsv."
+        ),
     )
     ap.add_argument(
         "--gfa",
@@ -1204,6 +1230,9 @@ def write_fixed_fasta(path, fasta_path, plans, args, progress=None):
     ensure_parent_dir(path)
     records_seen = 0
     emitted_records = 0
+    agp_parts = []
+    fasta_records = []
+    split_source = "reviewed_split_piece" if args.reviewed_plan else "algorithmic_split_piece"
 
     def maybe_report_fasta_write():
         if progress is not None and records_seen % 1000 == 0:
@@ -1221,6 +1250,21 @@ def write_fixed_fasta(path, fasta_path, plans, args, progress=None):
                 if not args.pieces_only:
                     out.write(header + "\n")
                     write_wrapped(out, seq)
+                    agp_parts.append(
+                        component_part(
+                            object_name=name,
+                            object_start=1,
+                            object_end=len(seq),
+                            part_number=1,
+                            component_id=name,
+                            component_start=1,
+                            component_end=len(seq),
+                            orientation="+",
+                            source="unchanged_record",
+                            status="unchanged",
+                        )
+                    )
+                    fasta_records.append(AgpFastaRecord(name, seq))
                     emitted_records += 1
                 maybe_report_fasta_write()
                 continue
@@ -1229,6 +1273,22 @@ def write_fixed_fasta(path, fasta_path, plans, args, progress=None):
                 if not args.pieces_only:
                     out.write(header + "\n")
                     write_wrapped(out, seq)
+                    agp_parts.append(
+                        component_part(
+                            object_name=name,
+                            object_start=1,
+                            object_end=len(seq),
+                            part_number=1,
+                            component_id=name,
+                            component_start=1,
+                            component_end=len(seq),
+                            orientation="+",
+                            source="requested_unsplit_record",
+                            status=plan.status,
+                            notes=plan.reason,
+                        )
+                    )
+                    fasta_records.append(AgpFastaRecord(name, seq))
                     emitted_records += 1
                 maybe_report_fasta_write()
                 continue
@@ -1239,6 +1299,22 @@ def write_fixed_fasta(path, fasta_path, plans, args, progress=None):
                     piece_seq = reverse_complement(piece_seq)
                 out.write(f">{fasta_header(piece, args.simple_headers)}\n")
                 write_wrapped(out, piece_seq)
+                agp_parts.append(
+                    component_part(
+                        object_name=piece.new_name,
+                        object_start=1,
+                        object_end=len(piece_seq),
+                        part_number=1,
+                        component_id=piece.original_contig,
+                        component_start=piece.slice_start + 1,
+                        component_end=piece.slice_end,
+                        orientation="-" if piece.reverse_complemented else "+",
+                        source=split_source,
+                        status=plan.status,
+                        notes=plan.reason,
+                    )
+                )
+                fasta_records.append(AgpFastaRecord(piece.new_name, piece_seq))
                 emitted_records += 1
             maybe_report_fasta_write()
     if progress is not None:
@@ -1246,6 +1322,7 @@ def write_fixed_fasta(path, fasta_path, plans, args, progress=None):
             "Finished FASTA write: "
             f"scanned {records_seen:,} input record(s), emitted {emitted_records:,}."
         )
+    return fasta_records, agp_parts
 
 
 def fmt(value, digits=3):
@@ -1468,6 +1545,19 @@ def default_graph_report_path(report_path):
     return Path(report_path).with_suffix(".graph.tsv")
 
 
+def fix_sidecar_paths(args):
+    return {
+        "agp": Path(args.agp or default_sidecar_path(args.output_fasta, ".agp")),
+        "components": Path(
+            args.components or default_sidecar_path(args.output_fasta, ".components.tsv")
+        ),
+        "submission_checklist": Path(
+            args.submission_checklist
+            or default_sidecar_path(args.output_fasta, ".submission_checklist.tsv")
+        ),
+    }
+
+
 def graph_fix_note(plan, node_evidence):
     present = node_evidence.graph_node_status == "present"
     if plan.status == "split":
@@ -1602,7 +1692,8 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             else default_graph_report_path(args.report)
         )
 
-    output_paths = [Path(args.output_fasta), Path(args.report)]
+    sidecar_paths = fix_sidecar_paths(args)
+    output_paths = [Path(args.output_fasta), Path(args.report), *sidecar_paths.values()]
     if graph_report_path is not None:
         output_paths.append(graph_report_path)
     ensure_output_dirs(output_paths)
@@ -1653,7 +1744,13 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         )
         apply_breakpoint_guard(plans, args)
     progress.log(f"Writing fixed FASTA: {args.output_fasta}")
-    write_fixed_fasta(args.output_fasta, args.assembly_fasta, plans, args, progress)
+    fasta_records, agp_parts = write_fixed_fasta(
+        args.output_fasta,
+        args.assembly_fasta,
+        plans,
+        args,
+        progress,
+    )
     progress.log(f"Writing fix report: {args.report}")
     write_report(args.report, requested, plans)
     if args.gfa:
@@ -1664,6 +1761,23 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         if args.graph_guard:
             graph_guard_fix_warnings(requested, plans, graph)
 
+    command_outputs = {
+        "fixed_fasta": Path(args.output_fasta),
+        "report": Path(args.report),
+        **sidecar_paths,
+    }
+    if graph_report_path is not None:
+        command_outputs["graph_report"] = graph_report_path
+    write_agp(sidecar_paths["agp"], agp_parts)
+    write_component_tsv(sidecar_paths["components"], agp_parts)
+    write_submission_checklist(
+        sidecar_paths["submission_checklist"],
+        "chromo fix",
+        command_outputs,
+        fasta_records,
+        agp_parts,
+    )
+
     status_counts = defaultdict(int)
     for plan in plans.values():
         status_counts[plan.status] += 1
@@ -1672,6 +1786,9 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         sys.stderr.write(f"  {status}: {count}\n")
     sys.stderr.write(f"Wrote fixed FASTA: {args.output_fasta}\n")
     sys.stderr.write(f"Wrote report: {args.report}\n")
+    sys.stderr.write(f"Wrote AGP: {sidecar_paths['agp']}\n")
+    sys.stderr.write(f"Wrote components: {sidecar_paths['components']}\n")
+    sys.stderr.write(f"Wrote submission checklist: {sidecar_paths['submission_checklist']}\n")
     if args.gfa:
         sys.stderr.write(f"Wrote graph report: {graph_report_path}\n")
 

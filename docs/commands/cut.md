@@ -62,6 +62,9 @@ chromo cut \
 | --- | --- |
 | `--output-fasta` | Full assembly FASTA with requested contigs replaced by cut pieces. Uncut contigs are copied unchanged. |
 | `--report` | TSV report describing every emitted cut piece, including original contig, new contig, slice coordinates, piece length, and cut positions. |
+| `--agp` / default `<output-fasta>.agp` | AGP 2.1 map for the cut FASTA. Cut pieces map back to original contig slices; uncut records are identity rows. |
+| `--components` / default `<output-fasta>.components.tsv` | Human-readable provenance table mirroring the cut AGP rows. |
+| `--submission-checklist` / default `<output-fasta>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 
 Cut pieces are named `CONTIG_cut001`, `CONTIG_cut002`, and so on by default.
 Change the inserted text with `--name-separator`, or use `--simple-headers` to
@@ -103,6 +106,9 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 | `--contig` / `--pos` | none | Convenience form for one contig with one or more positions. |
 | `--output-fasta` | required | New FASTA path. The input FASTA is never modified. |
 | `--report` | required | TSV report path for the cut pieces. |
+| `--agp` | `<output-fasta>.agp` | Output AGP 2.1 map for the cut FASTA. |
+| `--components` | `<output-fasta>.components.tsv` | Output component-provenance TSV mirroring the cut AGP rows. |
+| `--submission-checklist` | `<output-fasta>.submission_checklist.tsv` | Output FASTA/AGP handoff and file-manifest checklist. |
 | `--min-piece-bp` | `1` | Reject cut plans that create pieces shorter than this length. |
 | `--name-separator` | `_cut` | Text inserted before the numeric suffix. |
 | `--simple-headers` | off | Write cut-piece FASTA headers containing only the new sequence ID. |

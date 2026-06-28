@@ -62,6 +62,15 @@ def fasta_headers(path):
     return headers
 
 
+def read_agp_rows(path):
+    with open(path) as fh:
+        return [
+            line.rstrip("\n").split("\t")
+            for line in fh
+            if line.strip() and not line.startswith("#")
+        ]
+
+
 def write_coords(path, rows):
     lines = [
         "/tmp/ref.fa /tmp/assembly.fa",
@@ -210,6 +219,15 @@ class ReferenceOrderTests(unittest.TestCase):
                     "chr2_contigC",
                 ],
             )
+            agp_rows = read_agp_rows(prefix.with_suffix(".ordered.agp"))
+            self.assertEqual(len(agp_rows), 3)
+            self.assertEqual(agp_rows[0][0], "chr1_contigA")
+            self.assertEqual(agp_rows[0][4], "W")
+            self.assertEqual(agp_rows[0][5], "contigA")
+            self.assertEqual(agp_rows[0][6], "1")
+            self.assertTrue(prefix.with_suffix(".ordered_components.tsv").exists())
+            checklist = prefix.with_suffix(".submission_checklist.tsv").read_text()
+            self.assertIn("agp_contiguous_objects\tok\t0", checklist)
 
     def test_discarded_fasta_creates_missing_parent_directory(self):
         with tempfile.TemporaryDirectory() as tmp:

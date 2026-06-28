@@ -26,8 +26,8 @@ def main(argv=None):
         prog="chromo",
         description=(
             "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, "
-            "plot, map graph coordinates, prepare targeted GAF inputs, and review "
-            "genome assembly contigs."
+            "plot, map graph coordinates, write AGP provenance sidecars, prepare "
+            "targeted GAF inputs, and review genome assembly contigs."
         ),
     )
     parser.add_argument(

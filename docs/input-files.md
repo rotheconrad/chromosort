@@ -497,6 +497,11 @@ names needed to project component ends onto terminal unitigs. Scaffold FASTA
 without AGP is rejected for graph-aware filling because the N gaps can no longer
 be tied safely to graph segments.
 
+When the scaffold FASTA was produced by ChromoSort, use the AGP written beside
+that exact FASTA. AGP files are stage-local provenance maps, so a downstream
+FASTA edit should write a new AGP sidecar rather than append to the upstream
+one.
+
 ### Which PAF Files to Keep
 
 The main PAF file for ChromoSort is a reference-to-assembly whole-genome

@@ -47,16 +47,16 @@ Then ask two questions:
 
 | Command | Tables to read first | Main question |
 | --- | --- | --- |
-| `chromo sort` | `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv` | Which contigs were kept, assigned, filtered, or flagged for split review? |
-| `chromo clean` | `<prefix>.initial_sort.contig_assignments.tsv`, `<prefix>.fix_report.tsv`, `<prefix>.clean_contigs.tsv` | Which raw contigs were discarded, inspected, split, or emitted into the cleaned FASTA? |
+| `chromo sort` | `<prefix>.ordered.agp`, `<prefix>.ordered_components.tsv`, `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv`, `<prefix>.submission_checklist.tsv` | Which contigs were kept, assigned, filtered, flagged for split review, and mapped into the ordered FASTA? |
+| `chromo clean` | `<prefix>.clean.agp`, `<prefix>.clean_components.tsv`, `<prefix>.initial_sort.contig_assignments.tsv`, `<prefix>.fix_report.tsv`, `<prefix>.clean_contigs.tsv`, `<prefix>.submission_checklist.tsv` | Which raw contigs were discarded, inspected, split, or emitted into the cleaned FASTA? |
 | `chromo eval` | `<prefix>.fix_review.tsv`, `<prefix>.scaffold_review.tsv`, `<prefix>.gapfill_review.tsv`, optional `<prefix>.eval_all_outputs.tsv` | Which candidate decisions need human accept/reject review, and which tables should feed targeted GAF prep? |
-| `chromo fix` | The `--report` TSV | Which requested or detected contigs were split, copied, or left unsplit? |
-| `chromo cut` | The `--report` TSV | Which exact requested cut positions produced which pieces? |
-| `chromo manual apply` | The `--report` TSV | Which browser-reviewed pieces were emitted or removed? |
+| `chromo fix` | The `--report` TSV plus `<output-fasta>.agp`, `<output-fasta>.components.tsv`, and `<output-fasta>.submission_checklist.tsv` by default | Which requested or detected contigs were split, copied, left unsplit, and mapped into the fixed FASTA? |
+| `chromo cut` | The `--report` TSV plus `<output-fasta>.agp`, `<output-fasta>.components.tsv`, and `<output-fasta>.submission_checklist.tsv` by default | Which exact requested cut positions produced which pieces? |
+| `chromo manual apply` | The optional `--report` TSV plus `<output-fasta>.agp`, `<output-fasta>.components.tsv`, and `<output-fasta>.submission_checklist.tsv` by default | Which browser-reviewed pieces were emitted or removed? |
 | `chromo gafprep` | `<prefix>.targets.tsv`, `<prefix>.selected_reads.tsv`, `<prefix>.selected_read_review_links.tsv`, `<prefix>.dropped_gfa_links.tsv` | Which reads were selected for targeted GraphAligner, which review rows selected them, and did GFA sanitization limit evidence? |
 | `chromo graph-map` | `<prefix>.utg_to_ctg.tsv`, `<prefix>.path_summary.tsv`, `<prefix>.warnings.tsv` | Did unitig graph coordinates project cleanly onto contig FASTA coordinates? |
-| `chromo scaffold` | `<prefix>.scaffold_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, `<prefix>.submission_checklist.tsv`, optional `<prefix>.graph_gaps.tsv` | What gaps, overlaps, trims, graph context, and FASTA/AGP handoff checks were recorded? |
-| `chromo gapfill` | `<prefix>.gapfill_plan.tsv`, `<prefix>.submission_checklist.tsv` | Which graph paths are fillable, ambiguous, risky, accepted, or applied, and what final handoff checks remain? |
+| `chromo scaffold` | `<prefix>.scaffold.agp`, `<prefix>.scaffold_components.tsv`, `<prefix>.scaffold_gaps.tsv`, `<prefix>.scaffold_summary.tsv`, `<prefix>.submission_checklist.tsv`, optional `<prefix>.graph_gaps.tsv` | What gaps, overlaps, trims, graph context, AGP provenance, and FASTA/AGP handoff checks were recorded? |
+| `chromo gapfill` | `<prefix>.gapfill_plan.tsv`, `<prefix>.gapfilled.agp`, `<prefix>.gapfilled_components.tsv`, `<prefix>.submission_checklist.tsv` | Which graph paths are fillable, ambiguous, risky, accepted, or applied, and what final handoff checks remain? |
 
 ## Status Gallery
 

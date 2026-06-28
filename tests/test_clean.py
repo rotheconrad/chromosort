@@ -68,6 +68,15 @@ def read_tsv(path):
         return list(csv.DictReader(fh, delimiter="\t"))
 
 
+def read_agp_rows(path):
+    with open(path) as fh:
+        return [
+            line.rstrip("\n").split("\t")
+            for line in fh
+            if line.strip() and not line.startswith("#")
+        ]
+
+
 class CleanTests(unittest.TestCase):
     def test_clean_discards_unaligned_and_splits_retained_chimeras(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -92,6 +101,16 @@ class CleanTests(unittest.TestCase):
                 ["kept_split_piece", "kept_split_piece"],
             )
             self.assertEqual(by_contig["contig_inv_mid"][0]["fix_status"], "not_split_single_target")
+
+            agp_rows = read_agp_rows(Path(str(prefix) + ".clean.agp"))
+            split_row = next(row for row in agp_rows if row[0] == "chrom02_contig_04_a")
+            self.assertEqual(split_row[4], "W")
+            self.assertEqual(split_row[5], "contig_04")
+            self.assertEqual(split_row[6], "1")
+            components = Path(str(prefix) + ".clean_components.tsv").read_text()
+            self.assertIn("clean_split_piece", components)
+            checklist = Path(str(prefix) + ".submission_checklist.tsv").read_text()
+            self.assertIn("fasta_agp_length_match\tok\t0", checklist)
 
             summary = Path(str(prefix) + ".run_summary.txt").read_text()
             self.assertIn("clean_status_kept_split_piece\t5", summary)

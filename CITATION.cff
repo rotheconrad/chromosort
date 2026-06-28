@@ -11,7 +11,7 @@ abstract: >-
 authors:
   - family-names: Roth
     given-names: Conrad
-version: "0.2.31"
+version: "0.3.0"
 url: "https://github.com/rotheconrad/chromosort"
 repository-code: "https://github.com/rotheconrad/chromosort"
 license: MIT

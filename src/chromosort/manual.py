@@ -10,6 +10,14 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from . import __version__
+from .agp import (
+    AgpFastaRecord,
+    component_part,
+    default_sidecar_path,
+    gap_part,
+    write_agp,
+    write_component_tsv,
+)
 from .graph import graph_node_evidence, read_gfa
 from .paths import ensure_parent_dir
 from .reference_order import (
@@ -22,10 +30,35 @@ from .reference_order import (
     write_wrapped,
 )
 from .review import read_review_events
+from .submission import write_submission_checklist
 
 
 SCHEMA = "chromosort-manual-v1"
 MANUAL_TASKS = {"fix", "scaffold", "gapfill"}
+AGP_GAP_TYPES = (
+    "scaffold",
+    "contig",
+    "centromere",
+    "short_arm",
+    "heterochromatin",
+    "telomere",
+    "repeat",
+    "contamination",
+)
+AGP_LINKAGE_EVIDENCE = (
+    "na",
+    "paired-ends",
+    "align_genus",
+    "align_xgenus",
+    "align_trnscpt",
+    "within_clone",
+    "clone_contig",
+    "map",
+    "pcr",
+    "proximity_ligation",
+    "strobe",
+    "unspecified",
+)
 
 
 @dataclass
@@ -216,6 +249,42 @@ def parse_apply_args(argv=None, prog=None):
         type=int,
         default=None,
         help="Override the recipe scaffold gap size.",
+    )
+    ap.add_argument(
+        "--agp",
+        default=None,
+        help="Output AGP map. Defaults to <output-fasta>.agp.",
+    )
+    ap.add_argument(
+        "--components",
+        default=None,
+        help="Output component provenance TSV. Defaults to <output-fasta>.components.tsv.",
+    )
+    ap.add_argument(
+        "--submission-checklist",
+        default=None,
+        help=(
+            "Output submission-oriented checklist TSV. Defaults to "
+            "<output-fasta>.submission_checklist.tsv."
+        ),
+    )
+    ap.add_argument(
+        "--agp-gap-type",
+        choices=AGP_GAP_TYPES,
+        default="contig",
+        help="AGP gap_type for N gaps inserted in manual scaffold mode.",
+    )
+    ap.add_argument(
+        "--agp-linkage",
+        choices=["yes", "no"],
+        default="no",
+        help="AGP linkage value for N gaps inserted in manual scaffold mode.",
+    )
+    ap.add_argument(
+        "--agp-linkage-evidence",
+        choices=AGP_LINKAGE_EVIDENCE,
+        default="na",
+        help="AGP linkage evidence for N gaps inserted in manual scaffold mode.",
     )
     return ap.parse_args(argv)
 
@@ -723,30 +792,110 @@ def group_scaffold_pieces(pieces):
     return groups
 
 
-def write_apply_fasta(path, fasta_path, pieces, scaffold_enabled, gap_bp):
+def manual_sidecar_paths(args):
+    return {
+        "agp": args.agp or default_sidecar_path(args.output_fasta, ".agp"),
+        "components": args.components
+        or default_sidecar_path(args.output_fasta, ".components.tsv"),
+        "submission_checklist": args.submission_checklist
+        or default_sidecar_path(args.output_fasta, ".submission_checklist.tsv"),
+    }
+
+
+def validate_manual_agp_gap_args(args):
+    if args.agp_gap_type == "contig" and args.agp_linkage == "yes":
+        raise ValueError("AGP gap_type contig requires --agp-linkage no.")
+    if args.agp_gap_type == "scaffold" and args.agp_linkage == "no":
+        raise ValueError("AGP gap_type scaffold requires --agp-linkage yes.")
+    if args.agp_linkage == "no" and args.agp_linkage_evidence != "na":
+        raise ValueError("AGP linkage evidence must be na when --agp-linkage no.")
+    if args.agp_linkage == "yes" and args.agp_linkage_evidence == "na":
+        raise ValueError("AGP linkage yes requires non-na linkage evidence.")
+
+
+def add_manual_component_part(parts, object_name, cursor, part_number, piece, status="manual"):
+    parts.append(
+        component_part(
+            object_name=object_name,
+            object_start=cursor,
+            object_end=cursor + piece.length - 1,
+            part_number=part_number,
+            component_id=piece.source,
+            component_start=piece.start,
+            component_end=piece.end,
+            orientation=piece.strand,
+            source="manual_piece",
+            status=status,
+            notes=piece.id or piece.name or ".",
+        )
+    )
+    return cursor + piece.length, part_number + 1
+
+
+def write_apply_fasta(path, fasta_path, pieces, scaffold_enabled, gap_bp, args):
     if gap_bp < 0:
         raise ValueError("Manual scaffold gap bp must be non-negative.")
     ensure_parent_dir(path)
     sequences = fetch_piece_sequences(fasta_path, pieces)
+    fasta_records = []
+    agp_parts = []
     with open(path, "w") as out:
         if scaffold_enabled:
             for scaffold, members in group_scaffold_pieces(pieces).items():
                 seq_parts = []
+                cursor = 1
+                part_number = 1
                 for idx, piece in enumerate(members):
-                    if idx:
+                    if idx and gap_bp:
                         seq_parts.append("N" * gap_bp)
+                        agp_parts.append(
+                            gap_part(
+                                object_name=scaffold,
+                                object_start=cursor,
+                                object_end=cursor + gap_bp - 1,
+                                part_number=part_number,
+                                gap_length=gap_bp,
+                                gap_type=args.agp_gap_type,
+                                linkage=args.agp_linkage,
+                                linkage_evidence=args.agp_linkage_evidence,
+                                source="manual_gap",
+                                status="manual",
+                                notes=f"{members[idx - 1].id}|{piece.id}",
+                            )
+                        )
+                        cursor += gap_bp
+                        part_number += 1
+                    cursor, part_number = add_manual_component_part(
+                        agp_parts,
+                        scaffold,
+                        cursor,
+                        part_number,
+                        piece,
+                    )
                     seq_parts.append(piece_sequence(piece, sequences))
+                seq = "".join(seq_parts)
                 out.write(f">{scaffold} manual_pieces={len(members)} gap_bp={gap_bp}\n")
-                write_wrapped(out, "".join(seq_parts))
+                write_wrapped(out, seq)
+                fasta_records.append(AgpFastaRecord(scaffold, seq))
         else:
             names = unique_piece_names(pieces)
             for piece in pieces:
+                seq = piece_sequence(piece, sequences)
                 out.write(
                     f">{names[piece.id]} original={piece.source} "
                     f"slice={piece.start}-{piece.end} strand={piece.strand} "
                     f"scaffold={piece.scaffold}\n"
                 )
-                write_wrapped(out, piece_sequence(piece, sequences))
+                write_wrapped(out, seq)
+                add_manual_component_part(
+                    agp_parts,
+                    names[piece.id],
+                    1,
+                    1,
+                    piece,
+                )
+                fasta_records.append(AgpFastaRecord(names[piece.id], seq))
+    return fasta_records, agp_parts
 
 
 def write_apply_report(path, pieces, scaffold_enabled):
@@ -808,9 +957,34 @@ def run_apply(args):
     gap_bp = args.gap_bp
     if gap_bp is None:
         gap_bp = int(recipe.get("gapBp", 100))
-    write_apply_fasta(args.output_fasta, args.assembly_fasta, active, scaffold_enabled, gap_bp)
+    if scaffold_enabled and gap_bp:
+        validate_manual_agp_gap_args(args)
+    sidecar_paths = manual_sidecar_paths(args)
+    fasta_records, agp_parts = write_apply_fasta(
+        args.output_fasta,
+        args.assembly_fasta,
+        active,
+        scaffold_enabled,
+        gap_bp,
+        args,
+    )
     if args.report:
         write_apply_report(args.report, pieces, scaffold_enabled)
+    write_agp(sidecar_paths["agp"], agp_parts)
+    write_component_tsv(sidecar_paths["components"], agp_parts)
+    output_paths = {
+        "manual_fasta": args.output_fasta,
+        **sidecar_paths,
+    }
+    if args.report:
+        output_paths["report"] = args.report
+    write_submission_checklist(
+        sidecar_paths["submission_checklist"],
+        "chromo manual apply",
+        output_paths,
+        fasta_records,
+        agp_parts,
+    )
     sys.stderr.write(
         f"Applied manual recipe with {len(active)} active piece(s) "
         f"and {len(pieces) - len(active)} removed piece(s).\n"
@@ -818,6 +992,9 @@ def run_apply(args):
     sys.stderr.write(f"Wrote manual FASTA: {args.output_fasta}\n")
     if args.report:
         sys.stderr.write(f"Wrote manual report: {args.report}\n")
+    sys.stderr.write(f"Wrote manual AGP: {sidecar_paths['agp']}\n")
+    sys.stderr.write(f"Wrote manual components: {sidecar_paths['components']}\n")
+    sys.stderr.write(f"Wrote submission checklist: {sidecar_paths['submission_checklist']}\n")
 
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):

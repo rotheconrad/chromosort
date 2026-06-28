@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from . import fix_contigs, reference_order
+from .agp import AgpFastaRecord, component_part, write_agp, write_component_tsv
 from .fix_contigs import MODE_CHOICES
 from .paths import ensure_output_dirs, ensure_parent_dir
 from .reference_order import (
@@ -27,6 +28,7 @@ from .reference_order import (
     write_match_report,
     write_wrapped,
 )
+from .submission import write_submission_checklist
 
 
 FIX_SCOPE_CHOICES = (
@@ -109,8 +111,10 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         required=True,
         help=(
             "Output prefix. Writes <prefix>.clean.fa, initial-sort reports, "
+            "<prefix>.clean.agp, <prefix>.clean_components.tsv, "
             "<prefix>.fix_report.tsv, <prefix>.clean_contigs.tsv, "
-            "<prefix>.clean_chromosome_summary.tsv, and <prefix>.run_summary.txt."
+            "<prefix>.clean_chromosome_summary.tsv, "
+            "<prefix>.submission_checklist.tsv, and <prefix>.run_summary.txt."
         ),
     )
     ap.add_argument(
@@ -228,6 +232,8 @@ def output_paths(prefix, discarded_fasta=None):
     prefix = Path(prefix)
     return {
         "clean_fasta": Path(str(prefix) + ".clean.fa"),
+        "clean_agp": Path(str(prefix) + ".clean.agp"),
+        "clean_components": Path(str(prefix) + ".clean_components.tsv"),
         "initial_assignments": Path(str(prefix) + ".initial_sort.contig_assignments.tsv"),
         "initial_matches": Path(str(prefix) + ".initial_sort.contig_ref_matches.tsv"),
         "initial_chromosome_summary": Path(
@@ -237,6 +243,7 @@ def output_paths(prefix, discarded_fasta=None):
         "fix_report": Path(str(prefix) + ".fix_report.tsv"),
         "clean_contigs": Path(str(prefix) + ".clean_contigs.tsv"),
         "clean_chromosome_summary": Path(str(prefix) + ".clean_chromosome_summary.tsv"),
+        "submission_checklist": Path(str(prefix) + ".submission_checklist.tsv"),
         "run_summary": Path(str(prefix) + ".run_summary.txt"),
         **({"discarded_fasta": Path(discarded_fasta)} if discarded_fasta else {}),
     }
@@ -459,20 +466,62 @@ def clean_fasta_header(record, simple_headers):
     return " ".join(fields)
 
 
+def clean_record_sequence(reader, record):
+    seq = reader.fetch(record.source_contig)
+    seq = seq[record.slice_start : record.slice_end]
+    if record.reverse_complemented:
+        seq = reverse_complement(seq)
+    return seq
+
+
 def write_clean_fasta(path, fasta_path, records, assembly_fai, simple_headers):
     ensure_parent_dir(path)
     reader = FastaReader(fasta_path, assembly_fai)
     try:
         with open(path, "w") as out:
             for record in records:
-                seq = reader.fetch(record.source_contig)
-                seq = seq[record.slice_start : record.slice_end]
-                if record.reverse_complemented:
-                    seq = reverse_complement(seq)
+                seq = clean_record_sequence(reader, record)
                 out.write(f">{clean_fasta_header(record, simple_headers)}\n")
                 write_wrapped(out, seq)
     finally:
         reader.close()
+
+
+def build_clean_fasta_records(fasta_path, records, assembly_fai):
+    fasta_records = []
+    reader = FastaReader(fasta_path, assembly_fai)
+    try:
+        for record in records:
+            fasta_records.append(
+                AgpFastaRecord(record.clean_name, clean_record_sequence(reader, record))
+            )
+    finally:
+        reader.close()
+    return fasta_records
+
+
+def build_clean_agp_parts(records):
+    parts = []
+    for record in records:
+        notes = f"{record.ref}:{record.ref_start}-{record.ref_end}"
+        parts.append(
+            component_part(
+                object_name=record.clean_name,
+                object_start=1,
+                object_end=record.piece_bp,
+                part_number=1,
+                component_id=record.source_contig,
+                component_start=record.slice_start + 1,
+                component_end=record.slice_end,
+                orientation="-" if record.reverse_complemented else "+",
+                source="clean_split_piece"
+                if record.clean_status == "kept_split_piece"
+                else "clean_contig",
+                status=record.clean_status,
+                notes=notes,
+            )
+        )
+    return parts
 
 
 def write_clean_report(path, rows):
@@ -689,6 +738,11 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         alignment_format,
     )
 
+    agp_parts = build_clean_agp_parts(clean_records)
+    write_agp(paths["clean_agp"], agp_parts)
+    write_component_tsv(paths["clean_components"], agp_parts)
+
+    fasta_records = None
     if not args.reports_only:
         write_clean_fasta(
             paths["clean_fasta"],
@@ -697,6 +751,11 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             args.assembly_fai,
             args.simple_headers,
         )
+        fasta_records = build_clean_fasta_records(
+            args.assembly_fasta,
+            clean_records,
+            args.assembly_fai,
+        )
         if args.discarded_fasta:
             write_discarded_fasta(
                 paths["discarded_fasta"],
@@ -704,6 +763,13 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
                 assignments,
                 args.assembly_fai,
             )
+    write_submission_checklist(
+        paths["submission_checklist"],
+        "chromo clean",
+        paths,
+        fasta_records,
+        agp_parts,
+    )
 
     sys.stderr.write(f"Retained {len(clean_records)} cleaned record(s).\n")
     sys.stderr.write(f"Selected {len(fix_targets)} retained raw contig(s) for fixing.\n")
@@ -711,6 +777,9 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         sys.stderr.write(f"  fix {status}: {count}\n")
     if not args.reports_only:
         sys.stderr.write(f"Wrote clean FASTA: {paths['clean_fasta']}\n")
+    sys.stderr.write(f"Wrote clean AGP: {paths['clean_agp']}\n")
+    sys.stderr.write(f"Wrote clean components: {paths['clean_components']}\n")
+    sys.stderr.write(f"Wrote submission checklist: {paths['submission_checklist']}\n")
     sys.stderr.write(f"Wrote clean report: {paths['clean_contigs']}\n")
     if fix_args.mode != args.fix_mode:
         sys.stderr.write(f"Fix mode normalized to: {fix_args.mode}\n")

@@ -78,6 +78,8 @@ chromo clean \
 | Output | Description |
 | --- | --- |
 | `<prefix>.clean.fa` | Retained raw contigs and accepted split pieces, oriented if requested and ordered by reference placement. |
+| `<prefix>.clean.agp` | AGP 2.1 map for the cleaned FASTA, mapping each emitted record back to its raw source-contig slice and orientation. |
+| `<prefix>.clean_components.tsv` | Human-readable provenance table mirroring the clean AGP rows, with clean status for each component. |
 | `<prefix>.initial_sort.contig_assignments.tsv` | Full first-pass sort assignment report for raw contigs. |
 | `<prefix>.initial_sort.contig_ref_matches.tsv` | Per-contig/reference match report from the raw alignment. |
 | `<prefix>.initial_sort.chromosome_summary.tsv` | Chromosome summary from the initial sort decision. |
@@ -85,6 +87,7 @@ chromo clean \
 | `<prefix>.fix_report.tsv` | `chromo fix`-style report for selected retained contigs. |
 | `<prefix>.clean_contigs.tsv` | Main unified audit table for discarded contigs, retained unsplit contigs, and retained split pieces. |
 | `<prefix>.clean_chromosome_summary.tsv` | Final cleaned-record summary grouped by reference sequence. |
+| `<prefix>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 | `<prefix>.run_summary.txt` | Inputs, outputs, sort/fix/clean status counts, and validation guidance. |
 | `--discarded-fasta` path | Optional FASTA of raw contigs discarded by the initial sort step. |
 

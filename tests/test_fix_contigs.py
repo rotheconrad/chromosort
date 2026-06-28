@@ -68,6 +68,15 @@ def read_report(path):
         return list(csv.DictReader(fh, delimiter="\t"))
 
 
+def read_agp_rows(path):
+    with open(path) as fh:
+        return [
+            line.rstrip("\n").split("\t")
+            for line in fh
+            if line.strip() and not line.startswith("#")
+        ]
+
+
 class FixContigsTests(unittest.TestCase):
     def test_cli_reports_progress_to_stderr(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -184,6 +193,18 @@ class FixContigsTests(unittest.TestCase):
                     ("chrom01-contig_gap_chimera-c", "76", "100"),
                 ],
             )
+            agp_rows = read_agp_rows(Path(str(output_fasta) + ".agp"))
+            self.assertEqual(
+                [(row[0], row[5], row[6], row[7]) for row in agp_rows],
+                [
+                    ("chrom01-contig_gap_chimera-a", "contig_gap_chimera", "1", "50"),
+                    ("chrom07-contig_gap_chimera-b", "contig_gap_chimera", "51", "75"),
+                    ("chrom01-contig_gap_chimera-c", "contig_gap_chimera", "76", "100"),
+                ],
+            )
+            self.assertTrue(Path(str(output_fasta) + ".components.tsv").exists())
+            checklist = Path(str(output_fasta) + ".submission_checklist.tsv").read_text()
+            self.assertIn("fasta_agp_object_match\tok\t0", checklist)
 
     def test_all_rejects_candidates_with_too_many_breakpoints_per_contig(self):
         with tempfile.TemporaryDirectory() as tmp:

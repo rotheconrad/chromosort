@@ -49,6 +49,11 @@ Re-run MUMmer or minimap2 before using a changed FASTA as the assembly input to
 another alignment-dependent step. This applies after sorting to `ordered.fa`,
 fixing to `fixed.fa`, cutting, manual export, or scaffolding.
 
+FASTA-changing commands also write fresh AGP, component-provenance, and
+submission-checklist sidecars for their own outputs. Treat those as stage-local
+records of the FASTA that was just emitted; a downstream FASTA-changing command
+should write a new AGP instead of appending to an upstream one.
+
 Two common safe patterns are:
 
 ```text

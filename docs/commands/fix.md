@@ -140,6 +140,9 @@ With `--reviewed-plan`, the table supplies target contigs and exact slices, so
 | --- | --- |
 | `--output-fasta` | Full fixed assembly FASTA by default, with split pieces replacing fixed contigs. |
 | `--report` | TSV report describing split pieces and unsplit requested contigs. |
+| `--agp` / default `<output-fasta>.agp` | AGP 2.1 map for the fixed FASTA. Unchanged records are identity rows; split pieces map back to source-contig slices. |
+| `--components` / default `<output-fasta>.components.tsv` | Human-readable provenance table mirroring the fixed AGP rows. |
+| `--submission-checklist` / default `<output-fasta>.submission_checklist.tsv` | FASTA/AGP consistency checks and file manifest for downstream submission packaging. |
 | `--graph-report` | Optional graph context TSV when `--gfa` is provided. Defaults to the `--report` path with a `.graph.tsv` suffix. |
 
 The report includes original contig name, split status, new contig name,
@@ -222,6 +225,9 @@ appear in your FASTA and alignment output are used. Change the separator with
 | `--reviewed-plan` | none | Reviewed `chromo eval fix` table. Accepted `split_piece` rows are applied directly and replace the alignment-driven planner path; graph and long-read columns remain provenance for those reviewed slices. |
 | `--gfa` | none | Optional assembly graph GFA for report-only context about reviewed source contigs. |
 | `--graph-report` | report path with `.graph.tsv` suffix | Optional path for the `--gfa` graph context report. |
+| `--agp` | `<output-fasta>.agp` | Output AGP 2.1 map for the fixed FASTA. |
+| `--components` | `<output-fasta>.components.tsv` | Output component-provenance TSV mirroring the fixed AGP rows. |
+| `--submission-checklist` | `<output-fasta>.submission_checklist.tsv` | Output FASTA/AGP handoff and file-manifest checklist. |
 | `--graph-guard` | off | Requires `--gfa`; emits conservative warnings for graph-simple planned splits and graph-complex unsplit contigs without changing the fixed FASTA. |
 | `--contigs` | none | Space-separated names of contigs to inspect and split. |
 | `--contigs-file` | none | Optional file with one contig name per line. |
