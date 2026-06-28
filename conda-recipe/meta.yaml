@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/rotheconrad/chromosort/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: 8822f437eb388c3d88e4f02236dc734a195bc0171c258522a6c735efa29dd9fa
+  sha256: b1634f7e144a5399d8a892feaa439347bec7d675743c0d591a86dc34dc3d1084
 
 build:
   noarch: python
