@@ -63,6 +63,7 @@ chromo clean --help
 chromo fix --help
 chromo cut --help
 chromo manual --help
+chromo gafprep --help
 chromo plot --help
 chromo scaffold --help
 chromo gapfill --help

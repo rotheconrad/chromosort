@@ -32,6 +32,7 @@ Start with evidence and review state, not with the command name.
 | `chromo fix` | Reviewed contigs need alignment-planned splitting. | It emits copied or split contig pieces. | Use targeted contigs or reviewed plans for production work. |
 | `chromo cut` | You already know exact cut positions. | It cuts after exact 1-based positions. | It does not discover breakpoints from alignments. |
 | `chromo manual` | A human should browse, remove, restore, split, invert, reorder, or label pieces. | Browser export or `manual apply` writes reviewed FASTA. | Re-align manual FASTA before treating it as a new assembly input. |
+| `chromo gafprep` | Targeted GAF evidence is needed without aligning every read to the full graph. | It does not write FASTA; it writes a selected FASTQ, sanitized GFA, GraphAligner script, and audit TSVs. | It prepares GraphAligner inputs; GraphAligner still writes the actual GAF. |
 | `chromo scaffold` | Final sorted contigs should become one record per reference sequence. | It joins ordered contigs with N gaps and optional reviewed overlap handling. | It needs the ordered FASTA and matching assignment TSV from the same sort run. |
 | `chromo gapfill` | Reviewed graph paths should replace scaffold N gaps. | It can insert graph path sequence and trim the right flank when applied. | Apply only when graph path support and stale-row checks pass. |
 

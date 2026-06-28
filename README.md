@@ -158,7 +158,7 @@ pixi run test
 
 ## Current Status
 
-Current version: `0.2.29`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
+Current version: `0.2.30`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
 
 ## Citation
 
@@ -189,7 +189,8 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, and generated GraphAligner scripts. |
+| Unreleased | No changes yet. |
+| `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |
 | `0.2.29` | Completed the NCBI-ready scaffold/gapfill buildout: scaffold and gapfill AGP/component provenance, post-scaffold AGP input mode, long-read PAF bridge evidence, projected unitig-GFA planning and apply support, external patch concordance fields, explicit apply controls, submission checklist TSVs, and synchronized command/workflow/output docs. |
 | `0.2.28` | Added hifiasm GFA path/walk support: noseq-aware P/W parsing, unitig-to-contig projection reports via `chromo graph-map`, query-axis GFA overlays in `chromo plot`, projected unitig/boundary context in `chromo eval fix` and manual review panels, and synchronized command, workflow, troubleshooting, architecture, and review-playbook documentation. |
 | `0.2.27` | Refreshed publication-style architecture and user documentation: added algorithm/data-model activation maps, evidence authority mapping, updated eval/manual/GAF command guidance, synchronized input/output/workflow/status/troubleshooting docs, and verified docs/test consistency. |

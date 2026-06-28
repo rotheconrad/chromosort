@@ -230,6 +230,22 @@ GraphAligner \
   -a graph_reads/${sample}.gaf
 ```
 
+When full-depth read-to-graph alignment is too expensive, prepare targeted
+GraphAligner inputs from the read-to-assembly PAF and the current review
+tables:
+
+```bash
+chromo gafprep \
+  --assembly-fasta assembly.fa \
+  --assembly-gfa graphs/${sample}.gfa \
+  --read-paf reads/${sample}.reads_to_assembly.paf \
+  --reads reads.fastq.gz \
+  --eval-review-table review/${sample}.fix_review.tsv \
+  --output-prefix graph_reads/${sample}.gafprep
+
+bash graph_reads/${sample}.gafprep.graphaligner.sh
+```
+
 `chromo eval fix` summarizes read support near proposed breakpoints as
 `longread_spanning_reads`, `longread_split_reads`, edge-read counts, and nearby
 read counts. GFA and GAF fields are advisory context for fix review. They do

@@ -65,6 +65,7 @@ match its record names or flank sequence.
 | `chromo eval scaffold --gfa` | Optional GFA. | Adds direct-link and short-path context to scaffold review rows. |
 | `chromo graph-map` | Required GFA. | Projects unitig/path coordinates to contig coordinates when possible. |
 | `chromo plot --gfa-overlay` | Optional GFA. | Draws projected graph intervals on the query axis. |
+| `chromo gafprep --assembly-gfa` | Required GFA. | Writes a GraphAligner-oriented GFA for targeted read-to-graph alignment, preserving sequence while dropping audited hifiasm `A` records and pathological full-consuming links. |
 | `chromo gapfill --gfa` | Required GFA. | Plans and, with reviewed `--apply`, can insert validated graph path sequence. |
 
 ## Report-Only Versus Sequence-Changing
@@ -78,6 +79,7 @@ sequence.
 | Eval `graph_*` columns | No |
 | Sort graph assignment context | No |
 | Scaffold `graph_gaps.tsv` with default graph policy | No |
+| `gafprep` sanitized GraphAligner GFA and audit tables | No |
 | Scaffold graph-confirmed terminal overlap trim | Yes, only with explicit `--graph-overlap-policy confirm` and compatible overlap policy |
 | Gapfill plan TSV | No |
 | `chromo gapfill --apply` with fillable accepted paths | Yes |
