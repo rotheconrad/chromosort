@@ -409,7 +409,7 @@ lengths, strand, match count, block length, MAPQ, and names.
 Graph-aware ChromoSort commands use these graph-related evidence files:
 
 - GFA: the assembly graph, used by `chromo sort --gfa`, `chromo manual --gfa`,
-  `chromo eval fix/scaffold/gapfill`, `chromo fix --gfa`,
+  `chromo eval fix/scaffold/gapfill/all`, `chromo fix --gfa`,
   `chromo scaffold --gfa`, `chromo gapfill --gfa`, `chromo graph-map`,
   `chromo gafprep --assembly-gfa`, and `chromo plot --gfa-overlay`.
 - reference-to-assembly PAF: the minimap2 alignment format used by
@@ -417,7 +417,8 @@ Graph-aware ChromoSort commands use these graph-related evidence files:
   `chromo gapfill --ref-paf`, the PAF query names must match the GFA graph
   nodes being scored.
 - long-read-to-assembly PAF: optional read alignments used by
-  `chromo eval fix`, `chromo eval scaffold`, `chromo eval gapfill`, and
+  `chromo eval fix`, `chromo eval scaffold`, `chromo eval gapfill`,
+  `chromo eval all`, and
   `chromo manual --read-paf` task dashboards to report split, bridge, and
   contig-end support. `chromo gapfill --read-paf` also reports bridge evidence
   across adjacent contig ends, but does not use reads as the inserted sequence.
@@ -603,21 +604,32 @@ otherwise ambiguous GFA branch. Tied, weak, absent, or conflicting support
 keeps the event reviewable instead of forcing a hidden choice.
 
 For large full-depth HiFi datasets, running GraphAligner against the whole GFA
-can be expensive. Use `chromo gafprep` when you already have a
-read-to-assembly PAF and want GAF evidence only near ChromoSort review targets:
+can be expensive. Use `chromo eval all` plus `chromo gafprep` when you want GAF
+evidence near fix, scaffold, and gapfill review targets from one selected read
+subset:
 
 ```bash
-minimap2 -x map-hifi -c -t 16 --secondary=no assembly.fa reads.fastq.gz \
-  > reads_to_assembly.paf
+minimap2 -x map-hifi -c -t 16 --secondary=no results/sample.ordered.fa reads.fastq.gz \
+  > reads_to_ordered.paf
+
+chromo eval all \
+  --assembly-fasta results/sample.ordered.fa \
+  --coords mummer/ordered.coords \
+  --all \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_ordered.paf \
+  --output-prefix review/sample.eval
 
 chromo gafprep \
-  --assembly-fasta assembly.fa \
+  --assembly-fasta results/sample.ordered.fa \
   --assembly-gfa assembly_graph.gfa \
-  --read-paf reads_to_assembly.paf \
+  --read-paf reads_to_ordered.paf \
   --reads reads.fastq.gz \
-  --eval-review-table sample.fix_review.tsv \
-  --eval-review-table sample.scaffold_review.tsv \
-  --eval-review-table sample.gapfill_review.tsv \
+  --eval-review-table review/sample.eval.fix_review.tsv \
+  --eval-review-table review/sample.eval.scaffold_review.tsv \
+  --eval-review-table review/sample.eval.gapfill_review.tsv \
   --output-prefix results/sample.gafprep
 
 bash results/sample.gafprep.graphaligner.sh
@@ -625,7 +637,8 @@ bash results/sample.gafprep.graphaligner.sh
 
 This workflow writes selected reads and a sanitized GFA first; GraphAligner
 still writes `results/sample.gafprep.gaf`. Targeted GAF is review evidence, not
-automatic sequence validation.
+automatic sequence validation. The read PAF, `gafprep --assembly-fasta`, and
+review tables should name the same assembly FASTA records.
 
 Choose the graph for the question being asked. A contig-level `ctg.gfa` whose
 `S` names match the assembly FASTA is best for direct contig-node and junction

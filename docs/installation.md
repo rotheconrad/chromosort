@@ -60,6 +60,7 @@ gap-filling algorithms.
 chromo --help
 chromo sort --help
 chromo clean --help
+chromo eval all --help
 chromo fix --help
 chromo cut --help
 chromo manual --help

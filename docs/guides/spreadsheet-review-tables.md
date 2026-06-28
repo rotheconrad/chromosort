@@ -59,6 +59,9 @@ instead of silently applying a row.
 | `<prefix>.scaffold_review.tsv` | `scaffold_gap` | `chromo scaffold --reviewed-plan` | Override matching junction gap lengths. |
 | `<prefix>.gapfill_review.tsv` | `fill_path` | `chromo gapfill --reviewed-plan --apply` | Restrict graph fills to accepted, revalidated paths. |
 
+`chromo eval all` writes all three review tables with one shared prefix, plus
+`<prefix>.eval_all_outputs.tsv` listing the `chromo gafprep` table arguments.
+
 Task-specific manual dashboards can load the same tables with `--review-table`.
 The browser queue is a review view. The executor still makes the sequence
 change.

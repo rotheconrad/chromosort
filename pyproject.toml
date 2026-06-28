@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chromosort"
-version = "0.2.30"
-description = "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, plot, prepare targeted GAF inputs, and review genome assembly contigs from MUMmer, minimap2, GFA, GAF, and Hi-C evidence."
+version = "0.2.31"
+description = "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, plot, prepare all-mode eval tables and targeted GAF inputs, and review genome assembly contigs from MUMmer, minimap2, GFA, GAF, and Hi-C evidence."
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"

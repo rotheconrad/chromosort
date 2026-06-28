@@ -19,7 +19,7 @@ command-specific output sections below.
 | --- | --- |
 | [`chromo sort`](#chromo-sort-outputs) | `<prefix>.ordered.fa`, `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv`, optional `<prefix>.graph_assignments.tsv`, and `<prefix>.run_summary.txt`. |
 | [`chromo clean`](#chromo-clean-outputs) | `<prefix>.clean.fa`, initial-sort reports, `<prefix>.fix_targets.txt`, `<prefix>.fix_report.tsv`, `<prefix>.clean_contigs.tsv`, `<prefix>.clean_chromosome_summary.tsv`, optional discarded FASTA, and `<prefix>.run_summary.txt`. |
-| [`chromo eval`](#chromo-eval-outputs) | Task-specific review-event TSVs: `<prefix>.fix_review.tsv`, `<prefix>.scaffold_review.tsv`, or `<prefix>.gapfill_review.tsv`. |
+| [`chromo eval`](#chromo-eval-outputs) | Task-specific review-event TSVs: `<prefix>.fix_review.tsv`, `<prefix>.scaffold_review.tsv`, or `<prefix>.gapfill_review.tsv`; `chromo eval all` writes all three plus `<prefix>.eval_all_outputs.tsv`. |
 | [`chromo fix`](#chromo-fix-outputs) | Reviewed fixed FASTA at `--output-fasta`, split report at `--report`, and optional graph report. |
 | [`chromo cut`](#chromo-cut-outputs) | Cut FASTA at `--output-fasta` and cut-piece report at `--report`. |
 | [`chromo manual`](#chromo-manual-outputs) | Self-contained HTML dashboard, browser FASTA download, recipe JSON download, and reproducible `manual apply` FASTA/report outputs. |
@@ -144,6 +144,7 @@ runs.
 | `<prefix>.fix_review.tsv` | Shared review-event table for candidate `split_piece` rows. Optional `graph_*`, `gaf_*`, and `longread_*` columns describe provenance; accepted rows can drive `chromo fix --reviewed-plan`. |
 | `<prefix>.scaffold_review.tsv` | Shared review-event table for adjacent scaffold junctions. Accepted `scaffold_gap` rows can override matching gap lengths through `chromo scaffold --reviewed-plan`. |
 | `<prefix>.gapfill_review.tsv` | Shared review-event table for graph fill candidates. Accepted `fill_path` rows can restrict `chromo gapfill --reviewed-plan --apply` after the current path is revalidated. |
+| `<prefix>.eval_all_outputs.tsv` | Manifest written by `chromo eval all` listing the three review tables and their recommended `--eval-review-table` arguments for `chromo gafprep`. |
 
 These tables use schema `chromosort-review-event-v1`. Rejected or deleted rows
 do not apply sequence changes. Task-specific `manual` dashboards load the same

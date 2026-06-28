@@ -29,6 +29,7 @@ Start with evidence and review state, not with the command name.
 | `chromo sort` | Contigs should be assigned, filtered, ordered, and optionally whole-contig oriented. | It writes retained complete contigs in reference order. | It does not cut chimeric contigs. |
 | `chromo clean` | The assembly is mostly correct and you want one conservative cleanup pass. | It combines initial sorting, targeted conservative fixing, and final ordering. | Re-align the cleaned FASTA before validation or further alignment-dependent steps. |
 | `chromo eval` | You want a spreadsheet queue before applying fixes, scaffolds, or fills. | It does not write sequence outputs. | Accepted rows still need a matching executor. |
+| `chromo eval all` | You want fix, scaffold, and gapfill review tables for one broad review or targeted GAF bundle. | It writes the three review TSVs and an `eval_all_outputs` manifest. | Use a consistent FASTA naming stage if the tables will feed `chromo gafprep`. |
 | `chromo fix` | Reviewed contigs need alignment-planned splitting. | It emits copied or split contig pieces. | Use targeted contigs or reviewed plans for production work. |
 | `chromo cut` | You already know exact cut positions. | It cuts after exact 1-based positions. | It does not discover breakpoints from alignments. |
 | `chromo manual` | A human should browse, remove, restore, split, invert, reorder, or label pieces. | Browser export or `manual apply` writes reviewed FASTA. | Re-align manual FASTA before treating it as a new assembly input. |

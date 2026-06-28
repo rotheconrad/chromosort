@@ -8,11 +8,11 @@ ChromoSort provides one command, `chromo`, with eleven subcommands:
 | --- | --- |
 | `chromo sort` | Assign contigs to the best-supported reference sequence from MUMmer coords or minimap2 PAF, merge alignment evidence, filter contained or low-value duplicate overlaps, protect likely split candidates, and write a reference-ordered FASTA with TSV decision reports ([sort docs](https://rotheconrad.github.io/chromosort/commands/sort/)). |
 | `chromo clean` | Apply sort-style filtering to raw contigs, conservatively fix retained contigs, orient/order the emitted records, and write a cleaned FASTA plus audit reports for mostly-correct assemblies ([clean docs](https://rotheconrad.github.io/chromosort/commands/clean/)). |
-| `chromo eval` | Prepare editable TSV review tables for algorithm-assisted, human-reviewed `fix`, `scaffold`, and `gapfill` decisions, with optional GFA, long-read PAF, and GAF evidence for the matching `--reviewed-plan` execution paths ([eval docs](https://rotheconrad.github.io/chromosort/commands/eval/)). |
+| `chromo eval` | Prepare editable TSV review tables for algorithm-assisted, human-reviewed `fix`, `scaffold`, and `gapfill` decisions, or run `chromo eval all` to emit all three tables for one downstream review bundle ([eval docs](https://rotheconrad.github.io/chromosort/commands/eval/)). |
 | `chromo fix` | Split chimeric or structurally inconsistent contigs into reference-labeled pieces by scanning query-ordered alignment blocks, smoothing ordinary gaps, selecting eligible reference/orientation transitions, and writing a fixed full-assembly FASTA plus an audit report ([fix docs](https://rotheconrad.github.io/chromosort/commands/fix/)). |
 | `chromo cut` | Apply exact reviewed breakpoint edits when you already know the cut positions, replacing each requested contig with numbered pieces while copying uncut contigs unchanged and recording every emitted slice ([cut docs](https://rotheconrad.github.io/chromosort/commands/cut/)). |
 | `chromo manual` | Build a self-contained browser dashboard for dot-plot curation, task-specific `fix`/`scaffold`/`gapfill` review-event queues, contig editing, optional GFA and long-read evidence panels, FASTA export, and reproducible recipe application ([manual docs](https://rotheconrad.github.io/chromosort/commands/manual/), [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/)). |
-| `chromo gafprep` | Prepare targeted GraphAligner inputs from read-to-assembly PAF and ChromoSort review tables, writing selected reads, a sanitized GFA, a runnable script, and TSV audit trails ([gafprep docs](https://rotheconrad.github.io/chromosort/commands/gafprep/)). |
+| `chromo gafprep` | Prepare targeted GraphAligner inputs from read-to-assembly PAF and ChromoSort review tables, preferably the three tables from `chromo eval all`, writing selected reads, a sanitized GFA, a runnable script, and TSV audit trails ([gafprep docs](https://rotheconrad.github.io/chromosort/commands/gafprep/)). |
 | `chromo plot` | Draw whole-genome, per-reference, or selected-reference dot plots from existing MUMmer coords or minimap2 PAF alignments, optionally ordered by a `chromo sort` assignment report, without re-running an aligner ([plot docs](https://rotheconrad.github.io/chromosort/commands/plot/), [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/)). |
 | `chromo graph-map` | Project GFA unitig path/walk coordinates onto matching contig FASTA coordinates, especially for hifiasm unitig GFA evidence on contig FASTA dot plots ([graph-map docs](https://rotheconrad.github.io/chromosort/commands/graph-map/)). |
 | `chromo scaffold` | Join the final sorted contigs into one scaffold FASTA record per assigned reference, infer or fix N-gap lengths, report overlaps and gap decisions, and optionally add report-only GFA junction evidence ([scaffold docs](https://rotheconrad.github.io/chromosort/commands/scaffold/)). |
@@ -145,6 +145,30 @@ chromo plot \
 # Add --sel-ref Gm6 Gm12 Gm15 to redraw only selected references.
 ```
 
+Typical broad review bundle for one targeted GraphAligner run:
+
+```bash
+chromo eval all \
+  --assembly-fasta results/sample.ordered.fa \
+  --coords mummer/ordered.coords \
+  --all \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_ordered.paf \
+  --output-prefix review/sample.eval
+
+chromo gafprep \
+  --assembly-fasta results/sample.ordered.fa \
+  --assembly-gfa assembly_graph.gfa \
+  --read-paf reads_to_ordered.paf \
+  --reads reads.fastq.gz \
+  --eval-review-table review/sample.eval.fix_review.tsv \
+  --eval-review-table review/sample.eval.scaffold_review.tsv \
+  --eval-review-table review/sample.eval.gapfill_review.tsv \
+  --output-prefix graph_reads/sample.gafprep
+```
+
 ## Install With Pixi
 
 ```bash
@@ -158,7 +182,7 @@ pixi run test
 
 ## Current Status
 
-Current version: `0.2.30`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
+Current version: `0.2.31`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
 
 ## Citation
 
@@ -190,6 +214,7 @@ scaffolding tools.
 | Version | Notes |
 | --- | --- |
 | Unreleased | No changes yet. |
+| `0.2.31` | Added `chromo eval all` to emit fix, scaffold, and gapfill review tables plus a `gafprep` manifest from one input bundle, updated `chromo gafprep` help to recommend the three-table workflow, and synchronized docs, tests, and version metadata. |
 | `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |
 | `0.2.29` | Completed the NCBI-ready scaffold/gapfill buildout: scaffold and gapfill AGP/component provenance, post-scaffold AGP input mode, long-read PAF bridge evidence, projected unitig-GFA planning and apply support, external patch concordance fields, explicit apply controls, submission checklist TSVs, and synchronized command/workflow/output docs. |
 | `0.2.28` | Added hifiasm GFA path/walk support: noseq-aware P/W parsing, unitig-to-contig projection reports via `chromo graph-map`, query-axis GFA overlays in `chromo plot`, projected unitig/boundary context in `chromo eval fix` and manual review panels, and synchronized command, workflow, troubleshooting, architecture, and review-playbook documentation. |

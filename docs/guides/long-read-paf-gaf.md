@@ -95,19 +95,29 @@ that contain selected or alternate oriented graph paths.
 ### Preparing Targeted GraphAligner Inputs
 
 For large HiFi datasets, full-depth read-to-graph alignment can take much
-longer than the review question needs. If you already have read-to-assembly PAF
-and one or more ChromoSort review tables, use `chromo gafprep` to select reads
-near review-relevant intervals:
+longer than the review question needs. The broad workflow is to generate all
+three review tables with `chromo eval all`, then use `chromo gafprep` to select
+reads near every review-relevant interval:
 
 ```bash
+chromo eval all \
+  --assembly-fasta results/sample.ordered.fa \
+  --coords mummer/ordered.coords \
+  --all \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_ordered.paf \
+  --output-prefix review/sample.eval
+
 chromo gafprep \
-  --assembly-fasta assembly.fa \
+  --assembly-fasta results/sample.ordered.fa \
   --assembly-gfa assembly_graph.gfa \
-  --read-paf reads_to_assembly.paf \
+  --read-paf reads_to_ordered.paf \
   --reads reads.fastq.gz \
-  --eval-review-table sample.fix_review.tsv \
-  --eval-review-table sample.scaffold_review.tsv \
-  --eval-review-table sample.gapfill_review.tsv \
+  --eval-review-table review/sample.eval.fix_review.tsv \
+  --eval-review-table review/sample.eval.scaffold_review.tsv \
+  --eval-review-table review/sample.eval.gapfill_review.tsv \
   --output-prefix results/sample.gafprep
 
 bash results/sample.gafprep.graphaligner.sh
@@ -117,6 +127,10 @@ bash results/sample.gafprep.graphaligner.sh
 script, and TSV audit tables linking reads back to review rows. GraphAligner
 still creates the actual GAF. The resulting targeted GAF is evidence for
 manual or table review; it is not automatic sequence validation.
+
+Keep the review tables, `--assembly-fasta`, and `--read-paf` on the same FASTA
+naming stage. If `eval all` was run on `results/sample.ordered.fa`, the read PAF
+for `gafprep` should also target `results/sample.ordered.fa`.
 
 Use a contig-level `ctg.gfa` when segment names match the assembly FASTA and
 the question is about contig nodes or direct junctions. Use a unitig-level
@@ -173,9 +187,9 @@ length.
 2. Check MAPQ thresholds and whether secondary alignments were included.
 3. For breakpoints, compare spanning and split-read counts to the dot plot.
 4. For scaffold junctions, compare bridge reads to inferred gap or overlap.
-5. If full read-to-graph alignment is too expensive, use `chromo gafprep` to
-   generate targeted GraphAligner inputs from the read-to-assembly PAF and
-   review tables.
+5. If full read-to-graph alignment is too expensive, use `chromo eval all` and
+   `chromo gafprep` to generate targeted GraphAligner inputs from the
+   read-to-assembly PAF and all three review tables.
 6. For graph paths, compare selected and alternate GAF support.
 7. If GAF, Hi-C, and reference-placement support point to different paths,
    leave the junction unresolved for review.

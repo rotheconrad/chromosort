@@ -55,6 +55,7 @@ class CliTests(unittest.TestCase):
         eval_fix_help = run_cli("eval", "fix", "--help").stdout
         eval_scaffold_help = run_cli("eval", "scaffold", "--help").stdout
         eval_gapfill_help = run_cli("eval", "gapfill", "--help").stdout
+        eval_all_help = run_cli("eval", "all", "--help").stdout
         fix_help = run_cli("fix", "--help").stdout
         cut_help = run_cli("cut", "--help").stdout
         manual_help = run_cli("manual", "--help").stdout
@@ -77,6 +78,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("fix", eval_help)
         self.assertIn("scaffold", eval_help)
         self.assertIn("gapfill", eval_help)
+        self.assertIn("all", eval_help)
         self.assertIn("--read-paf", eval_fix_help)
         self.assertIn("--gaf", eval_fix_help)
         self.assertIn("--output-prefix", eval_fix_help)
@@ -85,6 +87,10 @@ class CliTests(unittest.TestCase):
         self.assertIn("--gaf", eval_scaffold_help)
         self.assertIn("--gfa", eval_gapfill_help)
         self.assertIn("--read-paf", eval_gapfill_help)
+        self.assertIn("--assembly-fasta", eval_all_help)
+        self.assertIn("--ordered-fasta", eval_all_help)
+        self.assertIn("--fix-read-min-anchor-bp", eval_all_help)
+        self.assertIn("eval_all_outputs", eval_all_help)
         self.assertIn("--all", fix_help)
         self.assertIn("--mode", fix_help)
         self.assertIn("--reviewed-plan", fix_help)
@@ -113,6 +119,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--gaf", manual_gapfill_help)
         self.assertIn("--assembly-gfa", gafprep_help)
         self.assertIn("--eval-review-table", gafprep_help)
+        self.assertIn("chromo eval all", gafprep_help)
         self.assertIn("--graphaligner-threads", gafprep_help)
         self.assertIn("--fixed-gap-bp", scaffold_help)
         self.assertIn("--reviewed-plan", scaffold_help)

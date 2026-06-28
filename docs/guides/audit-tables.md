@@ -49,7 +49,7 @@ Then ask two questions:
 | --- | --- | --- |
 | `chromo sort` | `<prefix>.contig_assignments.tsv`, `<prefix>.contig_ref_matches.tsv`, `<prefix>.chromosome_summary.tsv` | Which contigs were kept, assigned, filtered, or flagged for split review? |
 | `chromo clean` | `<prefix>.initial_sort.contig_assignments.tsv`, `<prefix>.fix_report.tsv`, `<prefix>.clean_contigs.tsv` | Which raw contigs were discarded, inspected, split, or emitted into the cleaned FASTA? |
-| `chromo eval` | `<prefix>.fix_review.tsv`, `<prefix>.scaffold_review.tsv`, `<prefix>.gapfill_review.tsv` | Which candidate decisions need human accept/reject review? |
+| `chromo eval` | `<prefix>.fix_review.tsv`, `<prefix>.scaffold_review.tsv`, `<prefix>.gapfill_review.tsv`, optional `<prefix>.eval_all_outputs.tsv` | Which candidate decisions need human accept/reject review, and which tables should feed targeted GAF prep? |
 | `chromo fix` | The `--report` TSV | Which requested or detected contigs were split, copied, or left unsplit? |
 | `chromo cut` | The `--report` TSV | Which exact requested cut positions produced which pieces? |
 | `chromo manual apply` | The `--report` TSV | Which browser-reviewed pieces were emitted or removed? |

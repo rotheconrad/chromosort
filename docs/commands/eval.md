@@ -10,15 +10,60 @@ for spreadsheet-first review workflows where users want the algorithm to
 propose candidate decisions, then keep, reject, delete, or add rows before a
 sequence-changing command applies the reviewed decisions.
 
-The available modes are `chromo eval fix`, `chromo eval scaffold`, and
-`chromo eval gapfill`. Each mode reuses the algorithm or planner from the
-matching executor, then writes a task-scoped `chromosort-review-event-v1` table.
+The available modes are `chromo eval fix`, `chromo eval scaffold`,
+`chromo eval gapfill`, and `chromo eval all`. Each task mode reuses the
+algorithm or planner from the matching executor, then writes a task-scoped
+`chromosort-review-event-v1` table. `chromo eval all` runs the three task modes
+from one input bundle and writes all three review tables for broad review and
+targeted GAF preparation.
 
 | Eval mode | Reuses algorithm from | Reviewed executor path | Optional evidence columns |
 | --- | --- | --- | --- |
 | `fix` | `chromo fix` breakpoint planner | `chromo fix --reviewed-plan` | `graph_*`, `gaf_*`, `longread_*` |
 | `scaffold` | `chromo scaffold` gap/overlap and graph-junction reporting | `chromo scaffold --reviewed-plan` | `graph_*`, `gaf_*`, `longread_*` |
 | `gapfill` | `chromo gapfill` path planner and fillability checks | `chromo gapfill --reviewed-plan --apply` | GAF, Hi-C, reference-placement PAF, and long-read bridge fields |
+| `all` | The three task planners above | The matching executor for each table | Same fields as the three task tables |
+
+## Run `chromo eval all`
+
+```bash
+chromo eval all \
+  --assembly-fasta results/sample.ordered.fa \
+  --coords mummer/ordered.coords \
+  --all \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_ordered.paf \
+  --output-prefix review/sample.eval
+```
+
+The command writes:
+
+```text
+review/sample.eval.fix_review.tsv
+review/sample.eval.scaffold_review.tsv
+review/sample.eval.gapfill_review.tsv
+review/sample.eval.eval_all_outputs.tsv
+```
+
+The manifest lists the three review tables and the corresponding
+`--eval-review-table` arguments for `chromo gafprep`. For targeted GAF
+preparation, run `eval all` on the same FASTA naming stage used by
+`--read-paf` and `chromo gafprep --assembly-fasta`; otherwise review rows may
+name contigs that are absent from the read-to-assembly PAF.
+
+```bash
+chromo gafprep \
+  --assembly-fasta results/sample.ordered.fa \
+  --assembly-gfa assembly_graph.gfa \
+  --read-paf reads_to_ordered.paf \
+  --reads reads.fastq.gz \
+  --eval-review-table review/sample.eval.fix_review.tsv \
+  --eval-review-table review/sample.eval.scaffold_review.tsv \
+  --eval-review-table review/sample.eval.gapfill_review.tsv \
+  --output-prefix graph_reads/sample.gafprep
+```
 
 ## Run `chromo eval fix`
 
@@ -206,6 +251,8 @@ scaffold-first workflow.
 | `gapfill` | `--patch-table` | none | Optional external patch candidate TSV keyed by `scaffold`, `left_contig`, and `right_contig`; compared to graph-derived fills. |
 | `gapfill` | `--patch-fasta` | none | Optional FASTA containing `patch_id` sequences referenced by `--patch-table`. |
 | `gapfill` | `--include-fill-sequences` | off | Include candidate fill sequence in the review table. |
+| `all` | `--fix-read-min-anchor-bp` | `1000` | Fix-stage long-read anchor threshold. Scaffold and gapfill use `--read-min-anchor-bp`. |
+| `all` | `--output-prefix` | required | Shared prefix for all three review TSVs and `<prefix>.eval_all_outputs.tsv`. |
 
 The planner threshold options mirror the corresponding executor command.
 

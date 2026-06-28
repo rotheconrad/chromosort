@@ -15,17 +15,32 @@ Use it when full-depth read-to-graph alignment would be too expensive, but you
 only need GAF evidence near candidate breakpoints, scaffold junctions, gapfill
 paths, graph branches, or contig ends.
 
+For broad review, first run `chromo eval all` on the same FASTA naming stage
+used by the read-to-assembly PAF. Then pass the emitted fix, scaffold, and
+gapfill review tables to `chromo gafprep` so one selected FASTQ can support all
+three downstream review paths.
+
 ## Run `chromo gafprep`
 
 ```bash
+chromo eval all \
+  --assembly-fasta results/sample.ordered.fa \
+  --coords mummer/ordered.coords \
+  --all \
+  --ordered-fasta results/sample.ordered.fa \
+  --assignments results/sample.contig_assignments.tsv \
+  --gfa assembly_graph.gfa \
+  --read-paf reads_to_ordered.paf \
+  --output-prefix review/sample.eval
+
 chromo gafprep \
-  --assembly-fasta assembly.fa \
+  --assembly-fasta results/sample.ordered.fa \
   --assembly-gfa assembly_graph.gfa \
-  --read-paf reads_to_assembly.paf \
+  --read-paf reads_to_ordered.paf \
   --reads reads.fastq.gz \
-  --eval-review-table sample.fix_review.tsv \
-  --eval-review-table sample.scaffold_review.tsv \
-  --eval-review-table sample.gapfill_review.tsv \
+  --eval-review-table review/sample.eval.fix_review.tsv \
+  --eval-review-table review/sample.eval.scaffold_review.tsv \
+  --eval-review-table review/sample.eval.gapfill_review.tsv \
   --output-prefix results/sample.gafprep \
   --seed 1
 ```
@@ -60,10 +75,16 @@ plotting, and fixing; read PAF supports read selection around assembly
 coordinates.
 
 `--eval-review-table` accepts one or more ChromoSort review TSVs from
-`chromo eval fix`, `chromo eval scaffold`, or `chromo eval gapfill`. The command
-infers the review type from the `task` column, filename, or table columns. Use
-`--review-type fix`, `--review-type scaffold`, or `--review-type gapfill` only
-when a custom table cannot be inferred.
+`chromo eval fix`, `chromo eval scaffold`, `chromo eval gapfill`, or the three
+tables emitted by `chromo eval all`. The command infers the review type from
+the `task` column, filename, or table columns. Use `--review-type fix`,
+`--review-type scaffold`, or `--review-type gapfill` only when a custom table
+cannot be inferred.
+
+The review tables, `--assembly-fasta`, and `--read-paf` should refer to the
+same assembly naming stage. For example, if scaffold and gapfill rows name
+records from `results/sample.ordered.fa`, align reads to that ordered FASTA and
+pass that same FASTA to `chromo gafprep`.
 
 ## Outputs
 

@@ -17,6 +17,7 @@ mamba activate chromosort
 chromo --help
 chromo sort --help
 chromo clean --help
+chromo eval all --help
 chromo fix --help
 chromo cut --help
 chromo manual --help
@@ -150,6 +151,14 @@ The same loop applies to scaffold and gapfill decisions:
   feed `chromo gapfill --reviewed-plan --apply`.
 - `chromo manual scaffold` and `chromo manual gapfill` load those same tables
   with `--review-table` when you want visual context before executing.
+
+When you want one targeted read-to-graph alignment for every downstream review
+path, run `chromo eval all` on the same FASTA naming stage used by the
+read-to-assembly PAF. It writes `<prefix>.fix_review.tsv`,
+`<prefix>.scaffold_review.tsv`, `<prefix>.gapfill_review.tsv`, and
+`<prefix>.eval_all_outputs.tsv`; pass the three review tables to
+`chromo gafprep` so the selected read subset can cover fix, scaffold, and
+gapfill questions together.
 
 The `eval` table and `manual` task dashboard are counterparts. The table keeps
 alignment, GFA, long-read PAF, and long-read GAF evidence in editable columns;

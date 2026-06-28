@@ -281,6 +281,47 @@ class EvalTests(unittest.TestCase):
         self.assertEqual(rows[0]["gaf_node_orientations"], "+:1")
         self.assertEqual(rows[1]["slice_start"], "21")
 
+    def test_eval_all_writes_review_tables_and_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = Path(tmp) / "sample"
+            run_cli(
+                "eval",
+                "all",
+                "--assembly-fasta",
+                str(DATA / "assembly.fa"),
+                "--coords",
+                str(DATA / "sample.coords"),
+                "--contigs",
+                "contig_04",
+                "--ordered-fasta",
+                str(SCAFFOLD_DATA / "ordered.fa"),
+                "--assignments",
+                str(SCAFFOLD_DATA / "assignments.tsv"),
+                "--gfa",
+                str(MIXED_EVIDENCE_DATA / "branch.gfa"),
+                "--output-prefix",
+                str(prefix),
+                "--min-segment-bp",
+                "5",
+                "--mode",
+                "sensitive",
+            )
+
+            fix_rows = read_tsv(Path(str(prefix) + ".fix_review.tsv"))
+            scaffold_rows = read_tsv(Path(str(prefix) + ".scaffold_review.tsv"))
+            gapfill_rows = read_tsv(Path(str(prefix) + ".gapfill_review.tsv"))
+            manifest_rows = read_tsv(Path(str(prefix) + ".eval_all_outputs.tsv"))
+
+        self.assertEqual([row["task"] for row in fix_rows], ["fix", "fix"])
+        self.assertEqual([row["task"] for row in scaffold_rows], ["scaffold"])
+        self.assertEqual([row["task"] for row in gapfill_rows], ["gapfill"])
+        self.assertEqual(
+            [row["label"] for row in manifest_rows],
+            ["fix_review", "scaffold_review", "gapfill_review"],
+        )
+        self.assertTrue(manifest_rows[0]["path"].endswith(".fix_review.tsv"))
+        self.assertIn("--eval-review-table", manifest_rows[0]["gafprep_argument"])
+
     def test_eval_fix_reports_projected_unitig_breakpoint_context(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = Path(tmp) / "sample"

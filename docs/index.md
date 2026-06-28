@@ -74,8 +74,9 @@ before they are used as inputs to another alignment-dependent command.
    `chromo manual` when helpful to inspect suspicious contigs.
 4. Use `chromo eval` and task-specific `chromo manual` dashboards when outlier
    `fix`, `scaffold`, or `gapfill` decisions need table or GUI review.
-5. Use `chromo gafprep` when targeted GAF evidence is needed without a
-   full-depth read-to-graph alignment.
+5. Use `chromo eval all` plus `chromo gafprep` when targeted GAF evidence is
+   needed across fix, scaffold, and gapfill review without a full-depth
+   read-to-graph alignment.
 6. Use `chromo fix` or `chromo cut` for reviewed sequence edits.
 7. Re-align the fixed assembly.
 8. Use `chromo sort` to assign, filter, orient, and order contigs.

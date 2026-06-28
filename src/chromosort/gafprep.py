@@ -203,7 +203,9 @@ def parse_args(argv=None, prog=None):
         prog=prog,
         description=(
             "Prepare targeted GraphAligner inputs from read-to-assembly PAF "
-            "and ChromoSort review tables."
+            "and ChromoSort review tables. For broad review runs, generate "
+            "fix, scaffold, and gapfill tables together with chromo eval all, "
+            "then pass all three tables here."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -215,7 +217,10 @@ def parse_args(argv=None, prog=None):
         "--eval-review-table",
         action="append",
         required=True,
-        help="ChromoSort eval/review TSV. May be supplied more than once.",
+        help=(
+            "ChromoSort eval/review TSV. May be supplied more than once; "
+            "the recommended broad workflow is the three tables from chromo eval all."
+        ),
     )
     ap.add_argument(
         "--review-type",

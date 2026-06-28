@@ -230,21 +230,36 @@ GraphAligner \
   -a graph_reads/${sample}.gaf
 ```
 
-When full-depth read-to-graph alignment is too expensive, prepare targeted
-GraphAligner inputs from the read-to-assembly PAF and the current review
-tables:
+When full-depth read-to-graph alignment is too expensive, prepare one targeted
+GraphAligner input bundle for all review paths:
 
 ```bash
+chromo eval all \
+  --assembly-fasta results/${sample}.ordered.fa \
+  --coords mummer/${sample}.ordered.coords \
+  --all \
+  --ordered-fasta results/${sample}.ordered.fa \
+  --assignments results/${sample}.contig_assignments.tsv \
+  --gfa graphs/${sample}.gfa \
+  --read-paf reads/${sample}.reads_to_ordered.paf \
+  --output-prefix review/${sample}.eval
+
 chromo gafprep \
-  --assembly-fasta assembly.fa \
+  --assembly-fasta results/${sample}.ordered.fa \
   --assembly-gfa graphs/${sample}.gfa \
-  --read-paf reads/${sample}.reads_to_assembly.paf \
+  --read-paf reads/${sample}.reads_to_ordered.paf \
   --reads reads.fastq.gz \
-  --eval-review-table review/${sample}.fix_review.tsv \
+  --eval-review-table review/${sample}.eval.fix_review.tsv \
+  --eval-review-table review/${sample}.eval.scaffold_review.tsv \
+  --eval-review-table review/${sample}.eval.gapfill_review.tsv \
   --output-prefix graph_reads/${sample}.gafprep
 
 bash graph_reads/${sample}.gafprep.graphaligner.sh
 ```
+
+The review tables and read-to-assembly PAF should name the same FASTA records;
+for a one-run GAF bundle, that usually means running `eval all` and minimap2
+against the ordered FASTA used for scaffold and gapfill review.
 
 `chromo eval fix` summarizes read support near proposed breakpoints as
 `longread_spanning_reads`, `longread_split_reads`, edge-read counts, and nearby

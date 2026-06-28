@@ -5,7 +5,7 @@ description: Current ChromoSort command status and version history.
 
 # Current Status and Roadmap
 
-ChromoSort is under active development. Current version: `0.2.30`.
+ChromoSort is under active development. Current version: `0.2.31`.
 
 ## What Works Now
 
@@ -14,6 +14,7 @@ ChromoSort is under active development. Current version: `0.2.30`.
 - `chromo eval fix`
 - `chromo eval scaffold`
 - `chromo eval gapfill`
+- `chromo eval all`
 - `chromo fix`
 - `chromo cut`
 - `chromo manual`
@@ -38,8 +39,8 @@ The production review upgrade is captured in the
 [Production Upgrade Roadmap]({{ '/roadmap/' | relative_url }}). The roadmap
 describes table workflows and task-specific `manual` dashboards for reviewed
 `fix`, `scaffold`, and `gapfill` decisions. `chromo eval fix`,
-`chromo eval scaffold`, `chromo eval gapfill`, and task-specific
-`chromo manual` review modes are now available.
+`chromo eval scaffold`, `chromo eval gapfill`, `chromo eval all`, and
+task-specific `chromo manual` review modes are now available.
 
 For reviewer-facing implementation detail, the
 [Architecture]({{ '/architecture/' | relative_url }}) page maps algorithms,
@@ -59,6 +60,7 @@ pixi run test
 | Version | Notes |
 | --- | --- |
 | Unreleased | No changes yet. |
+| `0.2.31` | Added `chromo eval all` to emit fix, scaffold, and gapfill review tables plus a `gafprep` manifest from one input bundle, updated `chromo gafprep` help to recommend the three-table workflow, and synchronized docs, tests, and version metadata. |
 | `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |
 | `0.2.29` | Completed the NCBI-ready scaffold/gapfill buildout: scaffold and gapfill AGP/component provenance, post-scaffold AGP input mode, long-read PAF bridge evidence, projected unitig-GFA planning and apply support, external patch concordance fields, explicit apply controls, submission checklist TSVs, and synchronized command/workflow/output docs. |
 | `0.2.28` | Added hifiasm GFA path/walk support: noseq-aware P/W parsing, unitig-to-contig projection reports via `chromo graph-map`, query-axis GFA overlays in `chromo plot`, projected unitig/boundary context in `chromo eval fix` and manual review panels, and synchronized command, workflow, troubleshooting, architecture, and review-playbook documentation. |

@@ -1,6 +1,7 @@
 """Prepare task-specific review tables for ChromoSort commands."""
 
 import argparse
+import csv
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -291,6 +292,112 @@ def parse_gapfill_args(argv=None, prog=None):
         action="store_true",
         help="Include candidate fill sequences in the review table.",
     )
+    return ap.parse_args(argv)
+
+
+def parse_all_args(argv=None, prog=None):
+    ap = argparse.ArgumentParser(
+        prog=prog,
+        description=(
+            "Prepare fix, scaffold, and gapfill review tables from one input "
+            "bundle, then use those tables together with chromo gafprep for "
+            "one targeted GraphAligner run."
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    ap.add_argument(
+        "-f",
+        "--assembly-fasta",
+        required=True,
+        help="Assembly FASTA containing contigs to evaluate for fixing.",
+    )
+    alignment_group = ap.add_mutually_exclusive_group(required=True)
+    alignment_group.add_argument("-c", "--coords", help="MUMmer show-coords file for the fix planner.")
+    alignment_group.add_argument("--paf", help="Reference-to-assembly minimap2 PAF for the fix planner.")
+    ap.add_argument("--contigs", nargs="+", default=[], help="Contigs to evaluate in the fix stage.")
+    ap.add_argument("--contigs-file", default=None, help="One fix-stage contig name per line.")
+    ap.add_argument(
+        "--all",
+        action="store_true",
+        dest="all_contigs",
+        help="Run the fix planner on all split-signal contigs.",
+    )
+    ap.add_argument(
+        "--ordered-fasta",
+        required=True,
+        help="Final ordered FASTA from chromo sort for scaffold and gapfill review.",
+    )
+    ap.add_argument(
+        "-a",
+        "--assignments",
+        required=True,
+        help="Matching <prefix>.contig_assignments.tsv from chromo sort.",
+    )
+    ap.add_argument(
+        "--gfa",
+        required=True,
+        help="Assembly graph GFA for graph-aware review fields and gapfill planning.",
+    )
+    ap.add_argument("--gaf", default=None, help="Optional long-read-to-graph GAF for all review modes.")
+    ap.add_argument("--min-gaf-mapq", type=int, default=20, help="Minimum GAF MAPQ.")
+    ap.add_argument("--min-gaf-path-support", type=int, default=1)
+    ap.add_argument("--gaf-max-candidate-paths", type=int, default=2)
+    ap.add_argument("--read-paf", default=None, help="Optional long-read-to-assembly PAF for all review modes.")
+    ap.add_argument("--min-read-mapq", type=int, default=0, help="Minimum MAPQ for --read-paf rows.")
+    ap.add_argument("--read-window-bp", type=int, default=5_000, help="Breakpoint window for fix read evidence.")
+    ap.add_argument(
+        "--fix-read-min-anchor-bp",
+        type=int,
+        default=1_000,
+        help="Minimum read anchor on each side of a fix breakpoint.",
+    )
+    ap.add_argument("--read-terminal-window-bp", type=int, default=5_000)
+    ap.add_argument(
+        "--read-min-anchor-bp",
+        type=int,
+        default=500,
+        help="Minimum terminal anchor length for scaffold and gapfill read bridges.",
+    )
+    ap.add_argument(
+        "-o",
+        "--output-prefix",
+        required=True,
+        help=(
+            "Shared output prefix. Writes <prefix>.fix_review.tsv, "
+            "<prefix>.scaffold_review.tsv, <prefix>.gapfill_review.tsv, and "
+            "<prefix>.eval_all_outputs.tsv."
+        ),
+    )
+    add_fix_planner_args(ap)
+    ap.add_argument("--fixed-gap-bp", type=int, default=None)
+    ap.add_argument(
+        "--overlap-policy",
+        choices=["zero-gap", "warn", "trim-reference", "trim-sequence"],
+        default="zero-gap",
+    )
+    ap.add_argument("--trim-sequence-min-identity", type=float, default=0.98)
+    ap.add_argument(
+        "--graph-overlap-policy",
+        choices=["report", "warn", "confirm"],
+        default="report",
+    )
+    ap.add_argument("--graph-max-path-edges", type=int, default=4)
+    ap.add_argument("--project-gfa-paths", action="store_true")
+    ap.add_argument("--projection-trim-overlaps", action="store_true")
+    ap.add_argument("--hic-pairs", default=None, help="Optional graph-node Hi-C contact count TSV.")
+    ap.add_argument("--ref-paf", default=None, help="Optional reference-to-assembly PAF for gapfill graph-node placement.")
+    ap.add_argument("--patch-table", default=None, help="Optional external patch candidate TSV for gapfill review.")
+    ap.add_argument("--patch-fasta", default=None, help="Optional FASTA for patch_id records referenced by --patch-table.")
+    ap.add_argument("--max-path-edges", type=int, default=4)
+    ap.add_argument("--max-candidate-paths", type=int, default=2)
+    ap.add_argument("--min-hic-path-support", type=int, default=1)
+    ap.add_argument("--min-ref-path-support", type=int, default=1)
+    ap.add_argument("--min-ref-paf-mapq", type=int, default=0)
+    ap.add_argument("--min-ref-paf-idy", type=float, default=0.0)
+    ap.add_argument("--include-secondary-ref-paf", action="store_true")
+    ap.add_argument("--max-fill-bp", type=int, default=1_000_000)
+    ap.add_argument("--include-fill-sequences", action="store_true")
+    ap.set_defaults(scaffold_fasta=None, agp=None)
     return ap.parse_args(argv)
 
 
@@ -843,13 +950,12 @@ def build_gapfill_events(args):
     return events
 
 
-def run_fix(args):
+def write_fix_review(args, events):
     prefix = Path(args.output_prefix)
     output_paths = {
         "fix_review": event_table_path(prefix, ".fix_review.tsv"),
     }
     ensure_output_dirs(output_paths)
-    events = build_fix_events(args)
     write_review_events(output_paths["fix_review"], events, extra_columns=FIX_REVIEW_COLUMNS)
     status_counts = defaultdict(int)
     action_counts = defaultdict(int)
@@ -861,15 +967,19 @@ def run_fix(args):
         sys.stderr.write(f"  {action}: {count}\n")
     for status, count in sorted(status_counts.items()):
         sys.stderr.write(f"  {status}: {count}\n")
+    return output_paths
 
 
-def run_scaffold(args):
+def run_fix(args):
+    return write_fix_review(args, build_fix_events(args))
+
+
+def write_scaffold_review(args, events):
     prefix = Path(args.output_prefix)
     output_paths = {
         "scaffold_review": event_table_path(prefix, ".scaffold_review.tsv"),
     }
     ensure_output_dirs(output_paths)
-    events = build_scaffold_events(args)
     write_review_events(
         output_paths["scaffold_review"],
         events,
@@ -877,15 +987,19 @@ def run_scaffold(args):
     )
     sys.stderr.write(f"Wrote scaffold review table: {output_paths['scaffold_review']}\n")
     sys.stderr.write(f"  scaffold_gap: {len(events)}\n")
+    return output_paths
 
 
-def run_gapfill(args):
+def run_scaffold(args):
+    return write_scaffold_review(args, build_scaffold_events(args))
+
+
+def write_gapfill_review(args, events):
     prefix = Path(args.output_prefix)
     output_paths = {
         "gapfill_review": event_table_path(prefix, ".gapfill_review.tsv"),
     }
     ensure_output_dirs(output_paths)
-    events = build_gapfill_events(args)
     write_review_events(
         output_paths["gapfill_review"],
         events,
@@ -897,6 +1011,74 @@ def run_gapfill(args):
     sys.stderr.write(f"Wrote gapfill review table: {output_paths['gapfill_review']}\n")
     for status, count in sorted(status_counts.items()):
         sys.stderr.write(f"  {status}: {count}\n")
+    return output_paths
+
+
+def run_gapfill(args):
+    return write_gapfill_review(args, build_gapfill_events(args))
+
+
+def fix_args_from_all(args):
+    values = vars(args).copy()
+    values["read_min_anchor_bp"] = args.fix_read_min_anchor_bp
+    return argparse.Namespace(**values)
+
+
+def scaffold_args_from_all(args):
+    return argparse.Namespace(**vars(args))
+
+
+def gapfill_args_from_all(args):
+    values = vars(args).copy()
+    values.setdefault("scaffold_fasta", None)
+    values.setdefault("agp", None)
+    return argparse.Namespace(**values)
+
+
+def write_eval_all_manifest(path, output_paths):
+    ensure_output_dirs({"manifest": path})
+    with open(path, "w", newline="") as fh:
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=["mode", "label", "path", "gafprep_argument"],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for mode, label in (
+            ("fix", "fix_review"),
+            ("scaffold", "scaffold_review"),
+            ("gapfill", "gapfill_review"),
+        ):
+            review_path = output_paths[label]
+            writer.writerow(
+                {
+                    "mode": mode,
+                    "label": label,
+                    "path": str(review_path),
+                    "gafprep_argument": f"--eval-review-table {review_path}",
+                }
+            )
+
+
+def run_all(args):
+    fix_args = fix_args_from_all(args)
+    scaffold_args = scaffold_args_from_all(args)
+    gapfill_args = gapfill_args_from_all(args)
+    fix_events = build_fix_events(fix_args)
+    scaffold_events = build_scaffold_events(scaffold_args)
+    gapfill_events = build_gapfill_events(gapfill_args)
+    output_paths = {}
+    output_paths.update(write_fix_review(fix_args, fix_events))
+    output_paths.update(write_scaffold_review(scaffold_args, scaffold_events))
+    output_paths.update(write_gapfill_review(gapfill_args, gapfill_events))
+    manifest = Path(str(Path(args.output_prefix)) + ".eval_all_outputs.tsv")
+    output_paths["eval_all_outputs"] = manifest
+    write_eval_all_manifest(manifest, output_paths)
+    sys.stderr.write(f"Wrote eval all manifest: {manifest}\n")
+    sys.stderr.write("Recommended chromo gafprep review inputs:\n")
+    for label in ("fix_review", "scaffold_review", "gapfill_review"):
+        sys.stderr.write(f"  --eval-review-table {output_paths[label]}\n")
+    return output_paths
 
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -909,7 +1091,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     parser.add_argument(
         "mode",
         nargs="?",
-        choices=["fix", "scaffold", "gapfill"],
+        choices=["fix", "scaffold", "gapfill", "all"],
         help="Review table mode to run.",
     )
     if not argv or argv[0] in {"-h", "--help"}:
@@ -925,6 +1107,8 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             run_scaffold(parse_scaffold_args(remaining, prog=f"{prog} scaffold" if prog else None))
         elif mode == "gapfill":
             run_gapfill(parse_gapfill_args(remaining, prog=f"{prog} gapfill" if prog else None))
+        elif mode == "all":
+            run_all(parse_all_args(remaining, prog=f"{prog} all" if prog else None))
         else:
             parser.error(f"unknown eval mode: {mode}")
     except ValueError as exc:
