@@ -5,6 +5,14 @@ description: Install ChromoSort with mamba or Pixi and verify the command-line t
 
 # Installation
 
+## Install Format Policy
+
+ChromoSort intentionally supports more than one install style. Use mamba or
+conda when you want the familiar scientific Python plus bioconda stack. Use
+Pixi when you prefer Pixi's project task runner and lockable environment
+workflow. Use a plain Python editable install for lightweight code work in
+generic automation harnesses.
+
 ## Installation With Mamba
 
 Install Mambaforge, Miniforge, or another conda-compatible distribution with
@@ -39,11 +47,15 @@ cd chromosort
 pixi install
 pixi run help
 pixi run test
+pixi run agent-check
 ```
 
 The Pixi environment uses the same conda-forge/bioconda stack as
 `environment.yml`, including Python, minimap2, MUMmer 4, Pillow, pytest, and
 the ChromoSort command-line tools.
+
+When `pixi.toml` changes, the matching `pixi.lock` should be refreshed and
+committed so Pixi users get a reproducible environment.
 
 ## Why Pillow Is Included
 
@@ -73,7 +85,13 @@ chromo gapfill --help
 For development checks, run:
 
 ```bash
+make agent-check
+# or, from a Pixi environment
+pixi run agent-check
+# or the underlying test suite
+python -m unittest discover -s tests -v
+# pytest is also fine when available
 pytest
-# or
+# legacy Pixi test task
 pixi run test
 ```

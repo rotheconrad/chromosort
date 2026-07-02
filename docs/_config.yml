@@ -83,6 +83,19 @@ nav:
         url: /review-playbook/#add-long-read-and-graph-evidence
       - title: Handoff
         url: /review-playbook/#handoff-checklist-for-a-new-chat-or-agent
+  - title: Agent Roadmap
+    url: /agent-readiness-roadmap/
+    children:
+      - title: Design stance
+        url: /agent-readiness-roadmap/#design-stance
+      - title: Phases
+        url: /agent-readiness-roadmap/#readiness-phases
+      - title: Task recipes
+        url: /agent-task-recipes/
+      - title: Shared checks
+        url: /agent-readiness-roadmap/#shared-checks
+      - title: Boundaries
+        url: /agent-readiness-roadmap/#biological-decision-boundaries
   - title: Concepts
     url: /concepts/
     children:

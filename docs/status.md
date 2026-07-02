@@ -47,19 +47,32 @@ For reviewer-facing implementation detail, the
 data models, evidence streams, and sequence-changing authority to the
 subcommands, modes, and parameters that activate them.
 
+## Agent Readiness
+
+The [Agent Readiness Roadmap]({{ '/agent-readiness-roadmap/' | relative_url }})
+tracks coding-agent setup, shared local checks, CI, issue/PR templates, and
+guardrails for keeping biological evidence decisions explicit. Mamba/conda and
+Pixi are both treated as first-class install paths, with plain Python editable
+installs kept available for lightweight harnesses.
+
+The [Agent Task Recipes]({{ '/agent-task-recipes/' | relative_url }}) page maps
+common agent changes to the source files, docs, fixtures, and checks that should
+move together.
+
 ## Development Checks
 
 ```bash
-pytest
+make agent-check
 python -m unittest discover -s tests -v
-pixi run test
+pixi run agent-check
+pytest
 ```
 
 ## Version History
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | No changes yet. |
+| Unreleased | Added the agent-readiness roadmap, shared Make/Pixi check commands, coding-agent adapter files, GitHub issue/PR templates, and Python CI for CLI smoke checks plus the synthetic test suite. |
 | `0.3.0` | Added fresh AGP 2.1, component-provenance, and submission-checklist sidecars for every FASTA-changing command, including `sort`, `clean`, `fix`, `cut`, and `manual apply`; documented stage-local AGP provenance rules; and synchronized command docs, tests, and release metadata. |
 | `0.2.31` | Added `chromo eval all` to emit fix, scaffold, and gapfill review tables plus a `gafprep` manifest from one input bundle, updated `chromo gafprep` help to recommend the three-table workflow, and synchronized docs, tests, and version metadata. |
 | `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |

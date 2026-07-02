@@ -23,12 +23,12 @@ build:
 
 requirements:
   host:
-    - python >=3.9
+    - python >=3.9,<3.13
     - pip
     - setuptools >=68
     - wheel
   run:
-    - python >=3.9
+    - python >=3.9,<3.13
     - pillow >=9
     - minimap2
     - mummer4

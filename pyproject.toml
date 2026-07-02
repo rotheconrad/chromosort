@@ -7,7 +7,7 @@ name = "chromosort"
 version = "0.3.0"
 description = "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, plot, write AGP provenance sidecars, prepare all-mode eval tables and targeted GAF inputs, and review genome assembly contigs from MUMmer, minimap2, GFA, GAF, and Hi-C evidence."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.13"
 license = "MIT"
 authors = [
   { name = "Conrad Roth" }
@@ -37,6 +37,13 @@ dependencies = [
   "Pillow>=9"
 ]
 
+[project.optional-dependencies]
+dev = [
+  "build>=1",
+  "pytest>=7",
+  "ruff>=0.6"
+]
+
 [project.urls]
 Homepage = "https://github.com/rotheconrad/chromosort"
 Issues = "https://github.com/rotheconrad/chromosort/issues"
@@ -58,3 +65,21 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+extend-exclude = [
+  "_site",
+  "docs/_site",
+  "temp",
+  "vendor"
+]
+
+[tool.ruff.lint]
+select = [
+  "E9",
+  "F63",
+  "F7",
+  "F82"
+]

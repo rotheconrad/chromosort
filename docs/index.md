@@ -21,6 +21,8 @@ before they are used as inputs to another alignment-dependent command.
 - [Input files](https://rotheconrad.github.io/chromosort/input-files/)
 - [Workflows](https://rotheconrad.github.io/chromosort/workflows/)
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }})
+- [Agent readiness roadmap]({{ '/agent-readiness-roadmap/' | relative_url }})
+- [Agent task recipes]({{ '/agent-task-recipes/' | relative_url }})
 - [Concepts]({{ '/concepts/' | relative_url }}) for dot plots, contig fixing,
   scaffolding, and gap filling.
 - [Guides]({{ '/guides/' | relative_url }}) for ChromoSort-specific evidence,
@@ -54,6 +56,10 @@ before they are used as inputs to another alignment-dependent command.
 - [Agent and review playbook]({{ '/review-playbook/' | relative_url }}) for
   choosing one primary coords or PAF alignment, inversion review,
   long-read/GFA/GAF evidence, and handoffs between chats or projects.
+- [Agent readiness roadmap]({{ '/agent-readiness-roadmap/' | relative_url }})
+  for coding-agent setup, shared checks, and implementation guardrails.
+- [Agent task recipes]({{ '/agent-task-recipes/' | relative_url }}) for
+  change-type checklists that map files, docs, and tests.
 - [Architecture](https://rotheconrad.github.io/chromosort/architecture/) for
   algorithm, data-model, evidence, and command-activation details.
 - [Production upgrade roadmap]({{ '/roadmap/' | relative_url }})

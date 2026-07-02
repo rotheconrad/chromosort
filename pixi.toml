@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "chromosort"
 version = "0.3.0"
 description = "Reference-order, clean, fix, cut, manually edit, scaffold, gapfill, plot, write AGP provenance sidecars, prepare targeted GAF inputs, and review genome assembly contigs."
@@ -6,12 +6,16 @@ channels = ["conda-forge", "bioconda"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 
 [dependencies]
-python = ">=3.9"
+python = ">=3.9,<3.13"
 pip = "*"
 minimap2 = "*"
 mummer4 = "*"
 pillow = ">=9"
 pytest = "*"
+python-build = "*"
+ruff = "*"
+setuptools = ">=68"
+wheel = "*"
 
 [pypi-dependencies]
 chromosort = { path = ".", editable = true }
@@ -19,3 +23,8 @@ chromosort = { path = ".", editable = true }
 [tasks]
 test = "python -m unittest discover -s tests -v"
 help = "chromo --help"
+diff-check = "git diff --check"
+lint = "ruff check ."
+smoke = "PYTHONPATH=src python -m chromosort.cli --help && PYTHONPATH=src python -m chromosort.cli sort --help && PYTHONPATH=src python -m chromosort.cli clean --help && PYTHONPATH=src python -m chromosort.cli eval all --help && PYTHONPATH=src python -m chromosort.cli fix --help && PYTHONPATH=src python -m chromosort.cli cut --help && PYTHONPATH=src python -m chromosort.cli manual --help && PYTHONPATH=src python -m chromosort.cli gafprep --help && PYTHONPATH=src python -m chromosort.cli plot --help && PYTHONPATH=src python -m chromosort.cli graph-map --help && PYTHONPATH=src python -m chromosort.cli scaffold --help && PYTHONPATH=src python -m chromosort.cli gapfill --help"
+package-check = "python -m build --sdist --wheel --no-isolation && PYTHONPATH=src python -c \"import chromosort; print(chromosort.__version__)\""
+agent-check = { depends-on = ["diff-check", "lint", "smoke", "test", "package-check"] }

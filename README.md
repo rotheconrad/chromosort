@@ -22,7 +22,7 @@ ChromoSort provides one command, `chromo`, with eleven subcommands:
 
 Full documentation is available at <https://rotheconrad.github.io/chromosort/>.
 
-New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. The [Agent and Review Playbook](https://rotheconrad.github.io/chromosort/review-playbook/) gives reproducible patterns for choosing one primary coords or PAF alignment, same-reference inversion review, long-read/GFA/GAF evidence, and handoffs between datasets or assistant chats. The [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/) is a mini tutorial for reading whole-genome and per-reference dot plots. The [Architecture](https://rotheconrad.github.io/chromosort/architecture/) page maps algorithms and data models to the subcommands, modes, and parameters that activate them, while the [Production Upgrade Roadmap](https://rotheconrad.github.io/chromosort/roadmap/) tracks completed and follow-up review-layer work. Command-specific pages are linked in the table above.
+New users should start with [Installation](https://rotheconrad.github.io/chromosort/installation/), then use [Input Files](https://rotheconrad.github.io/chromosort/input-files/) to prepare MUMmer, minimap2, GFA, GAF, or Hi-C-like evidence. The [Workflows](https://rotheconrad.github.io/chromosort/workflows/) page shows the recommended order for fixing, sorting, plotting, scaffolding, and graph-aware review. The [Agent and Review Playbook](https://rotheconrad.github.io/chromosort/review-playbook/) gives reproducible patterns for choosing one primary coords or PAF alignment, same-reference inversion review, long-read/GFA/GAF evidence, and handoffs between datasets or assistant chats. The [Agent Readiness Roadmap](https://rotheconrad.github.io/chromosort/agent-readiness-roadmap/) tracks coding-agent setup, shared checks, and implementation guardrails, while [Agent Task Recipes](https://rotheconrad.github.io/chromosort/agent-task-recipes/) map common implementation tasks to files, tests, and docs. The [dot-plot guide](https://rotheconrad.github.io/chromosort/dot-plots/) is a mini tutorial for reading whole-genome and per-reference dot plots. The [Architecture](https://rotheconrad.github.io/chromosort/architecture/) page maps algorithms and data models to the subcommands, modes, and parameters that activate them, while the [Production Upgrade Roadmap](https://rotheconrad.github.io/chromosort/roadmap/) tracks completed and follow-up review-layer work. Command-specific pages are linked in the table above.
 
 For interpreting results, see [Output Files](https://rotheconrad.github.io/chromosort/outputs/) and [Troubleshooting](https://rotheconrad.github.io/chromosort/troubleshooting/).
 
@@ -188,6 +188,15 @@ cd chromosort
 pixi install
 pixi run help
 pixi run test
+pixi run agent-check
+```
+
+## Development Checks
+
+```bash
+make agent-check
+# or, from a Pixi environment
+pixi run agent-check
 ```
 
 ## Current Status

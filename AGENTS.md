@@ -18,6 +18,39 @@ moving between chats or datasets.
 - User docs live in `docs/`; command pages live in `docs/commands/`.
 - Synthetic fixtures live in `tests/data/`. Tests do not require MUMmer or
   minimap2.
+- Agent-readiness planning lives in `docs/agent-readiness-roadmap.md`.
+- Change-type recipes live in `docs/agent-task-recipes.md`.
+- Ignore generated or local-output directories unless a task explicitly targets
+  them: `_site/`, `docs/_site/`, `.pytest_cache/`, `.venv/`, `vendor/`,
+  `temp/`, `data/`, and `results/`.
+
+## Install And Command Surface
+
+Mamba/conda and Pixi are both first-class development paths. Use
+`environment.yml` for the mamba/conda stack and `pixi.toml` for Pixi users.
+Plain Python editable installs are also valid for lightweight code work:
+
+```bash
+python -m pip install -e . pytest Pillow
+```
+
+The shared harness-neutral checks are:
+
+```bash
+make agent-check
+make smoke
+make test
+```
+
+Pixi users can run the same contract through Pixi:
+
+```bash
+pixi run agent-check
+pixi run smoke
+pixi run test
+```
+
+When `pixi.toml` changes, refresh and commit `pixi.lock` if Pixi is available.
 
 ## Development Checks
 
@@ -25,6 +58,7 @@ Use the smallest relevant check while editing, then broaden when behavior
 changes:
 
 ```bash
+make agent-check
 python3 -m unittest discover -s tests
 python3 tests/test_reference_order.py
 python3 tests/test_fix_contigs.py

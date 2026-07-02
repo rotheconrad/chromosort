@@ -19,12 +19,15 @@ Contributions are welcome through GitHub Issues and pull requests. For the repos
 ```bash
 mamba env create -f environment.yml
 mamba activate chromosort
-pytest
+make agent-check
 ```
 
 or:
 
 ```bash
 pixi install
-pixi run test
+pixi run agent-check
 ```
+
+For a focused code check, `python -m unittest discover -s tests -v` and
+`pytest` both exercise the synthetic fixture suite.

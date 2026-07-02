@@ -2,7 +2,7 @@
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | No changes yet. |
+| Unreleased | Added the agent-readiness roadmap and task recipes, shared Make/Pixi check commands, conservative Ruff linting, package build checks, a synthetic agent smoke workflow, coding-agent adapter files, GitHub issue/PR templates, and Python CI for lint/smoke/test/package checks. |
 | `0.3.0` | Added fresh AGP 2.1, component-provenance, and submission-checklist sidecars for every FASTA-changing command, including `sort`, `clean`, `fix`, `cut`, and `manual apply`; documented stage-local AGP provenance rules; and synchronized command docs, tests, and release metadata. |
 | `0.2.31` | Added `chromo eval all` to emit fix, scaffold, and gapfill review tables plus a `gafprep` manifest from one input bundle, updated `chromo gafprep` help to recommend the three-table workflow, and synchronized docs, tests, and version metadata. |
 | `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |
