@@ -38,16 +38,20 @@ The shared harness-neutral checks are:
 
 ```bash
 make agent-check
+make lint
 make smoke
 make test
+make package-check
 ```
 
 Pixi users can run the same contract through Pixi:
 
 ```bash
 pixi run agent-check
+pixi run lint
 pixi run smoke
 pixi run test
+pixi run package-check
 ```
 
 When `pixi.toml` changes, refresh and commit `pixi.lock` if Pixi is available.
@@ -65,6 +69,7 @@ python3 tests/test_fix_contigs.py
 python3 tests/test_eval.py
 python3 tests/test_plot.py
 python3 tests/test_longreads.py
+python3 -m build --sdist --wheel --no-isolation
 git diff --check
 ```
 

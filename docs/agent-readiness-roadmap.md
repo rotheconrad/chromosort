@@ -76,8 +76,10 @@ Equivalent pieces:
 
 ```bash
 make diff-check
+make lint
 make smoke
 make test
+make package-check
 ```
 
 Pixi equivalents:
@@ -92,8 +94,10 @@ Plain Python equivalent:
 
 ```bash
 git diff --check
+ruff check .
 PYTHONPATH=src python -m chromosort.cli --help
 python -m unittest discover -s tests -v
+python -m build --sdist --wheel --no-isolation
 ```
 
 Docs-only changes should at least run `git diff --check`. Public documentation
