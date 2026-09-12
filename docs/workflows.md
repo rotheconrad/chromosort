@@ -662,3 +662,7 @@ chromo gapfill \
 
 The reviewed gapfilled FASTA should contain chr1 with the graph-supported bridge
 inserted and the right flank overlap trimmed.
+
+## Publication candidate
+
+For the publication workflow, use [scan, explicit review, replay and fresh validation]({{ '/commands/workflow/' | relative_url }}) with [labeled references]({{ '/labeled-references/' | relative_url }}).

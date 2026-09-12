@@ -312,3 +312,9 @@ for asm in assemblies/*.fa; do
     --orient-to-reference
 done
 ```
+
+## Checked publication inputs
+
+The publication candidate supports `--manifest` for the relevant reference-alignment stage.
+See [labeled reference semantics]({{ '/labeled-references/' | relative_url }}), [supervised review]({{ '/commands/workflow/' | relative_url }}),
+and [read evidence figures]({{ '/commands/reads/' | relative_url }}). Legacy single-reference arguments remain supported.

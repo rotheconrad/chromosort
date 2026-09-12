@@ -31,6 +31,7 @@ The environment installs:
 - Python
 - minimap2
 - MUMmer 4 (`nucmer`, `delta-filter`, `show-coords`)
+- samtools for BAM read access
 - Pillow for optional PNG plot output
 - pytest for the test suite
 - ChromoSort command-line tools
@@ -51,7 +52,7 @@ pixi run agent-check
 ```
 
 The Pixi environment uses the same conda-forge/bioconda stack as
-`environment.yml`, including Python, minimap2, MUMmer 4, Pillow, pytest, and
+`environment.yml`, including Python, minimap2, MUMmer 4, samtools, Pillow, pytest, and
 the ChromoSort command-line tools.
 
 When `pixi.toml` changes, the matching `pixi.lock` should be refreshed and
@@ -95,3 +96,14 @@ pytest
 # legacy Pixi test task
 pixi run test
 ```
+
+## Publication candidate
+
+BAM read figures require samtools; `workflow align` requires minimap2. PAF/SAM figures need no external mapper. The conda/Pixi development environments include both tools. See [candidate package preparation]({{ '/release-preparation/' | relative_url }}).
+
+The wheel installs the CLI and Python modules. The source archive also includes
+core tests, synthetic unit fixtures and user/methods documentation. Public
+biological benchmark fixtures and generation scripts are repository-only;
+retrieve them from the [benchmark directory](https://github.com/rotheconrad/chromosort/tree/main/benchmarks/assembly-errors).
+Generated benchmark data, local results, environments and manuscript material
+are excluded from installation packages.

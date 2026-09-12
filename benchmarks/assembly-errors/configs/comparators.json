@@ -1,0 +1,29 @@
+{
+  "schema": "comparator-protocol-v1",
+  "frozen_before_results": true,
+  "ragtag_commit": "e993fb2787346345662c240967a3ec80bb2aac64",
+  "ragtag_version": "2.1.0",
+  "chromosort_initial_commit": "ac4fee499ab8d96f70d13a9d533b5bea8e61cefa",
+  "minimap2_version": "2.31-r1302",
+  "threads": 2,
+  "tuning": "none; diagnostic sensitivity arms are predeclared, not selected by observed results",
+  "correction_arms": {
+    "ragtag_default": [],
+    "ragtag_reads": ["-R", "{reads}", "-T", "corr"],
+    "ragtag_local_reads": ["-d", "10000", "-b", "1000", "-v", "2000", "-R", "{reads}", "-T", "corr"]
+  },
+  "scaffold_arms": {
+    "ragtag_fixed_gap": [],
+    "ragtag_inferred_gap": ["-r"]
+  },
+  "policy": [
+    "Unedited input is the mandatory baseline.",
+    "Default policy parameters remain defaults; all arms use two execution threads.",
+    "Read-validation arms receive the same biological-target reads supplied to ChromoSort.",
+    "Local-read diagnostic: reduce merge/window/terminal-distance settings for short loci; do not call this a genome-scale optimized configuration.",
+    "Scaffold original input separately from correction. Do not pool operation types.",
+    "Multi-reference concatenation is a labeled single-backbone diagnostic; it is not equivalent to RagTag merge or a subgenome-labeling feature.",
+    "Automatic, scripted oracle, and reviewed outputs have different workflow_class labels.",
+    "No held-out decisions or tuning may use evaluator truth; scoring happens after output hashes are committed."
+  ]
+}

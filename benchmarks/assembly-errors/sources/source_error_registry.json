@@ -1,0 +1,76 @@
+{
+  "schema": "source-error-registry-v1",
+  "templates": [
+    {
+      "admission": "documented_orientation_reconstruction; original gap Ns retained; exact whole v2.1 reconstruction not claimed",
+      "corrected_accession": "CM031179.1",
+      "corrected_assembly": "GCA_018294505.1",
+      "doi": "10.1111/tpj.15289",
+      "edit": "orientation reversal",
+      "figure_table": "Table S3, v2.1 vs v1.0, row 219",
+      "inclusive_endpoint_length_bp": 143811,
+      "independent_evidence": "DLS optical map reconciled against independent NLRS optical map",
+      "original_accession": "LS992081.1",
+      "original_assembly": "GCA_900519105.1",
+      "original_interval_1based": [
+        90394774,
+        90538584
+      ],
+      "reported_length_bp": 143810,
+      "source_id": "wheat_scf198",
+      "supplement_member": "TPJ-107-303-s002.xlsx",
+      "supplement_member_sha256": "d4f1777a50a26d3a101dfe6f079bc725ed7e0ac5c6d20e44de711dc4c781944e",
+      "supplement_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8360199/supplementaryFiles",
+      "uncertainty": "1 bp endpoint/length inconsistency; optical-map resolution >10 kb; operational reconstruction uses reported inclusive endpoints"
+    },
+    {
+      "admission": "documented_error_pattern_only",
+      "doi": "10.1111/tpj.15289",
+      "edit": "chimeric scaffold splitting",
+      "exact_template_interval": null,
+      "figure_table": "Pseudomolecule reconstruction and Table 2",
+      "source_id": "wheat_chimeras"
+    },
+    {
+      "admission": "documented_pattern_simulation",
+      "corrected_assembly": "GCA_904848295.1",
+      "corrected_figure_contig": "tig00014565",
+      "doi": "10.1093/plcell/koab077",
+      "edit": [
+        "tandem repeat collapse",
+        "small erroneous inversion"
+      ],
+      "exact_historical_intervals_recovered": false,
+      "figure_table": "Figure 1; Supplementary Tables S1 and S2",
+      "independent_evidence": "Sanger BAC AF427791.1; independent long-read assembly comparisons",
+      "original_assembly": "GCA_904848325.1",
+      "original_figure_scaffold": "scaffold_10x_111",
+      "public_background": "AF427791.1",
+      "source_id": "barley_mla_error"
+    },
+    {
+      "accession": "AF427791.1",
+      "boundary_semantics": "Conservative nonoverlapping labels derived from self-alignment, not experimentally localized unit endpoints",
+      "copy_intervals_0based": [
+        [
+          59567,
+          99282
+        ],
+        [
+          99282,
+          138992
+        ]
+      ],
+      "doi": "10.1105/tpc.002238",
+      "role": "empirical tandem-copy preservation control and independent BAC background",
+      "source_id": "barley_mla",
+      "supporting_doi": "10.1093/plcell/koab077"
+    },
+    {
+      "admission": "mechanism_fixture_not_empirical_event",
+      "role": "Simulated target inversion/exchange/alternate-reference deletion",
+      "source_id": "design_preservation_control"
+    }
+  ],
+  "verified_date": "2026-09-12"
+}

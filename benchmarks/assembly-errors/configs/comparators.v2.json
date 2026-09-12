@@ -1,0 +1,38 @@
+{
+  "amendment": "Development-only observation: default minimap2 without -c emitted one approximate chain across D003 inversions, while base-aligned PAF split the chain. Add paired base-alignment arms before inspecting held-out score summaries. Original default arms and v1 protocol retained.",
+  "chromosort_initial_commit": "ac4fee499ab8d96f70d13a9d533b5bea8e61cefa",
+  "correction_arms": {
+    "ragtag_matched_cigar": [
+      "--mm2-params",
+      "-x asm5 -c -t 2"
+    ],
+    "ragtag_matched_cigar_reads": [
+      "--mm2-params",
+      "-x asm5 -c -t 2",
+      "-R",
+      "{reads}",
+      "-T",
+      "corr"
+    ]
+  },
+  "frozen_before_results": true,
+  "implementation_caveat": "RagTag v2.1.0 rejects --secondary=no because its SAM-flag guard rejects every flag containing letter a. Use supported -c, retain aligner secondaries (normal MAPQ filter applies). Invoke official ragtag_correct.py directly because dispatcher suppresses child exit codes. No comparator source code was modified.",
+  "minimap2_version": "2.31-r1302",
+  "policy": [
+    "Unedited input is the mandatory baseline.",
+    "Default policy parameters remain defaults; all arms use two execution threads.",
+    "Read-validation arms receive the same biological-target reads supplied to ChromoSort.",
+    "Local-read diagnostic: reduce merge/window/terminal-distance settings for short loci; do not call this a genome-scale optimized configuration.",
+    "Scaffold original input separately from correction. Do not pool operation types.",
+    "Multi-reference concatenation is a labeled single-backbone diagnostic; it is not equivalent to RagTag merge or a subgenome-labeling feature.",
+    "Automatic, scripted oracle, and reviewed outputs have different workflow_class labels.",
+    "No held-out decisions or tuning may use evaluator truth; scoring happens after output hashes are committed."
+  ],
+  "protocol_version": 2,
+  "ragtag_commit": "e993fb2787346345662c240967a3ec80bb2aac64",
+  "ragtag_version": "2.1.0",
+  "scaffold_arms": {},
+  "schema": "comparator-protocol-v1",
+  "threads": 2,
+  "tuning": "none; diagnostic sensitivity arms are predeclared, not selected by observed results"
+}

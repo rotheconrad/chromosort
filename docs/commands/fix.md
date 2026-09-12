@@ -65,7 +65,7 @@ chromo fix \
 `--contigs` and `--contigs-file` only choose which contigs to inspect. They do
 not switch to a different splitting algorithm. By default, selected contigs use
 the same conservative smoothing and breakpoint penalties as `--all`, which is
-useful when you want Benning-style targeted fixes without allowing off-target
+useful when you want targeted fixes without allowing unselected
 contigs to receive a break.
 
 ## Run `chromo fix` Across All Contigs
@@ -286,11 +286,9 @@ extras."
 Coords and PAF inputs flow through the same split planner after ChromoSort
 normalizes them into internal query blocks. Remaining differences usually come
 from MUMmer-vs-minimap2 behavior: chaining, row fragmentation,
-primary/secondary handling, MAPQ availability, and identity fields. In the
-soybean coords-vs-PAF fix benchmark, split counts differed by about 5-10%, and
-the exact set of marginal split contigs differed by about 20-30%. Larger
-differences should be reviewed with dot plots, MAPQ/secondary settings, and
-`chromo eval fix` evidence rather than treated as an automatic parser bug.
+primary/secondary handling, MAPQ availability, and identity fields. Review
+differences with dot plots, MAPQ/secondary settings, and `chromo eval fix`
+evidence before attributing them to biology or a parser defect.
 
 ### Collapse Same-Target Runs Before Cutting
 
@@ -318,9 +316,9 @@ same-chromosome alignments, and INDEL-sized gaps are smoothed over instead of
 cut.
 
 `--max-breakpoints-per-contig` caps accepted breakpoints independently for each
-contig. The default of four is meant as a practical guardrail for soybean-scale
-samples: a contig that appears to need many breaks is more likely to need manual
-dot plot review than automatic sequence surgery. Those plans are reported as
+contig. The default of four is an operational review guardrail: a contig that
+appears to need many breaks is deferred for manual dot-plot review. This limit
+is not a biological error classifier. Those plans are reported as
 `not_split_too_many_breakpoints`.
 
 ### Keep Graph Context Beside Split Decisions
@@ -359,3 +357,30 @@ cases. The expected behavior is conservative: split the large-scale chromosome
 transition patterns, split only complex same-reference orientation events by
 default, split all strong inversions only in `--mode comprehensive`, and report
 weaker discordance as `not_split_smooth`.
+
+## Checked publication inputs
+
+The publication candidate supports `--manifest` for the relevant reference-alignment stage.
+See [labeled reference semantics]({{ '/labeled-references/' | relative_url }}), [supervised review]({{ '/commands/workflow/' | relative_url }}),
+and [read evidence figures]({{ '/commands/reads/' | relative_url }}). Legacy single-reference arguments remain supported.
+
+
+## Manifest read-continuity safeguard
+
+With a manifest, the default `--read-continuity-policy review` defers a contig's
+automatic split plan if at least two distinct read molecules span a proposed cut
+through a continuous CIGAR block (MAPQ >=20, 1000 bp on each side). The original
+contig is retained in the default full-assembly output. `--pieces-only` still
+emits only applied split pieces, as its name specifies.
+
+`<report>.breakpoint_evidence.tsv` and `.json` preserve every proposed boundary,
+selected read source/digest, thresholds, molecule IDs and the deferred action.
+Use `eval fix` or `workflow scan` to review the original proposals; continuity
+conflicts clear all preselected accept flags for that contig. A fully explicit
+`--reviewed-plan` can override this advisory guard.
+
+For a paired algorithm-only diagnostic, use `--read-continuity-policy report`.
+It records identical evidence without changing cut decisions. Legacy single-PAF
+commands keep their existing behavior. Read absence, unavailable CIGAR or no
+spanning molecules do not confirm an error. See [source selection, settings and
+limitations]({{ '/review-refinement/' | relative_url }}).

@@ -5,7 +5,7 @@ description: Overview of ChromoSort subcommands.
 
 # Command Reference
 
-ChromoSort exposes one top-level command, `chromo`, with eleven subcommands. Each subcommand page includes the purpose, examples, outputs, key parameters, and reasoning behind the command.
+ChromoSort exposes one top-level command, `chromo`, with thirteen subcommands. Each subcommand page includes the purpose, examples, outputs, key parameters, and reasoning behind the command.
 
 | Command | Use it when you need to |
 | --- | --- |
@@ -20,3 +20,5 @@ ChromoSort exposes one top-level command, `chromo`, with eleven subcommands. Eac
 | [`chromo graph-map`](https://rotheconrad.github.io/chromosort/commands/graph-map/) | project GFA unitig path/walk coordinates onto matching contig FASTA coordinates and write graph-map reports. |
 | [`chromo scaffold`](https://rotheconrad.github.io/chromosort/commands/scaffold/) | join final sorted contigs into one scaffold per reference sequence, with optional reviewed gap overrides and report-only graph junction evidence. |
 | [`chromo gapfill`](https://rotheconrad.github.io/chromosort/commands/gapfill/) | plan and optionally apply reviewed graph-supported fills between adjacent sorted contigs using guarded GFA paths and optional support evidence. |
+| [`chromo reads`]({{ '/commands/reads/' | relative_url }}) | render native/reversed read evidence and replay static figures. |
+| [`chromo workflow`]({{ '/commands/workflow/' | relative_url }}) | collect proposals, record decisions, replay edits, realign and validate. |

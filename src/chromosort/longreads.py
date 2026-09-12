@@ -24,6 +24,12 @@ class LongReadAlignment:
     identity: float
     mapq: Optional[int]
     is_secondary: bool = False
+    is_supplementary: Optional[bool] = None
+    cigar: Optional[str] = None
+    aligned_blocks: Optional[tuple] = None
+    clip_left: Optional[int] = None
+    clip_right: Optional[int] = None
+    has_sa: bool = False
 
     @property
     def read_span_bp(self):
@@ -189,30 +195,9 @@ def read_long_read_paf(
 ):
     """Read long-read-to-assembly PAF into indexed evidence."""
 
-    alignments = []
-    for segment in iter_paf(
-        path,
-        min_identity=min_identity,
-        min_mapq=min_mapq,
-        include_secondary=include_secondary,
-    ):
-        alignments.append(
-            LongReadAlignment(
-                read=segment.query,
-                read_length=segment.query_length,
-                read_start=segment.query_start,
-                read_end=segment.query_end,
-                contig=segment.ref,
-                contig_length=segment.ref_length,
-                contig_start=segment.ref_start,
-                contig_end=segment.ref_end,
-                orientation=segment.orientation,
-                identity=segment.identity,
-                mapq=segment.mapq,
-                is_secondary=segment.is_secondary,
-            )
-        )
-    return LongReadEvidence.from_alignments(alignments)
+    from .readalign import load_reads
+    return load_reads(path, "paf", min_mapq=min_mapq, min_identity=min_identity,
+                      include_secondary=include_secondary).evidence
 
 
 def _overlap_bp(start, end, query_start, query_end):
@@ -266,7 +251,10 @@ def summarize_breakpoint(
             right_anchor_start,
             right_anchor_end,
         )
-        if left_anchor >= min_anchor_bp and right_anchor >= min_anchor_bp:
+        blocks_span = (aln.aligned_blocks is None or any(
+            start <= left_anchor_start and end >= right_anchor_end
+            for start, end in aln.aligned_blocks))
+        if left_anchor >= min_anchor_bp and right_anchor >= min_anchor_bp and blocks_span:
             spanning.add(aln.read)
 
         if _overlap_bp(
@@ -281,7 +269,15 @@ def summarize_breakpoint(
         if abs(aln.contig_start - (position + 1)) <= window_bp:
             right_edge.add(aln.read)
 
-    split = (left_edge & right_edge) - spanning
+    split = set()
+    for read in (left_edge & right_edge) - spanning:
+        segments = [a for a in evidence.by_read[read] if a.contig == contig]
+        if any(left is not right and abs(left.contig_end - position) <= window_bp
+               and abs(right.contig_start - position - 1) <= window_bp
+               and left.contig_end < right.contig_start
+               and min(left.read_end, right.read_end) - max(left.read_start, right.read_start) + 1 <= 0
+               for left in segments for right in segments):
+            split.add(read)
     return BreakpointSupport(
         contig=contig,
         position=position,
@@ -392,7 +388,8 @@ def read_depth_at(evidence: LongReadEvidence, contig, position):
     reads = {
         aln.read
         for aln in evidence.by_contig.get(contig, [])
-        if aln.contig_start <= position <= aln.contig_end
+        if any(start <= position <= end for start, end in (
+            aln.aligned_blocks if aln.aligned_blocks is not None else [(aln.contig_start, aln.contig_end)]))
     }
     return len(reads)
 
@@ -405,6 +402,7 @@ def read_depth_window(evidence: LongReadEvidence, contig, start, end):
     reads = {
         aln.read
         for aln in evidence.by_contig.get(contig, [])
-        if _overlap_bp(aln.contig_start, aln.contig_end, start, end) > 0
+        if any(_overlap_bp(lo, hi, start, end) > 0 for lo, hi in (
+            aln.aligned_blocks if aln.aligned_blocks is not None else [(aln.contig_start, aln.contig_end)]))
     }
     return len(reads)

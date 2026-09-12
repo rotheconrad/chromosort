@@ -1,0 +1,6 @@
+/work/
+__pycache__/
+*.py[cod]
+*.fa.fai
+.ruff_cache/
+.DS_Store

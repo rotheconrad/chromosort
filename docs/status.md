@@ -5,7 +5,9 @@ description: Current ChromoSort command status and version history.
 
 # Current Status and Roadmap
 
-ChromoSort is under active development. Current version: `0.3.0`.
+ChromoSort is under active development. Current version: `0.4.0rc2`. Current Git includes subsequent input-contract and
+public-readiness changes; identify builds by commit and checksum. See the
+[public benchmark and validation limits]({{ "/benchmarks/" | relative_url }}).
 
 ## What Works Now
 
@@ -72,7 +74,8 @@ pytest
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | Added the agent-readiness roadmap, shared Make/Pixi check commands, coding-agent adapter files, GitHub issue/PR templates, and Python CI for CLI smoke checks plus the synthetic test suite. |
+| `0.4.0rc2` (review refinement) | Defers manifest automatic cut plans when CIGAR-contiguous read molecules span a proposed boundary; preserves explicit review overrides and report-only comparison. Separates gap inspection from correction smoothing and shows both interval edges. Development-informed policies, not biological truth classifiers. |
+| `0.4.0rc1` (publication candidate) | Added labeled multi-reference/copy-preserving manifests, explicit ambiguity/backbones, retain-all accounting, supervised scan/apply/align/validate, event-linked native/reversed read SVG/PDF/PNG with replay, digest checks, complete reviewed-piece coverage and selective scaffold joins. Preserves single-reference commands. Publishing and biological performance claims remain gated on the frozen benchmark. |
 | `0.3.0` | Added fresh AGP 2.1, component-provenance, and submission-checklist sidecars for every FASTA-changing command, including `sort`, `clean`, `fix`, `cut`, and `manual apply`; documented stage-local AGP provenance rules; and synchronized command docs, tests, and release metadata. |
 | `0.2.31` | Added `chromo eval all` to emit fix, scaffold, and gapfill review tables plus a `gafprep` manifest from one input bundle, updated `chromo gafprep` help to recommend the three-table workflow, and synchronized docs, tests, and version metadata. |
 | `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |
@@ -109,3 +112,7 @@ pytest
 | `0.1.2` | Raised the default auto-split query-span support threshold to 5% so small terminal off-target blocks are reported for review instead of being cut automatically. |
 | `0.1.1` | Tightened `chromo fix` breakpoint placement by collapsing adjacent same-reference/orientation runs, added complex same-reference orientation detection, added a run-level auto breakpoint budget, protected strong multi-reference split candidates during `chromo sort`, and documented the fix-before-sort workflow for suspected misjoins. |
 | `0.1.0` | Initial public package with `chromo sort`, `chromo fix`, `chromo scaffold`, duplicate-overlap filtering, user-nominated contig splitting, conservative auto smoothing, inferred/fixed-gap scaffolding, and synthetic tests. |
+
+## Publication candidate
+
+The publication candidate adds digest-checked multi-reference inputs, copy-preserving assignment, read evidence figures and supervised replay. See [labeled references]({{ '/labeled-references/' | relative_url }}) and [release gates]({{ '/release-preparation/' | relative_url }}).

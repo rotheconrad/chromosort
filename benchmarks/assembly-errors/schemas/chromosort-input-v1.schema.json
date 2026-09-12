@@ -1,0 +1,21 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ChromoSort public benchmark input manifest",
+  "type":"object",
+  "required":["schema","assembly","references","reference_sequences","evidence"],
+  "properties":{
+    "schema":{"const":"chromosort-input-v1"},
+    "case_id":{"type":"string"},
+    "assembly":{"type":"object","required":["path","sha256","sample_id","stage"],"properties":{
+      "path":{"type":"string"},"sha256":{"$ref":"#/$defs/sha256"},"sample_id":{"type":"string"},"stage":{"type":"string"}}},
+    "references":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"object"}}]},
+    "reference_sequences":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"object"}}]},
+    "evidence":{"type":"array","items":{"type":"object","required":["evidence_id","kind","path","sha256","assembly_sha256"],"properties":{
+      "evidence_id":{"type":"string"},"kind":{"enum":["assembly_paf","assembly_coords","read_paf","bam","sam","gfa","gaf","features","variants"]},
+      "path":{"type":"string"},"sha256":{"$ref":"#/$defs/sha256"},"assembly_sha256":{"$ref":"#/$defs/sha256"},
+      "reference_id":{"type":"string"},"reference_sha256":{"$ref":"#/$defs/sha256"},"evidence_class":{"type":"string"},"dependency_group":{"type":"string"}}
+    }}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}},
+  "additionalProperties":true
+}

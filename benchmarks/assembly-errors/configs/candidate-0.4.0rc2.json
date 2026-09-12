@@ -1,0 +1,15 @@
+{
+  "schema": "development-candidate-protocol-v1",
+  "source_archive_sha256": "e54accff52694a5d0f17f6384af47dd4f90cae437443cc64f4df93ad51d6ebc3",
+  "wheel_sha256": "8965523b79d512b381f440d4a866ab29ea688212d22606c6df340df19be2c0a1",
+  "scope": "One development-informed refinement pass on all 14 frozen development cases. No held-out evaluation or post-score tuning.",
+  "fix_modes": ["conservative", "comprehensive", "sensitive"],
+  "paired_policies": ["review", "report"],
+  "fix_arguments": ["fix", "--manifest", "CASE/manifest.json", "--all", "--mode", "MODE", "--read-evidence-id", "reads_sim01", "--read-continuity-policy", "POLICY", "--continuity-min-mapq", "20", "--continuity-anchor-bp", "1000", "--continuity-min-spanning", "2", "--output-fasta", "OUTPUT/output.fa", "--report", "OUTPUT/fix.tsv", "--agp", "OUTPUT/output.agp"],
+  "review_scan_cases": {"D003": "comprehensive", "D010": "comprehensive"},
+  "scan_arguments": ["workflow", "scan", "--manifest", "CASE/manifest.json", "--mode", "comprehensive", "--read-evidence-id", "reads_sim01", "--inspect-min-gap-bp", "1000", "--output-dir", "OUTPUT/review"],
+  "evidence": "Exactly reads_sim01 mapped simulated read PAF in every case. No BAM fallback, pooling, or new mapping. CIGAR-contiguous 1 kb anchors, MAPQ20, at least 2 distinct molecules; zero spans is neutral. Whole-contig correction plan is deferred under review policy if any boundary meets the continuity threshold.",
+  "workflow_classes": {"review_policy_fix": "automatic", "report_policy_fix": "automatic", "workflow_scan": "review_only"},
+  "scoring": "Unchanged independent scorer. Frozen inputs verified and all output/run hashes per policy committed before evaluator access. Keep candidate version, policy, correction mode and operation separate.",
+  "interpretation": "Thresholds were informed by known development examples. Separate implementation/provenance scoring does not make the development cohort independent of refinement. Inspection does not confirm an error or repair sequence; no orientation normalization, accepted decisions or scripted replay are in these automatic arms."
+}

@@ -1,0 +1,2 @@
+reference_id	fasta	sha256	assembly_accession	output_group	role
+Mla_BAC	inputs/ref_Mla_BAC.fa	f1f36920ab0cebc8c8ad0a384b18dcb026c0e205e9086c4a692dcec1305da332	AF427791.1	barley	backbone

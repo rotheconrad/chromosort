@@ -1222,7 +1222,7 @@ chromo fix \
 `--contigs` and `--contigs-file` only choose which contigs to inspect. They do
 not switch to a different splitting algorithm. By default, selected contigs use
 the same conservative smoothing and breakpoint penalties as `--all`, which is
-useful when you want Benning-style targeted fixes without allowing off-target
+useful when you want targeted fixes without allowing unselected
 contigs to receive a break.
 
 ### Run `chromo fix` Across All Contigs
@@ -1390,9 +1390,9 @@ same-chromosome alignments, and INDEL-sized gaps are smoothed over instead of
 cut.
 
 `--max-breakpoints-per-contig` caps accepted breakpoints independently for each
-contig. The default of four is meant as a practical guardrail for soybean-scale
-samples: a contig that appears to need many breaks is more likely to need manual
-dot plot review than automatic sequence surgery. Those plans are reported as
+contig. The default of four is an operational review guardrail: a contig that
+appears to need many breaks is deferred for manual dot-plot review. This limit
+is not a biological error classifier. Those plans are reported as
 `not_split_too_many_breakpoints`.
 
 #### Keep Graph Context Beside Split Decisions

@@ -73,7 +73,7 @@ def read_agp_rows(path):
 
 def write_coords(path, rows):
     lines = [
-        "/tmp/ref.fa /tmp/assembly.fa",
+        "ref.fa assembly.fa",
         "NUCMER",
         "",
         "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]",

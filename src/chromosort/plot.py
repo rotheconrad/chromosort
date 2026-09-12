@@ -75,7 +75,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         description="Draw dot plots from existing MUMmer coords or minimap2 PAF alignments.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    ap.add_argument("--ref-fasta", required=True, help="Reference FASTA.")
+    ap.add_argument("--ref-fasta", help="Reference FASTA (or use --manifest).")
     ap.add_argument(
         "--ref-fai",
         default=None,
@@ -84,7 +84,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
     ap.add_argument(
         "-f",
         "--assembly-fasta",
-        required=True,
+        required=False,
         help="Assembly/query FASTA.",
     )
     ap.add_argument(
@@ -93,6 +93,8 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         help="Assembly FASTA index. Defaults to <assembly-fasta>.fai when present.",
     )
     alignment_group = ap.add_mutually_exclusive_group(required=True)
+    from .manifest import add_manifest_argument
+    add_manifest_argument(alignment_group)
     alignment_group.add_argument(
         "-c",
         "--coords",
@@ -517,7 +519,8 @@ def svg_line(item):
         f'<line x1="{item["x1"]:.2f}" y1="{item["y1"]:.2f}" '
         f'x2="{item["x2"]:.2f}" y2="{item["y2"]:.2f}" '
         f'stroke="{item["stroke"]}" stroke-width="{item["width"]}" '
-        f'opacity="{item["opacity"]}"{dash_attr} vector-effect="non-scaling-stroke"/>'
+        f'opacity="{item["opacity"]}"{dash_attr} vector-effect="non-scaling-stroke">'
+        + (f'<title>{html.escape(item["title"])}</title>' if item.get("title") else "") + '</line>'
     )
 
 
@@ -1175,9 +1178,11 @@ def load_gfa_overlay(args, query_records, report_path):
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
+    from .manifest import resolve_manifest_args
+    bundle = resolve_manifest_args(args, require_reference=True)
     prefix = Path(args.output_prefix)
 
-    ref_records, ref_by_name = read_fasta_lengths(args.ref_fasta, args.ref_fai)
+    ref_records, ref_by_name = (bundle.ref_records, bundle.ref_by_name) if bundle else read_fasta_lengths(args.ref_fasta, args.ref_fai)
     plot_ref_records, selected_ref_names = select_ref_records(ref_records, args.sel_ref)
     query_records, query_by_name = read_fasta_lengths(args.assembly_fasta, args.assembly_fai)
     if args.assignments:

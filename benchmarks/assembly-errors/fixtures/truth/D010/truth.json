@@ -1,0 +1,99 @@
+{
+  "assembly_sha256": "4ce1ef70763ae78519a8f86019cca780ca97181d99185f2305059260228f66e8",
+  "baseline_mask": "All non-ACGT target positions; reported separately from known sequence",
+  "breakpoint_tolerance_bp": 500,
+  "case_id": "D010",
+  "config": {
+    "case_id": "D010",
+    "coverage": 12,
+    "family": "multi_exchange",
+    "seed": 110
+  },
+  "correct_endpoint_anchor_bp": 100,
+  "events": [],
+  "limitations": [
+    "No platform-calibrated read model",
+    "No de novo phasing or inferred subgenome labels",
+    "Locus cases are not whole-genome accuracy estimates"
+  ],
+  "mapping": "input_to_target.tsv",
+  "preservation_controls": [
+    {
+      "empirical_event": false,
+      "end": 130000,
+      "kind": "simulated_reciprocal_exchange",
+      "source_id": "design_preservation_control",
+      "start": 120000,
+      "target_id": "t01",
+      "variant_id": "Vt01"
+    },
+    {
+      "empirical_event": false,
+      "end": 130000,
+      "kind": "simulated_reciprocal_exchange",
+      "source_id": "design_preservation_control",
+      "start": 120000,
+      "target_id": "t02",
+      "variant_id": "Vt02"
+    }
+  ],
+  "read_model": {
+    "coverage_denominator": "ACGT runs at least one read long",
+    "coverage_requested": 12,
+    "eligible_bp": 625694,
+    "indel_rate": 0,
+    "model": "iid_substitution_v1",
+    "quality_char": "?",
+    "quality_semantics": "constant Q30 model value, not measured",
+    "read_count": 751,
+    "read_length": 10000,
+    "source": "biological_target_before_corruption",
+    "strand_probability": 0.5,
+    "substitution_rate": 0.001,
+    "total_target_bp": 750000
+  },
+  "schema": "benchmark-truth-v1",
+  "source_constructions": [
+    {
+      "construction": "First 250000 bp of registered interval; loci are chromosome-labeled, not asserted syntenic homoeologous intervals",
+      "source_id": "wheat_v2_1a",
+      "target_id": "t01"
+    },
+    {
+      "construction": "First 250000 bp of registered interval; loci are chromosome-labeled, not asserted syntenic homoeologous intervals",
+      "source_id": "wheat_v2_1b",
+      "target_id": "t02"
+    },
+    {
+      "construction": "First 250000 bp of registered interval; loci are chromosome-labeled, not asserted syntenic homoeologous intervals",
+      "source_id": "wheat_v2_1d",
+      "target_id": "t03"
+    },
+    {
+      "construction": "Reciprocal A/B target-tail exchange at 125000; chromosome membership remains supplied; ancestry changes.",
+      "target_id": "t01"
+    },
+    {
+      "construction": "Reciprocal A/B target-tail exchange at 125000; chromosome membership remains supplied; ancestry changes.",
+      "target_id": "t02"
+    }
+  ],
+  "target_labels": {
+    "t01": {
+      "chromosome": "1A",
+      "output_group": "wheat_A",
+      "subgenome": "A"
+    },
+    "t02": {
+      "chromosome": "1B",
+      "output_group": "wheat_B",
+      "subgenome": "B"
+    },
+    "t03": {
+      "chromosome": "1D",
+      "output_group": "wheat_D",
+      "subgenome": "D"
+    }
+  },
+  "target_sha256": "0d4c0ae36101acf6d39008023a6080110851177b0bbfe66fc6218f87b3010a7b"
+}

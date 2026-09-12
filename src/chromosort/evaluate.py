@@ -108,6 +108,8 @@ GAPFILL_REVIEW_COLUMNS = [
 
 
 def add_fix_planner_args(ap):
+    from .continuity import add_arguments
+    add_arguments(ap)
     ap.add_argument(
         "--mode",
         choices=fix_contigs.MODE_CHOICES,
@@ -140,10 +142,12 @@ def parse_fix_args(argv=None, prog=None):
     ap.add_argument(
         "-f",
         "--assembly-fasta",
-        required=True,
+        required=False,
         help="Assembly FASTA containing contigs to evaluate for fixing.",
     )
     alignment_group = ap.add_mutually_exclusive_group(required=True)
+    from .manifest import add_manifest_argument
+    add_manifest_argument(alignment_group)
     alignment_group.add_argument("-c", "--coords", help="MUMmer show-coords file.")
     alignment_group.add_argument("--paf", help="minimap2 PAF file.")
     ap.add_argument("--contigs", nargs="+", default=[], help="Contigs to evaluate.")
@@ -308,10 +312,12 @@ def parse_all_args(argv=None, prog=None):
     ap.add_argument(
         "-f",
         "--assembly-fasta",
-        required=True,
+        required=False,
         help="Assembly FASTA containing contigs to evaluate for fixing.",
     )
     alignment_group = ap.add_mutually_exclusive_group(required=True)
+    from .manifest import add_manifest_argument
+    add_manifest_argument(alignment_group)
     alignment_group.add_argument("-c", "--coords", help="MUMmer show-coords file for the fix planner.")
     alignment_group.add_argument("--paf", help="Reference-to-assembly minimap2 PAF for the fix planner.")
     ap.add_argument("--contigs", nargs="+", default=[], help="Contigs to evaluate in the fix stage.")
@@ -623,6 +629,10 @@ def no_split_event(contig, plan, graph, gaf_records):
 
 
 def build_fix_events(args):
+    from .manifest import resolve_manifest_args
+    from .provenance import sha256_file
+    from dataclasses import replace
+    bundle = resolve_manifest_args(args)
     alignment_path, alignment_format = alignment_source_from_args(args)
     explicit_requested = fix_contigs.read_requested_contigs(args.contigs, args.contigs_file)
     if args.all_contigs and explicit_requested:
@@ -650,6 +660,10 @@ def build_fix_events(args):
     )
     plans = fix_contigs.build_plans(args.assembly_fasta, requested, blocks_by_contig, args)
     fix_contigs.apply_breakpoint_guard(plans, args)
+    from .continuity import assess_plans
+    continuity_rows = assess_plans(plans, bundle, args)
+    continuity_by_boundary = {(r["contig"], r["position"]): r for r in continuity_rows}
+    deferred_contigs = {r["contig"] for r in continuity_rows if r["automatic_action"] == "defer_contig_plan_for_review"}
 
     graph = read_gfa(args.gfa) if args.gfa else None
     graph_projections = []
@@ -692,7 +706,24 @@ def build_fix_events(args):
                 )
         else:
             events.append(no_split_event(contig, plan, graph, gaf_records))
-    return events
+    digest = sha256_file(args.assembly_fasta)
+    result = []
+    for event in events:
+        fields = {**event.fields, "assembly_sha256": digest}
+        boundary = continuity_by_boundary.get((event.target, int(fields["slice_end"]))) if event.action == "split_piece" else None
+        reason = event.reason
+        if boundary:
+            fields.update({"read_continuity_" + k: v for k, v in boundary.items()})
+            if boundary["automatic_action"] == "defer_contig_plan_for_review":
+                reason += f" Automatic contig plan requires review: read continuity at a proposed boundary; this boundary has {boundary['spanning_molecules']} spanning molecules."
+        seq = bundle.sequences.get(fields.get("dominant_ref")) if bundle else None
+        if seq:
+            from dataclasses import asdict
+            fields.update(asdict(seq))
+            fields["scaffold_backbone"] = seq.key
+        result.append(replace(event, fields=fields, reason=reason,
+                              accept=False if event.target in deferred_contigs else event.accept))
+    return result
 
 
 def graph_gap_fields(graph_records, gap):
@@ -818,6 +849,8 @@ def read_bridge_fields(read_evidence, left_member, right_member, args):
 
 
 def build_scaffold_events(args):
+    from .provenance import sha256_file
+    ordered_digest = sha256_file(args.ordered_fasta)
     if args.fixed_gap_bp is not None and args.fixed_gap_bp < 0:
         raise ValueError("--fixed-gap-bp must be zero or greater")
     if args.graph_max_path_edges < 1:
@@ -859,6 +892,12 @@ def build_scaffold_events(args):
     for scaffold in scaffolds:
         for gap, left, right in zip(scaffold.gaps, scaffold.members, scaffold.members[1:]):
             fields = {
+                "ordered_fasta_sha256": ordered_digest,
+                "scaffold_backbone": left.assignment.backbone,
+                "output_group": left.assignment.output_group,
+                "subgenome": left.assignment.subgenome,
+                "copy_label": left.assignment.copy_label,
+                "overlap_policy": args.overlap_policy,
                 "scaffold": gap.scaffold,
                 "left_contig": gap.left_contig,
                 "right_contig": gap.right_contig,

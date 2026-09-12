@@ -1,0 +1,71 @@
+{
+  "assembly_sha256": "6ae19e7218838f0233bfd88e6407c81a60cb4c67ab61160e746c1865a0baa4af",
+  "baseline_mask": "All non-ACGT target positions; reported separately from known sequence",
+  "breakpoint_tolerance_bp": 500,
+  "case_id": "D001",
+  "config": {
+    "case_id": "D001",
+    "coverage": 12,
+    "family": "wheat_documented_orientation",
+    "seed": 101
+  },
+  "correct_endpoint_anchor_bp": 100,
+  "events": [
+    {
+      "breakpoints": [
+        250000,
+        393811
+      ],
+      "event_id": "E001",
+      "historical_fidelity": "documented_orientation_reconstruction_with_gap_boundary_uncertainty",
+      "input_id": "c001",
+      "kind": "orientation",
+      "source_id": "wheat_scf198",
+      "target_intervals": [
+        [
+          "t01",
+          250000,
+          393811
+        ]
+      ]
+    }
+  ],
+  "limitations": [
+    "No platform-calibrated read model",
+    "No de novo phasing or inferred subgenome labels",
+    "Locus cases are not whole-genome accuracy estimates"
+  ],
+  "mapping": "input_to_target.tsv",
+  "preservation_controls": [],
+  "read_model": {
+    "coverage_denominator": "ACGT runs at least one read long",
+    "coverage_requested": 12,
+    "eligible_bp": 590007,
+    "indel_rate": 0,
+    "model": "iid_substitution_v1",
+    "quality_char": "?",
+    "quality_semantics": "constant Q30 model value, not measured",
+    "read_count": 709,
+    "read_length": 10000,
+    "source": "biological_target_before_corruption",
+    "strand_probability": 0.5,
+    "substitution_rate": 0.001,
+    "total_target_bp": 643811
+  },
+  "schema": "benchmark-truth-v1",
+  "source_constructions": [
+    {
+      "construction": "Reverse-complement the Table S3 scaffold198 reported interval; retain v1 sequence and gap Ns. End-start versus listed-length discrepancy of 1 bp is masked at the gap boundary.",
+      "source_id": "wheat_v1_1b",
+      "target_id": "t01"
+    }
+  ],
+  "target_labels": {
+    "t01": {
+      "chromosome": "1B",
+      "output_group": "wheat_B",
+      "subgenome": "B"
+    }
+  },
+  "target_sha256": "4f23d293ff432cf923820d6b454197b5ad97c4ae64d7cdc444e9b0eb8cf53b1c"
+}

@@ -1,0 +1,4 @@
+reference_id	sequence_id	chromosome	subgenome	homoeolog_group	copy_label	output_group	backbone
+CS_A	Chr1	1A	A			wheat_A	yes
+CS_B	Chr1	1B	B			wheat_B	yes
+CS_D	Chr1	1D	D			wheat_D	yes

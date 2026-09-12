@@ -157,7 +157,7 @@ class FixContigsTests(unittest.TestCase):
                 + "\n"
             )
             (data / "sample.coords").write_text(
-                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "ref.fa assembly.fa\n"
                 "NUCMER\n\n"
                 "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
                 "===============================================================================================================================\n"
@@ -230,7 +230,7 @@ class FixContigsTests(unittest.TestCase):
                 ]
             ]
             coords = [
-                "/tmp/ref.fa /tmp/assembly.fa",
+                "ref.fa assembly.fa",
                 "NUCMER",
                 "",
                 "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]",
@@ -269,7 +269,7 @@ class FixContigsTests(unittest.TestCase):
                 ">contig_small_head\n" + "A" * 200 + "\n"
             )
             (data / "sample.coords").write_text(
-                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "ref.fa assembly.fa\n"
                 "NUCMER\n\n"
                 "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
                 "===============================================================================================================================\n"
@@ -304,7 +304,7 @@ class FixContigsTests(unittest.TestCase):
                 ">contig_tiny_head_then_split\n" + "A" * 300 + "\n"
             )
             (data / "sample.coords").write_text(
-                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "ref.fa assembly.fa\n"
                 "NUCMER\n\n"
                 "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
                 "===============================================================================================================================\n"
@@ -345,7 +345,7 @@ class FixContigsTests(unittest.TestCase):
                 ">contig_inversion_only\n" + "A" * 60 + "\n"
             )
             (data / "sample.coords").write_text(
-                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "ref.fa assembly.fa\n"
                 "NUCMER\n\n"
                 "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
                 "===============================================================================================================================\n"
@@ -374,7 +374,7 @@ class FixContigsTests(unittest.TestCase):
                 ">contig_complex_inversion\n" + "A" * 90 + "\n"
             )
             (data / "sample.coords").write_text(
-                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "ref.fa assembly.fa\n"
                 "NUCMER\n\n"
                 "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
                 "===============================================================================================================================\n"
@@ -692,7 +692,7 @@ class FixContigsTests(unittest.TestCase):
                 ">contig_ref_split_with_orientation_noise\n" + "A" * 300 + "\n"
             )
             (data / "sample.coords").write_text(
-                "/tmp/ref.fa /tmp/assembly.fa\n"
+                "ref.fa assembly.fa\n"
                 "NUCMER\n\n"
                 "    [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]\n"
                 "===============================================================================================================================\n"

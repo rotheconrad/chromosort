@@ -1,0 +1,47 @@
+{
+  "baseline": {
+    "chromosort_git_archive_sha256": "0bfe22122ac6d7d913368ed9c7272a53e7ea918c558dc8c48fab88fca0009234",
+    "chromosort_initial_commit": "ac4fee499ab8d96f70d13a9d533b5bea8e61cefa",
+    "generator_python": "3.9.6",
+    "generator_zlib": "1.2.12",
+    "minimap2": "2.31-r1302",
+    "minimap2_binary_sha256": "233e289649c6886531810b3917ac1180c72beb432c3e64ba1d918f3ed3365907",
+    "note": "Observed local environment, not a solved portable environment lock. FASTA, FASTQ and PAF byte hashes are authoritative. RagTag environment uses Python 3.13.12; pre-feature ChromoSort uses Python 3.12.14.",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "ragtag_commit": "e993fb2787346345662c240967a3ec80bb2aac64",
+    "ragtag_source_archive_sha256": "3c376c0c1f0f73aefeec863c58dc1139877920a7d7c67c13f1b0934f84a8e362",
+    "samtools": "samtools 1.23.1",
+    "samtools_binary_sha256": "87f7425abd2179fb964e265a38a85d5e21f3375b4fa6436e8c74cd80b087f630",
+    "schema": "observed-software-lock-v1"
+  },
+  "candidate_archive_availability": "Historical rc1/rc2 archive hashes identify executed software; no public download URL is asserted. They are not required to regenerate the data or use the repository benchmark with an explicitly identified installation. Exact historic software replay requires access to the matching archived snapshot; current checkout runs must be recorded as new results.",
+  "candidates": {
+    "rc1": {
+      "base_commit": "ac4fee499ab8d96f70d13a9d533b5bea8e61cefa",
+      "commit_note": "base plus feature working diff captured in immutable archive; not an immutable feature git commit",
+      "evaluation_scope": "development-only",
+      "files": {
+        "chromosort-0.4.0rc1-py3-none-any.whl": "c9659d8d90914e887e9304807db75438af087e9113cc9f53f8ee93323a2e286e",
+        "chromosort-0.4.0rc1.tar.gz": "27cab4b09c0409d6ebb76c41bee30482ebdde4b03e7499ea6e4d6dc7de8bb8c3"
+      },
+      "identity": "source_archive_sha256",
+      "version": "0.4.0rc1"
+    },
+    "rc2": {
+      "commit_note": "identity is archive hash, not moving source or a feature git commit",
+      "evaluation_scope": "development-only, one bounded refinement pass",
+      "files": {
+        "chromosort-0.4.0rc2-py3-none-any.whl": "8965523b79d512b381f440d4a866ab29ea688212d22606c6df340df19be2c0a1",
+        "chromosort-0.4.0rc2.tar.gz": "e54accff52694a5d0f17f6384af47dd4f90cae437443cc64f4df93ad51d6ebc3"
+      },
+      "identity": "source_archive_sha256",
+      "previous_candidate": "0.4.0rc1",
+      "version": "0.4.0rc2"
+    }
+  },
+  "retrieval": {
+    "chromosort_ac4": "https://github.com/rotheconrad/chromosort/archive/ac4fee499ab8d96f70d13a9d533b5bea8e61cefa.tar.gz",
+    "ragtag": "https://github.com/malonge/RagTag/archive/e993fb2787346345662c240967a3ec80bb2aac64.tar.gz"
+  },
+  "schema": "public-benchmark-software-identities-v1"
+}

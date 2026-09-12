@@ -1,0 +1,100 @@
+{
+  "commands": [
+    {
+      "command": [
+        "python",
+        "scripts/verify.py",
+        "--fixtures"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/summarize_history.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/retrieve.py",
+        "--output-root",
+        "work"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/run_benchmark.py",
+        "--tool",
+        "unedited",
+        "--output-root",
+        "work/unedited"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/generate.py",
+        "--output-root",
+        "work"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/evidence.py",
+        "work/development/D001",
+        "work/development/D002",
+        "work/development/D003",
+        "work/development/D004",
+        "work/development/D005",
+        "work/development/D006",
+        "work/development/D007",
+        "work/development/D008",
+        "work/development/D009",
+        "work/development/D010",
+        "work/development/D011",
+        "work/development/D012",
+        "work/development/D013",
+        "work/development/D014",
+        "--threads",
+        "2"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/verify.py",
+        "--regenerated",
+        "work"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "dependency_note": "Only Python plus minimap2 for full mapping; no sibling data/tool archive.",
+  "isolated_copy": true,
+  "minimap2": "2.31-r1302",
+  "network_used": false,
+  "python": "3.12.14",
+  "schema": "public-clean-copy-verification-v1",
+  "status": "pass",
+  "with_mapping": true
+}

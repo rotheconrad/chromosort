@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+from . import __version__
 
 from . import (
     clean,
@@ -15,6 +16,8 @@ from . import (
     plot,
     reference_order,
     scaffold,
+    readplot,
+    workflow,
 )
 
 
@@ -45,9 +48,15 @@ def main(argv=None):
             "gapfill",
             "plot",
             "graph-map",
+            "reads",
+            "workflow",
         ],
         help="Subcommand to run.",
     )
+    parser.add_argument("--version", action="version", version=f"ChromoSort {__version__}")
+    if argv and argv[0] == "--version":
+        parser.parse_args(argv)
+        return
 
     if not argv or argv[0] in {"-h", "--help"}:
         parser.print_help()
@@ -77,6 +86,10 @@ def main(argv=None):
         plot.main(remaining, prog="chromo plot")
     elif command == "graph-map":
         graph_map.main(remaining, prog="chromo graph-map")
+    elif command == "reads":
+        readplot.main(remaining, prog="chromo reads")
+    elif command == "workflow":
+        workflow.main(remaining, prog="chromo workflow")
     else:
         parser.error(f"unknown command: {command}")
 

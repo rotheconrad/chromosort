@@ -1,0 +1,22 @@
+{
+  "barley_mla": {
+    "path": "fixtures/development/D003/inputs/ref_Mla_BAC.fa",
+    "sequence_id": "Chr1"
+  },
+  "wheat_v1_1b": {
+    "path": "fixtures/development/D001/inputs/assembly.fa",
+    "sequence_id": "c001"
+  },
+  "wheat_v2_1a": {
+    "path": "fixtures/development/D010/inputs/ref_CS_A.fa",
+    "sequence_id": "Chr1"
+  },
+  "wheat_v2_1b": {
+    "path": "fixtures/development/D001/inputs/ref_CS_v2.fa",
+    "sequence_id": "Chr1B"
+  },
+  "wheat_v2_1d": {
+    "path": "fixtures/development/D010/inputs/ref_CS_D.fa",
+    "sequence_id": "Chr1"
+  }
+}

@@ -1,0 +1,14 @@
+include LICENSE CITATION.cff CHANGELOG.md Makefile environment.yml pixi.toml pixi.lock
+recursive-include docs *.md *.yml *.html *.css *.svg *.png
+recursive-exclude docs/_site *
+prune docs/archive
+prune docs/dev
+recursive-include tests *.py *.fa *.paf *.coords *.sam *.json *.tsv *.gfa *.gaf *.md
+recursive-include scripts *.py
+recursive-include conda-recipe *.yaml *.md
+prune results
+prune data
+prune temp
+prune build
+prune dist
+prune benchmarks

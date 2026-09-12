@@ -793,14 +793,15 @@ records, missing assignment-table columns, stale reviewed gapfill paths, invalid
 cut positions, missing source FASTA records, and unsupported graph safety flags
 without `--gfa`.
 
-The current GitHub Actions workflow deploys the documentation site from
-`docs/`. At the time this document was written, test execution is configured
-locally but is not represented as a repository CI workflow.
+GitHub Actions runs lint, CLI smoke checks, synthetic tests and package builds
+on Ubuntu for Python 3.9–3.12. A separate workflow deploys documentation from
+`docs/`. Large biological benchmarks run outside frequent CI.
 
 ## Non-goals and Limitations
 
-- ChromoSort does not run MUMmer, minimap2, GraphAligner, Hi-C processing, or
-  assembly tools internally. It consumes their outputs.
+- Most commands consume prepared evidence. `workflow align` optionally runs
+  minimap2 with recorded arguments and version; `reads` uses samtools for BAM
+  access. MUMmer, GraphAligner, Hi-C processing and assembly remain external.
 - ChromoSort does not polish base calls, call variants, estimate haplotypes, or
   validate biological correctness beyond the supplied evidence.
 - The ranking and risk scores are deterministic heuristics, not calibrated
@@ -867,3 +868,20 @@ For a methods review, the most important invariants to check are:
   apply a sequence-changing path,
 - stale-plan prevention for reviewed gap fills,
 - report schemas used as contracts between stages.
+
+## Publication candidate contracts
+
+The [labeled-reference model]({{ '/labeled-references/' | relative_url }}) extends the legacy
+chromosome-assignment model with genome IDs, output groups, subgenomes and
+optional copy labels. `manifest.py` checks identities, `multireference.py`
+implements identity-weighted union scoring and backbone-only placement,
+`readalign.py` preserves format-specific read detail, and `readplot.py` shares
+one drawing model across SVG/PDF/PNG. `workflow.py` separates proposals, human
+decisions, exact source coverage, replay and fresh-stage validation. See the
+[workflow contract]({{ '/commands/workflow/' | relative_url }}) and [read figure semantics]({{ '/commands/reads/' | relative_url }})
+for the explicit evidence limitations and executable examples.
+
+`continuity.py` evaluates original proposed cut boundaries using one declared
+read source. It may defer a whole automatic contig plan, never add a cut. Eval
+retains proposals with cleared accept flags; explicit reviewed plans remain
+authoritative. Gap inspection is separately thresholded and non-editing.

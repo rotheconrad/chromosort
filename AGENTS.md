@@ -126,10 +126,9 @@ Choose one primary whole-genome alignment source for ordinary ChromoSort runs:
 MUMmer coords or minimap2 PAF. These are alternative representations of
 reference-to-assembly alignment evidence, not independent biological
 validation of a candidate event. Running both can be useful for benchmarking,
-parser checks, or aligner-parameter tuning; in soybean fix testing, split
-counts differed by about 5-10% and marginal split-contig sets by about 20-30%.
-Treat those as alignment/output differences unless plots or tests indicate a
-parser bug. Read-to-assembly PAF, GFA, GAF, and independent assemblies are
+parser checks, or aligner-parameter tuning. Diagnose differences using exact
+FASTA identities, alignment settings, row structure, and focused plots before
+attributing them to biology or a parser defect. Read-to-assembly PAF, GFA, GAF, and independent assemblies are
 stronger support for real biological decisions.
 
 - Multi-reference `kept_split_candidate` calls in the primary alignment are

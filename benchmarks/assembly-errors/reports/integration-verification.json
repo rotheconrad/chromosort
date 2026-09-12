@@ -1,0 +1,75 @@
+{
+  "agp_adapter_unchanged": true,
+  "external_data_dependencies": [],
+  "optional_historical_replay_dependency": "Exact old candidate archive required for exact historical software replay; no public URL is asserted. Not needed for dataset regeneration or historical summary calculation.",
+  "original_archives_verified_unchanged": 4,
+  "purpose": "Migration/reproduction smoke; no new policy tuning or moving-software evaluation",
+  "runner_smoke_checks": [
+    {
+      "case_id": "D001",
+      "exact_score_match": true,
+      "historical_arm": "unedited",
+      "runner_arm": "unedited"
+    },
+    {
+      "case_id": "D003",
+      "exact_score_match": true,
+      "historical_arm": "unedited",
+      "runner_arm": "unedited"
+    },
+    {
+      "case_id": "D010",
+      "exact_score_match": true,
+      "historical_arm": "unedited",
+      "runner_arm": "unedited"
+    },
+    {
+      "case_id": "D003",
+      "exact_score_match": true,
+      "historical_arm": "ragtag_default",
+      "runner_arm": "ragtag_default"
+    },
+    {
+      "case_id": "D001",
+      "exact_score_match": true,
+      "historical_arm": "chromosort_rc2_fix_report_comprehensive",
+      "runner_arm": "chromosort_report_comprehensive"
+    },
+    {
+      "case_id": "D001",
+      "exact_score_match": true,
+      "historical_arm": "chromosort_rc2_fix_review_comprehensive",
+      "runner_arm": "chromosort_review_comprehensive"
+    },
+    {
+      "case_id": "D003",
+      "exact_score_match": true,
+      "historical_arm": "chromosort_rc2_fix_report_comprehensive",
+      "runner_arm": "chromosort_report_comprehensive"
+    },
+    {
+      "case_id": "D003",
+      "exact_score_match": true,
+      "historical_arm": "chromosort_rc2_fix_review_comprehensive",
+      "runner_arm": "chromosort_review_comprehensive"
+    },
+    {
+      "case_id": "D010",
+      "exact_score_match": true,
+      "historical_arm": "chromosort_rc2_fix_report_comprehensive",
+      "runner_arm": "chromosort_report_comprehensive"
+    },
+    {
+      "case_id": "D010",
+      "exact_score_match": true,
+      "historical_arm": "chromosort_rc2_fix_review_comprehensive",
+      "runner_arm": "chromosort_review_comprehensive"
+    }
+  ],
+  "schema": "public-benchmark-integration-verification-v1",
+  "scorer_unchanged": true,
+  "software_used": {
+    "chromosort_source_archive_sha256": "e54accff52694a5d0f17f6384af47dd4f90cae437443cc64f4df93ad51d6ebc3",
+    "ragtag_commit": "e993fb2787346345662c240967a3ec80bb2aac64"
+  }
+}

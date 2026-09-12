@@ -1,0 +1,4 @@
+reference_id	fasta	sha256	assembly_accession	output_group	role
+CS_A	inputs/ref_CS_A.fa	0225d2bfd2ff8356161c7726c392bc8c04e19b9cbc4a4410a62a40a3321dd5a3	GCA_018294505.1	wheat_A	backbone
+CS_B	inputs/ref_CS_B.fa	88a48c8fac17d8236f143c6d86be2a74e5ee391a7b90e0be6e36a36ff38c0f4f	GCA_018294505.1	wheat_B	backbone
+CS_D	inputs/ref_CS_D.fa	42a654d96229ecb87a92e290d93928ea75f327acc9f50fbfe2bfca36932edd4f	GCA_018294505.1	wheat_D	backbone

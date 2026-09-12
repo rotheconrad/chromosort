@@ -1,8 +1,10 @@
 # ChromoSort
 
+**ChromoSort makes expert assembly decisions inspectable, editable, and reproducible, with the figures and provenance needed to explain them.**
+
 Reference-guided genome assembly utilities for sorting contigs, conservatively cleaning mostly-correct assemblies, splitting reviewed chimeric contigs, cutting exact breakpoints, manual dot-plot review, plotting alignments, scaffolding final ordered contigs, applying reviewed graph-supported gap fills, and writing AGP provenance sidecars for FASTA-changing outputs.
 
-ChromoSort provides one command, `chromo`, with eleven subcommands:
+ChromoSort provides one command, `chromo`, with thirteen subcommands:
 
 | Command | Purpose |
 | --- | --- |
@@ -17,6 +19,12 @@ ChromoSort provides one command, `chromo`, with eleven subcommands:
 | `chromo graph-map` | Project GFA unitig path/walk coordinates onto matching contig FASTA coordinates, especially for hifiasm unitig GFA evidence on contig FASTA dot plots ([graph-map docs](https://rotheconrad.github.io/chromosort/commands/graph-map/)). |
 | `chromo scaffold` | Join the final sorted contigs into one scaffold FASTA record per assigned reference, infer or fix N-gap lengths, report overlaps and gap decisions, and optionally add report-only GFA junction evidence ([scaffold docs](https://rotheconrad.github.io/chromosort/commands/scaffold/)). |
 | `chromo gapfill` | Plan graph-supported fills between adjacent sorted contigs using GFA paths plus optional GAF, Hi-C-like, or reference-placement PAF evidence, then apply only fillable and reviewed paths while unresolved junctions fall back to N gaps ([gapfill docs](https://rotheconrad.github.io/chromosort/commands/gapfill/)). |
+| `chromo reads` | Render event-linked native/reversed read evidence as SVG/PDF/PNG and replay saved settings ([reads](docs/commands/reads.md)). |
+| `chromo workflow` | Scan, review individual decisions, apply without silent sequence loss, realign and validate provenance ([workflow](docs/commands/workflow.md)). |
+
+The [public assembly-error benchmark](https://github.com/rotheconrad/chromosort/tree/main/benchmarks/assembly-errors) supplies compact development fixtures, reproducible generation scripts, and results with explicit limitations.
+
+The publication candidate adds [labeled references, subgenomes and copy-preserving curation](docs/labeled-references.md). See [read-continuity review and gap inspection](docs/review-refinement.md), and [release preparation](docs/release-preparation.md) for packaging and publication gates.
 
 ## Documentation
 
@@ -72,11 +80,9 @@ You usually do not need to run both. ChromoSort normalizes coords and PAF rows
 into the same internal alignment model before sorting, plotting, and fixing; the
 remaining differences usually come from minimap2-vs-MUMmer alignment algorithms,
 row fragmentation, primary/secondary handling, MAPQ, and identity fields rather
-than separate ChromoSort decision logic. In the soybean coords-vs-PAF fix
-benchmark, split counts differed by about 5-10%, while marginal split-contig
-sets differed by about 20-30%. Treat those as reasonable starting expectations,
-then use `chromo eval` with long-read PAF, GFA, and GAF evidence for stronger
-support on biological calls.
+than separate ChromoSort decision logic. Use controlled aligner-sensitivity tests and independent read/graph evidence
+to interpret differences. Agreement between alignment representations is not
+biological ground truth.
 
 ## Fix Mode Summary
 
@@ -201,7 +207,7 @@ pixi run agent-check
 
 ## Current Status
 
-Current version: `0.3.0`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, and `gapfill`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
+Current version: `0.4.0rc2`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, `gapfill`, `reads`, and `workflow`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
 
 ## Citation
 
@@ -232,7 +238,9 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
-| Unreleased | No changes yet. |
+| Git after frozen `0.4.0rc2` | Rejects read target name/length mismatches against manifest assemblies before filtering. Adds portable public benchmark documentation and separate package-check output directories. Valid-input correction policy and frozen candidate archives remain unchanged. |
+| `0.4.0rc2` (review refinement) | Defers manifest automatic cut plans when CIGAR-contiguous read molecules span a proposed boundary; preserves explicit review overrides and report-only comparison. Separates gap inspection from correction smoothing and shows both interval edges. Development-informed policies, not biological truth classifiers. |
+| `0.4.0rc1` (publication candidate) | Added labeled multi-reference/copy-preserving manifests, explicit ambiguity/backbones, retain-all accounting, supervised scan/apply/align/validate, event-linked native/reversed read SVG/PDF/PNG with replay, digest checks, complete reviewed-piece coverage and selective scaffold joins. Preserves single-reference commands. Publishing and biological performance claims remain gated on the frozen benchmark. |
 | `0.3.0` | Added fresh AGP 2.1, component-provenance, and submission-checklist sidecars for every FASTA-changing command, including `sort`, `clean`, `fix`, `cut`, and `manual apply`; documented stage-local AGP provenance rules; and synchronized command docs, tests, and release metadata. |
 | `0.2.31` | Added `chromo eval all` to emit fix, scaffold, and gapfill review tables plus a `gafprep` manifest from one input bundle, updated `chromo gafprep` help to recommend the three-table workflow, and synchronized docs, tests, and version metadata. |
 | `0.2.30` | Added `chromo gafprep` for targeted GraphAligner input preparation from read-to-assembly PAF and ChromoSort review tables, with selected-read/link audit TSVs, FASTQ extraction, conservative GFA sanitization, generated GraphAligner scripts, and synchronized command/input/output/read-evidence documentation. |

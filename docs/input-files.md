@@ -357,11 +357,9 @@ the first place, reducing file size and making downstream review less noisy. Use
 PAF and coords are not expected to be byte-for-byte interchangeable. ChromoSort
 normalizes both formats into the same internal alignment records, but minimap2
 and MUMmer can differ in chaining, row fragmentation, secondary/primary
-classification, MAPQ availability, and identity reporting. In a soybean
-coords-vs-PAF `chromo fix` benchmark, split counts were within about 5-10%,
-while the exact set of marginal split contigs differed by about 20-30% depending
-on mode. Larger disagreements are a prompt to inspect plots, row counts, MAPQ,
-secondary rows, and preset/filter choices before treating the event as biology.
+classification, MAPQ availability, and identity reporting. Inspect plots, row
+counts, MAPQ, secondary rows, and preset/filter choices when results differ.
+Alignment agreement alone does not establish biological correctness.
 
 ### Choosing `asm5`, `asm10`, or `asm20`
 
@@ -730,3 +728,7 @@ fixed/
 
 This makes it harder to accidentally use raw-assembly evidence with a fixed or
 manually edited FASTA.
+
+## Publication candidate
+
+The publication candidate accepts digest-checked `chromosort-input-v1` bundles. See [the manifest schema and reference labels]({{ '/labeled-references/' | relative_url }}).

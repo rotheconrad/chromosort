@@ -57,10 +57,8 @@ For broader alignment-evidence choices, see
 
 ## Coords And PAF Disagree
 
-Small disagreements are expected. In soybean `chromo fix` testing, coords and
-PAF split counts differed by about 5-10%, while marginal split-contig sets
-differed by about 20-30%. ChromoSort normalizes both formats before decision
-logic, so first check aligner settings, minimap2 preset, `-c --secondary=no`,
+Different aligners can produce different candidate sets. ChromoSort normalizes
+both formats before decision logic, so first check aligner settings, minimap2 preset, `-c --secondary=no`,
 MAPQ filters, MUMmer `delta-filter` settings, row counts, and dot plots. Use
 `chromo eval` with long-read PAF, GFA, or GAF for stronger event evidence.
 The guide-level comparison is

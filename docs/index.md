@@ -15,6 +15,17 @@ multiple decisions about `raw.fa`, but edited outputs such as `ordered.fa`,
 `fixed.fa`, manual FASTA exports, and scaffold FASTAs need fresh alignments
 before they are used as inputs to another alignment-dependent command.
 
+## Publication candidate
+
+- [Read continuity and gap inspection]({{ '/review-refinement/' | relative_url }})
+
+- [Labeled references and subgenomes]({{ '/labeled-references/' | relative_url }})
+- [Supervised analysis workflow]({{ '/commands/workflow/' | relative_url }})
+- [Read evidence figures and replay]({{ '/commands/reads/' | relative_url }})
+- [Read figure design provenance]({{ '/read-figure-port/' | relative_url }})
+- [Public benchmark inputs and validation]({{ "/benchmarks/" | relative_url }})
+- [Release preparation]({{ '/release-preparation/' | relative_url }})
+
 ## Start Here
 
 - [Installation](https://rotheconrad.github.io/chromosort/installation/)

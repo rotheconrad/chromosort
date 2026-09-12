@@ -145,3 +145,9 @@ and, with `--per-ref`, one plot per reference sequence in each requested format.
 | `--min-mapq` | `0` | Ignore PAF rows below this MAPQ. Ignored for coords. |
 | `--include-secondary-paf` | off | Include PAF rows marked `tp:A:S`; skipped by default. |
 | `--max-segments` | `0` | Maximum drawn alignment rows after filtering; 0 means no limit. |
+
+## Checked publication inputs
+
+The publication candidate supports `--manifest` for the relevant reference-alignment stage.
+See [labeled reference semantics]({{ '/labeled-references/' | relative_url }}), [supervised review]({{ '/commands/workflow/' | relative_url }}),
+and [read evidence figures]({{ '/commands/reads/' | relative_url }}). Legacy single-reference arguments remain supported.

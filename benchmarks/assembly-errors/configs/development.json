@@ -1,0 +1,91 @@
+{
+  "schema": "benchmark-config-v1",
+  "cases": [
+    {
+      "case_id": "D001",
+      "family": "wheat_documented_orientation",
+      "seed": 101,
+      "coverage": 12
+    },
+    {
+      "case_id": "D002",
+      "family": "oversegmentation",
+      "seed": 102,
+      "coverage": 12
+    },
+    {
+      "case_id": "D003",
+      "family": "barley_orientation",
+      "seed": 103,
+      "coverage": 12
+    },
+    {
+      "case_id": "D004",
+      "family": "barley_two_errors",
+      "seed": 104,
+      "coverage": 12
+    },
+    {
+      "case_id": "D005",
+      "family": "barley_collapse",
+      "seed": 105,
+      "coverage": 12
+    },
+    {
+      "case_id": "D006",
+      "family": "true_overlap",
+      "seed": 106,
+      "coverage": 12
+    },
+    {
+      "case_id": "D007",
+      "family": "repeat_overlap",
+      "seed": 107,
+      "coverage": 12
+    },
+    {
+      "case_id": "D008",
+      "family": "reference_gap",
+      "seed": 108,
+      "coverage": 12
+    },
+    {
+      "case_id": "D009",
+      "family": "multi_ambiguous",
+      "seed": 109,
+      "coverage": 12
+    },
+    {
+      "case_id": "D010",
+      "family": "multi_exchange",
+      "seed": 110,
+      "coverage": 12
+    },
+    {
+      "case_id": "D011",
+      "family": "multi_misjoin",
+      "seed": 111,
+      "coverage": 12
+    },
+    {
+      "case_id": "D012",
+      "family": "barley_orientation",
+      "seed": 112,
+      "coverage": 6,
+      "error_size": 25000,
+      "target_divergence": 0.002
+    },
+    {
+      "case_id": "D013",
+      "family": "reference_overlap_only",
+      "seed": 113,
+      "coverage": 12
+    },
+    {
+      "case_id": "D014",
+      "family": "novel_retention",
+      "seed": 114,
+      "coverage": 12
+    }
+  ]
+}

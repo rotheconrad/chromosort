@@ -242,3 +242,9 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 | `--agp-gap-type` | `contig` | AGP gap type for N gaps inserted in manual scaffold mode. |
 | `--agp-linkage` | `no` | AGP linkage value for N gaps inserted in manual scaffold mode. |
 | `--agp-linkage-evidence` | `na` | AGP linkage evidence for N gaps inserted in manual scaffold mode. |
+
+## Checked publication inputs
+
+The publication candidate supports `--manifest` for the relevant reference-alignment stage.
+See [labeled reference semantics]({{ '/labeled-references/' | relative_url }}), [supervised review]({{ '/commands/workflow/' | relative_url }}),
+and [read evidence figures]({{ '/commands/reads/' | relative_url }}). Legacy single-reference arguments remain supported.

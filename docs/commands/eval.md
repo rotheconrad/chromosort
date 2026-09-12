@@ -261,3 +261,9 @@ The planner threshold options mirror the corresponding executor command.
 `eval` is evidence-first and table-only. It does not change FASTA records. The
 sequence-changing step remains explicit: review the table, then pass it to the
 corresponding executor command.
+
+## Checked publication inputs
+
+The publication candidate supports `--manifest` for the relevant reference-alignment stage.
+See [labeled reference semantics]({{ '/labeled-references/' | relative_url }}), [supervised review]({{ '/commands/workflow/' | relative_url }}),
+and [read evidence figures]({{ '/commands/reads/' | relative_url }}). Legacy single-reference arguments remain supported.

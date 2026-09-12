@@ -1,0 +1,4 @@
+input_id	input_start	input_end	target_id	target_start	target_end	strand
+c001	0	250000	t01	0	250000	+
+c002	0	250000	t02	0	250000	+
+c003	0	250000	t03	0	250000	+

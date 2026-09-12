@@ -51,6 +51,16 @@ nav:
         url: /input-files/#graph-input-files
       - title: Preflight
         url: /input-files/#preflight-checks
+  - title: Labeled references
+    url: /labeled-references/
+  - title: Read figure provenance
+    url: /read-figure-port/
+  - title: Review refinement
+    url: /review-refinement/
+  - title: Public benchmarks
+    url: /benchmarks/
+  - title: Release preparation
+    url: /release-preparation/
   - title: Workflows
     url: /workflows/
     children:
@@ -171,6 +181,10 @@ nav:
         url: /commands/graph-map/
       - title: scaffold
         url: /commands/scaffold/
+      - title: reads
+        url: /commands/reads/
+      - title: workflow
+        url: /commands/workflow/
       - title: gapfill
         url: /commands/gapfill/
   - title: Outputs
@@ -238,9 +252,9 @@ nav:
       - title: Review layer
         url: /roadmap/#review-layer-design
       - title: Eval modes
-        url: /roadmap/#planned-eval-modes
+        url: /roadmap/#eval-modes
       - title: Manual modes
-        url: /roadmap/#planned-manual-modes
+        url: /roadmap/#manual-modes
       - title: Long reads
         url: /roadmap/#long-read-backmapping-evidence
   - title: Troubleshooting

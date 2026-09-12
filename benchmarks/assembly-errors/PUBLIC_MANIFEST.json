@@ -1,0 +1,350 @@
+{
+  "excludes": "Ignored work, Python caches and this self-referential manifest; no staging/commit/push is performed.",
+  "file_count": 73,
+  "files": {
+    ".gitignore": {
+      "bytes": 62,
+      "sha256": "aee9fc17640481c9e0e4f3ecf66b609424dbc45c85720fcae6cf872dad686831"
+    },
+    "NOTICE.md": {
+      "bytes": 1703,
+      "sha256": "ac72d304b03c22f651ffd1847beaf35f136a17e43aad72f1230ef9e7608d9ac9"
+    },
+    "README.md": {
+      "bytes": 5160,
+      "sha256": "b86e286788438f3968192ad086d6c0cd9ffcdf05db6993ee5d1368bb27d1d3ed"
+    },
+    "configs/candidate-0.4.0rc2.json": {
+      "bytes": 2119,
+      "sha256": "ba26526429faa463a822dccdbeaa330e70f79dcf13fdf50b858bc2856196f337"
+    },
+    "configs/comparators.json": {
+      "bytes": 1529,
+      "sha256": "7de46cda92d1e79a5f87f2922335f3772eed26b74c6b7b52b5f372ec33479d6f"
+    },
+    "configs/comparators.v2.json": {
+      "bytes": 2168,
+      "sha256": "1f062a410c451b1cef18fb8f95e2b1ebdbc13858242abc946645209e18b5c84b"
+    },
+    "configs/development.json": {
+      "bytes": 1717,
+      "sha256": "e5b721a46daa347a812683c4338d35f8e74bad3b7539f532c99d7b6fb777be42"
+    },
+    "docs/cases.md": {
+      "bytes": 3400,
+      "sha256": "7f5b70c84b8165dfa2421cfe5282411204c66e11afd9d4e63dc1c885faea143f"
+    },
+    "docs/next-validation.md": {
+      "bytes": 1804,
+      "sha256": "69efa68679e023cf609f60f1a72805f0bf80bbd72a0a1c718c4b7ee39321d0e7"
+    },
+    "docs/reproduction.md": {
+      "bytes": 8411,
+      "sha256": "bf4d243ec35c85a7d8b22edb6afecf9d514ad9434492145074918df64b4b5323"
+    },
+    "docs/results.md": {
+      "bytes": 7985,
+      "sha256": "de7cb70b9e3695d5a6698a6dc6b51ed76529ae91931bb7fbb5da7ad8a09e1e2b"
+    },
+    "docs/scoring.md": {
+      "bytes": 4953,
+      "sha256": "550b8b72ca7e613d7df7382c9ab88ed84e7182b4792b3d971a38c7adce98b6b6"
+    },
+    "docs/sources.md": {
+      "bytes": 4727,
+      "sha256": "eb893929f4f86a84b192917168ec92bf80ff22b29d7a5aa4c53e9b872f3e01e7"
+    },
+    "fixtures/development/D001/evidence/CS_v2.assembly.paf": {
+      "bytes": 4014,
+      "sha256": "8abe95fd6b5da7dc21b1959deb7f7f72c10c0c1ccb468e9615422a34ab326e45"
+    },
+    "fixtures/development/D001/evidence/reads.assembly.paf": {
+      "bytes": 119693,
+      "sha256": "e84541bc71bcc8ae4886839f017c00592241141fa12bd5ccf2cacb7de8dc05c5"
+    },
+    "fixtures/development/D001/inputs/assembly.fa": {
+      "bytes": 651865,
+      "sha256": "6ae19e7218838f0233bfd88e6407c81a60cb4c67ab61160e746c1865a0baa4af"
+    },
+    "fixtures/development/D001/inputs/ref_CS_v2.fa": {
+      "bytes": 994115,
+      "sha256": "67d05ddac64b40a4bce3cabaf6edd7f882b5250828339ef87de1443277235518"
+    },
+    "fixtures/development/D001/inputs/reference_sequences.tsv": {
+      "bytes": 126,
+      "sha256": "b86da59da62691c68b47a9dcc963b7a885a76882fd471469408b7ba33a8686c3"
+    },
+    "fixtures/development/D001/inputs/references.tsv": {
+      "bytes": 187,
+      "sha256": "955595e257ecfddb58f5b6a38b3e8327572530cbc1789989411056e7b8fbf7f4"
+    },
+    "fixtures/development/D001/manifest.json": {
+      "bytes": 2841,
+      "sha256": "4dab9e40e26ebf04cac05f74f7674dd71c4af8226479d657b3647148a7e6eb74"
+    },
+    "fixtures/development/D003/evidence/Mla_BAC.assembly.paf": {
+      "bytes": 534,
+      "sha256": "05ca2f67ab6025c5a9bdc466e6b552a3e9569e4415e83fd2bbae2225e3b95e9e"
+    },
+    "fixtures/development/D003/evidence/reads.assembly.paf": {
+      "bytes": 57205,
+      "sha256": "47bb52ad0ec0cafef856c2efc9e059e3bef447f716539096406857e85080eedb"
+    },
+    "fixtures/development/D003/inputs/assembly.fa": {
+      "bytes": 264537,
+      "sha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c"
+    },
+    "fixtures/development/D003/inputs/ref_Mla_BAC.fa": {
+      "bytes": 264537,
+      "sha256": "f1f36920ab0cebc8c8ad0a384b18dcb026c0e205e9086c4a692dcec1305da332"
+    },
+    "fixtures/development/D003/inputs/reference_sequences.tsv": {
+      "bytes": 125,
+      "sha256": "997fca5b9f2ddc1711dc4ab6f3b430a83f060c43bc1fdf3b4eefed2a5532349a"
+    },
+    "fixtures/development/D003/inputs/references.tsv": {
+      "bytes": 185,
+      "sha256": "6fc71559f67575f8b9489bae7898e47bd926b40699376f8db784afb9e41b32b2"
+    },
+    "fixtures/development/D003/manifest.json": {
+      "bytes": 2851,
+      "sha256": "b2f63b037e4865ee39b568d74a921b776dfc017f88f374b4b761366d9b65204e"
+    },
+    "fixtures/development/D010/evidence/CS_A.assembly.paf": {
+      "bytes": 1726,
+      "sha256": "383aca3c79d87553b40c5f07bb580251c6e79c82ed0fd84d110b3e1f2180f215"
+    },
+    "fixtures/development/D010/evidence/CS_B.assembly.paf": {
+      "bytes": 2066,
+      "sha256": "925d8048d80223b28e57e6357b3cdc4d86c6a97521be318288a6b4c144f682fd"
+    },
+    "fixtures/development/D010/evidence/CS_D.assembly.paf": {
+      "bytes": 2980,
+      "sha256": "fb7320add94f3a3be4298f2e948165791c0a2c9c8d97b6667855510f6a6eca60"
+    },
+    "fixtures/development/D010/evidence/reads.assembly.paf": {
+      "bytes": 126485,
+      "sha256": "34636b07c16d6621ca7f3fa93bacfed2d224cc03712ce57493bf8e666c5e52cd"
+    },
+    "fixtures/development/D010/inputs/assembly.fa": {
+      "bytes": 759393,
+      "sha256": "4ce1ef70763ae78519a8f86019cca780ca97181d99185f2305059260228f66e8"
+    },
+    "fixtures/development/D010/inputs/ref_CS_A.fa": {
+      "bytes": 253131,
+      "sha256": "0225d2bfd2ff8356161c7726c392bc8c04e19b9cbc4a4410a62a40a3321dd5a3"
+    },
+    "fixtures/development/D010/inputs/ref_CS_B.fa": {
+      "bytes": 253131,
+      "sha256": "88a48c8fac17d8236f143c6d86be2a74e5ee391a7b90e0be6e36a36ff38c0f4f"
+    },
+    "fixtures/development/D010/inputs/ref_CS_D.fa": {
+      "bytes": 253131,
+      "sha256": "42a654d96229ecb87a92e290d93928ea75f327acc9f50fbfe2bfca36932edd4f"
+    },
+    "fixtures/development/D010/inputs/reference_sequences.tsv": {
+      "bytes": 182,
+      "sha256": "618fd4b5139d9584984f1ccf416e583075140734030447cfea049c79fede765b"
+    },
+    "fixtures/development/D010/inputs/references.tsv": {
+      "bytes": 429,
+      "sha256": "cbbcd2061cb764cff4ccd113db76c14e175c123ed424edc63f6ed7256791e187"
+    },
+    "fixtures/development/D010/manifest.json": {
+      "bytes": 4486,
+      "sha256": "c8338ee828e59755702aabeabdc46cf908201ca4f3eb6669935c9372a792d5dd"
+    },
+    "fixtures/index.json": {
+      "bytes": 7192,
+      "sha256": "ea4df19abd25008bcc95b3ad530a73cc74f295944c96461698796b4c8eec3fc1"
+    },
+    "fixtures/truth/D001/config.json": {
+      "bytes": 101,
+      "sha256": "94ddd32fd8db39115b8806ec808ccb5125c6a5b0ac5e66be7640b4312e4f8c50"
+    },
+    "fixtures/truth/D001/input_to_target.tsv": {
+      "bytes": 179,
+      "sha256": "1e89caedd8948b026f7813525f7aa1a5304afc4360dded1725e2cdbf35051a1a"
+    },
+    "fixtures/truth/D001/target.fa": {
+      "bytes": 651864,
+      "sha256": "4f23d293ff432cf923820d6b454197b5ad97c4ae64d7cdc444e9b0eb8cf53b1c"
+    },
+    "fixtures/truth/D001/truth.json": {
+      "bytes": 2105,
+      "sha256": "aba33dd7d0fb8f737643d7d008841f53a1613356149b3009068ade18a3c43168"
+    },
+    "fixtures/truth/D003/config.json": {
+      "bytes": 91,
+      "sha256": "15248548e2e6f3d32646116679593e386f9b48275e655de5435e6ef1d9cae14b"
+    },
+    "fixtures/truth/D003/input_to_target.tsv": {
+      "bytes": 179,
+      "sha256": "913f07e78fceaccaa4f7071932a98e03a4fa02cc41625381bb3b5de2fedaaee4"
+    },
+    "fixtures/truth/D003/target.fa": {
+      "bytes": 264536,
+      "sha256": "2ebd5b02009cd5bbb028c72de2c94436e395bac12ee12d862f8091ba07239b3e"
+    },
+    "fixtures/truth/D003/truth.json": {
+      "bytes": 2648,
+      "sha256": "45ef5c92d16716737136f814a1ab2373cb10671a9ed32f1ec810c077118e1ba6"
+    },
+    "fixtures/truth/D010/config.json": {
+      "bytes": 87,
+      "sha256": "33e1815629e21771e50f6a32a947f6bfcd9e5f5b6c04b01f73f5d5ab6089ef5e"
+    },
+    "fixtures/truth/D010/input_to_target.tsv": {
+      "bytes": 159,
+      "sha256": "ca5814a89b4ad2c6a38b89b5b9002f123001d5f4360743195aaee990e643e6dc"
+    },
+    "fixtures/truth/D010/target.fa": {
+      "bytes": 759390,
+      "sha256": "0d4c0ae36101acf6d39008023a6080110851177b0bbfe66fc6218f87b3010a7b"
+    },
+    "fixtures/truth/D010/truth.json": {
+      "bytes": 3069,
+      "sha256": "cab301feaf1dd4c80f65eca3cc2b8e895021582bb40f449cc6ad5e7be91e0731"
+    },
+    "reports/clean-copy-verification.json": {
+      "bytes": 2002,
+      "sha256": "85d565182b35a779791e35ac97f0b2c0e2264a599cd4b342e64ad8f38760eaed"
+    },
+    "reports/historical_scores.jsonl": {
+      "bytes": 778477,
+      "sha256": "a75e89b59eecb3fbc97c0647eed1e939af875848ea4adcdd41b4311a41e8d46a"
+    },
+    "reports/integration-verification.json": {
+      "bytes": 2466,
+      "sha256": "2920b056adc980f5cc52da0c15cc4aaa244cd252bd99a69f82c1c61b2f4896fa"
+    },
+    "reports/summary.tsv": {
+      "bytes": 1493,
+      "sha256": "0c328d3f7a5d49902ac2a9e320d81b4716e14cbba2600d459a09e464ea74908d"
+    },
+    "schemas/chromosort-input-v1.schema.json": {
+      "bytes": 1392,
+      "sha256": "8d77155f1224e049583b1ddb05e393ad6cf4fedcf466d3f980f1cf1ff2ca500d"
+    },
+    "scripts/adapt_agp.py": {
+      "bytes": 3021,
+      "sha256": "8ef0730d08cf3a4587395cb81d4c81c41a8001544f97af8e04ef1743408ef9b2"
+    },
+    "scripts/audit_public.py": {
+      "bytes": 2981,
+      "sha256": "aadb98f97cd5bbd6fbd87c7fbaafb29d072c06ae86d087d3b16b3c97787cb717"
+    },
+    "scripts/check_clean_checkout.py": {
+      "bytes": 3008,
+      "sha256": "5c70810e2408151a67e8ccbbdaa5dd3fa5bc6657bd9398805b7fafd4099f13ab"
+    },
+    "scripts/evidence.py": {
+      "bytes": 6796,
+      "sha256": "9277b2dc599a0d3f266c7ed25e39dd5f0c513d5dc0a8609e4dc9871d0c796779"
+    },
+    "scripts/generate.py": {
+      "bytes": 17002,
+      "sha256": "9511e092cea1ac3aab4dea4198a685a414d5413c669f0cddf78aab27d0fbf162"
+    },
+    "scripts/retrieve.py": {
+      "bytes": 3342,
+      "sha256": "13fb108691ff8ce1121ab4ee73bae5afbc644f835f255283d9d9eaf742077d3a"
+    },
+    "scripts/run_benchmark.py": {
+      "bytes": 11680,
+      "sha256": "8d583a43a1d642b5a3f1d8aa0d81aeefaae125e434c11e2f4b4716913c7eb07e"
+    },
+    "scripts/score.py": {
+      "bytes": 14114,
+      "sha256": "4999e8d94d34beb0929d245b6d9fe3887c57f4d3f6c8b5ef28430e6c19f97eb9"
+    },
+    "scripts/summarize_history.py": {
+      "bytes": 2226,
+      "sha256": "8027f0a620ee4974297d2a8540d95b1e5f0515b412650dc4cb13f2fc23ffc03d"
+    },
+    "scripts/verify.py": {
+      "bytes": 5698,
+      "sha256": "146169c4944c13b79f6a4e78bfad2f7fc15b21557f520e47e01e8f649dbcf64d"
+    },
+    "sources/development_expected.json": {
+      "bytes": 23829,
+      "sha256": "a4e7f70dba75d9036a403d20642664dd653911b6b470a0f261141170270f2987"
+    },
+    "sources/embedded_sources.json": {
+      "bytes": 557,
+      "sha256": "a301528d63c90daca9c12a32f0d750643a8dd270e78c755d5b29847840f3f714"
+    },
+    "sources/sequence_registry.json": {
+      "bytes": 4069,
+      "sha256": "321ad1348ea7f013e228f7bff34344ba421d29a992dfc7f290d979034cda2c9f"
+    },
+    "sources/software_identities.json": {
+      "bytes": 2849,
+      "sha256": "e865de6981e3de5a91ef63c1b0343a26b30c3663e6b42352d2fe844df0bd16e3"
+    },
+    "sources/source_error_registry.json": {
+      "bytes": 2977,
+      "sha256": "92e85622717e31623d56863c1c0fad66c22b006dd58926075408092247e59423"
+    },
+    "src/benchio.py": {
+      "bytes": 2100,
+      "sha256": "08a9702b336c1c97e51a8fb6c7231e08a6506bda8205c1d15dd014061734bf8b"
+    },
+    "tests/test_score.py": {
+      "bytes": 5126,
+      "sha256": "2b1231804ef1ee31a4a276ccf54e8791d60e44b6038928fff60366e82c44bd90"
+    }
+  },
+  "groups": {
+    ".gitignore": {
+      "bytes": 62,
+      "files": 1
+    },
+    "NOTICE.md": {
+      "bytes": 1703,
+      "files": 1
+    },
+    "README.md": {
+      "bytes": 5160,
+      "files": 1
+    },
+    "configs": {
+      "bytes": 7533,
+      "files": 4
+    },
+    "docs": {
+      "bytes": 31280,
+      "files": 6
+    },
+    "fixtures": {
+      "bytes": 5711555,
+      "files": 38
+    },
+    "reports": {
+      "bytes": 784438,
+      "files": 4
+    },
+    "schemas": {
+      "bytes": 1392,
+      "files": 1
+    },
+    "scripts": {
+      "bytes": 69868,
+      "files": 10
+    },
+    "sources": {
+      "bytes": 34281,
+      "files": 5
+    },
+    "src": {
+      "bytes": 2100,
+      "files": 1
+    },
+    "tests": {
+      "bytes": 5126,
+      "files": 1
+    }
+  },
+  "schema": "public-benchmark-content-manifest-v1",
+  "total_bytes": 6654498
+}

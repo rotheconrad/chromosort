@@ -142,7 +142,7 @@ def parse_args(argv=None, prog=None):
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    ap.add_argument("--ref-fasta", required=True, help="Reference FASTA.")
+    ap.add_argument("--ref-fasta", help="Reference FASTA (or use --manifest).")
     ap.add_argument(
         "--ref-fai",
         default=None,
@@ -151,7 +151,7 @@ def parse_args(argv=None, prog=None):
     ap.add_argument(
         "-f",
         "--assembly-fasta",
-        required=True,
+        required=False,
         help="Assembly FASTA whose contigs should be ordered.",
     )
     ap.add_argument(
@@ -160,6 +160,11 @@ def parse_args(argv=None, prog=None):
         help="Assembly FASTA index. Defaults to <assembly-fasta>.fai when present.",
     )
     alignment_group = ap.add_mutually_exclusive_group(required=True)
+    from .manifest import add_manifest_argument
+    add_manifest_argument(alignment_group)
+    ap.add_argument("--retain-all", action="store_true", help="Retain unresolved/excluded contigs once in unplaced/ambiguous partitions.")
+    ap.add_argument("--ambiguity-margin", type=float, default=0.05, help="Manifest mode: relative best/alternate output-group score margin at or below which placement is ambiguous.")
+    ap.add_argument("--filter-within-copy", action="store_true", help="Manifest mode: permit overlap filtering within an explicitly declared copy label; default preserves copies.")
     alignment_group.add_argument(
         "-c",
         "--coords",
@@ -657,6 +662,8 @@ def iter_paf(
 
 
 def alignment_source_from_args(args):
+    if getattr(args, "manifest", None):
+        return args.manifest, "manifest"
     if bool(args.coords) == bool(args.paf):
         raise ValueError("Provide exactly one of --coords or --paf.")
     if args.coords:
@@ -671,7 +678,10 @@ def iter_alignments(
     min_mapq=0,
     include_secondary_paf=False,
 ):
-    if input_format == "coords":
+    if input_format == "manifest":
+        from .manifest import InputBundle
+        yield from InputBundle(path).iter_segments(min_identity, min_mapq, include_secondary_paf)
+    elif input_format == "coords":
         yield from iter_coords(path, min_identity)
     elif input_format == "paf":
         yield from iter_paf(
@@ -1251,6 +1261,8 @@ def fasta_header(assignment, simple_headers):
     if simple_headers:
         return assignment.new_name
     best = assignment.best
+    if best is None:
+        return f"{assignment.new_name} original={assignment.query} status={assignment.status}"
     fields = [
         assignment.new_name,
         f"original={assignment.query}",
@@ -1623,7 +1635,8 @@ def write_match_report(path, matches):
 def write_chromosome_summary(path, ref_records, kept_assignments):
     by_ref = defaultdict(list)
     for assignment in kept_assignments:
-        by_ref[assignment.best.ref].append(assignment)
+        if assignment.best:
+            by_ref[assignment.best.ref].append(assignment)
 
     header = [
         "ref",
@@ -1756,6 +1769,13 @@ def write_run_summary(
 
 def main(argv=None, prog=None):
     args = parse_args(argv, prog=prog)
+    from .manifest import resolve_manifest_args
+    bundle = resolve_manifest_args(args, require_reference=True)
+    if bundle:
+        from .multireference import run
+        return run(args, bundle)
+    if args.filter_within_copy:
+        raise ValueError("--filter-within-copy requires --manifest")
     if args.graph_guard and not args.gfa:
         sys.stderr.write("ERROR: --graph-guard requires --gfa\n")
         sys.exit(2)
@@ -1804,6 +1824,16 @@ def main(argv=None, prog=None):
         args.name_separator,
         args.orient_to_reference,
     )
+    if args.retain_all:
+        from .manifest import namespaced
+        for rec in query_records:
+            assignment = assignments[rec.name]
+            if not assignment.kept:
+                partition = "ambiguous" if assignment.status == "ambiguous_ref_match" else "unplaced"
+                assignment.kept = True
+                assignment.best = None
+                assignment.new_name = namespaced(partition, rec.name)
+                kept_assignments.append(assignment)
 
     write_assignment_report(output_paths["contig_assignments"], query_records, assignments)
     if args.gfa:

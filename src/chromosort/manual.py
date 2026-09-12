@@ -86,7 +86,8 @@ def parse_generate_args(argv=None, prog=None, manual_task="general"):
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    ap.add_argument("--ref-fasta", required=True, help="Reference FASTA.")
+    ap.add_argument("--ref-fasta", help="Reference FASTA (or use --manifest).")
+    ap.add_argument("--assignments", help="Optional matching sort assignment TSV for placement/ambiguity labels.")
     ap.add_argument(
         "--ref-fai",
         default=None,
@@ -95,7 +96,7 @@ def parse_generate_args(argv=None, prog=None, manual_task="general"):
     ap.add_argument(
         "-f",
         "--assembly-fasta",
-        required=True,
+        required=False,
         help="Assembly FASTA whose contigs should be edited.",
     )
     ap.add_argument(
@@ -104,6 +105,8 @@ def parse_generate_args(argv=None, prog=None, manual_task="general"):
         help="Assembly FASTA index. Defaults to <assembly-fasta>.fai when present.",
     )
     alignment_group = ap.add_mutually_exclusive_group(required=True)
+    from .manifest import add_manifest_argument
+    add_manifest_argument(alignment_group)
     alignment_group.add_argument("-c", "--coords", help="MUMmer show-coords file.")
     alignment_group.add_argument("--paf", help="minimap2 PAF file.")
     ap.add_argument(
@@ -581,8 +584,12 @@ def load_review_events(path, task):
 
 
 def build_dashboard_data(args):
+    from .manifest import resolve_manifest_args
+    from .provenance import sha256_file
+    from dataclasses import asdict
+    bundle = resolve_manifest_args(args, require_reference=True)
     alignment_path, alignment_format = alignment_source_from_args(args)
-    ref_records, ref_by_name = read_fasta_lengths(args.ref_fasta, args.ref_fai)
+    ref_records, ref_by_name = (bundle.ref_records, bundle.ref_by_name) if bundle else read_fasta_lengths(args.ref_fasta, args.ref_fai)
     query_records, query_by_name = read_fasta_lengths(args.assembly_fasta, args.assembly_fai)
     ref_lengths = {name: rec for name, rec in ref_by_name.items()}
     query_lengths = {name: rec for name, rec in query_by_name.items()}
@@ -608,6 +615,14 @@ def build_dashboard_data(args):
         graph_context,
     )
     annotate_graph_neighbor_alignment(query_items)
+    if bundle:
+        from .manifest import table
+        supplied = {row["contig"]: row for row in table(args.assignments)} if args.assignments else {}
+        for item in query_items:
+            placement = supplied.get(item["name"], {"partition": "unreviewed"})
+            if placement.get("assembly_sha256", bundle.assembly_digest) != bundle.assembly_digest:
+                raise ValueError("Dashboard assignments describe a different assembly stage")
+            item["referenceAssignment"] = placement
     segments, skipped = load_dashboard_segments(args, ref_by_name, query_by_name)
     if skipped_unknown_query:
         skipped["unknown_query_in_metrics"] = skipped_unknown_query
@@ -622,6 +637,12 @@ def build_dashboard_data(args):
 
     manual_task = getattr(args, "manual_task", "general")
     review_events = load_review_events(args.review_table, manual_task)
+    initial_pieces = build_initial_pieces(query_items)
+    if bundle:
+        placements = {item["name"]: item["referenceAssignment"] for item in query_items}
+        for piece in initial_pieces:
+            placement = placements[piece["source"]]
+            piece["scaffold"] = placement.get("scaffold_id", "unplaced") if placement["partition"] == "placed" and placement.get("scaffold_eligible", "yes") == "yes" else "unplaced"
 
     return {
         "schema": SCHEMA,
@@ -629,6 +650,8 @@ def build_dashboard_data(args):
         "mode": f"manual-{manual_task}" if manual_task in MANUAL_TASKS else "manual-dashboard",
         "reviewTask": manual_task,
         "inputs": {
+            "assemblySha256": sha256_file(args.assembly_fasta),
+            "manifest": str(args.manifest) if getattr(args, "manifest", None) else None,
             "refFasta": str(args.ref_fasta),
             "assemblyFasta": str(args.assembly_fasta),
             "alignmentFormat": alignment_format,
@@ -677,11 +700,12 @@ def build_dashboard_data(args):
             "skipped": skipped,
         },
         "refRecords": [
-            {"name": rec.name, "length": rec.length, "order": idx + 1}
+            {"name": rec.name, "length": rec.length, "order": idx + 1,
+             "labels": asdict(bundle.sequences[rec.name]) if bundle else {}}
             for idx, rec in enumerate(ref_records)
         ],
         "queryRecords": query_items,
-        "initialPieces": build_initial_pieces(query_items),
+        "initialPieces": initial_pieces,
         "segments": segments,
         "sequences": sequences,
         "reviewEvents": review_events,
@@ -948,7 +972,23 @@ def run_generate(args):
 
 def run_apply(args):
     recipe, pieces = read_recipe(args.recipe)
+    from .provenance import check_digest
+    check_digest(args.assembly_fasta, recipe.get("sourceAssemblySha256"), "manual recipe assembly")
     active = active_pieces(pieces)
+    if recipe.get("requireCompleteCoverage"):
+        lengths = {name: len(seq) for name, _, seq in iter_fasta_records(args.assembly_fasta)}
+        from collections import defaultdict
+        spans = defaultdict(list)
+        for piece in active:
+            spans[piece.source].append((piece.start, piece.end))
+        for source, length in lengths.items():
+            cursor = 1
+            for start, end in sorted(spans[source]):
+                if start != cursor:
+                    raise ValueError(f"Recipe does not cover source exactly once: {source}")
+                cursor = end + 1
+            if cursor != length + 1:
+                raise ValueError(f"Recipe does not cover source exactly once: {source}")
     scaffold_enabled = (
         bool(recipe.get("scaffoldEnabled", False))
         if args.scaffold is None
@@ -1874,6 +1914,8 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
     els.eventList.innerHTML = reviewEvents.map(evt => {
       const selected = evt.event_id === selectedEventId ? " selected" : "";
       const fields = eventFields(evt);
+      const figure = fields.read_figure_svg && /^[a-zA-Z0-9_./-]+\.svg$/.test(fields.read_figure_svg) ? fields.read_figure_svg : null;
+      const endFigure = fields.read_figure_end_svg && /^[a-zA-Z0-9_./-]+\.svg$/.test(fields.read_figure_end_svg) ? fields.read_figure_end_svg : null;
       const support = firstPresent(
         fields.gaf_support_status,
         fields.gaf_path_support,
@@ -1886,6 +1928,8 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
         <strong title="${escapeHtml(evt.target)}">${escapeHtml(evt.action)} | ${escapeHtml(evt.target)}</strong>
         <span>${escapeHtml(evt.status)} | ${escapeHtml(evt.reason || ".")}</span>
         <span><span class="badge ${eventBadgeClass(evt)}">${evt.accept ? "accepted" : "review"}</span> ${escapeHtml(support)}</span>
+        ${figure ? `<a href="${escapeHtml(figure)}" target="_blank">Read evidence figure</a>` : ""}
+        ${endFigure ? `<a href="${escapeHtml(endFigure)}" target="_blank">Read evidence at interval end</a>` : ""}
       </div>`;
     }).join("");
     els.eventList.querySelectorAll(".event-row").forEach(row => {
@@ -1958,6 +2002,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       fmtBp(pieceLength(piece)),
       q.bestRef ? "best " + q.bestRef + ":" + q.refStart + "-" + q.refEnd : "unaligned",
       q.queryCov ? "query cov " + (q.queryCov * 100).toFixed(1) + "%" : ""
+      ,q.referenceAssignment ? "placement: " + q.referenceAssignment.partition + " | subgenome " + (q.referenceAssignment.subgenome || "unknown") + " | copy " + (q.referenceAssignment.copy_label || "unknown") + " | alternate " + (q.referenceAssignment.alternate_ref || ".") + " | backbone " + (q.referenceAssignment.scaffold_backbone || ".") : ""
     ].filter(Boolean).join(" | ");
     els.selectedGraph.textContent = [
       graphDetail(graph),
@@ -2183,6 +2228,7 @@ window.CHROMOSORT_MANUAL_DATA = __CHROMOSORT_MANUAL_DATA__;
       schema: data.schema,
       chromosortVersion: data.version,
       sourceAssembly: data.inputs.assemblyFasta,
+      sourceAssemblySha256: data.inputs.assemblySha256,
       scaffoldEnabled,
       gapBp: Math.max(0, Number(els.gapBp.value) || 0),
       pieces: pieces.map(p => ({

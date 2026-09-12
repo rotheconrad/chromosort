@@ -1,4 +1,4 @@
-/tmp/noisy_ref.fa /tmp/noisy_assembly.fa
+noisy_ref.fa noisy_assembly.fa
 NUCMER
 
     [S1]     [E1]  |     [S2]     [E2]  |  [LEN 1]  [LEN 2]  |  [% IDY]  |  [LEN R]  [LEN Q]  |  [COV R]  [COV Q]  | [TAGS]

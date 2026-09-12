@@ -43,6 +43,12 @@ class AssignmentRow:
     ref_start: int
     ref_end: int
     orientation: str = "."
+    backbone: str = ""
+    output_group: str = ""
+    subgenome: str = ""
+    copy_label: str = ""
+    assembly_sha256: str = ""
+    ordered_fasta_sha256: str = ""
 
 
 @dataclass
@@ -140,6 +146,7 @@ class ReviewedGap:
     left_contig: str
     right_contig: str
     gap_bp: int
+    overlap_policy: str = ""
 
 
 def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
@@ -221,6 +228,7 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
             "scaffold/left/right junctions."
         ),
     )
+    ap.add_argument("--require-reviewed-joins", action="store_true", help="With --reviewed-plan, split scaffold groups at every junction without an accepted decision.")
     ap.add_argument(
         "--gfa",
         default=None,
@@ -274,19 +282,31 @@ def read_assignments(path):
             kept = row["kept"].strip().lower() in {"yes", "true", "1"}
             if not kept:
                 continue
+            if row.get("scaffold_eligible", "yes") != "yes":
+                continue
+            if row.get("partition", "placed") != "placed" or row["assigned_ref"].strip() in {"", "."}:
+                continue
             new_name = row["new_name"].strip()
             if not new_name or new_name == ".":
                 continue
             if new_name in assignments:
                 raise ValueError(f"Duplicate kept new_name {new_name!r} in {path}")
+            if row.get("scaffold_backbone") and row["scaffold_backbone"] != row["assigned_ref"]:
+                raise ValueError(f"Assignment coordinates must use the declared backbone: {new_name}")
             assignments[new_name] = AssignmentRow(
                 contig=row["contig"].strip(),
                 new_name=new_name,
-                ref=row["assigned_ref"].strip(),
+                ref=(row.get("scaffold_id") or row["assigned_ref"]).strip(),
                 order_in_ref=parse_int(row["order_in_ref"], "order_in_ref", new_name),
                 ref_start=parse_int(row["ref_start"], "ref_start", new_name),
                 ref_end=parse_int(row["ref_end"], "ref_end", new_name),
                 orientation=(row.get("orientation") or ".").strip() or ".",
+                backbone=row.get("scaffold_backbone", row["assigned_ref"]).strip(),
+                output_group=row.get("output_group", ""),
+                subgenome=row.get("subgenome", ""),
+                copy_label=row.get("copy_label", ""),
+                assembly_sha256=row.get("assembly_sha256", ""),
+                ordered_fasta_sha256=row.get("ordered_fasta_sha256", ""),
             )
     return assignments
 
@@ -336,7 +356,10 @@ def read_reviewed_scaffold_gaps(path):
             left_contig=left,
             right_contig=right,
             gap_bp=gap_bp,
+            overlap_policy=event.fields.get("overlap_policy", "") if event.fields.get("overlap_policy", "") != "." else "",
         )
+        if decisions[key].overlap_policy not in {"", "zero-gap", "warn", "trim-reference", "trim-sequence"}:
+            raise ValueError(f"Invalid reviewed overlap policy: {event.event_id}")
     return decisions
 
 
@@ -354,6 +377,13 @@ def group_scaffold_members(records, assignments):
             ScaffoldMember(assignment=assignment, record=record)
         )
         seen_assigned.add(record.name)
+
+    for ref, members in groups.items():
+        members.sort(key=lambda member: (member.assignment.order_in_ref, member.assignment.new_name))
+        if len({m.assignment.backbone for m in members}) != 1:
+            raise ValueError(f"Cannot mix reference coordinate backbones in scaffold {ref}")
+        if len({(m.assignment.output_group, m.assignment.subgenome, m.assignment.copy_label) for m in members}) != 1:
+            raise ValueError(f"Cannot join distinct supplied subgenome/copy groups in scaffold {ref}")
 
     missing = [name for name in assignments if name not in seen_assigned]
     if missing:
@@ -440,9 +470,11 @@ def apply_overlap_policy(left, right, overlap_bp, overlap_class, args, graph=Non
             and args.overlap_policy in {"zero-gap", "warn"}
             and overlap_class == "terminal_overlap"
         ):
-            trim_bp = min(overlap_bp, len(right.seq))
-            right.trim_left_bp += trim_bp
-            return "graph_confirmed_trim_reference", graph_overlap_action, trim_bp, None
+            trim_bp, identity = sequence_overlap_identity(left.seq, right.seq, overlap_bp)
+            if trim_bp and identity is not None and identity >= args.trim_sequence_min_identity:
+                right.trim_left_bp += trim_bp
+                return "graph_confirmed_trim_reference", graph_overlap_action, trim_bp, identity
+            return "graph_trim_skipped_sequence_identity", graph_overlap_action, 0, identity
 
     if args.overlap_policy in {"zero-gap", "warn"}:
         return "zero_gap", graph_overlap_action, 0, None
@@ -481,12 +513,19 @@ def build_scaffold(
             raw_gap = inferred_gap(left, member)
             overlap_bp = max(0, -raw_gap)
             overlap_class = classify_adjacent_overlap(left, member, overlap_bp)
+            review_key = (ref, left.assignment.new_name, member.assignment.new_name)
+            reviewed = reviewed_gaps.get(review_key)
+            policy_args = args
+            if reviewed is not None and reviewed.overlap_policy:
+                from copy import copy
+                policy_args = copy(args)
+                policy_args.overlap_policy = reviewed.overlap_policy
             overlap_action, graph_overlap_action, trimmed_bp, sequence_identity = apply_overlap_policy(
                 left,
                 member,
                 overlap_bp,
                 overlap_class,
-                args,
+                policy_args,
                 graph,
             )
             gap_bp = fixed_gap_bp if fixed_gap_bp is not None else max(0, raw_gap)
@@ -520,7 +559,7 @@ def build_scaffold(
                         if ref_span_bp(member.assignment)
                         else 0.0
                     ),
-                    overlap_policy=args.overlap_policy,
+                    overlap_policy=policy_args.overlap_policy,
                     graph_overlap_policy=args.graph_overlap_policy,
                     overlap_action=overlap_action,
                     graph_overlap_action=graph_overlap_action,
@@ -562,6 +601,23 @@ def build_scaffolds(
     reviewed_gaps=None,
     used_reviewed_gaps=None,
 ):
+    if getattr(args, "require_reviewed_joins", False):
+        from dataclasses import replace
+        result = []
+        for ref, members in groups.items():
+            chunks = [[]]
+            for member in members:
+                if chunks[-1] and (ref, chunks[-1][-1].assignment.new_name, member.assignment.new_name) not in (reviewed_gaps or {}):
+                    chunks.append([])
+                chunks[-1].append(member)
+            for index, chunk in enumerate(chunks, 1):
+                scaffold = build_scaffold(ref, chunk, fixed_gap_bp, args, graph, reviewed_gaps, used_reviewed_gaps)
+                if len(chunks) > 1:
+                    from .manifest import namespaced
+                    scaffold.name = namespaced(ref, "part", index)
+                    scaffold.gaps = [replace(gap, scaffold=scaffold.name) for gap in scaffold.gaps]
+                result.append(scaffold)
+        return result
     return [
         build_scaffold(
             ref,
@@ -855,7 +911,9 @@ def build_scaffold_agp_parts(scaffolds, unassigned):
                 end,
                 source="ordered_contig",
                 status="trimmed" if member.trimmed_bp else "unchanged",
-                notes=member.assignment.contig,
+                notes=(member.assignment.contig +
+                       f";backbone={member.assignment.backbone};output_group={member.assignment.output_group}"
+                       f";subgenome={member.assignment.subgenome};copy_label={member.assignment.copy_label}"),
             )
 
     for record in unassigned:
@@ -1048,6 +1106,8 @@ def write_run_summary(path, args, output_paths, scaffolds, unassigned):
 
 
 def run(args):
+    if args.require_reviewed_joins and not args.reviewed_plan:
+        raise ValueError("--require-reviewed-joins requires --reviewed-plan")
     if args.fixed_gap_bp is not None and args.fixed_gap_bp < 0:
         raise ValueError("--fixed-gap-bp must be zero or greater")
     if not 0.0 <= args.trim_sequence_min_identity <= 1.0:
@@ -1073,7 +1133,16 @@ def run(args):
     ensure_output_dirs(output_paths)
 
     assignments = read_assignments(args.assignments)
+    from .provenance import check_digest
+    for digest in {a.ordered_fasta_sha256 for a in assignments.values()} - {"", "."}:
+        check_digest(args.ordered_fasta, digest, "ordered scaffold input")
     records = read_ordered_fasta(args.ordered_fasta)
+    if args.reviewed_plan:
+        from .provenance import check_digest
+        for event in read_review_events(args.reviewed_plan, expected_task="scaffold"):
+            digest = event.fields.get("ordered_fasta_sha256")
+            if digest not in {None, "", "."}:
+                check_digest(args.ordered_fasta, digest, "reviewed scaffold FASTA")
     groups, unassigned = group_scaffold_members(records, assignments)
     graph = read_gfa(args.gfa) if args.gfa else None
     reviewed_gaps = read_reviewed_scaffold_gaps(args.reviewed_plan) if args.reviewed_plan else {}
@@ -1099,6 +1168,9 @@ def run(args):
             args.graph_max_path_edges,
         )
 
+    names = [record.name for record in [*scaffolds, *unassigned]]
+    if len(set(names)) != len(names):
+        raise ValueError("Scaffold output names collide with retained unassigned record names")
     write_scaffold_fasta(output_paths["scaffold_fasta"], scaffolds, unassigned, args.simple_headers, gap_mode)
     agp_parts = build_scaffold_agp_parts(scaffolds, unassigned)
     write_agp(output_paths["agp"], agp_parts)

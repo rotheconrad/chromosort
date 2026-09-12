@@ -140,10 +140,12 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
     ap.add_argument(
         "-f",
         "--assembly-fasta",
-        required=True,
+        required=False,
         help="Assembly FASTA containing the contigs to fix.",
     )
     alignment_group = ap.add_mutually_exclusive_group(required=False)
+    from .manifest import add_manifest_argument
+    add_manifest_argument(alignment_group)
     alignment_group.add_argument(
         "-c",
         "--coords",
@@ -433,6 +435,8 @@ def parse_args(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None)
         action="store_true",
         help="Write only split pieces instead of a full fixed assembly FASTA.",
     )
+    from .continuity import add_arguments
+    add_arguments(ap)
     args = ap.parse_args(argv)
     if args.legacy_auto:
         args.all_contigs = True
@@ -497,13 +501,13 @@ def collect_blocks(
                 f"{kept_segments:,} kept for {len(raw_blocks):,} contig(s)"
             )
 
-    for segment in iter_alignments(
-        alignment_path,
-        alignment_format,
-        min_identity=min_segment_idy,
-        min_mapq=min_mapq,
-        include_secondary_paf=include_secondary_paf,
-    ):
+    filters = dict(min_identity=min_segment_idy, min_mapq=min_mapq, include_secondary_paf=include_secondary_paf)
+    if alignment_format == "manifest":
+        from .manifest import InputBundle
+        segments = InputBundle(alignment_path).correction_segments(**filters)
+    else:
+        segments = iter_alignments(alignment_path, alignment_format, **filters)
+    for segment in segments:
         segments_seen += 1
         if requested_set is not None and segment.query not in requested_set:
             maybe_report_alignment_scan()
@@ -1495,6 +1499,9 @@ def split_piece_from_review_event(event, seq_len, args):
 
 def build_reviewed_plans(fasta_path, reviewed_plan, args):
     events = read_review_events(reviewed_plan, expected_task="fix")
+    from .provenance import check_digest
+    for digest in {e.fields.get("assembly_sha256") for e in events} - {None, "", "."}:
+        check_digest(fasta_path, digest, "reviewed assembly")
     accepted = accepted_events(events)
     grouped = defaultdict(list)
     for event in accepted:
@@ -1520,6 +1527,13 @@ def build_reviewed_plans(fasta_path, reviewed_plan, args):
             for event in contig_events
         ]
         pieces.sort(key=lambda piece: (piece.part_index, piece.slice_start, piece.slice_end))
+        cursor = 0
+        for piece in sorted(pieces, key=lambda piece: piece.slice_start):
+            if piece.slice_start != cursor:
+                raise ValueError(f"Reviewed pieces must cover {contig} exactly once. Reject all pieces to keep the contig, or use workflow decisions to reject individual cuts.")
+            cursor = piece.slice_end
+        if cursor != seq_lengths[contig]:
+            raise ValueError(f"Reviewed pieces must cover {contig} exactly once; partial acceptance would omit sequence. Use a manual recipe for intentional deletion.")
         for piece in pieces:
             if piece.new_name in used_names:
                 raise ValueError(f"Reviewed fix output name is duplicated: {piece.new_name!r}.")
@@ -1649,6 +1663,8 @@ def graph_guard_fix_warnings(requested, plans, graph, stream=None):
 
 def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     args = parse_args(argv, prog=prog)
+    from .manifest import resolve_manifest_args
+    bundle = resolve_manifest_args(args)
     if args.graph_report and not args.gfa:
         sys.stderr.write("ERROR: --graph-report requires --gfa\n")
         sys.exit(2)
@@ -1659,13 +1675,13 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
     if args.all_contigs and explicit_requested:
         sys.stderr.write("ERROR: use either --all or --contigs/--contigs-file, not both\n")
         sys.exit(2)
-    if args.reviewed_plan and (args.coords or args.paf):
+    if args.reviewed_plan and (args.coords or args.paf or args.manifest):
         sys.stderr.write("ERROR: use either --reviewed-plan or --coords/--paf, not both\n")
         sys.exit(2)
     if args.reviewed_plan and (explicit_requested or args.all_contigs):
         sys.stderr.write("ERROR: --reviewed-plan determines target contigs; omit --contigs/--contigs-file/--all\n")
         sys.exit(2)
-    if not args.reviewed_plan and not (args.coords or args.paf):
+    if not args.reviewed_plan and not (args.coords or args.paf or args.manifest):
         sys.stderr.write("ERROR: provide --coords/--paf or use --reviewed-plan\n")
         sys.exit(2)
     if not args.reviewed_plan and not explicit_requested and not args.all_contigs:
@@ -1698,6 +1714,7 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         output_paths.append(graph_report_path)
     ensure_output_dirs(output_paths)
 
+    continuity_rows = []
     if args.reviewed_plan:
         progress.log(f"Reading reviewed fix plan: {args.reviewed_plan}")
         try:
@@ -1743,6 +1760,8 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
             progress=progress,
         )
         apply_breakpoint_guard(plans, args)
+        from .continuity import assess_plans
+        continuity_rows = assess_plans(plans, bundle, args, apply=True)
     progress.log(f"Writing fixed FASTA: {args.output_fasta}")
     fasta_records, agp_parts = write_fixed_fasta(
         args.output_fasta,
@@ -1766,6 +1785,18 @@ def main(argv: Optional[Sequence[str]] = None, prog: Optional[str] = None):
         "report": Path(args.report),
         **sidecar_paths,
     }
+    if bundle and not args.reviewed_plan:
+        from . import __version__
+        from .continuity import REPORT_COLUMNS
+        from .multireference import write_tsv
+        from .provenance import write_json
+        evidence_path = Path(str(args.report) + ".breakpoint_evidence.tsv")
+        audit_path = Path(str(args.report) + ".breakpoint_evidence.json")
+        write_tsv(evidence_path, continuity_rows, REPORT_COLUMNS)
+        write_json(audit_path, {"schema": "chromosort-breakpoint-evidence-v1", "chromosort_version": __version__, "inputs": bundle.input_records(),
+                               "parameters": vars(args), "boundaries": continuity_rows,
+                               "interpretation": "Read continuity can defer automatic intervention; missing bridges are neutral. No biological truth inferred."})
+        command_outputs.update(breakpoint_evidence=evidence_path, breakpoint_audit=audit_path)
     if graph_report_path is not None:
         command_outputs["graph_report"] = graph_report_path
     write_agp(sidecar_paths["agp"], agp_parts)

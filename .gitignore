@@ -9,7 +9,7 @@ htmlcov/
 build/
 dist/
 *.egg-info/
-.venv/
+.venv*/
 .pixi/
 .bundle/
 vendor/bundle/
@@ -24,3 +24,6 @@ env/
 /results/
 /data/
 /temp/
+
+# Manuscript development belongs to the separate sibling Git repository.
+/chromosort-manuscript/

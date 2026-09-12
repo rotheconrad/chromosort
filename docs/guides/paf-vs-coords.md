@@ -124,10 +124,9 @@ show-coords \
 
 ## Interpreting Disagreements
 
-Small PAF-vs-coords disagreements are expected. In soybean `chromo fix`
-testing, split counts differed by about 5-10%, while marginal split-contig sets
-differed by about 20-30% depending on mode. Use those numbers as practical
-expectations, not universal guarantees.
+Different aligners can produce different candidate sets. There is no universal
+expected agreement rate; keep alignment settings and downstream filtering
+explicit when comparing their results.
 
 When the two formats disagree, ask:
 

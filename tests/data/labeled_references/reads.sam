@@ -1,0 +1,9 @@
+@HD	VN:1.6	SO:coordinate
+@SQ	SN:copyA	LN:100
+span	0	copyA	11	60	10S80M10S	*	0	0	*	*	NM:i:0
+split	0	copyA	1	60	45M55S	*	0	0	*	*	SA:Z:copyA,55,+,54S46M,60,0;
+split	2048	copyA	55	60	54S46M	*	0	0	*	*	NM:i:0
+deletion	16	copyA	1	60	40M20D40M	*	0	0	*	*	NM:i:20
+secondary	256	copyA	1	60	100M	*	0	0	*	*
+lowmapq	0	copyA	1	5	100M	*	0	0	*	*
+tiny	0	copyA	45	60	10M	*	0	0	*	*

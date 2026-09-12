@@ -11,3 +11,7 @@ submission:
 3. Copy `meta.yaml` into `bioconda-recipes/recipes/chromosort/meta.yaml`.
 4. Run the Bioconda lint/build checks and open a Bioconda pull request.
 
+
+## Publication candidate
+
+For 0.4.0rc1 validation, run `python3 scripts/prepare_release.py` after building the sdist and wheel. It generates `build/release-candidate/conda-recipe/meta.yaml` with the exact local source archive and checksum. This directory's `meta.yaml` is the historical 0.3.0 source template, not a published candidate recipe.

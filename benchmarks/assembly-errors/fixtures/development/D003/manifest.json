@@ -1,0 +1,84 @@
+{
+  "assembly": {
+    "path": "inputs/assembly.fa",
+    "sample_id": "D003",
+    "sha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c",
+    "stage": "input"
+  },
+  "case_id": "D003",
+  "coordinate_system": "0-based-half-open",
+  "evidence": [
+    {
+      "assembly_sha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c",
+      "command": [
+        "minimap2",
+        "-x",
+        "asm5",
+        "-c",
+        "--secondary=no",
+        "-t",
+        "2",
+        "inputs/ref_Mla_BAC.fa",
+        "inputs/assembly.fa"
+      ],
+      "coordinate_system": "PAF-0-based-half-open",
+      "dependency_group": "reference_Mla_BAC",
+      "evidence_class": "mapped_assembly",
+      "evidence_id": "asm_Mla_BAC",
+      "kind": "assembly_paf",
+      "path": "evidence/Mla_BAC.assembly.paf",
+      "reference_id": "Mla_BAC",
+      "reference_sha256": "f1f36920ab0cebc8c8ad0a384b18dcb026c0e205e9086c4a692dcec1305da332",
+      "sha256": "05ca2f67ab6025c5a9bdc466e6b552a3e9569e4415e83fd2bbae2225e3b95e9e",
+      "software": {
+        "minimap2": "2.31-r1302"
+      }
+    },
+    {
+      "assembly_sha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c",
+      "command": [
+        "minimap2",
+        "-x",
+        "map-hifi",
+        "-c",
+        "--secondary=no",
+        "-t",
+        "2",
+        "inputs/assembly.fa",
+        "inputs/reads.fastq.gz"
+      ],
+      "coordinate_system": "PAF-0-based-half-open",
+      "dependency_group": "sim01",
+      "evidence_class": "mapped_simulated_reads",
+      "evidence_id": "reads_sim01",
+      "kind": "read_paf",
+      "limitation": "iid substitution reads; not platform-calibrated; supplementary mappings preserved",
+      "path": "evidence/reads.assembly.paf",
+      "readset_id": "sim01",
+      "sha256": "47bb52ad0ec0cafef856c2efc9e059e3bef447f716539096406857e85080eedb",
+      "software": {
+        "minimap2": "2.31-r1302"
+      }
+    }
+  ],
+  "fixture_export": {
+    "changes": "Retain exact FASTA/reference/PAF bytes; omit BAM, raw reads, combined duplicate convenience files and run logs. Read source identity retained without an absent file path.",
+    "original_manifest_sha256": "c281fee2990fa5d67715e0fd80e47f0e95c98c12a3cd68119c12dfc6e3e3b1ce",
+    "revision": "public-fixtures-v1"
+  },
+  "readsets": [
+    {
+      "availability": "Raw FASTQ omitted from tracked fixture; regenerate with this case definition.",
+      "dependency_group": "sim01",
+      "evidence_class": "mapped_simulated_reads",
+      "read_count": 314,
+      "read_length": 10000,
+      "readset_id": "sim01",
+      "sha256": "72c389e841959ee6226236df9863a7931b711c19bbca71349c683df74ef4e856"
+    }
+  ],
+  "reference_sequences": "inputs/reference_sequences.tsv",
+  "references": "inputs/references.tsv",
+  "schema": "chromosort-input-v1",
+  "split": "development"
+}

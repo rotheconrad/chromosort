@@ -248,3 +248,11 @@ through a short path, connected only in a different orientation, absent from the
 graph, or disconnected within the configured search depth. It does not fill
 gaps, trim sequence, or reorder contigs. Those operations remain explicit
 review steps.
+
+## Selective joins and labeled backbones
+
+Use `--require-reviewed-joins` with a reviewed table to keep rejected junctions
+as separate scaffold records. Accepted rows may choose a per-junction
+`overlap_policy`. Manifest assignments bind the sorted FASTA digest and keep
+reference backbones, subgenome and copy groups distinct. See the
+[supervised scaffold recipe]({{ '/commands/workflow/#selective-scaffold-review' | relative_url }}).

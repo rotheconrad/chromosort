@@ -433,3 +433,10 @@ Only a subset of commands change sequence:
 long-read evidence modes do not trim, polish, or rewrite sequence. `chromo sort`
 does rewrite retained records into an ordered FASTA and can optionally orient
 them with `--orient-to-reference`.
+
+## Publication candidate
+
+Manifest sort adds candidate scores, partitions, input accounting and audit JSON. `reads` adds SVG/PDF/PNG, figure settings and displayed-read TSVs. `workflow` adds proposal, decision, replay and validation records; see [the workflow contract]({{ '/commands/workflow/' | relative_url }}).
+
+Manifest automatic fix also writes `<report>.breakpoint_evidence.tsv` and `.json`,
+retaining original proposed boundaries and read-continuity deferral decisions.

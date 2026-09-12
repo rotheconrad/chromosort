@@ -1,4 +1,5 @@
 PYTHON ?= python3
+DIST_DIR ?= dist
 CHROMO = PYTHONPATH=src $(PYTHON) -m chromosort.cli
 
 .PHONY: help test smoke diff-check lint agent-check docs-check package-check
@@ -12,7 +13,7 @@ help:
 		'  make lint          Run conservative Ruff checks.' \
 		'  make agent-check   Run diff-check, lint, smoke, test, and package-check.' \
 		'  make docs-check    Build the Jekyll docs site if bundle is available.' \
-		'  make package-check Build sdist/wheel and verify import metadata.'
+		'  make package-check Build sdist/wheel and verify import metadata (DIST_DIR=dist).'
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
@@ -30,6 +31,8 @@ smoke:
 	$(CHROMO) graph-map --help
 	$(CHROMO) scaffold --help
 	$(CHROMO) gapfill --help
+	$(CHROMO) reads --help
+	$(CHROMO) workflow --help
 
 diff-check:
 	git diff --check
@@ -43,5 +46,5 @@ docs-check:
 	bundle exec jekyll build --source docs --destination docs/_site
 
 package-check:
-	$(PYTHON) -m build --sdist --wheel --no-isolation
+	$(PYTHON) -m build --sdist --wheel --no-isolation --outdir "$(DIST_DIR)"
 	PYTHONPATH=src $(PYTHON) -c "import chromosort; print(chromosort.__version__)"
