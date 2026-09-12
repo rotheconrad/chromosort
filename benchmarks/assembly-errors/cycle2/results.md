@@ -49,6 +49,18 @@ biological exchange edge, and did not propose the true misjoin at **200000**.
 The report policy applies that extra cut. Review defers the plan when sufficient
 read continuity crosses the proposed biological-edge cut.
 
+A post-pass, unscored trace of cached inputs locates this loss in dynamic-program
+smoothing. All six assembly-alignment blocks survive eligibility, length and
+MAPQ filtering and merging; the true 200000 transition is present. Under the
+unchanged objective, the selected partition costs 119907 discordant-support
+units plus a 50000 cut penalty, totaling **169907**. The existing-block partition
+at 200000 costs 120002 plus the same penalty, totaling **170002**. The preference
+is therefore **95 identity-weighted aligned-query-base equivalents**. This
+additive reference/orientation support objective is distinct from the sorting
+path's union-based assignment score. The difference is a case-specific
+diagnostic, not a probability, validated confidence margin or tuning threshold.
+The trace changed no parameters and emitted no new sequence or scored arm.
+
 | Case | Evidence condition | Read names spanning proposed cut 320010 | Review outcome | Read names spanning supplied true join 200000 |
 |---|---|---:|---|---:|
 | D101 | 12×, 10 kb reads | 11 | Defers plan; preserves the interval | 0 |

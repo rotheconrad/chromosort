@@ -79,8 +79,8 @@
       "sha256": "aee96247326794aea5142a0c5abb6ce62d383f4b4a5fb4a0ca7eee1dd2d2365d"
     },
     "cycle2/results.md": {
-      "bytes": 8518,
-      "sha256": "69202675b5f3a7ede78f04f0c6fb153a662512b39dcf19f67d37c9ea7437b0f0"
+      "bytes": 9374,
+      "sha256": "a38afa4e17041eda649f27f0b4244b59597986e1b7b7089b627676875cdabbaf"
     },
     "cycle2/results/artifact-index.json": {
       "bytes": 55476,
@@ -1373,7 +1373,7 @@
       "files": 4
     },
     "cycle2": {
-      "bytes": 3599422,
+      "bytes": 3600278,
       "files": 257
     },
     "docs": {
@@ -1410,5 +1410,5 @@
     }
   },
   "schema": "public-benchmark-content-manifest-v1",
-  "total_bytes": 10309106
+  "total_bytes": 10309962
 }
