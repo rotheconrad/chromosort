@@ -64,6 +64,8 @@ def main():
     parser.add_argument('--policies', nargs='+', choices=['review', 'report'], default=['review', 'report'])
     parser.add_argument('--ragtag-bin', type=Path, help='Directory containing the installed RagTag subcommand scripts')
     parser.add_argument('--arms', nargs='+', help='RagTag protocol arms; default all seven')
+    parser.add_argument('--defer-scoring', action='store_true',
+                        help='Commit outputs without opening truth, for paired multi-version evaluation')
     args = parser.parse_args()
     case_root, truth_root, output_root = [p.resolve() for p in (args.case_root, args.truth_root, args.output_root)]
     if output_root == ROOT or (ROOT in output_root.parents and output_root.relative_to(ROOT).parts[0] != 'work'):
@@ -183,6 +185,11 @@ def main():
                 failures.append(cid + '/' + name)
             print(cid, name, status, flush=True)
     save_json(output_root / 'outputs.commitment.json', committed)
+    if args.defer_scoring:
+        print('Committed outputs without opening evaluator truth.', flush=True)
+        if failures:
+            raise RuntimeError('Failed arms: ' + ', '.join(failures))
+        return
     # Outputs are immutable before evaluator truth is opened.
     from score import score
     for cid, assembly, out in pending:

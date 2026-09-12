@@ -1,0 +1,1 @@
+contig	position	evidence_id	evidence_kind	dependency_group	read_sample	min_mapq	anchor_bp	min_spanning	spanning_molecules	spanning_read_ids	alignments_without_cigar	continuity_status	automatic_action	policy	assembly_sha256	evidence_sha256

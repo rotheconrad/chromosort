@@ -1,0 +1,7 @@
+{
+  "exact_artifacts": 226,
+  "metric_matches": 60,
+  "note": "Reconstruct sequence from public component ledgers; all metrics and ledger hashes match. Original FASTA byte hashes remain recorded separately; header and wrapping bytes are not reconstructed.",
+  "reconstructed_outputs": 60,
+  "schema": "cycle2-portable-score-verification-v1"
+}

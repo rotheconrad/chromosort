@@ -222,7 +222,7 @@ def render_items(region, alignments, packed, depth, args, summary, features=(), 
     if args.breakpoint is not None:
         px = x(args.breakpoint)
         items.append(make_line(px, 168, px, axis_y, "#cb4247", width=1.2, dash=[4, 3]))
-        label = "inspection boundary" if args.action.startswith("inspect") else "cut after base"
+        label = args.boundary_label or ("inspection boundary" if args.action.startswith("inspect") else "cut after base")
         text(px, axis_y + 48, f"{label} {args.breakpoint:,}", 11, "middle", "#b73339")
     items.append(make_line(left, axis_y, right, axis_y, "#506369"))
     step = max(1, int(nice_tick_step(region.length)))
@@ -318,6 +318,7 @@ def parse_args(argv=None, prog=None):
     parser.add_argument("--start", type=int, default=0, help="0-based inclusive boundary")
     parser.add_argument("--end", type=int, help="0-based exclusive boundary; default contig length")
     parser.add_argument("--breakpoint", type=int, help="Cut after this many native bases")
+    parser.add_argument("--boundary-label", help="Display label for the native marker; does not change geometry or read support.")
     parser.add_argument("--event-id", default="overview")
     parser.add_argument("--action", default="review")
     parser.add_argument("--reverse", action="store_true")

@@ -23,7 +23,7 @@ the installation packages.
 
 The frozen rc1 implementation passed 151 synthetic unit tests. The frozen rc2
 implementation passed 160, including continuity deferral and two-edge gap
-inspection. The current public-readiness snapshot passes 162 tests, adding
+inspection. The published public-readiness checkpoint passed 162 tests, adding
 invalid read-target contract cases. Source/wheel consistency, fresh installation, noarch conda builds,
 CLI entry points, static figures and deterministic recipe replay were checked.
 These establish implementation and replay behavior, not biological accuracy.
@@ -51,3 +51,10 @@ identify a run by commit and artifact checksum as well as version. See
 [release preparation]({{ '/release-preparation/' | relative_url }}) for builds
 that preserve the frozen archives, and [workflow diagnostics]({{ '/commands/workflow/' | relative_url }})
 for input-only accounting and replay checks.
+
+The subsequent rc3 development cycle evaluates explicit interval repair and
+mixed-plan review separately from unchanged unattended correction. Scripted
+repairs supplied with evaluator-known coordinates measure execution and
+structural restoration under those supplied decisions; they do not measure
+automatic discovery or blinded reviewer performance. Candidate inputs, protocol
+and independent results belong to the versioned benchmark records.

@@ -1,0 +1,84 @@
+{
+  "chromosortVersion": "0.4.0rc3",
+  "decisions": [
+    {
+      "action": "inspect",
+      "assembly_sha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c",
+      "decision": "reject",
+      "event_id": "decision:df8236280580b8f1f6c15a3c",
+      "notes": "Supplied prespecified edit only; preserve other native structure. Not a blinded review.",
+      "position": "155000",
+      "proposed_position": "155000",
+      "reason": "No passing backbone alignment covers internal interval [151002, 158998); inspect both interval edges. Interior read continuity does not establish continuity across the boundaries. No cut is proposed.",
+      "reviewer": "scripted-development-oracle",
+      "schema": "chromosort-decision-v1",
+      "target": "c001"
+    },
+    {
+      "action": "inspect",
+      "assembly_sha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c",
+      "decision": "reject",
+      "event_id": "decision:27396311921dea45df958924",
+      "notes": "Supplied prespecified edit only; preserve other native structure. Not a blinded review.",
+      "position": "197453",
+      "proposed_position": "197453",
+      "reason": "No passing backbone alignment covers internal interval [189907, 205000); inspect both interval edges. Interior read continuity does not establish continuity across the boundaries. No cut is proposed.",
+      "reviewer": "scripted-development-oracle",
+      "schema": "chromosort-decision-v1",
+      "target": "c001"
+    }
+  ],
+  "gapBp": 0,
+  "pieces": [
+    {
+      "end": 151000,
+      "id": "slice::c001::1::1",
+      "name": "c001",
+      "removed": false,
+      "scaffold": "c001",
+      "source": "c001",
+      "start": 1,
+      "strand": "+"
+    },
+    {
+      "end": 159000,
+      "id": "slice::c001::1::2",
+      "name": "c001",
+      "removed": false,
+      "scaffold": "c001",
+      "source": "c001",
+      "start": 151001,
+      "strand": "-"
+    },
+    {
+      "end": 261265,
+      "id": "slice::c001::1::3",
+      "name": "c001",
+      "removed": false,
+      "scaffold": "c001",
+      "source": "c001",
+      "start": 159001,
+      "strand": "+"
+    }
+  ],
+  "requireCompleteCoverage": true,
+  "reviewedEdits": [
+    {
+      "action": "reverse",
+      "assembly_sha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c",
+      "decision": "accept",
+      "edit_id": "edit:5d453ebadc119fac4854b18e",
+      "end": "159000",
+      "event_id": "decision:df8236280580b8f1f6c15a3c",
+      "notes": "Supplied prespecified oracle-coordinate development edit; not independently inferred.",
+      "reviewer": "scripted-development-oracle",
+      "scan_sha256": "be94492e94cbd80506b80d53744e4b1d1f28350bc21f6008e666057735685e65",
+      "schema": "chromosort-edit-v1",
+      "start": "151000",
+      "target": "c001"
+    }
+  ],
+  "scaffoldEnabled": true,
+  "schema": "chromosort-manual-v1",
+  "sourceAssemblySha256": "519a37eee20b1af420569f27e0e11002b20beb6fceacc4320fa7aa18c5179d1c"
+}

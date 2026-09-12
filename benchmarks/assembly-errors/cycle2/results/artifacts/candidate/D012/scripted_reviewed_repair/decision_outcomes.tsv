@@ -1,0 +1,4 @@
+event_id	source	target	action	start	end	decision	outcome	reviewer	notes
+decision:fdc13c64d783d0ccb9d65453	scan	c001	keep	0	0	reject	retained_reject	scripted-development-oracle	Supplied prespecified edit only; preserve other native structure. Not a blinded review.
+decision:38174d8d01028c63db66fae3	scan	c001	inspect	197413	197413	reject	retained_reject	scripted-development-oracle	Supplied prespecified edit only; preserve other native structure. Not a blinded review.
+edit:42087137cf3b205cbd0800d7	explicit_edit	c001	reverse	151000	176000	accept	applied_reverse	scripted-development-oracle	Supplied prespecified oracle-coordinate development edit; not independently inferred.

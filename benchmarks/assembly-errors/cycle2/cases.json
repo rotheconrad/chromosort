@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "case_id": "D101",
+      "coverage": 12,
+      "evidence_condition": "honest_12x",
+      "exchange_interval": [
+        60000,
+        120000
+      ],
+      "family": "mixed_exchange_misjoin",
+      "misjoin_position": 200000,
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 1201
+    },
+    {
+      "case_id": "D102",
+      "coverage": 1,
+      "evidence_condition": "honest_1x",
+      "exchange_interval": [
+        60000,
+        120000
+      ],
+      "family": "mixed_exchange_misjoin",
+      "misjoin_position": 200000,
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 1201
+    },
+    {
+      "case_id": "D103",
+      "coverage": 12,
+      "evidence_condition": "short_600bp",
+      "exchange_interval": [
+        60000,
+        120000
+      ],
+      "family": "mixed_exchange_misjoin",
+      "misjoin_position": 200000,
+      "read_error": 0.001,
+      "read_length": 600,
+      "seed": 1201
+    },
+    {
+      "case_id": "D104",
+      "coverage": 12,
+      "evidence_condition": "missing_cigar",
+      "exchange_interval": [
+        60000,
+        120000
+      ],
+      "family": "mixed_exchange_misjoin",
+      "misjoin_position": 200000,
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 1201
+    },
+    {
+      "case_id": "D105",
+      "coverage": 12,
+      "evidence_condition": "one_molecule_20_rows",
+      "exchange_interval": [
+        60000,
+        120000
+      ],
+      "family": "mixed_exchange_misjoin",
+      "misjoin_position": 200000,
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 1201
+    },
+    {
+      "case_id": "D106",
+      "coverage": 12,
+      "evidence_condition": "one_molecule_two_names",
+      "exchange_interval": [
+        60000,
+        120000
+      ],
+      "family": "mixed_exchange_misjoin",
+      "misjoin_position": 200000,
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 1201
+    },
+    {
+      "case_id": "D107",
+      "coverage": 12,
+      "error_interval": [
+        150000,
+        796070
+      ],
+      "evidence_condition": "honest_12x",
+      "family": "documented_scf139_orientation",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 1207
+    },
+    {
+      "biological_inversion": [
+        190000,
+        205000
+      ],
+      "case_id": "D108",
+      "coverage": 12,
+      "error_interval": [
+        151000,
+        159000
+      ],
+      "evidence_condition": "honest_12x",
+      "family": "short_orientation_with_biology",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 1208,
+      "source": "wheat_v2_scf139",
+      "source_interval": [
+        24441,
+        324441
+      ]
+    }
+  ],
+  "schema": "development-cycle2-config-v1"
+}

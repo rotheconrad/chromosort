@@ -9,7 +9,7 @@ from collections import defaultdict
 from dataclasses import replace
 from pathlib import Path
 
-from . import __version__, evaluate, fix_contigs, manual, plot, readplot
+from . import __version__, evaluate, fix_contigs, manual, plot, readplot, repairs
 from .agp import group_parts_by_object, read_agp
 from .manifest import InputBundle, namespaced
 from .multireference import write_tsv
@@ -92,14 +92,14 @@ def write_dashboard(path, rows, figures, manifest_digest):
     page = r"""<!doctype html><html lang="en"><meta charset="utf-8"><title>ChromoSort evidence review</title>
 <style>body{font:15px system-ui;color:#243d43;background:#f5f8fa;margin:36px auto;max-width:1400px;padding:0 24px}h1{font-size:30px}a{color:#176958}table{border-collapse:collapse;background:white;width:100%}td,th{padding:12px;border-bottom:1px solid #dbe4e7;text-align:left;vertical-align:top}input,select,button{font:inherit;padding:7px;border:1px solid #b8c7ca;border-radius:4px}input[type=number]{width:110px}input.note{width:160px}button{background:#176958;color:white;cursor:pointer}img{width:100%;background:white}article{margin-top:24px}small{color:#587277}code{word-break:break-all}</style>
 <h1>ChromoSort evidence review</h1>
-<p>Review each proposed cut against the alignments and read/graph evidence. Accept, reject, or refine the native cut position. Rejected cuts retain the original sequence. Discordance alone does not establish an assembly error.</p>
+<p>Review each proposed cut against the alignments and read/graph evidence. Accept, reject, defer, or refine the native cut position. Rejected cuts retain the original sequence. Discordance alone does not establish an assembly error.</p>
 <p><a href="manual.html">Interactive alignment and graph dashboard</a> · <a href="dotplot.svg">Dot plot</a> · <a href="decisions.tsv">Initial decision table</a></p>
 <p><label>Reviewer <input id="reviewer" placeholder="Your name or review label"></label> <button id="export">Download decisions.tsv</button> <span id="status"></span></p>
 <table><thead><tr><th>Event / contig</th><th>Proposal</th><th>Decision</th><th>Cut after base</th><th>Notes</th></tr></thead><tbody id="rows"></tbody></table>
 <p><small>Input manifest SHA-256: __DIGEST__. Applying a decision requires the saved input identities. Realign changed FASTA before further alignment-dependent analysis.</small></p>
 __FIGURES__
 <script>const rows=__ROWS__;const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-document.getElementById('rows').innerHTML=rows.map((r,i)=>`<tr><td><a href="#${esc(r.event_id)}">${esc(r.event_id)}</a><br>${esc(r.target)}</td><td>${esc(r.reason)}</td><td><select data-i="${i}" data-k="decision"><option>pending</option><option>accept</option><option>reject</option><option>refine</option></select></td><td><input type="number" min="1" value="${esc(r.position)}" data-i="${i}" data-k="position" ${r.action!=='cut'?'disabled':''}></td><td><input class="note" data-i="${i}" data-k="notes"></td></tr>`).join('');
+document.getElementById('rows').innerHTML=rows.map((r,i)=>`<tr><td><a href="#${esc(r.event_id)}">${esc(r.event_id)}</a><br>${esc(r.target)}</td><td>${esc(r.reason)}</td><td><select data-i="${i}" data-k="decision"><option>pending</option><option>accept</option><option>reject</option><option>defer</option><option>refine</option></select></td><td><input type="number" min="1" value="${esc(r.position)}" data-i="${i}" data-k="position" ${r.action!=='cut'?'disabled':''}></td><td><input class="note" data-i="${i}" data-k="notes"></td></tr>`).join('');
 document.getElementById('rows').addEventListener('change',e=>{if(e.target.dataset.k)rows[Number(e.target.dataset.i)][e.target.dataset.k]=e.target.value});
 document.getElementById('export').onclick=()=>{let reviewer=document.getElementById('reviewer').value.trim();if(!reviewer){document.getElementById('status').textContent='Enter a reviewer label.';return;}rows.forEach(r=>r.reviewer=reviewer);const columns=__COLUMNS__;const clean=v=>String(v??'').replace(/[\t\r\n]/g,' ');const tsv=[columns.join('\t'),...rows.map(r=>columns.map(c=>clean(r[c])).join('\t'))].join('\n')+'\n';let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([tsv],{type:'text/tab-separated-values'}));a.download='decisions.tsv';a.click();URL.revokeObjectURL(a.href);document.getElementById('status').textContent=rows.some(r=>r.decision==='pending')?'Downloaded with pending decisions.':'Decisions ready for reviewed apply.';};</script></html>"""
     Path(path).write_text(page.replace("__ROWS__", data).replace("__COLUMNS__", json.dumps(DECISION_COLUMNS))
@@ -223,8 +223,8 @@ def scan(args):
     return out
 
 
-def apply(args):
-    scan_path = Path(args.scan_dir).resolve() / "scan.json"
+def load_scan(scan_dir):
+    scan_path = Path(scan_dir).resolve() / "scan.json"
     record = json.loads(scan_path.read_text())
     if record.get("schema") != "chromosort-scan-v1":
         raise ValueError("Unsupported scan record")
@@ -232,23 +232,56 @@ def apply(args):
     for entry in record.get("inputs", []):
         check_digest(entry["path"], entry["sha256"], "review input")
     bundle = InputBundle(record["manifest"]["path"])
+    return scan_path, record, bundle
+
+
+def propose_edit(args):
+    scan_path, record, bundle = load_scan(args.scan_dir)
+    proposals = {r["event_id"]: r for r in record["proposals"]}
+    if args.event_id not in proposals:
+        raise ValueError("Edit must link to an existing scan event")
+    row = {"schema": "chromosort-edit-v1", "event_id": args.event_id,
+           "target": proposals[args.event_id]["target"], "action": args.action,
+           "start": args.start, "end": args.end, "decision": "pending",
+           "reviewer": args.reviewer, "notes": args.notes,
+           "assembly_sha256": bundle.assembly_digest, "scan_sha256": sha256_file(scan_path)}
+    row["edit_id"] = repairs.edit_id(row)
+    repairs.validate_edits([row], proposals, bundle, sha256_file(scan_path), require_decisions=False)
+    out = Path(args.output_dir).resolve()
+    if out.exists() and any(out.iterdir()):
+        raise ValueError("Choose a new edit directory to preserve the existing review record")
+    out.mkdir(parents=True, exist_ok=True)
+    figures = repairs.write_edit_review(out, [row], bundle, record["parameters"])
+    write_json(out / "edit.json", {"schema": "chromosort-edit-review-v1", "chromosort_version": __version__,
+        "scan": file_record(scan_path), "inputs": bundle.input_records(), "edit": row,
+        "figures": figures, "state": "pending_explicit_review_no_sequence_change"})
+    return out / "reviewed_edits.tsv"
+
+
+def apply(args):
+    scan_path, record, bundle = load_scan(args.scan_dir)
     rows = read_decisions(args.decisions)
     proposals = {r["event_id"]: r for r in record["proposals"]}
     if {r["event_id"] for r in rows} != set(proposals):
         raise ValueError("Every proposed event must appear exactly once in the decision table")
-    cuts = defaultdict(set)
+    cuts, outcomes = defaultdict(set), []
     for row in rows:
         proposal = proposals[row["event_id"]]
         for key in ("schema", "event_id", "target", "action", "proposed_position", "assembly_sha256"):
             if str(row[key]) != str(proposal[key]):
                 raise ValueError(f"Decision changed immutable proposal field {key}: {row['event_id']}")
-        if row["decision"] not in {"accept", "reject", "refine"}:
+        if row["decision"] not in {"accept", "reject", "refine", "defer"}:
             raise ValueError(f"Explicit decision required for {row['event_id']}")
         if not row["reviewer"].strip():
             raise ValueError(f"Reviewer label required for {row['event_id']}")
         position = int(row["position"])
         if row["decision"] != "refine" and position != int(proposal["position"]):
             raise ValueError("Changed cut position requires decision=refine")
+        outcome = ("retained_" + row["decision"] if row["decision"] in {"reject", "defer"} else
+                   "cut_requested" if row["action"] == "cut" else "acknowledged_no_sequence_edit")
+        outcomes.append({"event_id": row["event_id"], "source": "scan", "target": row["target"],
+            "action": row["action"], "start": position, "end": position, "decision": row["decision"],
+            "outcome": outcome, "reviewer": row["reviewer"], "notes": row["notes"]})
         if row["action"] in {"keep", "inspect"}:
             if row["decision"] == "refine":
                 raise ValueError("Refine is supported for proposed cuts; use a saved manual recipe to add other edits")
@@ -259,30 +292,55 @@ def apply(args):
             if position in cuts[row["target"]]:
                 raise ValueError("Two accepted decisions resolve to the same cut")
             cuts[row["target"]].add(position)
+    edits = repairs.read_edits(args.reviewed_edits) if args.reviewed_edits else []
+    repairs.validate_edits(edits, proposals, bundle, sha256_file(scan_path))
+    retained_cuts = {(r["target"], int(r["position"])) for r in rows
+                     if r["action"] == "cut" and r["decision"] in {"reject", "defer"}}
+    if any(r["action"] == "cut" and r["decision"] == "accept" and
+           (r["target"], int(r["start"])) in retained_cuts for r in edits):
+        raise ValueError("Explicit cut contradicts a rejected/deferred scan cut at the same boundary")
+    pieces, joined = repairs.compose_edits(bundle, cuts, edits)
+    outcomes.extend({"event_id": row["edit_id"], "source": "explicit_edit", "target": row["target"],
+        "action": row["action"], "start": int(row["start"]), "end": int(row["end"]),
+        "decision": row["decision"], "outcome": row["action"] + "_requested" if row["decision"] == "accept" else "retained_" + row["decision"],
+        "reviewer": row["reviewer"], "notes": row["notes"]} for row in edits)
     out = Path(args.output_dir).resolve()
-    if (out / "apply.json").exists():
+    if out.exists() and any(out.iterdir()):
         raise ValueError("Choose a new apply directory to preserve the existing audit record")
     out.mkdir(parents=True, exist_ok=True)
-    pieces = []
-    for rec in bundle.query_records:
-        boundaries = [0, *sorted(cuts[rec.name]), rec.length]
-        for index, (start, end) in enumerate(zip(boundaries, boundaries[1:]), 1):
-            name = namespaced("piece", rec.name, index) if cuts[rec.name] else rec.name
-            pieces.append({"id": name, "source": rec.name, "name": name, "start": start + 1,
-                           "end": end, "strand": "+", "scaffold": "unplaced", "removed": False})
     recipe = {"schema": manual.SCHEMA, "chromosortVersion": __version__, "sourceAssembly": str(bundle.assembly),
-              "sourceAssemblySha256": bundle.assembly_digest, "scaffoldEnabled": False, "gapBp": 0,
-              "pieces": pieces, "decisions": rows, "requireCompleteCoverage": True}
+              "sourceAssemblySha256": bundle.assembly_digest, "scaffoldEnabled": joined, "gapBp": 0,
+              "pieces": pieces, "decisions": rows, "reviewedEdits": edits, "requireCompleteCoverage": True}
     write_json(out / "recipe.json", recipe)
+    write_tsv(out / "decisions.tsv", rows, DECISION_COLUMNS)
+    write_tsv(out / "decision_outcomes.tsv", outcomes,
+              ["event_id", "source", "target", "action", "start", "end", "decision", "outcome", "reviewer", "notes"])
+    figures = repairs.write_edit_review(out, edits, bundle, record["parameters"]) if edits else []
+    plan = {"schema": "chromosort-reviewed-plan-v1", "chromosort_version": __version__,
+        "scan": file_record(scan_path), "decisions": file_record(args.decisions),
+        "reviewed_edits": file_record(args.reviewed_edits) if args.reviewed_edits else None,
+        "inputs": bundle.input_records(), "recipe": file_record(out / "recipe.json"),
+        "outcomes": outcomes, "figures": figures,
+        "state": "explicit_plan_only_no_sequence_output" if args.plan_only else "explicit_plan_ready_for_apply"}
+    write_json(out / "plan.json", plan)
+    if args.plan_only:
+        return out / "recipe.json"
     fasta = out / "reviewed.fa"
     manual.main(["apply", "--recipe", str(out / "recipe.json"), "--assembly-fasta", str(bundle.assembly),
                  "-o", str(fasta), "--report", str(out / "edits.tsv")])
     accounting = verify_outputs(bundle.assembly, fasta, str(fasta) + ".agp", require_complete=True)
     write_tsv(out / "accounting.tsv", accounting)
+    for outcome in outcomes:
+        if outcome["outcome"].endswith("_requested"):
+            outcome["outcome"] = "applied_" + outcome["action"]
+    write_tsv(out / "decision_outcomes.tsv", outcomes,
+              ["event_id", "source", "target", "action", "start", "end", "decision", "outcome", "reviewer", "notes"])
     write_json(out / "apply.json", {
         "schema": "chromosort-apply-v1", "chromosort_version": __version__,
         "scan": file_record(scan_path), "decisions": file_record(args.decisions),
         "assembly": file_record(bundle.assembly), "recipe": file_record(out / "recipe.json"),
+        "plan": file_record(out / "plan.json"), "reviewed_edits": plan["reviewed_edits"],
+        "decision_outcomes": outcomes,
         "output": file_record(fasta), "agp": file_record(str(fasta) + ".agp"),
         "accounting": accounting, "state": "requires_fresh_alignments_and_validation",
     })
@@ -372,6 +430,17 @@ def main(argv=None, prog=None):
     apply_parser.add_argument("--scan-dir", required=True)
     apply_parser.add_argument("--decisions", required=True)
     apply_parser.add_argument("--output-dir", required=True)
+    apply_parser.add_argument("--reviewed-edits", help="Explicit native reverse/cut edits linked to this scan; pending edits are rejected.")
+    apply_parser.add_argument("--plan-only", action="store_true", help="Write the complete reviewed recipe and evidence preview without a FASTA.")
+    edit_parser = commands.add_parser("edit", help="Prepare one pending explicit interval edit and native boundary panels; makes no sequence change.")
+    edit_parser.add_argument("--scan-dir", required=True)
+    edit_parser.add_argument("--event-id", required=True)
+    edit_parser.add_argument("--action", choices=["reverse", "cut"], required=True)
+    edit_parser.add_argument("--start", type=int, required=True, help="Native 0-based interval start; cuts use start=end.")
+    edit_parser.add_argument("--end", type=int, required=True, help="Native exclusive interval end; reverse complements [start,end).")
+    edit_parser.add_argument("--reviewer", default="")
+    edit_parser.add_argument("--notes", required=True, help="Rationale for the proposed edit; not an inferred confidence score.")
+    edit_parser.add_argument("--output-dir", required=True)
     align_parser = commands.add_parser("align")
     align_parser.add_argument("--manifest", required=True)
     align_parser.add_argument("--assembly-fasta", required=True)
@@ -388,4 +457,4 @@ def main(argv=None, prog=None):
     validate_parser.add_argument("--apply-audit", required=True)
     validate_parser.add_argument("--output", required=True)
     args = parser.parse_args(argv)
-    return {"scan": scan, "apply": apply, "align": align, "validate": validate}[args.task](args)
+    return {"scan": scan, "edit": propose_edit, "apply": apply, "align": align, "validate": validate}[args.task](args)

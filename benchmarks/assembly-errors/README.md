@@ -2,9 +2,10 @@
 
 Reproducible, public-sequence development cases for testing assembly correction,
 sequence preservation and review evidence. **Three runnable fixtures** are
-included; their public intervals can regenerate **all 14 development cases
-offline**. Mapping needs minimap2. The independent scorer and ten analytic
-tests use the Python standard library.
+included; their public intervals can regenerate **all 14 first-cohort cases
+offline**. The [second development panel](cycle2/README.md) adds eight cases
+from new wheat loci and a separate paired evaluation. Mapping needs minimap2.
+The independent scorers and nineteen analytic tests use the Python standard library.
 
 This is a repository dataset, separate from the installable ChromoSort package.
 It contains no private project sequence, held-out inputs/truth, evaluator key,
@@ -36,7 +37,7 @@ PAF used by rc2 and the identities needed to regenerate the reads. The
 [fixture index](fixtures/index.json) records every included byte and the
 original-to-public manifest identities. Full generation restores raw reads.
 
-## Regenerate every development case
+## Regenerate the first development cohort
 
 The first command reconstructs the five canonical GenBank intervals from the
 fixtures and verifies their original accession/checksum registry. It needs no
@@ -61,7 +62,7 @@ Do not compare an unrecorded moving checkout with historical results.
 
 ## Cases and evidence discipline
 
-All definitions and seeds are in [configs/development.json](configs/development.json).
+First-cohort definitions and seeds are in [configs/development.json](configs/development.json).
 The [case table](docs/cases.md) distinguishes documented reconstructions,
 documented-pattern simulations, actual tandem copies and simulated biology.
 Reads are generated from the biological target **before** its assembly copy
@@ -76,18 +77,25 @@ reference is not by itself proof of an assembly error.
 
 ## Recorded results and limits
 
-The repository includes **294 development score records**: 154 pilot, 56 rc1
+The repository preserves **294 historical development score records**: 154 pilot, 56 rc1
 and 84 rc2. Held-out records and scores are excluded. [Results](docs/results.md)
 explain the source and cohort limits, paired read policies and RagTag fairness.
 [summary.tsv](reports/summary.tsv) is regenerated from the original checksummed
 [score records](reports/historical_scores.jsonl); it does not require private
 archives or an installed assembly tool.
 
-The rc2 review policy avoided observed false cuts on this development cohort
+The rc2 review policy avoided observed false cuts on the first development cohort
 while retaining the previously localized boundaries. Comprehensive/sensitive
 still localized only **3 of 9** expected error boundaries. D003 can now be
 inspected but is not automatically repaired. The development examples informed
 the policy; these results are not independent validation or general superiority.
+
+The [second-panel paired report](cycle2/results.md) adds **60 output records**.
+Published baseline and rc3 have identical automatic outputs on all sixteen
+paired arms, with no complete automatic repair in eight new cases. Both the
+baseline manual API and rc3's explicit reviewed workflow complete eight new
+cases plus D003/D012 using supplied edit coordinates. Those scripted repairs
+measure replay feasibility, separately from discovery or human review accuracy.
 
 The [scoring protocol](docs/scoring.md) keeps input accounting, target copies,
 cut localization and preserved continuity distinct. The current scorer covers

@@ -1,0 +1,43 @@
+{
+  "boundary_note": "Inclusive table endpoints give 646070 bp, one more than its reported length. Operational truth uses endpoints, tolerates 500 bp for cut localization, and preserves original gap Ns. This is a scaffold-orientation reconstruction, not a base-exact reconstruction of all RefSeq v2.1 edits.",
+  "doi": "10.1111/tpj.15289",
+  "evidence_note": "The paper reports optical-map-guided scaffold correction. Independent minimap2 source admission maps the central scaffold in reverse orientation and both flanks forward to the versioned v2.1 interval. Optical-map molecules are not included or reanalysed. Figure 5 describes a roughly 650 kb 1A inversion; correspondence to this exact table row is not asserted.",
+  "independence": "New loci from the same Chinese Spring genome and same source publication; eight scenarios are not eight independent genomes.",
+  "mapping_command": [
+    "minimap2",
+    "-x",
+    "asm5",
+    "-c",
+    "--secondary=no",
+    "-t",
+    "2",
+    "corrected-search.fa",
+    "original-window.fa"
+  ],
+  "mapping_sha256": "219e53e553a8b2724c02a22a62379a8dc92d9671237249708b90b80070265267",
+  "operational_interval_0based": [
+    150000,
+    796070
+  ],
+  "publication": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8360199/",
+  "schema": "cycle2-source-admission-v1",
+  "search_interval": {
+    "accession": "CM031178.1",
+    "end_1based": 587000000,
+    "start_1based": 579000001
+  },
+  "source_id": "wheat_scf139",
+  "supplement": "Table S3, v2.1 vs v1.0 sheet, row 149",
+  "supplement_sha256": "d4f1777a50a26d3a101dfe6f079bc725ed7e0ac5c6d20e44de711dc4c781944e",
+  "table_row": {
+    "chromosome": "1A",
+    "end_1based": 579708165,
+    "new_order": 148,
+    "new_orientation": "-",
+    "new_scaffold": "scaffold139",
+    "old_order": 139,
+    "old_scaffold": "chr1A_scf_139",
+    "reported_length": 646069,
+    "start_1based": 579062096
+  }
+}

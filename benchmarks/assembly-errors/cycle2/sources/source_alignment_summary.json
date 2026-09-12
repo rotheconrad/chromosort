@@ -1,0 +1,202 @@
+[
+  {
+    "mapq": 60,
+    "query_end": 383542,
+    "query_start": 165862,
+    "reference_end_1based": 583640798,
+    "reference_start_1based": 583424155,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 501827,
+    "query_start": 384091,
+    "reference_end_1based": 583423810,
+    "reference_start_1based": 583306538,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 762169,
+    "query_start": 656166,
+    "reference_end_1based": 583154927,
+    "reference_start_1based": 583049156,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 598091,
+    "query_start": 502410,
+    "reference_end_1based": 583306111,
+    "reference_start_1based": 583210439,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 885845,
+    "query_start": 814898,
+    "reference_end_1based": 584116773,
+    "reference_start_1based": 584046235,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 91510,
+    "query_start": 24441,
+    "reference_end_1based": 582749027,
+    "reference_start_1based": 582682066,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 946070,
+    "query_start": 889073,
+    "reference_end_1based": 584176312,
+    "reference_start_1based": 584119464,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 140316,
+    "query_start": 91992,
+    "reference_end_1based": 582797718,
+    "reference_start_1based": 582749549,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 796049,
+    "query_start": 762563,
+    "reference_end_1based": 583048853,
+    "reference_start_1based": 583015691,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 624949,
+    "query_start": 598494,
+    "reference_end_1based": 583210035,
+    "reference_start_1based": 583183581,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 24104,
+    "query_start": 0,
+    "reference_end_1based": 582681728,
+    "reference_start_1based": 582657625,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 814506,
+    "query_start": 796170,
+    "reference_end_1based": 584046043,
+    "reference_start_1based": 584027707,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 655912,
+    "query_start": 645271,
+    "reference_end_1based": 583165770,
+    "reference_start_1based": 583155130,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 641400,
+    "query_start": 633528,
+    "reference_end_1based": 583176454,
+    "reference_start_1based": 583168538,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 149900,
+    "query_start": 141999,
+    "reference_end_1based": 582826177,
+    "reference_start_1based": 582799267,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 632111,
+    "query_start": 626524,
+    "reference_end_1based": 583182754,
+    "reference_start_1based": 583177168,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 162536,
+    "query_start": 159373,
+    "reference_end_1based": 583647287,
+    "reference_start_1based": 583644125,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 154962,
+    "query_start": 152262,
+    "reference_end_1based": 583654398,
+    "reference_start_1based": 583651699,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 888513,
+    "query_start": 886212,
+    "reference_end_1based": 584119287,
+    "reference_start_1based": 584116987,
+    "strand": "+"
+  },
+  {
+    "mapq": 60,
+    "query_end": 151873,
+    "query_start": 150001,
+    "reference_end_1based": 583656659,
+    "reference_start_1based": 583654788,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 164047,
+    "query_start": 163147,
+    "reference_end_1based": 583643513,
+    "reference_start_1based": 583642614,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 644481,
+    "query_start": 643635,
+    "reference_end_1based": 583166698,
+    "reference_start_1based": 583165853,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 157187,
+    "query_start": 156308,
+    "reference_end_1based": 583650352,
+    "reference_start_1based": 583649474,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 165325,
+    "query_start": 164735,
+    "reference_end_1based": 583641925,
+    "reference_start_1based": 583641336,
+    "strand": "-"
+  },
+  {
+    "mapq": 60,
+    "query_end": 158615,
+    "query_start": 158015,
+    "reference_end_1based": 583648645,
+    "reference_start_1based": 583648046,
+    "strand": "-"
+  }
+]

@@ -1,0 +1,186 @@
+{
+  "arms": [
+    {
+      "arm": "scripted_reviewed_repair",
+      "cohort": "prior_diagnostic",
+      "count": 2,
+      "role": "baseline",
+      "status": "complete"
+    },
+    {
+      "arm": "scripted_reviewed_repair",
+      "cohort": "cycle2_primary",
+      "count": 8,
+      "role": "baseline",
+      "status": "complete"
+    },
+    {
+      "arm": "chromosort_report_comprehensive",
+      "cohort": "cycle2_primary",
+      "count": 8,
+      "role": "baseline",
+      "status": "complete"
+    },
+    {
+      "arm": "chromosort_review_comprehensive",
+      "cohort": "cycle2_primary",
+      "count": 8,
+      "role": "baseline",
+      "status": "complete"
+    },
+    {
+      "arm": "unedited",
+      "cohort": "cycle2_primary",
+      "count": 8,
+      "role": "baseline",
+      "status": "complete"
+    },
+    {
+      "arm": "scripted_reviewed_repair",
+      "cohort": "prior_diagnostic",
+      "count": 2,
+      "role": "candidate",
+      "status": "complete"
+    },
+    {
+      "arm": "scripted_reviewed_repair",
+      "cohort": "cycle2_primary",
+      "count": 8,
+      "role": "candidate",
+      "status": "complete"
+    },
+    {
+      "arm": "chromosort_report_comprehensive",
+      "cohort": "cycle2_primary",
+      "count": 8,
+      "role": "candidate",
+      "status": "complete"
+    },
+    {
+      "arm": "chromosort_review_comprehensive",
+      "cohort": "cycle2_primary",
+      "count": 8,
+      "role": "candidate",
+      "status": "complete"
+    }
+  ],
+  "automatic_pairs": [
+    {
+      "both_complete": true,
+      "case_id": "D101",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D101",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D102",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D102",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D103",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D103",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D104",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D104",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D105",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D105",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D106",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D106",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D107",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D107",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D108",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "report",
+      "structural_score_equal": true
+    },
+    {
+      "both_complete": true,
+      "case_id": "D108",
+      "exact_fasta_and_ledger_equal": true,
+      "policy": "review",
+      "structural_score_equal": true
+    }
+  ],
+  "interpretation": "Scripted repairs use supplied coordinates. Automatic correction, pending inspection and complete target structure are separate outcomes.",
+  "recorded_runs": 60,
+  "schema": "cycle2-evaluation-summary-v1",
+  "scored_outputs": 60,
+  "source_task_constraint": "No candidate tuning after this independent pass"
+}

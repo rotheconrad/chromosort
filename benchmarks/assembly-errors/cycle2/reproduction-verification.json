@@ -1,0 +1,42 @@
+{
+  "cases": [
+    {
+      "case_id": "D101",
+      "input_bp": 400000
+    },
+    {
+      "case_id": "D102",
+      "input_bp": 400000
+    },
+    {
+      "case_id": "D103",
+      "input_bp": 400000
+    },
+    {
+      "case_id": "D104",
+      "input_bp": 400000
+    },
+    {
+      "case_id": "D105",
+      "input_bp": 400000
+    },
+    {
+      "case_id": "D106",
+      "input_bp": 400000
+    },
+    {
+      "case_id": "D107",
+      "input_bp": 946070
+    },
+    {
+      "case_id": "D108",
+      "input_bp": 300000
+    }
+  ],
+  "deliberately_missing_cigar_rows": 480,
+  "derivation_checks": "D104 exact stripped D101; D105 twenty identical rows; D106 same parent row under two names",
+  "evaluator_access": "Byte hashes only; no output scoring",
+  "exact_file_count": 134,
+  "mapped_paf_rows": 11450,
+  "schema": "cycle2-input-verification-v1"
+}

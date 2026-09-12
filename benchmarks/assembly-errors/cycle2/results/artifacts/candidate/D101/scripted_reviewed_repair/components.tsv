@@ -1,0 +1,3 @@
+output_id	output_start	output_end	input_id	input_start	input_end	strand
+piece::c001::1	0	200000	c001	0	200000	+
+piece::c001::2	0	200000	c001	200000	400000	+

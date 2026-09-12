@@ -1,6 +1,6 @@
 {
   "excludes": "Ignored work, Python caches and this self-referential manifest; no staging/commit/push is performed.",
-  "file_count": 73,
+  "file_count": 338,
   "files": {
     ".gitignore": {
       "bytes": 62,
@@ -11,8 +11,8 @@
       "sha256": "ac72d304b03c22f651ffd1847beaf35f136a17e43aad72f1230ef9e7608d9ac9"
     },
     "README.md": {
-      "bytes": 5160,
-      "sha256": "b86e286788438f3968192ad086d6c0cd9ffcdf05db6993ee5d1368bb27d1d3ed"
+      "bytes": 5784,
+      "sha256": "f9735e44fdecdb75ffe23e75667b0e08c1408c2d99aab89e39a9394da7cdb4e4"
     },
     "configs/candidate-0.4.0rc2.json": {
       "bytes": 2119,
@@ -30,21 +30,1049 @@
       "bytes": 1717,
       "sha256": "e5b721a46daa347a812683c4338d35f8e74bad3b7539f532c99d7b6fb777be42"
     },
+    "cycle2/README.md": {
+      "bytes": 9555,
+      "sha256": "69c1921154acade725d96d279f6d63afd3ac1a04c0db0c4d5a13d26b9b35a0e4"
+    },
+    "cycle2/cases.json": {
+      "bytes": 2762,
+      "sha256": "03f1bd0b70d5ef09fcd100e174a863b1f1c62c70ffc4b636006d040e9d0700ed"
+    },
+    "cycle2/clean-copy-verification.json": {
+      "bytes": 1931,
+      "sha256": "e78ff721ca7c48c968e8347315699f67c91a42b7b55172c1f97d2f0811f73289"
+    },
+    "cycle2/execution-freeze.json": {
+      "bytes": 1755,
+      "sha256": "5fd35773f28de15397c456756e5a24df452b261498a9e9c01da599d2353bf19d"
+    },
+    "cycle2/generated_expected.json": {
+      "bytes": 22622,
+      "sha256": "6f7c4ba29807526a2f78cfb600b694baae817ee40823fbb89f4afdfde23c83dc"
+    },
+    "cycle2/input-verification.json": {
+      "bytes": 843,
+      "sha256": "aee96247326794aea5142a0c5abb6ce62d383f4b4a5fb4a0ca7eee1dd2d2365d"
+    },
+    "cycle2/input_handoff.json": {
+      "bytes": 375,
+      "sha256": "a4d6190187d05936cf77921c33fcff2be7a3f5f45ab45823ff679a61e0bc7404"
+    },
+    "cycle2/preservation-verification.json": {
+      "bytes": 7473,
+      "sha256": "175cf8a986831fcb008eb1b2d52822a27d5e94991aa1a940f7c03ebe2049c774"
+    },
+    "cycle2/prior-case-diagnostics.json": {
+      "bytes": 1178,
+      "sha256": "6c54ea8757bc5f12d1a03c0a9173c3d6cc16b53654361fd4a2a64b3f99446e18"
+    },
+    "cycle2/prospective-freeze.json": {
+      "bytes": 647,
+      "sha256": "052096caf97519a70ebf41d20eca737b6f524c263eb3296842ff8a99096761a8"
+    },
+    "cycle2/protocol.json": {
+      "bytes": 4742,
+      "sha256": "78a501b20806506f12cb1bf25370299ae605c856e822ad0b29b2556aa1c0fc06"
+    },
+    "cycle2/reproduction-verification.json": {
+      "bytes": 843,
+      "sha256": "aee96247326794aea5142a0c5abb6ce62d383f4b4a5fb4a0ca7eee1dd2d2365d"
+    },
+    "cycle2/results.md": {
+      "bytes": 8518,
+      "sha256": "69202675b5f3a7ede78f04f0c6fb153a662512b39dcf19f67d37c9ea7437b0f0"
+    },
+    "cycle2/results/artifact-index.json": {
+      "bytes": 55476,
+      "sha256": "36003bbec6c03d7b9f8ba39fc86a09109c5335469b29f86ffb64fc0e963bf746"
+    },
+    "cycle2/results/artifacts/baseline/D003/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "adb2bf27c96a6c8db6359250c4af43274ed712b7f37fee768ae855173b4366c5"
+    },
+    "cycle2/results/artifacts/baseline/D003/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "2da4801de937372f9a87e69c467dc8b10dd905e1c54432cdf4e3f61d6b99100e"
+    },
+    "cycle2/results/artifacts/baseline/D003/scripted_reviewed_repair/recipe.json": {
+      "bytes": 874,
+      "sha256": "931eee705b220d189aa2246fd32baccb138aa23b00f1d309647d71349a55a98d"
+    },
+    "cycle2/results/artifacts/baseline/D012/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "573060bf40b68aeaac993256855326602684626d28fb0df30776847487509a7c"
+    },
+    "cycle2/results/artifacts/baseline/D012/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "b7ae594102ce1b5948204c8208229f1d0d9adba638a8cce670fcd5a7104a8485"
+    },
+    "cycle2/results/artifacts/baseline/D012/scripted_reviewed_repair/recipe.json": {
+      "bytes": 874,
+      "sha256": "a2006776ffcb690942d16aece0d906c725126f494eb11eaac86d4a7acf5c7b9d"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 597,
+      "sha256": "75f7c1c784b55c77d42c76e4f58ac20141c46a4e84526723896edc354d9f71ef"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 584,
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 616,
+      "sha256": "0548f408456e2b60359334786de94b43bb63581349b093167a7131a1cdcad9fd"
+    },
+    "cycle2/results/artifacts/baseline/D101/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818"
+    },
+    "cycle2/results/artifacts/baseline/D101/scripted_reviewed_repair/components.tsv": {
+      "bytes": 141,
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2"
+    },
+    "cycle2/results/artifacts/baseline/D101/scripted_reviewed_repair/output.agp": {
+      "bytes": 95,
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf"
+    },
+    "cycle2/results/artifacts/baseline/D101/scripted_reviewed_repair/recipe.json": {
+      "bytes": 691,
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1"
+    },
+    "cycle2/results/artifacts/baseline/D101/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 474,
+      "sha256": "c1df66a802d52b5338fd0d06d669a76a5243df3039cd7c59d791f2248b6b62b5"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 474,
+      "sha256": "c20c847ead40e8ccc748d19eaf2ca899c5c605f3c8beeef1bb50667d9ad93a93"
+    },
+    "cycle2/results/artifacts/baseline/D102/chromosort_review_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D102/scripted_reviewed_repair/components.tsv": {
+      "bytes": 141,
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2"
+    },
+    "cycle2/results/artifacts/baseline/D102/scripted_reviewed_repair/output.agp": {
+      "bytes": 95,
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf"
+    },
+    "cycle2/results/artifacts/baseline/D102/scripted_reviewed_repair/recipe.json": {
+      "bytes": 691,
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1"
+    },
+    "cycle2/results/artifacts/baseline/D102/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 464,
+      "sha256": "c6db5744687815f1325d060d5bf4019013161bdfe85aaec4ef0520ebac90bdd1"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 464,
+      "sha256": "45eddb3fb658afb1cd1f3e4e402b68b6b77490cc563a6ad567c111e608a00cb9"
+    },
+    "cycle2/results/artifacts/baseline/D103/chromosort_review_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D103/scripted_reviewed_repair/components.tsv": {
+      "bytes": 141,
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2"
+    },
+    "cycle2/results/artifacts/baseline/D103/scripted_reviewed_repair/output.agp": {
+      "bytes": 95,
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf"
+    },
+    "cycle2/results/artifacts/baseline/D103/scripted_reviewed_repair/recipe.json": {
+      "bytes": 691,
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1"
+    },
+    "cycle2/results/artifacts/baseline/D103/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 463,
+      "sha256": "d4dd337a414d8964a2cde12ae0dbc5a1cad2b948231105388c3d00edfc102c27"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 463,
+      "sha256": "1769c3d42f1e9629f54a71cd8826a2b56b33e27bd342bc1b517a5ec91436ed58"
+    },
+    "cycle2/results/artifacts/baseline/D104/chromosort_review_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D104/scripted_reviewed_repair/components.tsv": {
+      "bytes": 141,
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2"
+    },
+    "cycle2/results/artifacts/baseline/D104/scripted_reviewed_repair/output.agp": {
+      "bytes": 95,
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf"
+    },
+    "cycle2/results/artifacts/baseline/D104/scripted_reviewed_repair/recipe.json": {
+      "bytes": 691,
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1"
+    },
+    "cycle2/results/artifacts/baseline/D104/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 597,
+      "sha256": "1289ecc699c879cb079c2d7144cb54b32b38b2b1e1539e72ef352603394fddab"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 584,
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 616,
+      "sha256": "109c304a8733b28e7a7f48eef3f2c39f3fad3a61c9850509cf052f69fb87a529"
+    },
+    "cycle2/results/artifacts/baseline/D105/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818"
+    },
+    "cycle2/results/artifacts/baseline/D105/scripted_reviewed_repair/components.tsv": {
+      "bytes": 141,
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2"
+    },
+    "cycle2/results/artifacts/baseline/D105/scripted_reviewed_repair/output.agp": {
+      "bytes": 95,
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf"
+    },
+    "cycle2/results/artifacts/baseline/D105/scripted_reviewed_repair/recipe.json": {
+      "bytes": 691,
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1"
+    },
+    "cycle2/results/artifacts/baseline/D105/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 597,
+      "sha256": "3e391fb167075edb39086a7501680949368d0821866759586e82e09a34dcd948"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 584,
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 616,
+      "sha256": "ef2e5bbf0ea32b426193614d395fce6179bad5ea34d0e5bbae7c2a9c71b046bd"
+    },
+    "cycle2/results/artifacts/baseline/D106/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818"
+    },
+    "cycle2/results/artifacts/baseline/D106/scripted_reviewed_repair/components.tsv": {
+      "bytes": 141,
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2"
+    },
+    "cycle2/results/artifacts/baseline/D106/scripted_reviewed_repair/output.agp": {
+      "bytes": 95,
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf"
+    },
+    "cycle2/results/artifacts/baseline/D106/scripted_reviewed_repair/recipe.json": {
+      "bytes": 691,
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1"
+    },
+    "cycle2/results/artifacts/baseline/D106/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 211,
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 896,
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 689,
+      "sha256": "000a0abc4e12035293790d2284f5b4cdfaecf7871954a78633ff7ad8b88c2fae"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_report_comprehensive/output.agp": {
+      "bytes": 169,
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 211,
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 896,
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 689,
+      "sha256": "809ee280b4be0f03a1b56a6f2f62721308b4c3baa2c4715b4f01e1bacf0ff1dd"
+    },
+    "cycle2/results/artifacts/baseline/D107/chromosort_review_comprehensive/output.agp": {
+      "bytes": 169,
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee"
+    },
+    "cycle2/results/artifacts/baseline/D107/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "b2906a8d46aef2d269c65c9566af9b54c03cc677ac8f8f6980b459247a1fac1c"
+    },
+    "cycle2/results/artifacts/baseline/D107/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "608cce8ea4bfc886b2cffcc8fc24ef9cc7868d65055c52a0d889537ddad69c93"
+    },
+    "cycle2/results/artifacts/baseline/D107/scripted_reviewed_repair/recipe.json": {
+      "bytes": 874,
+      "sha256": "777ee25a524ce853701da757217f7872a85a7c2b31d5e0b064a996b9697447d0"
+    },
+    "cycle2/results/artifacts/baseline/D107/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "fe12d7785077c6e9e0a7ff0b533c24c91749152746f7cf41c0493301f43ed881"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 386,
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 239,
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_report_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 386,
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 239,
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2"
+    },
+    "cycle2/results/artifacts/baseline/D108/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc"
+    },
+    "cycle2/results/artifacts/baseline/D108/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "964b2fa095cddf8631b4fe8c521560f290e48e81c739d49b81235c6f9851554c"
+    },
+    "cycle2/results/artifacts/baseline/D108/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "0ac636cd48cf67aa3540c45833d62a3c3b198ab386423cbb5d740dd6e6e26ebf"
+    },
+    "cycle2/results/artifacts/baseline/D108/scripted_reviewed_repair/recipe.json": {
+      "bytes": 874,
+      "sha256": "8fa0889b63cdc891f0cd2657c61b87e8158bcf991628bff4c33e8526dadfb231"
+    },
+    "cycle2/results/artifacts/baseline/D108/unedited/components.tsv": {
+      "bytes": 102,
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790"
+    },
+    "cycle2/results/artifacts/candidate/D003/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "adb2bf27c96a6c8db6359250c4af43274ed712b7f37fee768ae855173b4366c5"
+    },
+    "cycle2/results/artifacts/candidate/D003/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 690,
+      "sha256": "d91aef472f23348b85c624fa8aea4d97230f17f87d1dfe4f604b3de5a64ff49e"
+    },
+    "cycle2/results/artifacts/candidate/D003/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 1048,
+      "sha256": "5ae6a70069e7f47b897c8e0f19f5b289298def92e0b867e2af1ecb3a84b574d4"
+    },
+    "cycle2/results/artifacts/candidate/D003/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "2da4801de937372f9a87e69c467dc8b10dd905e1c54432cdf4e3f61d6b99100e"
+    },
+    "cycle2/results/artifacts/candidate/D003/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2978,
+      "sha256": "d148e901ff9c5aeffa3304be6793d77114616307b561da288e8af2c1673e55d6"
+    },
+    "cycle2/results/artifacts/candidate/D003/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 461,
+      "sha256": "761414e2174c7e86c4a2297767fd6c0253720ae375cc35fe233349382fddf374"
+    },
+    "cycle2/results/artifacts/candidate/D012/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "573060bf40b68aeaac993256855326602684626d28fb0df30776847487509a7c"
+    },
+    "cycle2/results/artifacts/candidate/D012/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 677,
+      "sha256": "2b11dc3e8d740e496e95dbe217be6e8cc5f21f54455bd5db80c845a61f829120"
+    },
+    "cycle2/results/artifacts/candidate/D012/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 977,
+      "sha256": "918ef71c33be95218b70e7228afccf81b025499e70cfa26453395ce86315dad4"
+    },
+    "cycle2/results/artifacts/candidate/D012/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "b7ae594102ce1b5948204c8208229f1d0d9adba638a8cce670fcd5a7104a8485"
+    },
+    "cycle2/results/artifacts/candidate/D012/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2907,
+      "sha256": "e21a4c5f4e1bd426c9a7af71ad65c9a6f326c0141f133d149508968ce76a7b95"
+    },
+    "cycle2/results/artifacts/candidate/D012/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 461,
+      "sha256": "0d6be70d6db4e17c94fe29af45458e029115802e674338278a003bbb10805914"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 597,
+      "sha256": "75f7c1c784b55c77d42c76e4f58ac20141c46a4e84526723896edc354d9f71ef"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 584,
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 616,
+      "sha256": "0548f408456e2b60359334786de94b43bb63581349b093167a7131a1cdcad9fd"
+    },
+    "cycle2/results/artifacts/candidate/D101/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818"
+    },
+    "cycle2/results/artifacts/candidate/D101/scripted_reviewed_repair/components.tsv": {
+      "bytes": 157,
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d"
+    },
+    "cycle2/results/artifacts/candidate/D101/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 473,
+      "sha256": "af0fac4f1c7c8e6187e5e3b17476272cf9288016cb8b8ca5c8c243f6a0db169f"
+    },
+    "cycle2/results/artifacts/candidate/D101/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 636,
+      "sha256": "e17f339b08e47a4b9b5cf2bdfc99a24350a26045f072cae57f1e7fc54373bea3"
+    },
+    "cycle2/results/artifacts/candidate/D101/scripted_reviewed_repair/output.agp": {
+      "bytes": 111,
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6"
+    },
+    "cycle2/results/artifacts/candidate/D101/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2131,
+      "sha256": "2be57b38ce5e7d8e007080593db2bdd44f8438bc48eef2124ff0584478cc6a88"
+    },
+    "cycle2/results/artifacts/candidate/D101/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 457,
+      "sha256": "630e52780908ec97178d3b05355da52f97075b3a2ae04d99f616b7b6cc92dd87"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 474,
+      "sha256": "c1df66a802d52b5338fd0d06d669a76a5243df3039cd7c59d791f2248b6b62b5"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 474,
+      "sha256": "c20c847ead40e8ccc748d19eaf2ca899c5c605f3c8beeef1bb50667d9ad93a93"
+    },
+    "cycle2/results/artifacts/candidate/D102/chromosort_review_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D102/scripted_reviewed_repair/components.tsv": {
+      "bytes": 157,
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d"
+    },
+    "cycle2/results/artifacts/candidate/D102/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 473,
+      "sha256": "c9618b135d15a441933d71d6f3c83c1f528bd617e34d146d41f8a6cd5405cc25"
+    },
+    "cycle2/results/artifacts/candidate/D102/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 516,
+      "sha256": "42b73889be39f890910bc23e12d1cdfe10262a1c764e6457ffe9c62f8bc405f8"
+    },
+    "cycle2/results/artifacts/candidate/D102/scripted_reviewed_repair/output.agp": {
+      "bytes": 111,
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6"
+    },
+    "cycle2/results/artifacts/candidate/D102/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2011,
+      "sha256": "b0b8849481e774788930654b12230237b4e4c3a799b33198f54c9fc5dc75704a"
+    },
+    "cycle2/results/artifacts/candidate/D102/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 457,
+      "sha256": "9279c96b72f71a3d2b3548b49ebc28f7ba3d67b85dcdc9149ee9b0c07a001ec1"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 464,
+      "sha256": "c6db5744687815f1325d060d5bf4019013161bdfe85aaec4ef0520ebac90bdd1"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 464,
+      "sha256": "45eddb3fb658afb1cd1f3e4e402b68b6b77490cc563a6ad567c111e608a00cb9"
+    },
+    "cycle2/results/artifacts/candidate/D103/chromosort_review_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D103/scripted_reviewed_repair/components.tsv": {
+      "bytes": 157,
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d"
+    },
+    "cycle2/results/artifacts/candidate/D103/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 473,
+      "sha256": "de23a49badb89958efeb347ce6effc282d42f7f7fc5f0103e66a38dff6fcdee6"
+    },
+    "cycle2/results/artifacts/candidate/D103/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 516,
+      "sha256": "42b73889be39f890910bc23e12d1cdfe10262a1c764e6457ffe9c62f8bc405f8"
+    },
+    "cycle2/results/artifacts/candidate/D103/scripted_reviewed_repair/output.agp": {
+      "bytes": 111,
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6"
+    },
+    "cycle2/results/artifacts/candidate/D103/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2011,
+      "sha256": "89e8e229b924cb2bc0881a8f43b08b61bdc7028522ba18a0f5f5aa96cec5139b"
+    },
+    "cycle2/results/artifacts/candidate/D103/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 457,
+      "sha256": "d7c9972605f2a10e42d010a200140dc357d3f4a2c7d5fa9b92006bfe17256721"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 463,
+      "sha256": "d4dd337a414d8964a2cde12ae0dbc5a1cad2b948231105388c3d00edfc102c27"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 463,
+      "sha256": "1769c3d42f1e9629f54a71cd8826a2b56b33e27bd342bc1b517a5ec91436ed58"
+    },
+    "cycle2/results/artifacts/candidate/D104/chromosort_review_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D104/scripted_reviewed_repair/components.tsv": {
+      "bytes": 157,
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d"
+    },
+    "cycle2/results/artifacts/candidate/D104/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 473,
+      "sha256": "309e6d4987ba347aae43eb5c0de56289141eb3e9d44b276a14dafec5503da173"
+    },
+    "cycle2/results/artifacts/candidate/D104/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 516,
+      "sha256": "42b73889be39f890910bc23e12d1cdfe10262a1c764e6457ffe9c62f8bc405f8"
+    },
+    "cycle2/results/artifacts/candidate/D104/scripted_reviewed_repair/output.agp": {
+      "bytes": 111,
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6"
+    },
+    "cycle2/results/artifacts/candidate/D104/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2011,
+      "sha256": "8b0883ce6be67acb4e2af553f93f67b9a3f81f059f8a3035a1789c57bc327333"
+    },
+    "cycle2/results/artifacts/candidate/D104/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 457,
+      "sha256": "d3606aaacdab7eddb479d1e4bd37b3c56edfcdc2cd2bb271b999493662b3d3da"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 597,
+      "sha256": "1289ecc699c879cb079c2d7144cb54b32b38b2b1e1539e72ef352603394fddab"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 584,
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 616,
+      "sha256": "109c304a8733b28e7a7f48eef3f2c39f3fad3a61c9850509cf052f69fb87a529"
+    },
+    "cycle2/results/artifacts/candidate/D105/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818"
+    },
+    "cycle2/results/artifacts/candidate/D105/scripted_reviewed_repair/components.tsv": {
+      "bytes": 157,
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d"
+    },
+    "cycle2/results/artifacts/candidate/D105/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 473,
+      "sha256": "7fafb3e79598341c6194693384aa6eb4a1f69a2c6e5899043375ec352e090539"
+    },
+    "cycle2/results/artifacts/candidate/D105/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 636,
+      "sha256": "e17f339b08e47a4b9b5cf2bdfc99a24350a26045f072cae57f1e7fc54373bea3"
+    },
+    "cycle2/results/artifacts/candidate/D105/scripted_reviewed_repair/output.agp": {
+      "bytes": 111,
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6"
+    },
+    "cycle2/results/artifacts/candidate/D105/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2131,
+      "sha256": "76cc59ef880c6afb7e767b3e7b4f94aaded55af5213b0238d9214fb8e539cfdb"
+    },
+    "cycle2/results/artifacts/candidate/D105/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 457,
+      "sha256": "bb13b8acb291ec5b0f7a209fc1aa79c0739b946aef78aad0de8ecc7fbb45242d"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 162,
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 659,
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 597,
+      "sha256": "3e391fb167075edb39086a7501680949368d0821866759586e82e09a34dcd948"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_report_comprehensive/output.agp": {
+      "bytes": 116,
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 584,
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 616,
+      "sha256": "ef2e5bbf0ea32b426193614d395fce6179bad5ea34d0e5bbae7c2a9c71b046bd"
+    },
+    "cycle2/results/artifacts/candidate/D106/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818"
+    },
+    "cycle2/results/artifacts/candidate/D106/scripted_reviewed_repair/components.tsv": {
+      "bytes": 157,
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d"
+    },
+    "cycle2/results/artifacts/candidate/D106/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 473,
+      "sha256": "c035b79de92f7ad0de28543a44f3fc9d7504ecf0ccd648dffee8c75eddc708b0"
+    },
+    "cycle2/results/artifacts/candidate/D106/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 636,
+      "sha256": "e17f339b08e47a4b9b5cf2bdfc99a24350a26045f072cae57f1e7fc54373bea3"
+    },
+    "cycle2/results/artifacts/candidate/D106/scripted_reviewed_repair/output.agp": {
+      "bytes": 111,
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6"
+    },
+    "cycle2/results/artifacts/candidate/D106/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2131,
+      "sha256": "82be77997176115fffa68728e9c48f5504a7a0a976629cb14f35a1fcd0f3e680"
+    },
+    "cycle2/results/artifacts/candidate/D106/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 457,
+      "sha256": "d75b837d7a402dedde8737cabb9bc326f106f81e53693d7415fcec0ba8c35f7b"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 211,
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 896,
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 689,
+      "sha256": "000a0abc4e12035293790d2284f5b4cdfaecf7871954a78633ff7ad8b88c2fae"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_report_comprehensive/output.agp": {
+      "bytes": 169,
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 211,
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 896,
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 689,
+      "sha256": "809ee280b4be0f03a1b56a6f2f62721308b4c3baa2c4715b4f01e1bacf0ff1dd"
+    },
+    "cycle2/results/artifacts/candidate/D107/chromosort_review_comprehensive/output.agp": {
+      "bytes": 169,
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee"
+    },
+    "cycle2/results/artifacts/candidate/D107/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "b2906a8d46aef2d269c65c9566af9b54c03cc677ac8f8f6980b459247a1fac1c"
+    },
+    "cycle2/results/artifacts/candidate/D107/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 682,
+      "sha256": "2f6aa7b774607fd38ad246486201f16a0d3e0634b5efe224c85e54b01f5e032c"
+    },
+    "cycle2/results/artifacts/candidate/D107/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 930,
+      "sha256": "84fbd2d56417addaf2b6a6f35df7af8db0860e240afb5be0c21f23fe9d26fccb"
+    },
+    "cycle2/results/artifacts/candidate/D107/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "608cce8ea4bfc886b2cffcc8fc24ef9cc7868d65055c52a0d889537ddad69c93"
+    },
+    "cycle2/results/artifacts/candidate/D107/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2860,
+      "sha256": "d5ae3eaab669c1e90cc681b6c640e27a3fc97d7a69dc44d76bbe9d2301d7aed4"
+    },
+    "cycle2/results/artifacts/candidate/D107/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 461,
+      "sha256": "41ca036034691e663d7ae6b5d479525826cdc95f77816bc92d9436f5968705ab"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_report_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_report_comprehensive/fix.tsv": {
+      "bytes": 386,
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 239,
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_report_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_review_comprehensive/components.tsv": {
+      "bytes": 102,
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_review_comprehensive/fix.tsv": {
+      "bytes": 386,
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "bytes": 239,
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2"
+    },
+    "cycle2/results/artifacts/candidate/D108/chromosort_review_comprehensive/output.agp": {
+      "bytes": 52,
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc"
+    },
+    "cycle2/results/artifacts/candidate/D108/scripted_reviewed_repair/components.tsv": {
+      "bytes": 182,
+      "sha256": "964b2fa095cddf8631b4fe8c521560f290e48e81c739d49b81235c6f9851554c"
+    },
+    "cycle2/results/artifacts/candidate/D108/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "bytes": 472,
+      "sha256": "b1888a8646429c5513bd61243edb36dab2f8a18d6e2f768b9650ed5114106ad4"
+    },
+    "cycle2/results/artifacts/candidate/D108/scripted_reviewed_repair/decisions.tsv": {
+      "bytes": 505,
+      "sha256": "4f5bc23951fc330816ff8187cffcb58132b7566d638907bae945d4e04463c0a8"
+    },
+    "cycle2/results/artifacts/candidate/D108/scripted_reviewed_repair/output.agp": {
+      "bytes": 140,
+      "sha256": "0ac636cd48cf67aa3540c45833d62a3c3b198ab386423cbb5d740dd6e6e26ebf"
+    },
+    "cycle2/results/artifacts/candidate/D108/scripted_reviewed_repair/recipe.json": {
+      "bytes": 2187,
+      "sha256": "3af79bc37483483cb45a54a30aa2fa49e31f2a8f8d629e29ac98ae89118574b7"
+    },
+    "cycle2/results/artifacts/candidate/D108/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "bytes": 461,
+      "sha256": "f0884f9b204d3779158c4110c4d71d7082a617ba61c993b021ad69cafd715cee"
+    },
+    "cycle2/results/continuity.tsv": {
+      "bytes": 10690,
+      "sha256": "59dd360e3d26a329d74fba0449f7feecf677d85c028b4ed24922cd6783143472"
+    },
+    "cycle2/results/evaluation-summary.json": {
+      "bytes": 4611,
+      "sha256": "f79bd5d0b9c1a19a14380e429873e4714bdf2a8e742bcc5c306c0e2557edd0eb"
+    },
+    "cycle2/results/inspection-and-replay.json": {
+      "bytes": 33971,
+      "sha256": "8fb0e55cb04da499b884a4eb3f1f98c6efd4e5bbbb6d4cc42442862a09a90c74"
+    },
+    "cycle2/results/paired-output-commitment.json": {
+      "bytes": 216221,
+      "sha256": "1f2fbe1f295138fe75470fa12427e84433eec972241c9789eb24d68fd2b4708c"
+    },
+    "cycle2/results/portable-score-verification.json": {
+      "bytes": 343,
+      "sha256": "f1d9cbbfda6348a98cc543293ac2ac4a4caf9a6fed20bcf04fd372b4550818ea"
+    },
+    "cycle2/results/resource-use.json": {
+      "bytes": 649,
+      "sha256": "c62b333afd5f077b77906a27939ce6d0109d2276b14939f8d38b22ee77fbeec7"
+    },
+    "cycle2/results/scores.jsonl": {
+      "bytes": 189848,
+      "sha256": "31b9fa2ffb3b1692be345e1553a582b2c09b6cd604c2f167166c87f1807473e8"
+    },
+    "cycle2/results/software-identities.json": {
+      "bytes": 5647,
+      "sha256": "8ef3c5581d345b8f9a7c873cef0b03d0ada05891e120cf7d73e0bfa014ebec95"
+    },
+    "cycle2/results/summary.tsv": {
+      "bytes": 5572,
+      "sha256": "8bf8797369712d8c467c8619d789a5327f58ae6fd219dc1c9e598fbcdf2e157b"
+    },
+    "cycle2/results/supplied-boundary-support.tsv": {
+      "bytes": 3870,
+      "sha256": "a69a519214a0737d929a5feecb690e5f61ad1b296a4ed35678474e3993d0c0a6"
+    },
+    "cycle2/sources/sequence_registry.json": {
+      "bytes": 2975,
+      "sha256": "acd4c301f2bedd5b72312520611171636946785a63bc193b35928d7dfb7771c4"
+    },
+    "cycle2/sources/sequences/wheat_A_new.fa": {
+      "bytes": 202513,
+      "sha256": "28b6654f47d927f282eae7cd951e3a4d5d9016f7975b13f14b73cad39a474d32"
+    },
+    "cycle2/sources/sequences/wheat_D_new.fa": {
+      "bytes": 202513,
+      "sha256": "d7e106568e1238a2e2dd8f90b7dac77bd58cd70551e431f186ef401817ecc95c"
+    },
+    "cycle2/sources/sequences/wheat_v1_scf139.fa": {
+      "bytes": 957913,
+      "sha256": "4873d0f9ef61f3d97d4b690c5313391203845539b8ef7709e205035522b4fec2"
+    },
+    "cycle2/sources/sequences/wheat_v2_scf139.fa": {
+      "bytes": 1537689,
+      "sha256": "0a340df26b8adccb6d0a510edf6c461a5f9bb9d4bb712a8d3fb7442310920425"
+    },
+    "cycle2/sources/source_admission.json": {
+      "bytes": 1879,
+      "sha256": "e86413665110e068caa1f1a47eb291af27cc9e32ce7582aead2820693e4e1878"
+    },
+    "cycle2/sources/source_alignment_summary.json": {
+      "bytes": 4369,
+      "sha256": "57175ec6bfb8d41983cff8410835caa883af6b19f4f9c5a3de3265ced338465c"
+    },
     "docs/cases.md": {
       "bytes": 3400,
       "sha256": "7f5b70c84b8165dfa2421cfe5282411204c66e11afd9d4e63dc1c885faea143f"
     },
     "docs/next-validation.md": {
-      "bytes": 1804,
-      "sha256": "69efa68679e023cf609f60f1a72805f0bf80bbd72a0a1c718c4b7ee39321d0e7"
+      "bytes": 2290,
+      "sha256": "209c0c3565531f30af584719b0aab2950f81c0d49b29d5c04d147d05c2c8e083"
     },
     "docs/reproduction.md": {
       "bytes": 8411,
       "sha256": "bf4d243ec35c85a7d8b22edb6afecf9d514ad9434492145074918df64b4b5323"
     },
     "docs/results.md": {
-      "bytes": 7985,
-      "sha256": "de7cb70b9e3695d5a6698a6dc6b51ed76529ae91931bb7fbb5da7ad8a09e1e2b"
+      "bytes": 8536,
+      "sha256": "93e51c1ea90cecff98ba313bded5d41324a38f820695bc8406b31aba87fd2878"
     },
     "docs/scoring.md": {
       "bytes": 4953,
@@ -235,28 +1263,48 @@
       "sha256": "aadb98f97cd5bbd6fbd87c7fbaafb29d072c06ae86d087d3b16b3c97787cb717"
     },
     "scripts/check_clean_checkout.py": {
-      "bytes": 3008,
-      "sha256": "5c70810e2408151a67e8ccbbdaa5dd3fa5bc6657bd9398805b7fafd4099f13ab"
+      "bytes": 3770,
+      "sha256": "acf73849fbf9e036c99612e26de9915765ad7ccd1578af7318f5266304e75433"
     },
     "scripts/evidence.py": {
       "bytes": 6796,
       "sha256": "9277b2dc599a0d3f266c7ed25e39dd5f0c513d5dc0a8609e4dc9871d0c796779"
     },
+    "scripts/export_cycle2.py": {
+      "bytes": 4886,
+      "sha256": "cf2f0c0e61acf4f54fbe8e1cdd861ea23fd7546ad6b0b83e1a39581816104856"
+    },
     "scripts/generate.py": {
       "bytes": 17002,
       "sha256": "9511e092cea1ac3aab4dea4198a685a414d5413c669f0cddf78aab27d0fbf162"
+    },
+    "scripts/generate_cycle2.py": {
+      "bytes": 10146,
+      "sha256": "fa981876c252ecb59bbd0b6111e32337989401f6b943dca0eaa37172a3c4a332"
     },
     "scripts/retrieve.py": {
       "bytes": 3342,
       "sha256": "13fb108691ff8ce1121ab4ee73bae5afbc644f835f255283d9d9eaf742077d3a"
     },
     "scripts/run_benchmark.py": {
-      "bytes": 11680,
-      "sha256": "8d583a43a1d642b5a3f1d8aa0d81aeefaae125e434c11e2f4b4716913c7eb07e"
+      "bytes": 12063,
+      "sha256": "080466b590ea4ee5886fa3807c370ec6015c54ed9fe06850e83d26c434364fbc"
+    },
+    "scripts/run_cycle2.py": {
+      "bytes": 11536,
+      "sha256": "e6b089288ac8d934c45ff672b3945af0abe2d89772bf1c81f0f816ff2d06dd09"
     },
     "scripts/score.py": {
       "bytes": 14114,
       "sha256": "4999e8d94d34beb0929d245b6d9fe3887c57f4d3f6c8b5ef28430e6c19f97eb9"
+    },
+    "scripts/score_cycle2.py": {
+      "bytes": 8154,
+      "sha256": "d6e48e7f276938a18d5eafd74d7097814c9a77fc8af3b67273ca8e1c5f2e6614"
+    },
+    "scripts/score_structure.py": {
+      "bytes": 4777,
+      "sha256": "8eb8dbe1523d743cfb8447e6752eabf0248b1ce7ccb635d1d2071ee29ee7c628"
     },
     "scripts/summarize_history.py": {
       "bytes": 2226,
@@ -265,6 +1313,14 @@
     "scripts/verify.py": {
       "bytes": 5698,
       "sha256": "146169c4944c13b79f6a4e78bfad2f7fc15b21557f520e47e01e8f649dbcf64d"
+    },
+    "scripts/verify_cycle2.py": {
+      "bytes": 4902,
+      "sha256": "a2b09fd5b21df7c508a03bb79057b5d54075c0625e3d714afbbee5863b0a3f91"
+    },
+    "scripts/verify_cycle2_results.py": {
+      "bytes": 3212,
+      "sha256": "5649c7869e65273722a2b681db1ca58c06fdf3d7b4d172711a2e9c5f5e4be926"
     },
     "sources/development_expected.json": {
       "bytes": 23829,
@@ -293,6 +1349,10 @@
     "tests/test_score.py": {
       "bytes": 5126,
       "sha256": "2b1231804ef1ee31a4a276ccf54e8791d60e44b6038928fff60366e82c44bd90"
+    },
+    "tests/test_structure.py": {
+      "bytes": 4767,
+      "sha256": "f054057e3ffe2586c687a35b1be431bbe2f9b2a894e4a7bd93da7d555ffa9161"
     }
   },
   "groups": {
@@ -305,15 +1365,19 @@
       "files": 1
     },
     "README.md": {
-      "bytes": 5160,
+      "bytes": 5784,
       "files": 1
     },
     "configs": {
       "bytes": 7533,
       "files": 4
     },
+    "cycle2": {
+      "bytes": 3599422,
+      "files": 257
+    },
     "docs": {
-      "bytes": 31280,
+      "bytes": 32317,
       "files": 6
     },
     "fixtures": {
@@ -329,8 +1393,8 @@
       "files": 1
     },
     "scripts": {
-      "bytes": 69868,
-      "files": 10
+      "bytes": 118626,
+      "files": 17
     },
     "sources": {
       "bytes": 34281,
@@ -341,10 +1405,10 @@
       "files": 1
     },
     "tests": {
-      "bytes": 5126,
-      "files": 1
+      "bytes": 9893,
+      "files": 2
     }
   },
   "schema": "public-benchmark-content-manifest-v1",
-  "total_bytes": 6654498
+  "total_bytes": 10309106
 }

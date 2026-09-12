@@ -1,0 +1,2 @@
+contig	position	evidence_id	evidence_kind	dependency_group	read_sample	min_mapq	anchor_bp	min_spanning	spanning_molecules	spanning_read_ids	alignments_without_cigar	continuity_status	automatic_action	policy	assembly_sha256	evidence_sha256
+c001	320010	reads_sim01	read_paf	sim01	.	20	1000	2	0	.	480	unavailable_cigar	unchanged	report	3fa71ebe9142b157084cb2abc4b9624fd00ca5bacb7baa4864857abfe8fe9bb6	92c300cf1d6bcb0b52a7c6ddcae2bc58fff2aaa5a7bd3799843c2cc305fea2c2

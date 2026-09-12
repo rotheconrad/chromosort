@@ -1,0 +1,24 @@
+{
+  "baseline_commit": "dd66e3d987e775d99e612f4cdc19adec039b43e6",
+  "baseline_git_archive_sha256": "8e8e7f39e25cef162dd1f0c6b05a44dc2f1e720620b70aca1a2a5eedf0084e06",
+  "candidate_artifacts": {
+    "chromosort-0.4.0rc3-py3-none-any.whl": "ff5770c61aa4b5eab4aa45cbe6028cf824674488fdb4663db6d42036f0f0bdf2",
+    "chromosort-0.4.0rc3.tar.gz": "6e090a5174ff32b301666aba5f16c0c6d3789ffbe6e65984052c7d914c96f173"
+  },
+  "candidate_version": "0.4.0rc3",
+  "commands": "scripts/run_cycle2.py with role baseline/candidate; comprehensive x report/review plus scan and scripted replay. No truth opened until both output ledgers exist.",
+  "files": {
+    "cycle2/cases.json": "03f1bd0b70d5ef09fcd100e174a863b1f1c62c70ffc4b636006d040e9d0700ed",
+    "cycle2/generated_expected.json": "6f7c4ba29807526a2f78cfb600b694baae817ee40823fbb89f4afdfde23c83dc",
+    "cycle2/prior-case-diagnostics.json": "6c54ea8757bc5f12d1a03c0a9173c3d6cc16b53654361fd4a2a64b3f99446e18",
+    "cycle2/protocol.json": "78a501b20806506f12cb1bf25370299ae605c856e822ad0b29b2556aa1c0fc06",
+    "scripts/run_benchmark.py": "080466b590ea4ee5886fa3807c370ec6015c54ed9fe06850e83d26c434364fbc",
+    "scripts/run_cycle2.py": "e6b089288ac8d934c45ff672b3945af0abe2d89772bf1c81f0f816ff2d06dd09",
+    "scripts/score.py": "4999e8d94d34beb0929d245b6d9fe3887c57f4d3f6c8b5ef28430e6c19f97eb9",
+    "scripts/score_structure.py": "8eb8dbe1523d743cfb8447e6752eabf0248b1ce7ccb635d1d2071ee29ee7c628",
+    "tests/test_structure.py": "f054057e3ffe2586c687a35b1be431bbe2f9b2a894e4a7bd93da7d555ffa9161"
+  },
+  "identity_note": "Locally frozen archives; no new public release availability asserted",
+  "phase": "Both software identities and harness fixed before first tool output",
+  "schema": "cycle2-execution-freeze-v1"
+}

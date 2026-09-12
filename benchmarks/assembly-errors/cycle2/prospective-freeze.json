@@ -1,0 +1,11 @@
+{
+  "files": {
+    "cases.json": "03f1bd0b70d5ef09fcd100e174a863b1f1c62c70ffc4b636006d040e9d0700ed",
+    "protocol.json": "78a501b20806506f12cb1bf25370299ae605c856e822ad0b29b2556aa1c0fc06",
+    "sources/sequence_registry.json": "acd4c301f2bedd5b72312520611171636946785a63bc193b35928d7dfb7771c4",
+    "sources/source_admission.json": "e86413665110e068caa1f1a47eb291af27cc9e32ce7582aead2820693e4e1878",
+    "sources/source_alignment_summary.json": "57175ec6bfb8d41983cff8410835caa883af6b19f4f9c5a3de3265ced338465c"
+  },
+  "phase": "before generator implementation and before baseline/candidate outputs",
+  "schema": "cycle2-prospective-freeze-v1"
+}

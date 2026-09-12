@@ -134,3 +134,13 @@ There is no read-assembled graph, validated donor-fill scoring, completed
 balanced blind review, empirical review-time benefit, or demonstrated overall
 superiority in this record. Independent new loci and controlled validation are
 required before extending the claims.
+
+## Additive second development panel
+
+The [second-panel report](../cycle2/results.md) preserves these historical
+records and adds a paired comparison of the published `dd66e3d` baseline with
+immutable 0.4.0rc3 on eight new-locus scenarios. It separately records automatic
+correction, pending inspection and supplied-coordinate repair, with a stricter
+complete-target-path metric. Automatic outputs are unchanged between versions;
+the explicit workflow completes all supplied repairs. This is another
+development experiment, not an unseen validation.

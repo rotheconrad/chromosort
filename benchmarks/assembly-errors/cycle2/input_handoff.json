@@ -1,0 +1,7 @@
+{
+  "archive_bytes": 14561501,
+  "archive_sha256": "a1587dd567c65087c61f486c42fedb592fb9fad8661e65c3e80ea86a68d0b498",
+  "member_count": 122,
+  "schema": "cycle2-input-only-handoff-v1",
+  "scope": "Eight development input manifests, input sequences/reads, evidence and mapper logs only. No evaluator truth. Local artifact identity, no public archive availability claimed."
+}

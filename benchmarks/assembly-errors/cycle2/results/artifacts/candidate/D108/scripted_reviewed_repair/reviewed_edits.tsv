@@ -1,0 +1,2 @@
+schema	edit_id	event_id	target	action	start	end	decision	reviewer	notes	assembly_sha256	scan_sha256
+chromosort-edit-v1	edit:afdb4be43eeb5263e98bc922	decision:e37f75d8d6a73225cf933444	c001	reverse	151000	159000	accept	scripted-development-oracle	Supplied prespecified oracle-coordinate development edit; not independently inferred.	3f73d24f7bd00fef8342484fa25bab734c940d4f2b442cbdea1b18c22646cfd2	d694e687c7c5fa0a954ff411bfe77daca2e42072b84e152a1fc952ef0b619702

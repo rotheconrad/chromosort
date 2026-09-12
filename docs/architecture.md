@@ -9,8 +9,9 @@ mermaid: true
 
 ChromoSort is a reference-guided genome assembly curation toolkit. It consumes
 existing whole-genome alignments, assembly graph records, and optional
-cross-evidence tables; it does not assemble reads, run aligners, polish bases,
-or infer variants. Its core responsibility is to convert heterogeneous evidence
+cross-evidence tables. Its optional `workflow align` executor invokes minimap2
+with recorded inputs, arguments and version; the curation commands consume
+existing alignments. It does not assemble reads, polish bases or infer variants. Its core responsibility is to convert heterogeneous evidence
 into deterministic, auditable contig-level decisions: order, split, cut,
 scaffold, review, plot, and optionally fill graph-supported gaps.
 
@@ -885,3 +886,22 @@ for the explicit evidence limitations and executable examples.
 read source. It may defer a whole automatic contig plan, never add a cut. Eval
 retains proposals with cleared accept flags; explicit reviewed plans remain
 authoritative. Gap inspection is separately thresholded and non-editing.
+
+`repairs.py` compiles explicitly reviewed native-coordinate edits into the
+existing manual recipe model. A reverse interval `[s,e)` replaces that slice
+with its reverse complement, retaining the prefix and suffix. Disjoint edits
+partition the source at accepted cuts and reverse endpoints. Every partition
+occurs once; only explicitly reversed slices receive negative orientation.
+Slices retain native order within each cut-delimited output group, joined with
+zero inserted bases. Accepted cuts inside a reverse interval and overlapping
+reverse intervals are rejected because their composition would require an
+additional coordinate/order decision. Rejected and deferred edits contribute
+no boundaries or orientation changes. AGP reconstructs the exact output strings.
+
+The new edit interface supplies no inversion detector: missing backbone
+alignment blocks remain an inspection problem. Pending proposals, explicitly
+reviewed plans, applied edits and independently established biological
+correctness are separate states. `--plan-only` emits the same executable recipe
+without a FASTA. The apply audit records completed outcomes only after exact
+source-coverage and AGP reconstruction checks; every changed FASTA still needs
+fresh alignment.

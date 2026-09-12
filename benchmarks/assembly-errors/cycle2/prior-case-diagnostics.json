@@ -1,0 +1,32 @@
+{
+  "arms": {
+    "baseline": "existing complete-coverage manual recipe API",
+    "candidate": "reviewed native-interval API linked to a real scan event; unavailable if no event"
+  },
+  "biological_control": "Preserve target-native simulated inversion at 190000..205000; no reference normalization",
+  "cases": {
+    "D003": {
+      "action": "reverse",
+      "end": 159000,
+      "input_id": "c001",
+      "start": 151000
+    },
+    "D012": {
+      "action": "reverse",
+      "end": 176000,
+      "input_id": "c001",
+      "start": 151000
+    }
+  },
+  "classification": "Supplied oracle-coordinate development replay; not automatic discovery or blinded human review",
+  "frozen_original_scorer_sha256": "4999e8d94d34beb0929d245b6d9fe3887c57f4d3f6c8b5ef28430e6c19f97eb9",
+  "metrics": [
+    "exact once-only input retention",
+    "biological-control continuity",
+    "complete target structure",
+    "pending inspection and script replay availability"
+  ],
+  "phase": "prespecified before baseline or candidate tool outputs",
+  "schema": "cycle2-prior-case-diagnostics-v1",
+  "scope": "Supplemental explicit-repair diagnostics; excluded from the new eight-case primary panel"
+}

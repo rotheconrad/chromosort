@@ -2,6 +2,7 @@
 
 | Version | Notes |
 | --- | --- |
+| `0.4.0rc3` (explicit interval review) | Adds pending native-interval reverse/cut edit records, both-edge panels, plan-only previews, explicit deferral and exact complete-coverage recipe composition. Rejects overlapping reversals and cuts inside them. Automatic correction and whole-contig continuity deferral remain unchanged. |
 | Git after frozen `0.4.0rc2` | Rejects read target name/length mismatches against manifest assemblies before filtering. Adds portable public benchmark documentation and separate package-check output directories. Valid-input correction policy and frozen candidate archives remain unchanged. |
 | `0.4.0rc2` (review refinement) | Defers manifest automatic cut plans when CIGAR-contiguous read molecules span a proposed boundary; preserves explicit review overrides and report-only comparison. Separates gap inspection from correction smoothing and shows both interval edges. Development-informed policies, not biological truth classifiers. |
 | `0.4.0rc1` (publication candidate) | Added labeled multi-reference/copy-preserving manifests, explicit ambiguity/backbones, retain-all accounting, supervised scan/apply/align/validate, event-linked native/reversed read SVG/PDF/PNG with replay, digest checks, complete reviewed-piece coverage and selective scaffold joins. Preserves single-reference commands. Publishing and biological performance claims remain gated on the frozen benchmark. |

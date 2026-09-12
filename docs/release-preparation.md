@@ -4,7 +4,7 @@ title: Publication release preparation
 
 # Publication release preparation
 
-The new interfaces are staged as **0.4.0rc2**. This candidate identifier keeps
+The new interfaces are staged as **0.4.0rc3**. This candidate identifier keeps
 development validation distinct from the later stable public release. No
 registry upload, Git tag, DOI deposit or preprint submission is performed by
 the preparation commands.
@@ -51,3 +51,8 @@ artifact: identify it by commit and archive checksum, and do not replace a
 frozen candidate with a rebuild. Public-readiness changes validate read target
 names and lengths against manifest assemblies and improve documentation and
 package boundaries; they do not change valid-input correction policy. The rc2 refinement is described in [review policy]({{ '/review-refinement/' | relative_url }}); each candidate has its own immutable archive identity.
+
+The rc3 candidate adds explicit interval-edit preparation, review and replay.
+It has a distinct version and separate build output directory. Its unattended
+correction policy matches the published rc2 checkpoint; reviewed repair
+capability is evaluated separately from automatic error localization.

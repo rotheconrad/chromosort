@@ -1,0 +1,142 @@
+{
+  "automatic_arms": {
+    "comparison": "same inputs, evidence, parameters, baseline and one immutable candidate",
+    "modes": [
+      "comprehensive"
+    ],
+    "parameters_file": "../configs/candidate-0.4.0rc2.json",
+    "policies": [
+      "report",
+      "review"
+    ]
+  },
+  "baseline_commit": "dd66e3d987e775d99e612f4cdc19adec039b43e6",
+  "candidate_identity": "To be supplied once by feature task before paired execution; no post-score tuning",
+  "case_ids": [
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D108"
+  ],
+  "evidence": {
+    "D104": "strip cg:Z tags from the same mapped read PAF as D101",
+    "D105": "map one synthetic 10 kb chimera across the true input misjoin, then retain 20 copies of its PAF row with the same read name",
+    "D106": "same chimeric molecule mapping, two rows renamed to two opaque names; IDs cannot establish physical independence",
+    "adversarial_truth": "the added chimeric sequence comes from corrupted input across the true join and is not target-derived independent support",
+    "assembly_arguments": [
+      "-x",
+      "asm5",
+      "-c",
+      "--secondary=no"
+    ],
+    "mapper": "minimap2 2.31-r1302",
+    "read_arguments": [
+      "-x",
+      "map-hifi",
+      "-c",
+      "--secondary=no"
+    ],
+    "read_model": "existing iid substitution simulator, 0.001 substitutions, no indels, constant Q30, ACGT runs only",
+    "threads": 2
+  },
+  "execution": "All paired output/run hashes committed in a local JSON record before scoring. New scoring is descriptive; no candidate changes after the independent pass.",
+  "inspection_arm": {
+    "inspect_min_gap_bp": 1000,
+    "mode": "comprehensive",
+    "scope": "all eight; inspection only, no error confirmation"
+  },
+  "limits": [
+    "Development panel disclosed to feature task without truth files; not an unseen validation",
+    "Same source species/genome; no empirical raw-read/platform calibration claim",
+    "Prior fourteen cases, source/truth and score contracts remain frozen",
+    "No held-out access, no Git operations, no CI workload additions"
+  ],
+  "primary_metrics": [
+    "matched and false cut boundaries at unchanged 500 bp tolerance",
+    "copy retention and exact once-only input provenance",
+    "biological control continuity",
+    "complete target structure: one output per entire target, exact order/orientation/copy and no added gaps; whole target reverse-complement allowed",
+    "automatic whole-contig deferral and missed true edits",
+    "pending inspection coverage of both orientation edges",
+    "scripted reviewed repair success separately from unattended outcomes",
+    "true-join read-name continuity counts: duplicated rows versus renamed shared-origin evidence"
+  ],
+  "schema": "development-cycle2-protocol-v1",
+  "scorer": {
+    "change": "unchanged; new complete-structure adapter and independent analytic tests added alongside",
+    "path": "../scripts/score.py",
+    "sha256": "4999e8d94d34beb0929d245b6d9fe3887c57f4d3f6c8b5ef28430e6c19f97eb9"
+  },
+  "scripted_review_arm": {
+    "baseline": "existing manual complete-coverage recipe API",
+    "candidate": "explicit reviewed native-interval edit API, linked to an available scan event; preserve biological intervals",
+    "coordinates": "Exact prospectively declared injected/source-reconstruction edits; oracle-coordinate development replay, not blinded review or autonomous discovery",
+    "edits": {
+      "D101": [
+        {
+          "action": "cut",
+          "contig": "c001",
+          "position": 200000
+        }
+      ],
+      "D102": [
+        {
+          "action": "cut",
+          "contig": "c001",
+          "position": 200000
+        }
+      ],
+      "D103": [
+        {
+          "action": "cut",
+          "contig": "c001",
+          "position": 200000
+        }
+      ],
+      "D104": [
+        {
+          "action": "cut",
+          "contig": "c001",
+          "position": 200000
+        }
+      ],
+      "D105": [
+        {
+          "action": "cut",
+          "contig": "c001",
+          "position": 200000
+        }
+      ],
+      "D106": [
+        {
+          "action": "cut",
+          "contig": "c001",
+          "position": 200000
+        }
+      ],
+      "D107": [
+        {
+          "action": "reverse",
+          "contig": "c001",
+          "end": 796070,
+          "start": 150000
+        }
+      ],
+      "D108": [
+        {
+          "action": "reverse",
+          "contig": "c001",
+          "end": 159000,
+          "start": 151000
+        }
+      ]
+    },
+    "no_event": "record reviewed-workflow unavailable; do not invent an event or force a hidden recipe fallback",
+    "scope": "D101-D108"
+  },
+  "status": "prospectively_frozen_before_tool_outputs"
+}

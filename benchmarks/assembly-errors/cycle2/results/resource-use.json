@@ -1,0 +1,18 @@
+[
+  {
+    "automatic_commands": 16,
+    "automatic_elapsed_seconds": 1.2469383740000004,
+    "interpretation": "Local descriptive subprocess elapsed sum; candidate includes more workflow stages, no speed benchmark",
+    "role": "baseline",
+    "workflow_commands": 44,
+    "workflow_elapsed_seconds": 4.495000999999999
+  },
+  {
+    "automatic_commands": 16,
+    "automatic_elapsed_seconds": 1.2662545429999998,
+    "interpretation": "Local descriptive subprocess elapsed sum; candidate includes more workflow stages, no speed benchmark",
+    "role": "candidate",
+    "workflow_commands": 84,
+    "workflow_elapsed_seconds": 12.376867999999998
+  }
+]

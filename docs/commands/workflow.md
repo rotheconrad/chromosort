@@ -7,7 +7,8 @@ title: chromo workflow
 This is the analysis handoff contract for researchers and their assistants. It
 is separate from the repository's coding-agent instructions. An assistant can
 collect evidence, generate proposals and explain them; a researcher records the
-biological decisions. Saved recipes replay without an agent or browser session.
+biological decisions, or a separately labeled scripted experiment supplies its
+own decisions. Saved recipes replay without an agent or browser session.
 
 ```bash
 chromo workflow scan --manifest inputs.json --output-dir review \
@@ -33,16 +34,19 @@ native event geometry. Uncovered internal backbone-alignment intervals are
 evidence cannot establish biological error truth.
 
 `apply` requires every proposal exactly once, an explicit decision and a
-reviewer label. `accept` keeps the proposed cut; `reject` leaves that boundary
+reviewer label. `defer` records that an event remains unresolved and preserves
+that boundary. `accept` keeps the proposed cut; `reject` leaves that boundary
 intact; `refine` uses the reviewed native position. Other proposal identity
-fields cannot be changed. Unreviewed contigs remain intact. Accepted cuts
+fields cannot be changed. Separate interval edits use their own explicit
+records, described below. Unreviewed contigs remain intact. Accepted cuts
 partition each source contig exactly once; no fragment disappears when another
 cut is rejected. The recipe, TSV, input closure, software version, FASTA, AGP,
 component ledger and accounting report form the audit trail. A new output
 directory is required for each scan/apply revision.
 
-Use `manual` recipes for additional cuts, interval reversals, reorderings,
-renaming and intentional removals. New dashboard recipes bind the original
+Use the explicit interval-repair path below for additional cuts and reversals
+bound to the scan. Use `manual` recipes for arbitrary reorderings, renaming and
+intentional removals. New dashboard recipes bind the original
 assembly digest. Supervised workflow recipes also enforce complete source
 coverage. Legacy recipes without digests remain readable but do not provide
 that identity guarantee. Direct `fix --reviewed-plan` now rejects partially
@@ -134,3 +138,80 @@ Use `--contigs` to limit a large review queue; raising the inspection floor redu
 queue size without changing the automatic correction algorithm.
 
 See [the policy and its limitations]({{ '/review-refinement/' | relative_url }}).
+
+## Explicit interval repairs
+
+`workflow edit` prepares a **pending** request; it does not detect or correct an
+inversion. Link the requested edit to an existing event on the same contig.
+For example, after reviewing a gap or a contig-level proposal:
+
+```bash
+# EVENT_ID is copied from review/decisions.tsv. Coordinates here are examples.
+chromo workflow edit --scan-dir review --event-id "$EVENT_ID" \
+  --action reverse --start 20000 --end 70000 \
+  --notes 'Explicitly proposed interval; review junction evidence before applying' \
+  --output-dir interval-review
+# Inspect interval-review/edit-review.html and both native-boundary panels.
+# In interval-review/reviewed_edits.tsv, set decision and reviewer explicitly.
+# Resolve every scan event in reviewed-decisions.tsv, using defer when unresolved.
+chromo workflow apply --scan-dir review --decisions reviewed-decisions.tsv \
+  --reviewed-edits interval-review/reviewed_edits.tsv \
+  --plan-only --output-dir repair-preview
+# Inspect repair-preview/recipe.json, plan.json, decision_outcomes.tsv and figures.
+chromo workflow apply --scan-dir review --decisions reviewed-decisions.tsv \
+  --reviewed-edits interval-review/reviewed_edits.tsv --output-dir repaired
+chromo manual apply --assembly-fasta assembly.fa --recipe repaired/recipe.json \
+  -o replayed.fa
+chromo workflow align --manifest inputs.json --assembly-fasta repaired/reviewed.fa \
+  --output-dir repaired-alignment --stage explicitly-reviewed
+chromo workflow validate --manifest repaired-alignment/manifest.json \
+  --apply-audit repaired/apply.json --output repaired-validation.json
+```
+
+Native intervals are **0-based, half-open**: `reverse --start s --end e` reverse
+complements exactly `assembly[s:e]` and retains its prefix and suffix. An extra
+cut uses `--action cut --start p --end p`, where `p` is an internal boundary.
+These operations never infer a missing alignment block, copy number or error
+origin. Reference disagreement and absent spanning reads do not establish that
+a reversal is justified.
+
+The edit TSV records `schema`, `edit_id`, `event_id`, `target`, `action`, `start`,
+`end`, `decision`, `reviewer`, `notes`, `assembly_sha256` and `scan_sha256`. Its
+identity binds the exact geometry and original scan. Change only the decision,
+reviewer and rationale; generate a new record to change geometry or action.
+`accept` applies an explicit edit; `reject` and `defer` record distinct reasons
+to leave that intervention unapplied. `pending` blocks apply, including a
+plan-only compilation. The initial `workflow edit` packet is available for
+evidence inspection while a decision remains pending. Multiple generated edit
+rows can be combined under one header, with each edit ID appearing once.
+
+The preview writes a complete recipe and both-edge read panels without writing
+a FASTA. Actual apply uses a new output directory. `plan.json` records requested
+operations; `apply.json` and `decision_outcomes.tsv` record completed operations
+after sequence/AGP checks pass. The original source coordinates remain in the
+recipe, component ledger and audit even when output coordinates change. A
+terminal reverse interval is supported; its terminal panel has no internal
+breakpoint support count.
+
+### Composition rules
+
+- Accepted reverse intervals must be disjoint. Adjacent intervals are separate
+  reversals, not one combined reversal.
+- An accepted cut may coincide with a reverse endpoint, but cannot lie strictly
+  inside the reversed interval. Resolve that composition explicitly before apply.
+- Duplicate accepted cuts and an extra cut contradicting a rejected/deferred
+  scan cut at the same boundary fail. Resolve an existing proposed cut in its
+  scan decision row.
+- Within each cut-delimited output record, source slices remain in native order.
+  Only the explicitly selected interval is reverse-complemented; all other
+  slices keep positive orientation. Joining these slices inserts no bases.
+- Every input base occurs exactly once. Unselected copies and contigs remain
+  present. No edit can implicitly remove sequence or normalize another variant.
+
+An automatic continuity conflict still defers the whole contig plan. Selective
+execution is available through explicit review, where each boundary decision
+and interval reversal is recorded. An accepted `inspect` row alone remains an
+acknowledgement and makes no sequence change. Scripted repairs using known
+development coordinates demonstrate repair/replay capability under supplied
+decisions; they do not establish autonomous discovery, biological classification
+or human/agent review performance.

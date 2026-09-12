@@ -87,9 +87,15 @@ the larger simulated biological inversion, but does not determine the correct
 repair or prove either interval's origin. The correction algorithm remains
 unable to reconstruct its missing reference-alignment blocks automatically.
 
-D012 injects an orientation-only event in a native-repeat background; the
-observed mapping does not localize its inversion boundaries. It does not inject
-a collapse. A continuity conflict can defer other cuts in the same plan,
+D012 injects an orientation-only event in a native-repeat background, without
+an injected collapse. A post-evaluation trace found an aligned reverse block
+covering its supplied 25 kb interval exactly. That block passes the segment
+filter but is smoothed away under the fixed breakpoint penalty. Gap inspection
+unions aligned spans regardless of strand, so it does not expose this mapped
+interval as an unaligned gap. The alignment itself does not establish error
+truth; these are distinct correction and inspection limitations documented in
+the [second development evaluation](https://github.com/rotheconrad/chromosort/blob/main/benchmarks/assembly-errors/cycle2/results.md).
+A continuity conflict can defer other cuts in the same plan,
 including potentially useful ones. D014's real target-specific sequence remains
 a preservation case; new review evidence does not infer missing copies, dosage
 or phasing. Broader accuracy, review workload and generalization require separate
@@ -122,3 +128,9 @@ The frozen rc2 archive predates the public-readiness input-contract checks and
 this documentation correction: D012 is an orientation-only injection in a
 native-repeat background, not an injected collapse. Rebuilds of the current
 repository must be identified separately from that frozen archive.
+
+The current Git documentation also corrects the broader D012 mapping statement
+after the frozen rc3 evaluation: the mapped block is present, while smoothing
+and gap-only inspection do not expose it as an error candidate. This is a
+documentation erratum. Frozen candidate code, parameters, packages and scored
+outputs were not changed.

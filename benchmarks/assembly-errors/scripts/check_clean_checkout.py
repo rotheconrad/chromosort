@@ -13,6 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--with-mapping', action='store_true')
+    parser.add_argument('--with-cycle2', action='store_true',
+                        help='Regenerate the second panel and verify all portable cycle2 scores')
     parser.add_argument('--out', type=Path, help='Save compact verification results')
     args = parser.parse_args()
     results = []
@@ -35,6 +37,13 @@ def main():
             commands += [['scripts/generate.py', '--output-root', 'work'],
                          ['scripts/evidence.py', *['work/development/D%03d' % i for i in range(1, 15)], '--threads', '2'],
                          ['scripts/verify.py', '--regenerated', 'work']]
+        if args.with_cycle2:
+            commands += [['scripts/generate_cycle2.py', '--output-root', 'work/cycle2'],
+                         ['scripts/verify_cycle2.py', '--generated-root', 'work/cycle2'],
+                         ['scripts/generate.py', '--output-root', 'work/prior', '--source-dir',
+                          'work/sources/sequences', '--cases', 'D003', 'D012'],
+                         ['scripts/verify_cycle2_results.py', '--panel-root', 'work/cycle2',
+                          '--prior-root', 'work/prior']]
         for arguments in commands:
             process = subprocess.run([sys.executable, *arguments], cwd=clean, text=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -44,8 +53,9 @@ def main():
                 raise SystemExit(process.returncode)
     record = dict(schema='public-clean-copy-verification-v1', status='pass', python=sys.version.split()[0],
                   isolated_copy=True, network_used=False, with_mapping=args.with_mapping,
+                  with_cycle2=args.with_cycle2,
                   commands=results, dependency_note='Only Python plus minimap2 for full mapping; no sibling data/tool archive.')
-    if args.with_mapping:
+    if args.with_mapping or args.with_cycle2:
         record['minimap2'] = subprocess.check_output(['minimap2', '--version'], text=True).strip()
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)

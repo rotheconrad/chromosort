@@ -28,3 +28,12 @@ Start with a modest local panel and measured resource use. Review any expansion
 to chromosome-scale simulation, HPC, paid compute or shared CI separately.
 No workflow matrix, artifact upload, retained binary dataset or release job is
 part of this benchmark integration.
+
+## Execution of this boundary
+
+After public checkpoint `dd66e3d` and explicit cycle assignment, the bounded
+[second development panel](../cycle2/README.md) was frozen and executed. Its
+[paired results](../cycle2/results.md) retain the observed proposal/inspection
+misses and distinguish complete scripted repair from automatic correction.
+Any further refinement needs another prospectively specified cycle; these
+published development cases must not be presented as unseen validation.

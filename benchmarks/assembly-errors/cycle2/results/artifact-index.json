@@ -1,0 +1,930 @@
+{
+  "exclusions": "Full FASTA, reads, figures, software archives and runtime logs remain regenerable local outputs",
+  "files": {
+    "artifacts/baseline/D003/scripted_reviewed_repair/components.tsv": {
+      "sha256": "adb2bf27c96a6c8db6359250c4af43274ed712b7f37fee768ae855173b4366c5",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D003/scripted_reviewed_repair/output.agp": {
+      "sha256": "2da4801de937372f9a87e69c467dc8b10dd905e1c54432cdf4e3f61d6b99100e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D003/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "931eee705b220d189aa2246fd32baccb138aa23b00f1d309647d71349a55a98d",
+      "sha256": "931eee705b220d189aa2246fd32baccb138aa23b00f1d309647d71349a55a98d",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D012/scripted_reviewed_repair/components.tsv": {
+      "sha256": "573060bf40b68aeaac993256855326602684626d28fb0df30776847487509a7c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D012/scripted_reviewed_repair/output.agp": {
+      "sha256": "b7ae594102ce1b5948204c8208229f1d0d9adba638a8cce670fcd5a7104a8485",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D012/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "a2006776ffcb690942d16aece0d906c725126f494eb11eaac86d4a7acf5c7b9d",
+      "sha256": "a2006776ffcb690942d16aece0d906c725126f494eb11eaac86d4a7acf5c7b9d",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D101/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "75f7c1c784b55c77d42c76e4f58ac20141c46a4e84526723896edc354d9f71ef",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "0548f408456e2b60359334786de94b43bb63581349b093167a7131a1cdcad9fd",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/chromosort_review_comprehensive/output.agp": {
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/scripted_reviewed_repair/components.tsv": {
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/scripted_reviewed_repair/output.agp": {
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D101/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D101/unedited/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "c1df66a802d52b5338fd0d06d669a76a5243df3039cd7c59d791f2248b6b62b5",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "c20c847ead40e8ccc748d19eaf2ca899c5c605f3c8beeef1bb50667d9ad93a93",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/chromosort_review_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/scripted_reviewed_repair/components.tsv": {
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/scripted_reviewed_repair/output.agp": {
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D102/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D102/unedited/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "c6db5744687815f1325d060d5bf4019013161bdfe85aaec4ef0520ebac90bdd1",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "45eddb3fb658afb1cd1f3e4e402b68b6b77490cc563a6ad567c111e608a00cb9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/chromosort_review_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/scripted_reviewed_repair/components.tsv": {
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/scripted_reviewed_repair/output.agp": {
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D103/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D103/unedited/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "d4dd337a414d8964a2cde12ae0dbc5a1cad2b948231105388c3d00edfc102c27",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "1769c3d42f1e9629f54a71cd8826a2b56b33e27bd342bc1b517a5ec91436ed58",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/chromosort_review_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/scripted_reviewed_repair/components.tsv": {
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/scripted_reviewed_repair/output.agp": {
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D104/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D104/unedited/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "1289ecc699c879cb079c2d7144cb54b32b38b2b1e1539e72ef352603394fddab",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "109c304a8733b28e7a7f48eef3f2c39f3fad3a61c9850509cf052f69fb87a529",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/chromosort_review_comprehensive/output.agp": {
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/scripted_reviewed_repair/components.tsv": {
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/scripted_reviewed_repair/output.agp": {
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D105/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D105/unedited/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "3e391fb167075edb39086a7501680949368d0821866759586e82e09a34dcd948",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "ef2e5bbf0ea32b426193614d395fce6179bad5ea34d0e5bbae7c2a9c71b046bd",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/chromosort_review_comprehensive/output.agp": {
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/scripted_reviewed_repair/components.tsv": {
+      "sha256": "ccc72e66cf82a9ca44912233e5932f1ad8271c8cbc975bd89fefd8bc06ed6db2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/scripted_reviewed_repair/output.agp": {
+      "sha256": "b3bdbc9f25c29996624073df70845bc65c04d46ee2f8246d5f3ca956245593cf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D106/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "sha256": "88cecc1557a91731c734a7f48cf83c29e157e61c10dcf3bbdec650b2e51cf5e1",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D106/unedited/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "000a0abc4e12035293790d2284f5b4cdfaecf7871954a78633ff7ad8b88c2fae",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_report_comprehensive/output.agp": {
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "809ee280b4be0f03a1b56a6f2f62721308b4c3baa2c4715b4f01e1bacf0ff1dd",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/chromosort_review_comprehensive/output.agp": {
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b2906a8d46aef2d269c65c9566af9b54c03cc677ac8f8f6980b459247a1fac1c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/scripted_reviewed_repair/output.agp": {
+      "sha256": "608cce8ea4bfc886b2cffcc8fc24ef9cc7868d65055c52a0d889537ddad69c93",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D107/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "777ee25a524ce853701da757217f7872a85a7c2b31d5e0b064a996b9697447d0",
+      "sha256": "777ee25a524ce853701da757217f7872a85a7c2b31d5e0b064a996b9697447d0",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D107/unedited/components.tsv": {
+      "sha256": "fe12d7785077c6e9e0a7ff0b533c24c91749152746f7cf41c0493301f43ed881",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_report_comprehensive/output.agp": {
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/chromosort_review_comprehensive/output.agp": {
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/scripted_reviewed_repair/components.tsv": {
+      "sha256": "964b2fa095cddf8631b4fe8c521560f290e48e81c739d49b81235c6f9851554c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/scripted_reviewed_repair/output.agp": {
+      "sha256": "0ac636cd48cf67aa3540c45833d62a3c3b198ab386423cbb5d740dd6e6e26ebf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/baseline/D108/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "8fa0889b63cdc891f0cd2657c61b87e8158bcf991628bff4c33e8526dadfb231",
+      "sha256": "8fa0889b63cdc891f0cd2657c61b87e8158bcf991628bff4c33e8526dadfb231",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/baseline/D108/unedited/components.tsv": {
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D003/scripted_reviewed_repair/components.tsv": {
+      "sha256": "adb2bf27c96a6c8db6359250c4af43274ed712b7f37fee768ae855173b4366c5",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D003/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "d91aef472f23348b85c624fa8aea4d97230f17f87d1dfe4f604b3de5a64ff49e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D003/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "5ae6a70069e7f47b897c8e0f19f5b289298def92e0b867e2af1ecb3a84b574d4",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D003/scripted_reviewed_repair/output.agp": {
+      "sha256": "2da4801de937372f9a87e69c467dc8b10dd905e1c54432cdf4e3f61d6b99100e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D003/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "e36d72321d037090a112a1acbd97b346d8645557826f78e5e4a05cc28773917a",
+      "sha256": "d148e901ff9c5aeffa3304be6793d77114616307b561da288e8af2c1673e55d6",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D003/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "761414e2174c7e86c4a2297767fd6c0253720ae375cc35fe233349382fddf374",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D012/scripted_reviewed_repair/components.tsv": {
+      "sha256": "573060bf40b68aeaac993256855326602684626d28fb0df30776847487509a7c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D012/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "2b11dc3e8d740e496e95dbe217be6e8cc5f21f54455bd5db80c845a61f829120",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D012/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "918ef71c33be95218b70e7228afccf81b025499e70cfa26453395ce86315dad4",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D012/scripted_reviewed_repair/output.agp": {
+      "sha256": "b7ae594102ce1b5948204c8208229f1d0d9adba638a8cce670fcd5a7104a8485",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D012/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "bb60151a8bee9cadbe48bcf244574048fe4e6b4b88ae3a70ccab50793a367c3d",
+      "sha256": "e21a4c5f4e1bd426c9a7af71ad65c9a6f326c0141f133d149508968ce76a7b95",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D012/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "0d6be70d6db4e17c94fe29af45458e029115802e674338278a003bbb10805914",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "75f7c1c784b55c77d42c76e4f58ac20141c46a4e84526723896edc354d9f71ef",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "0548f408456e2b60359334786de94b43bb63581349b093167a7131a1cdcad9fd",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/chromosort_review_comprehensive/output.agp": {
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "af0fac4f1c7c8e6187e5e3b17476272cf9288016cb8b8ca5c8c243f6a0db169f",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "e17f339b08e47a4b9b5cf2bdfc99a24350a26045f072cae57f1e7fc54373bea3",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/scripted_reviewed_repair/output.agp": {
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D101/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "0835980ee5e5a48f2c5a99546620458e1472e51c14652cb5ec417c0e3491f8e5",
+      "sha256": "2be57b38ce5e7d8e007080593db2bdd44f8438bc48eef2124ff0584478cc6a88",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D101/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "630e52780908ec97178d3b05355da52f97075b3a2ae04d99f616b7b6cc92dd87",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "c1df66a802d52b5338fd0d06d669a76a5243df3039cd7c59d791f2248b6b62b5",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "c20c847ead40e8ccc748d19eaf2ca899c5c605f3c8beeef1bb50667d9ad93a93",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/chromosort_review_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "c9618b135d15a441933d71d6f3c83c1f528bd617e34d146d41f8a6cd5405cc25",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "42b73889be39f890910bc23e12d1cdfe10262a1c764e6457ffe9c62f8bc405f8",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/scripted_reviewed_repair/output.agp": {
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D102/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "aaa6e4c06c93e787335462b5ae9a9ac5268a5126ba37f33ec21aeb578beb2a83",
+      "sha256": "b0b8849481e774788930654b12230237b4e4c3a799b33198f54c9fc5dc75704a",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D102/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "9279c96b72f71a3d2b3548b49ebc28f7ba3d67b85dcdc9149ee9b0c07a001ec1",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "c6db5744687815f1325d060d5bf4019013161bdfe85aaec4ef0520ebac90bdd1",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "45eddb3fb658afb1cd1f3e4e402b68b6b77490cc563a6ad567c111e608a00cb9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/chromosort_review_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "de23a49badb89958efeb347ce6effc282d42f7f7fc5f0103e66a38dff6fcdee6",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "42b73889be39f890910bc23e12d1cdfe10262a1c764e6457ffe9c62f8bc405f8",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/scripted_reviewed_repair/output.agp": {
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D103/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "7b2c0b39cc9fd4e169c7d635a9921379f3e9ee0d261a275507f58d73357bbff6",
+      "sha256": "89e8e229b924cb2bc0881a8f43b08b61bdc7028522ba18a0f5f5aa96cec5139b",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D103/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "d7c9972605f2a10e42d010a200140dc357d3f4a2c7d5fa9b92006bfe17256721",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "d4dd337a414d8964a2cde12ae0dbc5a1cad2b948231105388c3d00edfc102c27",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "1769c3d42f1e9629f54a71cd8826a2b56b33e27bd342bc1b517a5ec91436ed58",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/chromosort_review_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "309e6d4987ba347aae43eb5c0de56289141eb3e9d44b276a14dafec5503da173",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "42b73889be39f890910bc23e12d1cdfe10262a1c764e6457ffe9c62f8bc405f8",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/scripted_reviewed_repair/output.agp": {
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D104/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "ad76ef3f7e1d20fd4a981a2e353bf53dbc3c905512503b03bc791fdd4fb381aa",
+      "sha256": "8b0883ce6be67acb4e2af553f93f67b9a3f81f059f8a3035a1789c57bc327333",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D104/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "d3606aaacdab7eddb479d1e4bd37b3c56edfcdc2cd2bb271b999493662b3d3da",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "1289ecc699c879cb079c2d7144cb54b32b38b2b1e1539e72ef352603394fddab",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "109c304a8733b28e7a7f48eef3f2c39f3fad3a61c9850509cf052f69fb87a529",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/chromosort_review_comprehensive/output.agp": {
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "7fafb3e79598341c6194693384aa6eb4a1f69a2c6e5899043375ec352e090539",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "e17f339b08e47a4b9b5cf2bdfc99a24350a26045f072cae57f1e7fc54373bea3",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/scripted_reviewed_repair/output.agp": {
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D105/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "16feb6a98ad71d3750a614fe7d4bcf8cd81d100d88dae2102c83ed72c20a8e1e",
+      "sha256": "76cc59ef880c6afb7e767b3e7b4f94aaded55af5213b0238d9214fb8e539cfdb",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D105/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "bb13b8acb291ec5b0f7a209fc1aa79c0739b946aef78aad0de8ecc7fbb45242d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "3e391fb167075edb39086a7501680949368d0821866759586e82e09a34dcd948",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_report_comprehensive/output.agp": {
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "ef2e5bbf0ea32b426193614d395fce6179bad5ea34d0e5bbae7c2a9c71b046bd",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/chromosort_review_comprehensive/output.agp": {
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b3306fb93ac480c7864fdb18ae2ab74829ac84f19fe0cef0088e2bda8060286d",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "c035b79de92f7ad0de28543a44f3fc9d7504ecf0ccd648dffee8c75eddc708b0",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "e17f339b08e47a4b9b5cf2bdfc99a24350a26045f072cae57f1e7fc54373bea3",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/scripted_reviewed_repair/output.agp": {
+      "sha256": "a38b71f2c9268e0b0f949a629b76f124a5c8b61606982b0c0b2c7bca14ddbaf6",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D106/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "06fd29e40f399584f4148d9bb2791423621ef359fb612227e1e54fd9950f5b38",
+      "sha256": "82be77997176115fffa68728e9c48f5504a7a0a976629cb14f35a1fcd0f3e680",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D106/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "d75b837d7a402dedde8737cabb9bc326f106f81e53693d7415fcec0ba8c35f7b",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "000a0abc4e12035293790d2284f5b4cdfaecf7871954a78633ff7ad8b88c2fae",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_report_comprehensive/output.agp": {
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "0431377f1d35003d09550a969d87935079bc87e0bc68b088a28442ca27255b9c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "41a88948478d69778adc5dc67d0fc33309ddda0c23cd7d37cdaad65c83eb9a48",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "809ee280b4be0f03a1b56a6f2f62721308b4c3baa2c4715b4f01e1bacf0ff1dd",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/chromosort_review_comprehensive/output.agp": {
+      "sha256": "dc89b525b87a6be556e4e9a2a3a8a4468d6088bd5334283e0038d1d97ab6f3ee",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/scripted_reviewed_repair/components.tsv": {
+      "sha256": "b2906a8d46aef2d269c65c9566af9b54c03cc677ac8f8f6980b459247a1fac1c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "2f6aa7b774607fd38ad246486201f16a0d3e0634b5efe224c85e54b01f5e032c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "84fbd2d56417addaf2b6a6f35df7af8db0860e240afb5be0c21f23fe9d26fccb",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/scripted_reviewed_repair/output.agp": {
+      "sha256": "608cce8ea4bfc886b2cffcc8fc24ef9cc7868d65055c52a0d889537ddad69c93",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D107/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "c62fc62181306579cb02ba90ed2f69c23b8d930565eb7ae50e3198442ee017e9",
+      "sha256": "d5ae3eaab669c1e90cc681b6c640e27a3fc97d7a69dc44d76bbe9d2301d7aed4",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D107/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "41ca036034691e663d7ae6b5d479525826cdc95f77816bc92d9436f5968705ab",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_report_comprehensive/components.tsv": {
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_report_comprehensive/fix.tsv": {
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_report_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_report_comprehensive/output.agp": {
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_review_comprehensive/components.tsv": {
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_review_comprehensive/fix.tsv": {
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_review_comprehensive/fix.tsv.breakpoint_evidence.tsv": {
+      "sha256": "d34febc4565c4a2ecad0956ee2253f72d6139f19c19c55f2e7c2c7a7ad5172a2",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/chromosort_review_comprehensive/output.agp": {
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/scripted_reviewed_repair/components.tsv": {
+      "sha256": "964b2fa095cddf8631b4fe8c521560f290e48e81c739d49b81235c6f9851554c",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/scripted_reviewed_repair/decision_outcomes.tsv": {
+      "sha256": "b1888a8646429c5513bd61243edb36dab2f8a18d6e2f768b9650ed5114106ad4",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/scripted_reviewed_repair/decisions.tsv": {
+      "sha256": "4f5bc23951fc330816ff8187cffcb58132b7566d638907bae945d4e04463c0a8",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/scripted_reviewed_repair/output.agp": {
+      "sha256": "0ac636cd48cf67aa3540c45833d62a3c3b198ab386423cbb5d740dd6e6e26ebf",
+      "transformation": "exact copy of committed tool output"
+    },
+    "artifacts/candidate/D108/scripted_reviewed_repair/recipe.json": {
+      "original_sha256": "55ca60a203f98e11c96bebb676da55aa64b925fe58f4901edd311bf3500e42e4",
+      "sha256": "3af79bc37483483cb45a54a30aa2fa49e31f2a8f8d629e29ac98ae89118574b7",
+      "transformation": "Remove advisory absolute sourceAssembly path if present; assembly SHA and all edit geometry preserved"
+    },
+    "artifacts/candidate/D108/scripted_reviewed_repair/reviewed_edits.tsv": {
+      "sha256": "f0884f9b204d3779158c4110c4d71d7082a617ba61c993b021ad69cafd715cee",
+      "transformation": "exact copy of committed tool output"
+    }
+  },
+  "schema": "cycle2-small-artifacts-v1"
+}

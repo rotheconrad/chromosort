@@ -1,0 +1,61 @@
+{
+  "chromosortVersion": "0.4.0rc3",
+  "decisions": [
+    {
+      "action": "cut",
+      "assembly_sha256": "3fa71ebe9142b157084cb2abc4b9624fd00ca5bacb7baa4864857abfe8fe9bb6",
+      "decision": "reject",
+      "event_id": "decision:8811fdd847079c5cb8045dcd",
+      "notes": "Supplied prespecified edit only; preserve other native structure. Not a blinded review.",
+      "position": "320010",
+      "proposed_position": "320010",
+      "reason": "2 smoothed pieces inferred from 6 alignment blocks after smoothing 4 weak transition(s) with breakpoint penalty 50000.0; planner_score=29980.0. Automatic contig plan requires review: read continuity at a proposed boundary; this boundary has 11 spanning molecules.",
+      "reviewer": "scripted-development-oracle",
+      "schema": "chromosort-decision-v1",
+      "target": "c001"
+    }
+  ],
+  "gapBp": 0,
+  "pieces": [
+    {
+      "end": 200000,
+      "id": "piece::c001::1",
+      "name": "piece::c001::1",
+      "removed": false,
+      "scaffold": "unplaced",
+      "source": "c001",
+      "start": 1,
+      "strand": "+"
+    },
+    {
+      "end": 400000,
+      "id": "piece::c001::2",
+      "name": "piece::c001::2",
+      "removed": false,
+      "scaffold": "unplaced",
+      "source": "c001",
+      "start": 200001,
+      "strand": "+"
+    }
+  ],
+  "requireCompleteCoverage": true,
+  "reviewedEdits": [
+    {
+      "action": "cut",
+      "assembly_sha256": "3fa71ebe9142b157084cb2abc4b9624fd00ca5bacb7baa4864857abfe8fe9bb6",
+      "decision": "accept",
+      "edit_id": "edit:93276cdf82b573b5ffe07e68",
+      "end": "200000",
+      "event_id": "decision:8811fdd847079c5cb8045dcd",
+      "notes": "Supplied prespecified oracle-coordinate development edit; not independently inferred.",
+      "reviewer": "scripted-development-oracle",
+      "scan_sha256": "54ad8dc1de69e9effc973aca651689dce14df520eb07069d47c9bc4912f7f826",
+      "schema": "chromosort-edit-v1",
+      "start": "200000",
+      "target": "c001"
+    }
+  ],
+  "scaffoldEnabled": false,
+  "schema": "chromosort-manual-v1",
+  "sourceAssemblySha256": "3fa71ebe9142b157084cb2abc4b9624fd00ca5bacb7baa4864857abfe8fe9bb6"
+}

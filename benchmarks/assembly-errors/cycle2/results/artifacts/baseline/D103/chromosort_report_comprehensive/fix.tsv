@@ -1,0 +1,3 @@
+original_contig	status	new_contig	part_index	dominant_ref	slice_start	slice_end	piece_bp	alignment_query_start	alignment_query_end	orientation	reverse_complemented	avg_identity	segment_count	reason
+c001	split	CS_A::Chr1-c001-a	1	CS_A::Chr1	1	320010	320010	1	320001	+	no	100.000	5	2 smoothed pieces inferred from 6 alignment blocks after smoothing 4 weak transition(s) with breakpoint penalty 50000.0; planner_score=29980.0.
+c001	split	CS_D::Chr1-c001-b	2	CS_D::Chr1	320011	400000	79990	320021	400000	+	no	100.000	1	2 smoothed pieces inferred from 6 alignment blocks after smoothing 4 weak transition(s) with breakpoint penalty 50000.0; planner_score=29980.0.

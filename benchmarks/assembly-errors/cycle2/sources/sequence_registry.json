@@ -1,0 +1,65 @@
+{
+  "schema": "cycle2-public-sequences-v1",
+  "sequences": [
+    {
+      "accession": "CM031178.1",
+      "cultivar": "Chinese Spring",
+      "length": 200000,
+      "normalization": "uppercase DNA, source_id header, 80-base lines",
+      "path": "sources/sequences/wheat_A_new.fa",
+      "publication_doi": "10.1111/tpj.15289",
+      "retrieval_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CM031178.1&seq_start=579586159&seq_stop=579786158&rettype=fasta&retmode=text",
+      "retrieved_utc_date": "2026-09-12",
+      "sha256": "28b6654f47d927f282eae7cd951e3a4d5d9016f7975b13f14b73cad39a474d32",
+      "source_end_1based": 579786158,
+      "source_id": "wheat_A_new",
+      "source_start_1based": 579586159,
+      "species": "Triticum aestivum"
+    },
+    {
+      "accession": "CM031180.1",
+      "cultivar": "Chinese Spring",
+      "length": 200000,
+      "normalization": "uppercase DNA, source_id header, 80-base lines",
+      "path": "sources/sequences/wheat_D_new.fa",
+      "publication_doi": "10.1111/tpj.15289",
+      "retrieval_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CM031180.1&seq_start=2002001&seq_stop=2202000&rettype=fasta&retmode=text",
+      "retrieved_utc_date": "2026-09-12",
+      "sha256": "d7e106568e1238a2e2dd8f90b7dac77bd58cd70551e431f186ef401817ecc95c",
+      "source_end_1based": 2202000,
+      "source_id": "wheat_D_new",
+      "source_start_1based": 2002001,
+      "species": "Triticum aestivum"
+    },
+    {
+      "accession": "LS992080.1",
+      "cultivar": "Chinese Spring",
+      "length": 946070,
+      "normalization": "uppercase DNA, source_id header, 80-base lines",
+      "path": "sources/sequences/wheat_v1_scf139.fa",
+      "publication_doi": "10.1111/tpj.15289",
+      "retrieval_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=LS992080.1&seq_start=578912096&seq_stop=579858165&rettype=fasta&retmode=text",
+      "retrieved_utc_date": "2026-09-12",
+      "sha256": "4873d0f9ef61f3d97d4b690c5313391203845539b8ef7709e205035522b4fec2",
+      "source_end_1based": 579858165,
+      "source_id": "wheat_v1_scf139",
+      "source_start_1based": 578912096,
+      "species": "Triticum aestivum"
+    },
+    {
+      "accession": "CM031178.1",
+      "cultivar": "Chinese Spring",
+      "length": 1518688,
+      "normalization": "uppercase DNA, source_id header, 80-base lines",
+      "path": "sources/sequences/wheat_v2_scf139.fa",
+      "publication_doi": "10.1111/tpj.15289",
+      "retrieval_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CM031178.1&seq_start=582657625&seq_stop=584176312&rettype=fasta&retmode=text",
+      "retrieved_utc_date": "2026-09-12",
+      "sha256": "0a340df26b8adccb6d0a510edf6c461a5f9bb9d4bb712a8d3fb7442310920425",
+      "source_end_1based": 584176312,
+      "source_id": "wheat_v2_scf139",
+      "source_start_1based": 582657625,
+      "species": "Triticum aestivum"
+    }
+  ]
+}

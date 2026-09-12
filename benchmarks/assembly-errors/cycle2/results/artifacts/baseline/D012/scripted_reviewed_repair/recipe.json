@@ -1,0 +1,40 @@
+{
+  "benchmark_class": "supplied-oracle-coordinate scripted development replay",
+  "gapBp": 0,
+  "pieces": [
+    {
+      "end": 151000,
+      "id": "p1",
+      "name": "c001",
+      "removed": false,
+      "scaffold": "c001",
+      "source": "c001",
+      "start": 1,
+      "strand": "+"
+    },
+    {
+      "end": 176000,
+      "id": "p2",
+      "name": "c001",
+      "removed": false,
+      "scaffold": "c001",
+      "source": "c001",
+      "start": 151001,
+      "strand": "-"
+    },
+    {
+      "end": 261265,
+      "id": "p3",
+      "name": "c001",
+      "removed": false,
+      "scaffold": "c001",
+      "source": "c001",
+      "start": 176001,
+      "strand": "+"
+    }
+  ],
+  "requireCompleteCoverage": true,
+  "scaffoldEnabled": true,
+  "schema": "chromosort-manual-v1",
+  "sourceAssemblySha256": "404d8ee7a9328ad41e82cbe7ecd0993e6bda70b7eb075bb0252d04c1ac87714c"
+}

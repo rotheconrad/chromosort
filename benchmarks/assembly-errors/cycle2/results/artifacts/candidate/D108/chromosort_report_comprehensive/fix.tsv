@@ -1,0 +1,2 @@
+original_contig	status	new_contig	part_index	dominant_ref	slice_start	slice_end	piece_bp	alignment_query_start	alignment_query_end	orientation	reverse_complemented	avg_identity	segment_count	reason
+c001	not_split_smooth	.	.	.	.	.	.	.	.	.	.	.	.	Breakpoint smoothing retained one piece: discordant support (15000.0 identity-weighted bp) did not overcome the breakpoint penalty (50000.0).

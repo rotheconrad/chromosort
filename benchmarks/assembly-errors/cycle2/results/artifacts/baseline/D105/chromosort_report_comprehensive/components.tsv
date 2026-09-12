@@ -1,0 +1,3 @@
+output_id	output_start	output_end	input_id	input_start	input_end	strand
+CS_A::Chr1-c001-a	0	320010	c001	0	320010	+
+CS_D::Chr1-c001-b	0	79990	c001	320010	400000	+
