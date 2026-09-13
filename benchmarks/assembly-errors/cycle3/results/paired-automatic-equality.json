@@ -1,0 +1,200 @@
+[
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D201",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D201",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D202",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D202",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D203",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D203",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D204",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D204",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D205",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D205",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D206",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D206",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D207",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D207",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "failed",
+    "both_complete": false,
+    "candidate_status": "failed",
+    "case_id": "D208",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": null,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "failed",
+    "both_complete": false,
+    "candidate_status": "failed",
+    "case_id": "D208",
+    "cohort": "primary",
+    "exact_fasta_ledger_equal": null,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D101",
+    "cohort": "known",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D101",
+    "cohort": "known",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D012",
+    "cohort": "known",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D012",
+    "cohort": "known",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D108",
+    "cohort": "known",
+    "exact_fasta_ledger_equal": true,
+    "policy": "report"
+  },
+  {
+    "baseline_status": "complete",
+    "both_complete": true,
+    "candidate_status": "complete",
+    "case_id": "D108",
+    "cohort": "known",
+    "exact_fasta_ledger_equal": true,
+    "policy": "review"
+  }
+]

@@ -1,0 +1,830 @@
+{
+  "files": {
+    "artifacts/baseline/D012/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D012/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D012/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D012/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D012/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D012/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D012/normalized-events.json": {
+      "original_sha256": "861de116fd77c0959818a58e01bb11189858817e29047657adc7857487934f72",
+      "sha256": "861de116fd77c0959818a58e01bb11189858817e29047657adc7857487934f72",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D012/pending-decisions.tsv": {
+      "original_sha256": "a99cd257d706531fad9b415cccdde54af6b311c66a52665d32aaecae806bd779",
+      "sha256": "a99cd257d706531fad9b415cccdde54af6b311c66a52665d32aaecae806bd779",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/normalized-events.json": {
+      "original_sha256": "e8d5ce408bd3fa76c8dabff94d0f478beb908b3ca7eebcb9384c632bf2051363",
+      "sha256": "e8d5ce408bd3fa76c8dabff94d0f478beb908b3ca7eebcb9384c632bf2051363",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D101/pending-decisions.tsv": {
+      "original_sha256": "d5ea0e08af99f72687125e189cfd1560014a6d728009c61fb6da843dfec32afd",
+      "sha256": "d5ea0e08af99f72687125e189cfd1560014a6d728009c61fb6da843dfec32afd",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/normalized-events.json": {
+      "original_sha256": "2656fd112648755b6bc800243aac1a259b56dfd44808cb6cdb8f5be989907a44",
+      "sha256": "2656fd112648755b6bc800243aac1a259b56dfd44808cb6cdb8f5be989907a44",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D108/pending-decisions.tsv": {
+      "original_sha256": "09a2e686da61acafdf05dc1e76ca13be0cba37bb75de84e334933d0a1d71aeaa",
+      "sha256": "09a2e686da61acafdf05dc1e76ca13be0cba37bb75de84e334933d0a1d71aeaa",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/normalized-events.json": {
+      "original_sha256": "8ed2293af06bb70791715ef9227deb4cf5f7d20387999ed3442bce0394ced89f",
+      "sha256": "8ed2293af06bb70791715ef9227deb4cf5f7d20387999ed3442bce0394ced89f",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D201/pending-decisions.tsv": {
+      "original_sha256": "7fb8b8345d452d61334332f02a27e8b39759694128ec67b9f52713286d460db7",
+      "sha256": "7fb8b8345d452d61334332f02a27e8b39759694128ec67b9f52713286d460db7",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/normalized-events.json": {
+      "original_sha256": "f77cb4e7c005a3cc05726ad6385db5c671f60bf322d3b78ebd8c73a780a996b0",
+      "sha256": "f77cb4e7c005a3cc05726ad6385db5c671f60bf322d3b78ebd8c73a780a996b0",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D202/pending-decisions.tsv": {
+      "original_sha256": "4a6608413cb545c0b30ba4cc995d07c72775a7f56c05d1f57c3dcf2dcf436842",
+      "sha256": "4a6608413cb545c0b30ba4cc995d07c72775a7f56c05d1f57c3dcf2dcf436842",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/normalized-events.json": {
+      "original_sha256": "c1c2a316d7dde96966fcb48bca56cfebde380d5570be44bf7995faee7b1ea40f",
+      "sha256": "c1c2a316d7dde96966fcb48bca56cfebde380d5570be44bf7995faee7b1ea40f",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D203/pending-decisions.tsv": {
+      "original_sha256": "33b4d2e194737faec9ec039817b638b0571e89f1b18ffed79386fb47f16fe33d",
+      "sha256": "33b4d2e194737faec9ec039817b638b0571e89f1b18ffed79386fb47f16fe33d",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/normalized-events.json": {
+      "original_sha256": "7ce260f2bbb7c56bdc0603417a2756f1ca68b7a6c5651c4ec4651966cde83320",
+      "sha256": "7ce260f2bbb7c56bdc0603417a2756f1ca68b7a6c5651c4ec4651966cde83320",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D204/pending-decisions.tsv": {
+      "original_sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/normalized-events.json": {
+      "original_sha256": "7238023b5bf4debf1790162785b0edfb894ab27ce5075273a596d20a73ca30c3",
+      "sha256": "7238023b5bf4debf1790162785b0edfb894ab27ce5075273a596d20a73ca30c3",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D205/pending-decisions.tsv": {
+      "original_sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/normalized-events.json": {
+      "original_sha256": "8d379e89d29de5e61261aff9d53cf2f3217bb65c53e7ad035290e497a092683a",
+      "sha256": "8d379e89d29de5e61261aff9d53cf2f3217bb65c53e7ad035290e497a092683a",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D206/pending-decisions.tsv": {
+      "original_sha256": "00ef97c54831f746ba5c86dbba1c9f47cfd695169a3f776d65d421f0577cd98b",
+      "sha256": "00ef97c54831f746ba5c86dbba1c9f47cfd695169a3f776d65d421f0577cd98b",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "3eb1bb3fd0512fc2c36287c5721f17d9afc83226d92ba56f1d5e7202b5e25f8b",
+      "sha256": "3eb1bb3fd0512fc2c36287c5721f17d9afc83226d92ba56f1d5e7202b5e25f8b",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "b17b630395624932a4fe3893329d532d7e69b8868d659bd88da71f2afedb5408",
+      "sha256": "b17b630395624932a4fe3893329d532d7e69b8868d659bd88da71f2afedb5408",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "4c7e8aa669f7cea16c5d636f3839b51dc76a307b76e40a78ac180c67d92e45a3",
+      "sha256": "4c7e8aa669f7cea16c5d636f3839b51dc76a307b76e40a78ac180c67d92e45a3",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "a52a908bc24bf9afe453dc08e02da2e3f3e7175631e5ebfd60cd27a714f494d8",
+      "sha256": "a52a908bc24bf9afe453dc08e02da2e3f3e7175631e5ebfd60cd27a714f494d8",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/normalized-events.json": {
+      "original_sha256": "5ce6ad016ac542fa05f059472b11f9df6c2e0a35871f2e81c9c8cf475c55566b",
+      "sha256": "5ce6ad016ac542fa05f059472b11f9df6c2e0a35871f2e81c9c8cf475c55566b",
+      "transformation": "exact copy"
+    },
+    "artifacts/baseline/D207/pending-decisions.tsv": {
+      "original_sha256": "55f47e51aa5ce8094bd4dd45adff9d9f7ec15dac5b46d3d8755dbb22505092de",
+      "sha256": "55f47e51aa5ce8094bd4dd45adff9d9f7ec15dac5b46d3d8755dbb22505092de",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "sha256": "da97af87fe9539ab5704b4cfa02af2efa1131171c4cee83c58617a1836cb9412",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "sha256": "e8eefad4210d4845d6ac7c7e94243a23899b61bcd1092d11db160cc4831a3c2b",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "sha256": "5e3f9582d716229316092ddad1b394cafb300fcd0581389a0dba4d6c9c410186",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/normalized-events.json": {
+      "original_sha256": "7fde85129b1b8448aa42fb8e1fc1265e18529b9899b163318189f59f8a2e98b9",
+      "sha256": "7fde85129b1b8448aa42fb8e1fc1265e18529b9899b163318189f59f8a2e98b9",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D012/pending-decisions.tsv": {
+      "original_sha256": "b5824743d330626ead9fb77128cfb94cfc7b05c8b6b4b7a7ab25920ab5a39a8f",
+      "sha256": "b5824743d330626ead9fb77128cfb94cfc7b05c8b6b4b7a7ab25920ab5a39a8f",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "sha256": "b17d0e99f5147f851a4d8e4a1c89d6ba99e4874c441755915ebafb42aab62a5d",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "sha256": "58d20e59701cb32a95fa2199c7dbaa1a1c13129acbbf20513d4d504aa7191e55",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "sha256": "63ebe78219f08040cb600d906dcf6d03fd66e5296f61d8ecdb1b5cdb8536a4f9",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "sha256": "cc34261a98197ee8d5e3143fd10bbafdf9de503aad230ff7769977c68a1b826e",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/normalized-events.json": {
+      "original_sha256": "61d370133c6a65f8bf94032277775057f108d3cdd6a025f3ae23f241c95327d0",
+      "sha256": "61d370133c6a65f8bf94032277775057f108d3cdd6a025f3ae23f241c95327d0",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D101/pending-decisions.tsv": {
+      "original_sha256": "fb6290a1e5facdcbafb22fb4184e36165d4abc94cd620cca58a9e0c0550da995",
+      "sha256": "fb6290a1e5facdcbafb22fb4184e36165d4abc94cd620cca58a9e0c0550da995",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/normalized-events.json": {
+      "original_sha256": "4c10b71377b48de5af7e49e5b2478b9bf07b3498c1772df47fe2c53dcece802b",
+      "sha256": "4c10b71377b48de5af7e49e5b2478b9bf07b3498c1772df47fe2c53dcece802b",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D108/pending-decisions.tsv": {
+      "original_sha256": "f73da90260da48563bec57bc0ca5ced3296b57554fef9561f58b69723f066bd4",
+      "sha256": "f73da90260da48563bec57bc0ca5ced3296b57554fef9561f58b69723f066bd4",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/normalized-events.json": {
+      "original_sha256": "5e93f21f9bab36daaf328fa5c7265a0065267b27838fd307404b62377e82e600",
+      "sha256": "5e93f21f9bab36daaf328fa5c7265a0065267b27838fd307404b62377e82e600",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/pending-decisions.tsv": {
+      "original_sha256": "bc21874c31fda366ab22cf59c1ccf6c499d8f15b2430dfc843ccd30a49dafd71",
+      "sha256": "bc21874c31fda366ab22cf59c1ccf6c499d8f15b2430dfc843ccd30a49dafd71",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/scripted_selection/components.tsv": {
+      "original_sha256": "40b17768a9c9098436bfd1f83f20238b947e79b294305e8530ee85dd87cda546",
+      "sha256": "40b17768a9c9098436bfd1f83f20238b947e79b294305e8530ee85dd87cda546",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/scripted_selection/decisions.tsv": {
+      "original_sha256": "1f9a900777d31d4b40bc442e8d43bfad9a5ff7256582759888e505b18fa8e74e",
+      "sha256": "1f9a900777d31d4b40bc442e8d43bfad9a5ff7256582759888e505b18fa8e74e",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/scripted_selection/output.agp": {
+      "original_sha256": "93e27d181f8d42d4169ba9121ccefdab28571b4f28b06b63ce69d8b13ea4ce58",
+      "sha256": "93e27d181f8d42d4169ba9121ccefdab28571b4f28b06b63ce69d8b13ea4ce58",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D201/scripted_selection/recipe.json": {
+      "original_sha256": "d2c380bd72ddcb9c309d65560f50e7448834abbc8e1c3a745fff9440e255dd46",
+      "sha256": "acb92f4e5a8a994ecb6513088d8dfc21a32d7bba61801c73e1561ec20b081964",
+      "transformation": "Remove advisory absolute sourceAssembly path; digest and emitted edit geometry unchanged"
+    },
+    "artifacts/candidate/D201/scripted_selection/reviewed-edits.tsv": {
+      "original_sha256": "27d970ca565c52187257aeb23af861f3f8d62b08234c1edb7ba8c24b1eb685f0",
+      "sha256": "27d970ca565c52187257aeb23af861f3f8d62b08234c1edb7ba8c24b1eb685f0",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "sha256": "776d7cfafe4dc751522f5f538b9c6681c573072f32ad08967a1efdd6a439a44e",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/normalized-events.json": {
+      "original_sha256": "8c68cd7a049387dbc93c272b617488168ccaac73e41541ad3fcf32ac29d54616",
+      "sha256": "8c68cd7a049387dbc93c272b617488168ccaac73e41541ad3fcf32ac29d54616",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D202/pending-decisions.tsv": {
+      "original_sha256": "c94dfd18438f1ec49b763176ec7d7e8e3f7930b6a88b1d0c3cc0e7609019916d",
+      "sha256": "c94dfd18438f1ec49b763176ec7d7e8e3f7930b6a88b1d0c3cc0e7609019916d",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "sha256": "90d3a2e01c50d3ff754cfc27950b52b7e1149e097e6421d98bc79fca85e0859c",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/normalized-events.json": {
+      "original_sha256": "fae9215ca0c1f5794dcb9a5692f535a375f35380af07376cae65c60e1987889c",
+      "sha256": "fae9215ca0c1f5794dcb9a5692f535a375f35380af07376cae65c60e1987889c",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D203/pending-decisions.tsv": {
+      "original_sha256": "cc47e5a58736e9e74adad97830450bfc16937152bcdf04bf14bc0910483346a6",
+      "sha256": "cc47e5a58736e9e74adad97830450bfc16937152bcdf04bf14bc0910483346a6",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/normalized-events.json": {
+      "original_sha256": "5ada8495207bf6364612f0f998c9ea5459fac7984f7b52f068109518c57c388a",
+      "sha256": "5ada8495207bf6364612f0f998c9ea5459fac7984f7b52f068109518c57c388a",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D204/pending-decisions.tsv": {
+      "original_sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "sha256": "b088f90258b8adabbbad20fd499ca4601f13efa3f48e554ceb3ee763c9138a35",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/normalized-events.json": {
+      "original_sha256": "446f84ada6fe858fe57ce5f72b9b4434e204628a4cb2375ce549142250b83382",
+      "sha256": "446f84ada6fe858fe57ce5f72b9b4434e204628a4cb2375ce549142250b83382",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D205/pending-decisions.tsv": {
+      "original_sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "sha256": "eeb12a18862706e7e33520518d54abff6b8c4497788313d9e13d47fee728f5c6",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "sha256": "f43cb2d3f690228a50a6d4fee4adad55e2d8f06929eeb0e579d9fdab297e3790",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "sha256": "3833db08a681a8e6f61d7d511ecdf702369921adf32b52537abd8138f8f1b835",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "sha256": "7e59873ecd026d8b4aefb98c4d2b2b03fbf529afc42cdfb55562f9f496cb61cc",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/normalized-events.json": {
+      "original_sha256": "bb589bbe6621fe2903669f86dfafefb012a9235e58c0f5eb987a01171bc59134",
+      "sha256": "bb589bbe6621fe2903669f86dfafefb012a9235e58c0f5eb987a01171bc59134",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D206/pending-decisions.tsv": {
+      "original_sha256": "50a53d06c00787d2a00572ec85958cfce0c1c93292a14dcc77fb8e8f8e199e95",
+      "sha256": "50a53d06c00787d2a00572ec85958cfce0c1c93292a14dcc77fb8e8f8e199e95",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/chromosort_report_comprehensive/components.tsv": {
+      "original_sha256": "3eb1bb3fd0512fc2c36287c5721f17d9afc83226d92ba56f1d5e7202b5e25f8b",
+      "sha256": "3eb1bb3fd0512fc2c36287c5721f17d9afc83226d92ba56f1d5e7202b5e25f8b",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/chromosort_report_comprehensive/fix.tsv": {
+      "original_sha256": "b17b630395624932a4fe3893329d532d7e69b8868d659bd88da71f2afedb5408",
+      "sha256": "b17b630395624932a4fe3893329d532d7e69b8868d659bd88da71f2afedb5408",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/chromosort_report_comprehensive/output.agp": {
+      "original_sha256": "4c7e8aa669f7cea16c5d636f3839b51dc76a307b76e40a78ac180c67d92e45a3",
+      "sha256": "4c7e8aa669f7cea16c5d636f3839b51dc76a307b76e40a78ac180c67d92e45a3",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/chromosort_review_comprehensive/components.tsv": {
+      "original_sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "sha256": "6111c7378de904c3bb699ad6917f02119250b81ac1e9750e23ba2b4a6c0ae60d",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/chromosort_review_comprehensive/fix.tsv": {
+      "original_sha256": "a52a908bc24bf9afe453dc08e02da2e3f3e7175631e5ebfd60cd27a714f494d8",
+      "sha256": "a52a908bc24bf9afe453dc08e02da2e3f3e7175631e5ebfd60cd27a714f494d8",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/chromosort_review_comprehensive/output.agp": {
+      "original_sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "sha256": "b37e09e0acf3957d644a949114a0089f11252ab5b3f3d6ac56e2c1fc03a0a818",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/normalized-events.json": {
+      "original_sha256": "34d0ef9f183e2697842a72d8c511d7a3939254be44c7e951d357a6ac97949351",
+      "sha256": "34d0ef9f183e2697842a72d8c511d7a3939254be44c7e951d357a6ac97949351",
+      "transformation": "exact copy"
+    },
+    "artifacts/candidate/D207/pending-decisions.tsv": {
+      "original_sha256": "c1c5eac93ff87cd46f3b0be05af06d3716024baf9d786d02e6396c3ce7a1260c",
+      "sha256": "c1c5eac93ff87cd46f3b0be05af06d3716024baf9d786d02e6396c3ce7a1260c",
+      "transformation": "exact copy"
+    }
+  },
+  "schema": "cycle3-small-artifact-index-v1"
+}

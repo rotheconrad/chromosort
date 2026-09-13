@@ -9,7 +9,7 @@ from collections import defaultdict
 from dataclasses import replace
 from pathlib import Path
 
-from . import __version__, evaluate, fix_contigs, manual, plot, readplot, repairs
+from . import __version__, evaluate, fix_contigs, manual, plot, readplot, repairs, review_proposals
 from .agp import group_parts_by_object, read_agp
 from .manifest import InputBundle, namespaced
 from .multireference import write_tsv
@@ -83,7 +83,7 @@ def verify_outputs(assembly, fasta, agp, require_complete=False):
     return accounting
 
 
-def write_dashboard(path, rows, figures, manifest_digest):
+def write_dashboard(path, rows, figures, manifest_digest, has_review_proposals=False):
     data = json.dumps(rows).replace("<", "\\u003c")
     figure_html = "".join(f'<article id="{html.escape(eid)}"><h3>{html.escape(eid)}</h3>'
                           f'<a href="{html.escape(name)}.pdf">PDF</a> · <a href="{html.escape(name)}.svg">SVG</a>'
@@ -93,7 +93,7 @@ def write_dashboard(path, rows, figures, manifest_digest):
 <style>body{font:15px system-ui;color:#243d43;background:#f5f8fa;margin:36px auto;max-width:1400px;padding:0 24px}h1{font-size:30px}a{color:#176958}table{border-collapse:collapse;background:white;width:100%}td,th{padding:12px;border-bottom:1px solid #dbe4e7;text-align:left;vertical-align:top}input,select,button{font:inherit;padding:7px;border:1px solid #b8c7ca;border-radius:4px}input[type=number]{width:110px}input.note{width:160px}button{background:#176958;color:white;cursor:pointer}img{width:100%;background:white}article{margin-top:24px}small{color:#587277}code{word-break:break-all}</style>
 <h1>ChromoSort evidence review</h1>
 <p>Review each proposed cut against the alignments and read/graph evidence. Accept, reject, defer, or refine the native cut position. Rejected cuts retain the original sequence. Discordance alone does not establish an assembly error.</p>
-<p><a href="manual.html">Interactive alignment and graph dashboard</a> · <a href="dotplot.svg">Dot plot</a> · <a href="decisions.tsv">Initial decision table</a></p>
+<p><a href="manual.html">Interactive alignment and graph dashboard</a> · <a href="dotplot.svg">Dot plot</a> · <a href="decisions.tsv">Initial decision table</a>__PROPOSAL_LINK__</p>
 <p><label>Reviewer <input id="reviewer" placeholder="Your name or review label"></label> <button id="export">Download decisions.tsv</button> <span id="status"></span></p>
 <table><thead><tr><th>Event / contig</th><th>Proposal</th><th>Decision</th><th>Cut after base</th><th>Notes</th></tr></thead><tbody id="rows"></tbody></table>
 <p><small>Input manifest SHA-256: __DIGEST__. Applying a decision requires the saved input identities. Realign changed FASTA before further alignment-dependent analysis.</small></p>
@@ -103,10 +103,12 @@ document.getElementById('rows').innerHTML=rows.map((r,i)=>`<tr><td><a href="#${e
 document.getElementById('rows').addEventListener('change',e=>{if(e.target.dataset.k)rows[Number(e.target.dataset.i)][e.target.dataset.k]=e.target.value});
 document.getElementById('export').onclick=()=>{let reviewer=document.getElementById('reviewer').value.trim();if(!reviewer){document.getElementById('status').textContent='Enter a reviewer label.';return;}rows.forEach(r=>r.reviewer=reviewer);const columns=__COLUMNS__;const clean=v=>String(v??'').replace(/[\t\r\n]/g,' ');const tsv=[columns.join('\t'),...rows.map(r=>columns.map(c=>clean(r[c])).join('\t'))].join('\n')+'\n';let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([tsv],{type:'text/tab-separated-values'}));a.download='decisions.tsv';a.click();URL.revokeObjectURL(a.href);document.getElementById('status').textContent=rows.some(r=>r.decision==='pending')?'Downloaded with pending decisions.':'Decisions ready for reviewed apply.';};</script></html>"""
     Path(path).write_text(page.replace("__ROWS__", data).replace("__COLUMNS__", json.dumps(DECISION_COLUMNS))
-                         .replace("__FIGURES__", figure_html).replace("__DIGEST__", manifest_digest))
+                         .replace("__FIGURES__", figure_html).replace("__DIGEST__", manifest_digest)
+                         .replace("__PROPOSAL_LINK__", ' · <a href="review-proposals.html">Orientation and alternative-plan evidence</a>' if has_review_proposals else ""))
 
 
 def scan(args):
+    review_proposals.validate_arguments(args)
     if min(args.inspect_min_gap_bp, args.min_segment_bp, args.min_piece_bp, args.read_window_bp) < 1:
         raise ValueError("Inspection, segment, piece and read-window thresholds must be positive")
     bundle = InputBundle(args.manifest)
@@ -129,7 +131,8 @@ def scan(args):
         entries = [e for e in bundle.evidence if e["kind"] == kind]
         if len(entries) == 1:
             planner += [flag, str(bundle.resolve(entries[0]["path"]))]
-    events = evaluate.build_fix_events(evaluate.parse_fix_args(planner))
+    planner_args = evaluate.parse_fix_args(planner)
+    events = evaluate.build_fix_events(planner_args)
     rows, dashboard_events, inspection_intervals = [], [], {}
     for event in events:
         # The planner marks the last piece with no breakpoint.
@@ -146,6 +149,7 @@ def scan(args):
                      "decision": "pending", "reason": event.reason, "reviewer": "", "notes": "",
                      "assembly_sha256": bundle.assembly_digest})
         dashboard_events.append(replace(event, event_id=eid, accept=False))
+    automatic_rows = list(rows)
     aligned = defaultdict(list)
     for segment in bundle.correction_segments(min_mapq=args.min_mapq):
         aligned[segment.query].append((min(segment.query_start, segment.query_end) - 1,
@@ -169,13 +173,33 @@ def scan(args):
             dashboard_events.append(ReviewEvent(eid, "fix", "inspect", contig, reason=reason,
                                     fields={"source_contig": contig, "slice_start": start + 1, "slice_end": end,
                                             "assembly_sha256": bundle.assembly_digest}))
+    proposal_record = None
+    detailed_events = {}
+    if args.inspect_orientation or args.alternative_plans:
+        proposal_record = review_proposals.build(bundle, args, planner_args, automatic_rows)
+        detailed_events = {event["event_id"]: event for event in proposal_record["events"]}
+        for event in proposal_record["events"]:
+            position = (event["start0"] + event["end0"]) // 2
+            reason = " ".join(event["reasons"])
+            inspection_intervals[event["event_id"]] = event["positions"]
+            rows.append({"schema": "chromosort-decision-v1", "event_id": event["event_id"], "target": event["target"],
+                "action": "inspect", "proposed_position": position, "position": position,
+                "decision": "pending", "reason": reason, "reviewer": "", "notes": "",
+                "assembly_sha256": bundle.assembly_digest})
+            dashboard_events.append(ReviewEvent(event["event_id"], "fix", "inspect", event["target"], reason=reason,
+                fields={"source_contig": event["target"], "slice_start": event["start0"] + 1,
+                        "slice_end": max(event["start0"] + 1, event["end0"]),
+                        "inspection_kind": event["kind"], "inspection_positions": json.dumps(event["positions"]),
+                        "review_proposal_html": "review-proposals.html#" + event["event_id"],
+                        "assembly_sha256": bundle.assembly_digest}))
     write_tsv(out / "decisions.tsv", rows, DECISION_COLUMNS)
     write_review_events(out / "candidates.fix_review.tsv", dashboard_events)
     plots = []
     for row in rows:
         if row["action"] not in {"cut", "inspect"}:
             continue
-        position = inspection_intervals[row["event_id"]][0] if row["action"] == "inspect" else row["position"]
+        positions = list(inspection_intervals[row["event_id"]]) if row["action"] == "inspect" else [row["position"]]
+        position = positions[0]
         length = bundle.query_by_name[row["target"]].length
         relative = "figures/" + row["event_id"].replace(":", "_")
         options = ["--manifest", str(bundle.path), "--contig", row["target"], "--event-id", row["event_id"],
@@ -185,16 +209,21 @@ def scan(args):
                    "--bin-bp", str(max(1, args.read_window_bp // 100)), "--samtools", args.samtools, "-o", str(out / relative)]
         if args.read_evidence_id:
             options += ["--evidence-id", args.read_evidence_id]
-        readplot.run(readplot.parse_args(options), bundle=bundle)
-        plots.append((row["event_id"], relative))
-        if row["action"] == "inspect":
-            end_position = inspection_intervals[row["event_id"]][1]
-            for flag, value in (("--breakpoint", end_position), ("--start", max(0, end_position - args.read_window_bp)),
-                                ("--end", min(length, end_position + args.read_window_bp)),
-                                ("--action", "inspect alignment gap: end boundary"), ("-o", out / (relative + "_end"))):
+        for index, point in enumerate(positions):
+            suffix = "" if index == 0 else "_end" if index == 1 else f"_boundary{index + 1}"
+            key = row["event_id"] + ("" if index == 0 else "-end" if index == 1 else f"-boundary{index + 1}")
+            detail = detailed_events.get(row["event_id"])
+            action_label = ("inspect " + detail["kind"].replace("_", " ") + f": boundary {index + 1}" if detail else
+                            "proposed cut" if row["action"] == "cut" else
+                            "inspect alignment gap: " + ("start" if index == 0 else "end") + " boundary")
+            for flag, value in (("--breakpoint", point), ("--start", max(0, point - args.read_window_bp)),
+                                ("--end", min(length, point + args.read_window_bp)),
+                                ("--action", action_label), ("-o", out / (relative + suffix))):
                 options[options.index(flag) + 1] = str(value)
             readplot.run(readplot.parse_args(options), bundle=bundle)
-            plots.append((row["event_id"] + "-end", relative + "_end"))
+            plots.append((key, relative + suffix))
+            if detail is not None:
+                detail["figures"].append({"position": point, "path": relative + suffix})
     figure_links = dict(plots)
     dashboard_events = [replace(event, fields={**event.fields, "read_figure_svg": figure_links[event.event_id] + ".svg",
                         **({"read_figure_end_svg": figure_links[event.event_id + "-end"] + ".svg"} if event.event_id + "-end" in figure_links else {})})
@@ -211,7 +240,9 @@ def scan(args):
         dashboard_args += ["--gfa", str(bundle.resolve(graphs[0]["path"]))]
     manual.main(["fix", *dashboard_args])
     plot.main(["--manifest", str(bundle.path), "-o", str(out / "dotplot"), "--formats", "svg", "pdf", "png"])
-    write_dashboard(out / "index.html", rows, plots, sha256_file(bundle.path))
+    if proposal_record is not None:
+        review_proposals.write_report(out, proposal_record)
+    write_dashboard(out / "index.html", rows, plots, sha256_file(bundle.path), proposal_record is not None)
     write_json(out / "scan.json", {
         "schema": "chromosort-scan-v1", "chromosort_version": __version__,
         "manifest": file_record(bundle.path), "assembly": file_record(bundle.assembly),
@@ -219,6 +250,7 @@ def scan(args):
         "parameters": vars(args), "proposals": rows,
         "decision_columns": DECISION_COLUMNS, "state": "awaiting_human_decisions",
         "figures": plots,
+        **({"review_proposals": file_record(out / "review_proposals.json")} if proposal_record is not None else {}),
     })
     return out
 
@@ -231,6 +263,8 @@ def load_scan(scan_dir):
     check_digest(record["manifest"]["path"], record["manifest"]["sha256"], "review manifest")
     for entry in record.get("inputs", []):
         check_digest(entry["path"], entry["sha256"], "review input")
+    if record.get("review_proposals"):
+        check_digest(scan_path.parent / "review_proposals.json", record["review_proposals"]["sha256"], "review proposals")
     bundle = InputBundle(record["manifest"]["path"])
     return scan_path, record, bundle
 
@@ -422,6 +456,7 @@ def main(argv=None, prog=None):
     scan_parser.add_argument("--inspect-min-gap-bp", type=int, default=1000,
                             help="Review-only unaligned-gap floor between long aligned flanks; does not alter correction smoothing or propose cuts.")
     scan_parser.add_argument("--min-mapq", type=int, default=20)
+    review_proposals.add_arguments(scan_parser)
     from .continuity import add_arguments
     add_arguments(scan_parser)
     scan_parser.add_argument("--read-window-bp", type=int, default=10000)

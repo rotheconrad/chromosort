@@ -1,0 +1,156 @@
+{
+  "cases": [
+    {
+      "biological_inversion": [
+        210000,
+        225000
+      ],
+      "case_id": "D201",
+      "coverage": 12,
+      "error_interval": [
+        70000,
+        78000
+      ],
+      "family": "orientation",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 2301,
+      "source_id": "wheat_v2_scf139",
+      "source_interval": [
+        124441,
+        424441
+      ]
+    },
+    {
+      "biological_inversion": [
+        210000,
+        225000
+      ],
+      "case_id": "D202",
+      "coverage": 12,
+      "error_interval": [
+        110000,
+        135000
+      ],
+      "family": "orientation",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 2301,
+      "source_id": "wheat_v2_scf139",
+      "source_interval": [
+        124441,
+        424441
+      ]
+    },
+    {
+      "biological_inversion": [
+        210000,
+        225000
+      ],
+      "case_id": "D203",
+      "coverage": 12,
+      "family": "biological_only",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 2301,
+      "source_id": "wheat_v2_scf139",
+      "source_interval": [
+        124441,
+        424441
+      ]
+    },
+    {
+      "case_id": "D204",
+      "coverage": 12,
+      "family": "clean",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 2301,
+      "source_id": "wheat_v2_scf139",
+      "source_interval": [
+        124441,
+        424441
+      ]
+    },
+    {
+      "case_id": "D205",
+      "coverage": 12,
+      "family": "whole_record_reverse",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 2301,
+      "source_id": "wheat_v2_scf139",
+      "source_interval": [
+        124441,
+        424441
+      ]
+    },
+    {
+      "assembly_paf_derivation": "three copies of every mapper row plus one 7 kb nested same-origin reverse alignment at 70500..77500 derived from the mapper row covering that fixed interval; no independent evidence added",
+      "biological_inversion": [
+        210000,
+        225000
+      ],
+      "case_id": "D206",
+      "coverage": 12,
+      "error_interval": [
+        70000,
+        78000
+      ],
+      "family": "orientation",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 2301,
+      "source_id": "wheat_v2_scf139",
+      "source_interval": [
+        124441,
+        424441
+      ]
+    },
+    {
+      "case_id": "D207",
+      "coverage": 12,
+      "exchange_interval": [
+        50000,
+        100000
+      ],
+      "family": "mixed_exchange_misjoin",
+      "misjoin_position": 200000,
+      "read_error": 0.001,
+      "read_length": 10000,
+      "seed": 2307,
+      "source_ids": [
+        "wheat_A_new",
+        "wheat_D_new"
+      ]
+    },
+    {
+      "biological_inversion": [
+        210000,
+        225000
+      ],
+      "case_id": "D208",
+      "coverage": 12,
+      "error_interval": [
+        70000,
+        78000
+      ],
+      "family": "orientation",
+      "read_error": 0.001,
+      "read_length": 10000,
+      "second_reference": "reverse_complement_of_same_guide_same_output_group_not_independent_source",
+      "seed": 2301,
+      "source_id": "wheat_v2_scf139",
+      "source_interval": [
+        124441,
+        424441
+      ]
+    }
+  ],
+  "historical_context": "The source-admission registry from cycle2 supports the general error patterns; no new published breakpoint reconstruction is claimed",
+  "read_model": "Target before corruption; existing IID substitutions, eligible ACGT runs, nominal Q30, not calibrated empirical reads",
+  "schema": "cycle3-development-case-definitions-v1",
+  "scope": "Eight prospectively specified development scenarios, shared known public loci, not independent genomes; all errors/biological changes are declared simulations, not new historical reconstructions",
+  "source_registry": "../cycle2/sources/sequence_registry.json",
+  "source_registry_sha256": "acd4c301f2bedd5b72312520611171636946785a63bc193b35928d7dfb7771c4"
+}

@@ -1,0 +1,10 @@
+{
+  "changes_to_protocol": "None",
+  "clarifications": [
+    "Alternative event positions are always nonempty. A zero-cut optimum is contig trace context, not a queue event.",
+    "Block IDs use block_id. Coordinate evidence uses position and stage/source identities.",
+    "One-cut alternatives have start0=end0=positions[0]; multi-cut alternatives use first/last positions as context bounds."
+  ],
+  "phase": "Before baseline/candidate curation outputs",
+  "schema": "cycle3-event-schema-clarification-v1"
+}

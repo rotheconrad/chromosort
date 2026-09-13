@@ -1,0 +1,11 @@
+{
+  "assembly_sha256": "4b65dae930a0ed889c30d25d736b6f71f996784e18c8d73affd331112a50618c",
+  "case_id": "D205",
+  "events": [],
+  "manifest_sha256": "d876b39b5a5b97f6a770cdcf6a40ef7b29aa41a1036f455c573e6440fc8d0a1f",
+  "normalization": "One row per scan decision ID; structured details supply geometry, never duplicated as extra events. Whole plan counts once. Paths converted to portable labels; original artifact hashes retained.",
+  "producer_context": null,
+  "scan_sha256": "fe5932f7eb609455073b5e8541dbff2509e984a1918bc0dee20d39e5daf2b60d",
+  "schema": "cycle3-normalized-review-events-v1",
+  "structured_proposals_sha256": null
+}

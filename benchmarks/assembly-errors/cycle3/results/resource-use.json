@@ -1,0 +1,11 @@
+{
+  "automatic_elapsed_seconds": {
+    "baseline": 1.4473024169999997,
+    "candidate": 1.5167789999999997
+  },
+  "note": "Local descriptive subprocess elapsed sums; candidate scans perform additional work, no equal-workload speed claim",
+  "review_elapsed_seconds": {
+    "baseline": 1.665120958,
+    "candidate": 5.455371666
+  }
+}

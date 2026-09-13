@@ -1,0 +1,12 @@
+{
+  "baseline": "c7f1a9fd11f1ea79e0b86d695984f70b63c2a8f7",
+  "commands_previously_frozen_in": "protocol.json",
+  "files": {
+    "scripts/normalize_cycle3_events.py": "f54ed96422b7e66547f2060ba1677a45686303ab6fd646143936a40efab9c6e3",
+    "scripts/prepare_cycle3_known.py": "634a0a7e48fa2bead244915ab2b0f38e4b5768eaa79aee6b9567b06fd9d93218",
+    "scripts/run_benchmark.py": "080466b590ea4ee5886fa3807c370ec6015c54ed9fe06850e83d26c434364fbc",
+    "scripts/run_cycle3.py": "a473898c2cdf93fdfcd05d1c4d7fd60f8500a61b12ac1a114db0748eb0d6ca25"
+  },
+  "phase": "Before candidate execution and independent scoring; baseline launched with these same unchanged scripts",
+  "schema": "cycle3-runner-identity-v1"
+}

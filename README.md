@@ -26,7 +26,7 @@ The [public assembly-error benchmark](https://github.com/rotheconrad/chromosort/
 
 The [explicit interval-repair workflow](docs/commands/workflow.md#explicit-interval-repairs) binds reviewed reverse/cut edits to native coordinates, read panels and replayable recipes.
 
-The publication candidate adds [labeled references, subgenomes and copy-preserving curation](docs/labeled-references.md). See [read-continuity review and gap inspection](docs/review-refinement.md), and [release preparation](docs/release-preparation.md) for packaging and publication gates.
+The publication candidate adds [labeled references, subgenomes and copy-preserving curation](docs/labeled-references.md). See [read-continuity review and gap inspection](docs/review-refinement.md), [aligned orientation and competing-plan review](docs/review-proposals.md), and [release preparation](docs/release-preparation.md) for packaging and publication gates.
 
 ## Documentation
 
@@ -209,7 +209,7 @@ pixi run agent-check
 
 ## Current Status
 
-Current version: `0.4.0rc3`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, `gapfill`, `reads`, and `workflow`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
+Current version: `0.4.0rc4`. Operational commands are `sort`, `clean`, `eval`, `fix`, `cut`, `manual`, `gafprep`, `plot`, `graph-map`, `scaffold`, `gapfill`, `reads`, and `workflow`. See [`docs/status.md`](docs/status.md) or [`CHANGELOG.md`](CHANGELOG.md) for version history. See [`docs/roadmap.md`](docs/roadmap.md) for the production review-upgrade roadmap.
 
 ## Citation
 
@@ -240,6 +240,7 @@ scaffolding tools.
 
 | Version | Notes |
 | --- | --- |
+| `0.4.0rc4` (review proposals) | Adds opt-in aligned orientation inspection before correction filtering/smoothing and bounded alternative segmentation plans with objective terms, frame/overlap context and coordinate-specific read/graph evidence. Events remain pending inspections; explicit edits and automatic correction policy retain their existing contracts. |
 | `0.4.0rc3` (explicit interval review) | Adds pending native-interval reverse/cut edit records, both-edge panels, plan-only previews, explicit deferral and exact complete-coverage recipe composition. Rejects overlapping reversals and cuts inside them. Automatic correction and whole-contig continuity deferral remain unchanged. |
 | Git after frozen `0.4.0rc2` | Rejects read target name/length mismatches against manifest assemblies before filtering. Adds portable public benchmark documentation and separate package-check output directories. Valid-input correction policy and frozen candidate archives remain unchanged. |
 | `0.4.0rc2` (review refinement) | Defers manifest automatic cut plans when CIGAR-contiguous read molecules span a proposed boundary; preserves explicit review overrides and report-only comparison. Separates gap inspection from correction smoothing and shows both interval edges. Development-informed policies, not biological truth classifiers. |

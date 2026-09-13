@@ -1,0 +1,148 @@
+{
+  "amendments": "construction-amendments.json records A001 before this freeze",
+  "baseline_commit": "c7f1a9fd11f1ea79e0b86d695984f70b63c2a8f7",
+  "baseline_git_archive_sha256": "66eb229c0d926017387b5ae8bd7780a597c919eda40df3b048fbe8557d42b86e",
+  "candidate": "One validated immutable 0.4.0rc4 artifact identity to be supplied before execution",
+  "commands": {
+    "automatic_policies": [
+      "report",
+      "review"
+    ],
+    "candidate_scan_additions": [
+      "--inspect-orientation",
+      "--inspect-min-orientation-bp",
+      "1000",
+      "--alternative-plans",
+      "5",
+      "--review-max-blocks",
+      "128"
+    ],
+    "fix": [
+      "fix",
+      "--manifest",
+      "CASE/manifest.json",
+      "--all",
+      "--mode",
+      "comprehensive",
+      "--read-evidence-id",
+      "reads_sim01",
+      "--read-continuity-policy",
+      "POLICY",
+      "--continuity-min-mapq",
+      "20",
+      "--continuity-anchor-bp",
+      "1000",
+      "--continuity-min-spanning",
+      "2",
+      "--output-fasta",
+      "OUTPUT/output.fa",
+      "--report",
+      "OUTPUT/fix.tsv",
+      "--agp",
+      "OUTPUT/output.agp"
+    ],
+    "mapper_reads": [
+      "minimap2",
+      "-x",
+      "map-hifi",
+      "-c",
+      "--secondary=no",
+      "-t",
+      "2"
+    ],
+    "mapper_reference": [
+      "minimap2",
+      "-x",
+      "asm5",
+      "-c",
+      "--secondary=no",
+      "-t",
+      "2"
+    ],
+    "scan_common": [
+      "workflow",
+      "scan",
+      "--manifest",
+      "CASE/manifest.json",
+      "--mode",
+      "comprehensive",
+      "--read-evidence-id",
+      "reads_sim01",
+      "--read-continuity-policy",
+      "review",
+      "--continuity-min-mapq",
+      "20",
+      "--continuity-anchor-bp",
+      "1000",
+      "--continuity-min-spanning",
+      "2",
+      "--min-mapq",
+      "20",
+      "--min-segment-bp",
+      "10000",
+      "--min-piece-bp",
+      "10000",
+      "--inspect-min-gap-bp",
+      "1000",
+      "--output-dir",
+      "OUTPUT/scan"
+    ]
+  },
+  "known_diagnostics": [
+    "D101",
+    "D012",
+    "D108"
+  ],
+  "limits": [
+    "Development scenarios reuse registered loci; no independent species/genome accuracy claim",
+    "All error and biological changes are declared simulations; no new historical reconstruction",
+    "No graph evidence supplied; no platform-calibrated raw reads",
+    "No held-out access or new RagTag superiority comparison",
+    "One frozen candidate, one paired output pass, no post-score tuning or additional cycle"
+  ],
+  "matching": {
+    "alternative_plans": "One plan is one queue item even with multiple cuts. Native plan points can contribute point-error/edge coverage and biological/clean burden; its bounding span is not an interval proposal",
+    "assignment": "Greedy one-to-one event/error matching sorted by summed edge distance, stable event ID, error ID; supplementary edge coverage separately credits visible native edges regardless of event type",
+    "coordinates": "native input, 0-based half-open; cut after position bases",
+    "deduplication": "Greedy deterministic representatives sorted contig, shape, start, end, ID; same point/interval endpoints or equal-length ordered cut sets within500bp deduplicate across event kind/reference frame; no transitive chaining",
+    "misjoin": "One point event or any explicit cut point of an alternative plan within500bp; orientation/gap intervals do not count as point proposals",
+    "orientation": "One interval event must match both error endpoints within500bp each; two cut/plan points do not count as one interval",
+    "queue": "Count pending cut and inspect proposals, including new structured events; keep acknowledgment rows reported separately, not actionable queue; merge schema details into decision IDs so no event counted twice",
+    "tolerance_bp": 500
+  },
+  "metrics": [
+    "True-error proposal coverage: matched errors/expected; per-case and pooled, known diagnostics separate",
+    "Error edge visibility as a separate metric",
+    "Queue size, event-kind counts, pending count and acknowledgment rows",
+    "Biological-control inspection burden: number of events touching specified preservation regions and number of controls touched; not false correction",
+    "Clean-region inspection burden outside error intervals expanded500bp (including endpoint coordinate) and declared biological regions; record whole-record controls separately",
+    "Geometric redundant event count and unique geometries",
+    "Stage-loss explanation availability and reported stage/reasons; descriptive, not assumed factual accuracy",
+    "Input/stage/evidence identities, explicit per-coordinate availability, bounds/skips/omitted-event counts",
+    "Automatic output FASTA/component ledger equality per paired case/policy; unchanged provenance and complete-target scorer metrics, with already-correct controls separate from repairs"
+  ],
+  "phase": "Frozen before baseline/candidate curation outputs",
+  "primary_cases": [
+    "D201",
+    "D202",
+    "D203",
+    "D204",
+    "D205",
+    "D206",
+    "D207",
+    "D208"
+  ],
+  "schema": "cycle3-prospective-protocol-v1",
+  "scorers": {
+    "scripts/score.py": "4999e8d94d34beb0929d245b6d9fe3887c57f4d3f6c8b5ef28430e6c19f97eb9",
+    "scripts/score_review_proposals.py": "08161d6d440a6051fccd9d31af53960385d37618778601e29f699fc656456f0a",
+    "scripts/score_structure.py": "8eb8dbe1523d743cfb8447e6752eabf0248b1ce7ccb635d1d2071ee29ee7c628"
+  },
+  "scripted_replay": {
+    "case": "D201 only, supplemental",
+    "interpretation": "Selection/replay feasibility, not unattended correction or blinded reviewer accuracy; report residual repair errors if emitted edges are imprecise",
+    "procedure": "Reject other scan decisions; create explicit reverse edit linked to selected event, reviewer/scripted rationale, accept it, preview then apply, byte-exact manual recipe replay, fresh-align and validate. Explicit coordinates come from emitted event, not refined to truth.",
+    "selection": "Choose a matching interval event by total endpoint distance then event ID, using evaluator-known event geometry only after both review output commitments; label oracle event selection. Use the emitted interval endpoints unchanged.",
+    "unavailable": "Record unavailable if no matching interval; no keep-event fallback or invented interval"
+  }
+}

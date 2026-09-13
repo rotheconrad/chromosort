@@ -68,6 +68,23 @@ Continue with fresh-manifest `sort --orient-to-reference`, reviewed scaffolding,
 and another realignment after each FASTA change. Whole-contig orientation is a
 separate explicit operation from cutting an internal event.
 
+## Aligned orientation and alternative plans
+
+```bash
+chromo workflow scan --manifest inputs.json --output-dir review-proposals \
+  --mode comprehensive --inspect-orientation --inspect-min-orientation-bp 1000 \
+  --alternative-plans 5 --review-max-blocks 128
+```
+
+These optional pending `inspect` events expose aligned internal orientation
+discrepancies and competing segmentations without changing automatic correction.
+Use the linked `review-proposals.html`, `review_proposals.json` and event TSV
+for exact native coordinates, supporting/opposing blocks, reference-frame
+context, stage-loss reasons, objective differences and per-boundary evidence.
+Acknowledging an inspection makes no edit. Select desired coordinates with the
+explicit edit commands below. See [generation, bounds and machine-readable
+contract]({{ "/review-proposals/" | relative_url }}).
+
 ## Selective scaffold review
 
 ```bash

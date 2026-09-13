@@ -1,0 +1,26 @@
+{
+  "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+  "case_id": "D206",
+  "events": [
+    {
+      "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": null,
+      "end": 0,
+      "event_id": "decision:4dd0acfc880d581d3709b821",
+      "kind": "keep_acknowledgment",
+      "positions": [],
+      "queue": false,
+      "shape": "point",
+      "stage_explanation": "Breakpoint smoothing retained one piece: discordant support (45000.0 identity-weighted bp) did not overcome the breakpoint penalty (50000.0).",
+      "start": 0
+    }
+  ],
+  "manifest_sha256": "fee3ecd024057c5ff6e84383e48b02e6ad6c8e16d0a51b5d6533c695ac5bd9d9",
+  "normalization": "One row per scan decision ID; structured details supply geometry, never duplicated as extra events. Whole plan counts once. Paths converted to portable labels; original artifact hashes retained.",
+  "producer_context": null,
+  "scan_sha256": "e9cc89bf712aebb990ddde93f067e4930008de47619430cce458836629ba712f",
+  "schema": "cycle3-normalized-review-events-v1",
+  "structured_proposals_sha256": null
+}

@@ -171,7 +171,7 @@ class InputBundle:
             self._input_records = [file_record(path) for path in self.input_paths()]
         return self._input_records
 
-    def iter_segments(self, min_identity=0, min_mapq=0, include_secondary_paf=False):
+    def iter_segments(self, min_identity=0, min_mapq=0, include_secondary_paf=False, with_evidence=False):
         from .reference_order import iter_alignments, inspect_paf_metadata
         for entry in self.evidence:
             fmt = ALIGNMENT_KINDS.get(entry["kind"])
@@ -192,7 +192,8 @@ class InputBundle:
                 if not (1 <= min(seg.ref_start, seg.ref_end) <= max(seg.ref_start, seg.ref_end) <= rlen
                         and 1 <= min(seg.query_start, seg.query_end) <= max(seg.query_start, seg.query_end) <= qlen):
                     raise ValueError(f"Alignment interval outside FASTA for {seg.query}/{ref}")
-                yield replace(seg, ref=ref)
+                normalized = replace(seg, ref=ref)
+                yield (entry, normalized) if with_evidence else normalized
 
     def correction_segments(self, **filters):
         """Use only explicit backbones; abstain at overlapping homoeolog signals.

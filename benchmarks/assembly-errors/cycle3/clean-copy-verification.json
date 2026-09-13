@@ -1,0 +1,104 @@
+{
+  "commands": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/generate_cycle3.py",
+        "--output-root",
+        "work/panel"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/verify_cycle3_inputs.py",
+        "--generated-root",
+        "work/panel"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/prepare_cycle3_known.py",
+        "--output-root",
+        "work/known"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/verify_cycle3_results.py",
+        "--panel-root",
+        "work/panel",
+        "--known-root",
+        "work/known"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/verify_cycle3_context.py",
+        "--panel-root",
+        "work/panel",
+        "--known-root",
+        "work/known"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/summarize_cycle3.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/diagnose_cycle3_sequence_equality.py",
+        "--panel-root",
+        "work/panel",
+        "--out",
+        "work/post-score-sequence-diagnostic.json"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/summarize_history.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "python",
+        "scripts/verify.py",
+        "--fixtures"
+      ],
+      "returncode": 0
+    }
+  ],
+  "isolated_public_copy": true,
+  "minimap2": "2.31-r1302",
+  "network_used": false,
+  "python": "3.9.6",
+  "schema": "cycle3-clean-copy-verification-v1",
+  "scope": "Regeneration and portable metric verification; no installed ChromoSort, software-task outputs or private source files",
+  "status": "pass"
+}

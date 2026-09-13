@@ -1,0 +1,211 @@
+{
+  "assembly_sha256": "5fcbcbb8d966761156c49598da912415bd777843087d80b2f9af0ba1de2f3331",
+  "case_id": "D204",
+  "events": [],
+  "manifest_sha256": "94a05c0ba746ab51a8fa80dc63f2dd0cc59fa8ab00dec1281bdf5c6cf4838236",
+  "normalization": "One row per scan decision ID; structured details supply geometry, never duplicated as extra events. Whole plan counts once. Paths converted to portable labels; original artifact hashes retained.",
+  "producer_context": {
+    "assembly_sha256": "5fcbcbb8d966761156c49598da912415bd777843087d80b2f9af0ba1de2f3331",
+    "blocks": [
+      {
+        "aligned_query_bp": 300000,
+        "backbone": true,
+        "block_id": "alignment:f632e991b4fd931df0c06ca8",
+        "correction_eligible": true,
+        "end0": 300000,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+          "subgenome": "A"
+        },
+        "reference_end0": 300000,
+        "reference_start0": 0,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "5fcbcbb8d966761156c49598da912415bd777843087d80b2f9af0ba1de2f3331",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+            "sha256": "92fc8fdbcbf6a6b689345314380cd4fa555ded0a1b5b2211e81a9d2befb65bc0"
+          }
+        ],
+        "start0": 0,
+        "target": "c001"
+      }
+    ],
+    "contigs": [
+      {
+        "alternatives": {
+          "emitted": 0,
+          "invalid_native_partitions": 0,
+          "paths_per_prefix": 24,
+          "raw_paths_examined": 1,
+          "status": "evaluated",
+          "unique_alternatives": 0
+        },
+        "automatic_positions": [],
+        "automatic_scan_proposals": [],
+        "canonical_alignment_blocks": 1,
+        "merged_correction_blocks": 1,
+        "orientation": {
+          "eligible_events": 0,
+          "frame_intervals_below_review_floor": 0,
+          "frames": [
+            {
+              "anchor_orientation": "+",
+              "frame": "CS_A::Chr1",
+              "mapped_end0": 300000,
+              "mapped_start0": 0,
+              "status": "uniform_forward_orientation"
+            }
+          ],
+          "omitted_by_event_cap": 0,
+          "status": "evaluated"
+        },
+        "target": "c001",
+        "trace": {
+          "after_terminal_merge": [
+            {
+              "block_ids": [
+                "alignment:f632e991b4fd931df0c06ca8"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 300000,
+              "dominant_weighted_bp": 300000.0,
+              "end0": 300000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 1.0,
+              "signature": [
+                "CS_A::Chr1",
+                "."
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:f632e991b4fd931df0c06ca8"
+              ],
+              "total_weighted_bp": 300000.0
+            }
+          ],
+          "best_partition": {
+            "breakpoints": 0,
+            "discordant_bp": 0.0,
+            "groups": [
+              {
+                "block_ids": [
+                  "alignment:f632e991b4fd931df0c06ca8"
+                ],
+                "discordant_bp": 0.0,
+                "dominant_aligned_bp": 300000,
+                "dominant_weighted_bp": 300000.0,
+                "end0": 300000,
+                "merged_block_count": 1,
+                "opposing_block_ids": [],
+                "passes_group_support": true,
+                "query_span_fraction": 1.0,
+                "signature": [
+                  "CS_A::Chr1",
+                  "."
+                ],
+                "start0": 0,
+                "supporting_block_ids": [
+                  "alignment:f632e991b4fd931df0c06ca8"
+                ],
+                "total_weighted_bp": 300000.0
+              }
+            ],
+            "penalty_bp": 0.0,
+            "total": 0.0
+          },
+          "comparison_note": "Objective precedes terminal merging, support and breakpoint guards, and read continuity.",
+          "include_orientation": false,
+          "objective_comparable_to_automatic": true,
+          "terminal_groups_merged": false
+        }
+      }
+    ],
+    "graph_projection_warnings": [],
+    "inputs": [
+      {
+        "bytes": 2884,
+        "path": "CASE/manifest.json",
+        "sha256": "94a05c0ba746ab51a8fa80dc63f2dd0cc59fa8ab00dec1281bdf5c6cf4838236"
+      },
+      {
+        "bytes": 303756,
+        "path": "CASE/inputs/assembly.fa",
+        "sha256": "5fcbcbb8d966761156c49598da912415bd777843087d80b2f9af0ba1de2f3331"
+      },
+      {
+        "bytes": 303756,
+        "path": "CASE/inputs/ref_CS_A.fa",
+        "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32"
+      },
+      {
+        "bytes": 185,
+        "path": "CASE/inputs/references.tsv",
+        "sha256": "83370739cb21b2b20ff7d181874f400efda6052aa4618a6a95358cf9e9299347"
+      },
+      {
+        "bytes": 124,
+        "path": "CASE/inputs/reference_sequences.tsv",
+        "sha256": "82386128261962f42612cd4b7175d2bc1c9319e65d432754b74808feda270af3"
+      },
+      {
+        "bytes": 166,
+        "path": "CASE/evidence/CS_A.assembly.paf",
+        "sha256": "92fc8fdbcbf6a6b689345314380cd4fa555ded0a1b5b2211e81a9d2befb65bc0"
+      },
+      {
+        "bytes": 60754,
+        "path": "CASE/evidence/reads.assembly.paf",
+        "sha256": "7425d15a1178ce33acbb44115686efa49a2f1cd75c2c589fabac1f47a66033fc"
+      }
+    ],
+    "limits": {
+      "max_blocks": 128,
+      "orientation_events_per_contig": 25,
+      "policy": "Skip an inspection path above its block cap; orientation events sorted by native start/end. No automatic inputs are truncated."
+    },
+    "manifest_sha256": "94a05c0ba746ab51a8fa80dc63f2dd0cc59fa8ab00dec1281bdf5c6cf4838236",
+    "objective_definition": {
+      "breakpoint_penalty_bp": 50000.0,
+      "calibrated_confidence": false,
+      "discordance": "sum signature weights minus maximum signature weight within each group",
+      "signature": "reference frame, plus orientation when enabled by mode",
+      "total": "sum group discordance + breakpoint_penalty_bp * (group_count - 1)",
+      "weight": "identity_percent * aligned_query_bp / 100; additive, including redundant overlaps"
+    },
+    "parameters": {
+      "alternative_plans": 5,
+      "inspect_min_orientation_bp": 1000,
+      "inspect_orientation": true,
+      "min_mapq": 20,
+      "min_segment_bp": 10000,
+      "mode": "comprehensive",
+      "review_max_blocks": 128
+    },
+    "schema": "chromosort-review-proposals-v1"
+  },
+  "scan_sha256": "d86148837dfc136acd587ee96a472e53ae27931b725b24901402aa245590a28b",
+  "schema": "cycle3-normalized-review-events-v1",
+  "structured_proposals_sha256": "248bc68dc06cf0874dd569a49149ee84a311e21b510e8fde4da782c70b41dc8c"
+}

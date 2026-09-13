@@ -1,0 +1,2 @@
+schema	edit_id	event_id	target	action	start	end	decision	reviewer	notes	assembly_sha256	scan_sha256
+chromosort-edit-v1	edit:edf4df385d7340ef978f21d3	inspection:96f4818486dbb668e872cfd4	c001	reverse	70001	77999	accept	scripted-oracle-event-selection	Oracle event selection; emitted interval endpoints unchanged; scripted feasibility diagnostic.	82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2	ee8273a9c2d1f660fd892838ef1b4b03561246ae2269efecb47b77383acc3aa6

@@ -5,8 +5,8 @@ description: Current ChromoSort command status and version history.
 
 # Current Status and Roadmap
 
-ChromoSort is under active development. Current version: `0.4.0rc3`, the explicit interval-review candidate. Identify
-builds by commit and checksum; historical rc1/rc2 archives remain distinct. See the
+ChromoSort is under active development. Current version: `0.4.0rc4`, the review-proposal candidate. Identify
+builds by commit and checksum; historical rc1/rc2/rc3 archives remain distinct. See the
 [public benchmark and validation limits]({{ "/benchmarks/" | relative_url }}).
 
 ## What Works Now
@@ -74,6 +74,7 @@ pytest
 
 | Version | Notes |
 | --- | --- |
+| `0.4.0rc4` (review proposals) | Adds opt-in aligned orientation inspection before correction filtering/smoothing and bounded alternative segmentation plans with objective terms, frame/overlap context and coordinate-specific read/graph evidence. Events remain pending inspections; explicit edits and automatic correction policy retain their existing contracts. |
 | `0.4.0rc3` (explicit interval review) | Adds pending native-interval reverse/cut edit records, both-edge panels, plan-only previews, explicit deferral and exact complete-coverage recipe composition. Rejects overlapping reversals and cuts inside them. Automatic correction and whole-contig continuity deferral remain unchanged. |
 | `0.4.0rc2` (review refinement) | Defers manifest automatic cut plans when CIGAR-contiguous read molecules span a proposed boundary; preserves explicit review overrides and report-only comparison. Separates gap inspection from correction smoothing and shows both interval edges. Development-informed policies, not biological truth classifiers. |
 | `0.4.0rc1` (publication candidate) | Added labeled multi-reference/copy-preserving manifests, explicit ambiguity/backbones, retain-all accounting, supervised scan/apply/align/validate, event-linked native/reversed read SVG/PDF/PNG with replay, digest checks, complete reviewed-piece coverage and selective scaffold joins. Preserves single-reference commands. Publishing and biological performance claims remain gated on the frozen benchmark. |

@@ -1,0 +1,17 @@
+{
+  "code": {
+    "scripts/generate_cycle3.py": "5c1fe4b47edf065329d8bcd66a9c3a8fdf3cd9e72d09087b115721ea4993cd5c",
+    "scripts/score_review_proposals.py": "08161d6d440a6051fccd9d31af53960385d37618778601e29f699fc656456f0a",
+    "tests/test_review_proposals.py": "b2af37fda61ad940ba0b38591267066f7731f27d37da805509d8733ec52ae4ee"
+  },
+  "files": {
+    "cases.json": "379194bbd169db23b00cad43a3b7c23fa6774b369f42857738170348f5bfb516",
+    "construction-amendments.json": "252423f6b7c144c33031cd173eefbf9852ae97e8f964191e6a1095ab8dc92a66",
+    "generated_expected.json": "60d0332e9b0cd5238f34cd984939d8755227b48624ef618bbcbf052060edf648",
+    "protocol.json": "139e3b81ff5af2bd3dd29472a23891432cd2366e77c95fc9043f2d251769a76f",
+    "review-event-contract.json": "b1bbf587278d8a8d4e76cf1cfca18e5d4e37c9cb535b08bd32cde7892724c697"
+  },
+  "note": "Source-mapping construction amendment A001 precedes freeze. A separately recorded execution identity will bind the one candidate and runner.",
+  "phase": "Before any baseline/candidate curation output",
+  "schema": "cycle3-prospective-freeze-v1"
+}

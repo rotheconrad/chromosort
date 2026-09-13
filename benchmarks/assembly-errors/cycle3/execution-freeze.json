@@ -1,0 +1,102 @@
+{
+  "baseline_archive_sha256": "66eb229c0d926017387b5ae8bd7780a597c919eda40df3b048fbe8557d42b86e",
+  "baseline_commit": "c7f1a9fd11f1ea79e0b86d695984f70b63c2a8f7",
+  "candidate_artifacts": {
+    "chromosort-0.4.0rc4-py3-none-any.whl": {
+      "bytes": 197821,
+      "sha256": "aba814bc0538e701ed7d97f55ab7044f81c64e99d77dd2365c5e677aa9b825fb"
+    },
+    "chromosort-0.4.0rc4.tar.gz": {
+      "bytes": 651891,
+      "sha256": "133a54b516f0aa3517f4574528f39fe60f822b31318b6b6c162a97464a6a1d3a"
+    }
+  },
+  "candidate_freeze_sha256": "036ce03010d26327fac3e5d196cc58d1e34260587ece7c285775890b8b50f3f3",
+  "candidate_frozen_at_utc": "2026-09-13T00:59:30.901630+00:00",
+  "files": {
+    "cycle3/prospective-freeze.json": "16d2ac9d34afd43ba4291a8ff010c7e05e2b01a727c0d1c659b395242821446f",
+    "cycle3/runner-freeze.json": "b32398cc48f215879b2b1d5eed10ead6580fca08cdf4c302e7309a078fd02676",
+    "scripts/evaluate_cycle3.py": "f0724d3414b477f84e7b91cc54a337bf2abf61f4d09137423e5051f690bca7f4",
+    "scripts/replay_cycle3_selection.py": "50dcb8b56e6c517a5a292a4ba998f896dd371fb0e57ae064d71deebe16fe2b91",
+    "scripts/verify_cycle3_results.py": "e5b908e92a6de0625d6edc6fd8fea4acb95aa3ce7376eba755408e1f424f3575"
+  },
+  "phase": "Before candidate execution and independent proposal scoring",
+  "producer_bound_clarification": "Orientation skips if canonical mapping blocks OR merged correction blocks exceed 128; alternatives use merged correction blocks. No case or metric changes; all primary mapping block counts are below this bound.",
+  "recorded_at_utc": "2026-09-13T01:04:24.370966+00:00",
+  "schema": "cycle3-execution-freeze-v1",
+  "software": {
+    "baseline": {
+      "python": "3.12.14",
+      "source_files": {
+        "__init__.py": "daaa7487221f0773f3b234610e469944a1c66648cfe9fa4cb0f2cdcba82d620b",
+        "__main__.py": "c2ee4ddb093c9af060cafaf68219907f8a6b7b301ed3f8bea75db7555adec987",
+        "agp.py": "61c6946ed4ac05eb70b865dc232c612b0f48342324dd547150d7236a282e4f9f",
+        "clean.py": "723c008e1b89a2ef29ee7269bf05e2b9c84cfbbbbdcc2e5e3f82ca80447ff2cb",
+        "cli.py": "288b4946322cca6d7fa5f15dff8e044e1c4edeb052a3f9e80dfaefa98d2227c9",
+        "continuity.py": "60a34f81b8328f77e409f32c04c4e078ec2d58874dce46ff759a4a81d6ce2ca8",
+        "cut.py": "5b780e2d5500d2aedc4bf16d1e60c33e6d549c7e18d7581e76a30b71f66338c2",
+        "evaluate.py": "332e4acff87a0e8a6e84f6192f9f153339e4b72083817459b85b81e615a91219",
+        "fix_contigs.py": "386cd405e41d5c4f5b5ed66f1894c497fa1bb8e1da4828472ee39f8ce44aaef5",
+        "gaf.py": "4d1da13b5971b7c438935deaecc583585b0b8c36dde10dc88076a666b9dd39dc",
+        "gafprep.py": "83bbf4adc8e26e1683ae7bada060b3150c2cae693093bafd267fccb778b31133",
+        "gapfill.py": "4e3d472245dfbb1cd9b138e14347fbef88429b0d2195d3c811418a88b0734aed",
+        "graph.py": "f4da16aef4877d3117eac461179b6727ae8415b702df333cdf8d9c8b7fc23d59",
+        "graph_map.py": "c42dc258ebbb811c71ac3311075295636685ccf9b0e3af1b0f962839f3ba785b",
+        "longreads.py": "23762453516c529add3e101416089a4b728921d5587789ff7e353a7b02baf60e",
+        "manifest.py": "318f245a3c9adc82701cbb6d68b98e60d4d5fb0f2f8955ac93adb7e888f49f9a",
+        "manual.py": "b0ff4dcce10a853db7659bd29a1a1072748c896c666a251fdb645fa8e4906ecc",
+        "multireference.py": "9221d96be22b0803c421514f49bb6ad34ec86ba8aca2fd7798be7e24fb89aec7",
+        "paths.py": "23663e1796219ab2cbd5d8fc51f058dc41f7292aaf46b13244899e441760d61e",
+        "plot.py": "a96784d0411528df9227429551a415632c5f23fa2298a3f43c3567af3bfe446c",
+        "provenance.py": "9912a5ee2e95e018fad828020ee224ea3a46454a9033065cc9aa057b20463cb3",
+        "readalign.py": "f3d48bce7ca7981f6c76ea1c65fbc50b308608531fe88fc42e3c267f7fefccf9",
+        "readplot.py": "240b39b1204b2a2c1a3217a8b36c3cd9a9fe2d3e8091f0ff08aa5356b68146dc",
+        "reference_order.py": "0b7dc9dd4772c6328c5150c05990866c55bda7adb20773721cb5e2f76cd66083",
+        "repairs.py": "fc542fc23860b8fd21295bfd68176f114dbdd5dbf288687f370efbfd91015406",
+        "review.py": "f691157a41841ce07374ad5f9f8a3ee468fec0eb5f228405f74aab40698c219d",
+        "scaffold.py": "fbbd517f789c60d7575dd347f62cdf32baf4d550c5b3bff176c59d4b5e7d9edd",
+        "submission.py": "05ea569cf78b112321dffc7a3f80cb59d9c0da86bca7f7a4f2c3ebe01a9e664f",
+        "workflow.py": "17c99ad4b5160b9cfb97a6c5387f257a8430797947f1b1dce1e11e662b1e990d"
+      },
+      "source_tree_sha256": "ef45f8fd5242ca5f35c7115a14343587d72bfc46b47ab6f2e5d36b62ec03a192",
+      "version": "0.4.0rc3"
+    },
+    "candidate": {
+      "python": "3.12.14",
+      "source_files": {
+        "__init__.py": "e35172379fde46e327c25ebd151ce24475e81974fe6f7beea5be3262742ba936",
+        "__main__.py": "c2ee4ddb093c9af060cafaf68219907f8a6b7b301ed3f8bea75db7555adec987",
+        "agp.py": "61c6946ed4ac05eb70b865dc232c612b0f48342324dd547150d7236a282e4f9f",
+        "clean.py": "723c008e1b89a2ef29ee7269bf05e2b9c84cfbbbbdcc2e5e3f82ca80447ff2cb",
+        "cli.py": "288b4946322cca6d7fa5f15dff8e044e1c4edeb052a3f9e80dfaefa98d2227c9",
+        "continuity.py": "60a34f81b8328f77e409f32c04c4e078ec2d58874dce46ff759a4a81d6ce2ca8",
+        "cut.py": "5b780e2d5500d2aedc4bf16d1e60c33e6d549c7e18d7581e76a30b71f66338c2",
+        "evaluate.py": "332e4acff87a0e8a6e84f6192f9f153339e4b72083817459b85b81e615a91219",
+        "fix_contigs.py": "386cd405e41d5c4f5b5ed66f1894c497fa1bb8e1da4828472ee39f8ce44aaef5",
+        "gaf.py": "4d1da13b5971b7c438935deaecc583585b0b8c36dde10dc88076a666b9dd39dc",
+        "gafprep.py": "83bbf4adc8e26e1683ae7bada060b3150c2cae693093bafd267fccb778b31133",
+        "gapfill.py": "4e3d472245dfbb1cd9b138e14347fbef88429b0d2195d3c811418a88b0734aed",
+        "graph.py": "f4da16aef4877d3117eac461179b6727ae8415b702df333cdf8d9c8b7fc23d59",
+        "graph_map.py": "c42dc258ebbb811c71ac3311075295636685ccf9b0e3af1b0f962839f3ba785b",
+        "longreads.py": "23762453516c529add3e101416089a4b728921d5587789ff7e353a7b02baf60e",
+        "manifest.py": "87851e7419576bc8827400d69eeafd6442236184ea3e9131fc1018cac6332b14",
+        "manual.py": "b0ff4dcce10a853db7659bd29a1a1072748c896c666a251fdb645fa8e4906ecc",
+        "multireference.py": "9221d96be22b0803c421514f49bb6ad34ec86ba8aca2fd7798be7e24fb89aec7",
+        "paths.py": "23663e1796219ab2cbd5d8fc51f058dc41f7292aaf46b13244899e441760d61e",
+        "plot.py": "a96784d0411528df9227429551a415632c5f23fa2298a3f43c3567af3bfe446c",
+        "provenance.py": "9912a5ee2e95e018fad828020ee224ea3a46454a9033065cc9aa057b20463cb3",
+        "readalign.py": "f3d48bce7ca7981f6c76ea1c65fbc50b308608531fe88fc42e3c267f7fefccf9",
+        "readplot.py": "240b39b1204b2a2c1a3217a8b36c3cd9a9fe2d3e8091f0ff08aa5356b68146dc",
+        "reference_order.py": "0b7dc9dd4772c6328c5150c05990866c55bda7adb20773721cb5e2f76cd66083",
+        "repairs.py": "fc542fc23860b8fd21295bfd68176f114dbdd5dbf288687f370efbfd91015406",
+        "review.py": "f691157a41841ce07374ad5f9f8a3ee468fec0eb5f228405f74aab40698c219d",
+        "review_proposals.py": "5f5057ed4aa48d37a52e39053529c287c7274cdc267f097e7a50a6667499cf7d",
+        "scaffold.py": "fbbd517f789c60d7575dd347f62cdf32baf4d550c5b3bff176c59d4b5e7d9edd",
+        "submission.py": "05ea569cf78b112321dffc7a3f80cb59d9c0da86bca7f7a4f2c3ebe01a9e664f",
+        "workflow.py": "2efe0ceeb1099d46febb3b288bb36f2ac09ea7fc5e1b1d32d23e04beea893724"
+      },
+      "source_tree_sha256": "df51a1e944561dfc9fca4eeaa2bb07cf6dbe7ca9a775458c443720d6e8c1f8ca",
+      "version": "0.4.0rc4"
+    }
+  }
+}

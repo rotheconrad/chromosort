@@ -1,0 +1,72 @@
+{
+  "case_count": 8,
+  "cases": [
+    {
+      "biological_controls": 1,
+      "case_id": "D201",
+      "input_bp": 300000,
+      "paf_rows": 385,
+      "review_errors": 1,
+      "truth_provenance": "exact"
+    },
+    {
+      "biological_controls": 1,
+      "case_id": "D202",
+      "input_bp": 300000,
+      "paf_rows": 392,
+      "review_errors": 1,
+      "truth_provenance": "exact"
+    },
+    {
+      "biological_controls": 1,
+      "case_id": "D203",
+      "input_bp": 300000,
+      "paf_rows": 363,
+      "review_errors": 0,
+      "truth_provenance": "exact"
+    },
+    {
+      "biological_controls": 0,
+      "case_id": "D204",
+      "input_bp": 300000,
+      "paf_rows": 361,
+      "review_errors": 0,
+      "truth_provenance": "exact"
+    },
+    {
+      "biological_controls": 0,
+      "case_id": "D205",
+      "input_bp": 300000,
+      "paf_rows": 361,
+      "review_errors": 0,
+      "truth_provenance": "exact"
+    },
+    {
+      "biological_controls": 1,
+      "case_id": "D206",
+      "input_bp": 300000,
+      "paf_rows": 396,
+      "review_errors": 1,
+      "truth_provenance": "exact"
+    },
+    {
+      "biological_controls": 4,
+      "case_id": "D207",
+      "input_bp": 400000,
+      "paf_rows": 486,
+      "review_errors": 1,
+      "truth_provenance": "exact"
+    },
+    {
+      "biological_controls": 1,
+      "case_id": "D208",
+      "input_bp": 300000,
+      "paf_rows": 390,
+      "review_errors": 1,
+      "truth_provenance": "exact"
+    }
+  ],
+  "exact_files": 130,
+  "purpose": "Input construction and truth provenance verification only; no candidate outputs opened",
+  "schema": "cycle3-input-verification-v1"
+}

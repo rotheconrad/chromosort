@@ -1,0 +1,39 @@
+{
+  "analytic_tests": 31,
+  "baseline_public_manifest_sha256": "6c5935c9fb95559a59a422c923c878c7aaff78b80286ecc116237dc20bf5357d",
+  "original_output_commitments_verified": {
+    "baseline": {
+      "commitment_sha256": "6d11724e4b11de2906ee5515914f3429de9a48b9fc2ade149639eea0bf4a8d09",
+      "files": 464
+    },
+    "candidate": {
+      "commitment_sha256": "1596f15bf406297aa23fbb8f8fcc426ce9cdacb726676f9c083f4b18e24fb666",
+      "files": 794
+    }
+  },
+  "post_score_sequence_interpretation": {
+    "diagnostic_sha256": "b78c2f4b987fe8f145e9ff6de2411983e8d477a9ea3fdccebac93c9616b1494e",
+    "exact_300000bp_target_sequence": true,
+    "frozen_scores_and_replay_unchanged": true,
+    "original_committed_replay_fasta_independently_compared": true,
+    "reason": "Coordinator requested a post-score interpretation check; exact sequence equality does not replace the frozen false provenance-path score",
+    "script_sha256": "314b2494008eb876848bcb5a231a9e7c1da1b7f5343a2e0d4b9c7c4077ed21da"
+  },
+  "pre_addendum_result_report_sha256": "8b22d185aa35d91c09f7d302287ee6f8b7e153051ddda82f6aefaeb6c289384b",
+  "prior_payload_exception": "Root README receives additive cycle3 pointers and current analytic-test count; PUBLIC_MANIFEST is regenerated after this record",
+  "prospective_case_metric_code_freeze_unchanged": true,
+  "recorded_at_utc": "2026-09-13T01:17:25.984631+00:00",
+  "result_report_sha256": "d0db19ce271d767c850b712a43e7435f25bb058a66d86668037ca384f484bfe0",
+  "ruff": "New cycle3 scripts and tests passed",
+  "runner_and_execution_bound_files_unchanged": true,
+  "schema": "cycle3-final-verification-v1",
+  "scope": "One frozen candidate pass; no replacement inputs, parameter tuning, Git mutations or held-out evaluation",
+  "unchanged_prior_public_payload_files": 337,
+  "verification_records": {
+    "clean-copy-verification.json": "2fc001ae3d09b29141962fffab6898dc2846cb5074d30772e631278ed6faf84a",
+    "context-verification.json": "c84f6cfbc923bb4e1f659b1a2f3997501701e36be37b5b41b1517766f8a707cb",
+    "input-verification.json": "383774ad4640949ffed6fc4bf82d78030282082b21581a5ca8a615040834e11e",
+    "portable-verification.json": "7dee3435d420f054aa335b4bceafc7a0869dd7a42e7deb0856808cc1ce7672c0",
+    "reproduction-verification.json": "383774ad4640949ffed6fc4bf82d78030282082b21581a5ca8a615040834e11e"
+  }
+}

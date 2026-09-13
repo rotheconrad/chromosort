@@ -1,0 +1,1795 @@
+{
+  "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+  "case_id": "D207",
+  "events": [
+    {
+      "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": null,
+      "end": 300000,
+      "event_id": "decision:34cbc45c9edacc40b5607972",
+      "kind": "automatic_cut_proposal",
+      "positions": [
+        300000
+      ],
+      "queue": true,
+      "shape": "point",
+      "stage_explanation": "2 smoothed pieces inferred from 6 alignment blocks after smoothing 4 weak transition(s) with breakpoint penalty 50000.0; planner_score=50000.0. Automatic contig plan requires review: read continuity at a proposed boundary; this boundary has 12 spanning molecules.",
+      "start": 300000
+    },
+    {
+      "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 200000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 200001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 200000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 200000,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 200000,
+        "event_id": "inspection:399bd8335bda0b12485f069e",
+        "figures": [
+          {
+            "path": "figures/inspection_399bd8335bda0b12485f069e",
+            "position": 200000
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition"
+        ],
+        "objective": {
+          "breakpoints": 1,
+          "delta_to_best_partition": 170.0,
+          "discordant_bp": 100000.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:5e0664d798448ce00953e55b",
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "discordant_bp": 50000.0,
+              "dominant_aligned_bp": 149837,
+              "dominant_weighted_bp": 149837.0,
+              "end0": 200000,
+              "merged_block_count": 3,
+              "opposing_block_ids": [
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.5,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:5e0664d798448ce00953e55b"
+              ],
+              "total_weighted_bp": 199837.0
+            },
+            {
+              "block_ids": [
+                "alignment:11def0f51f32569ba78a94e4",
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "discordant_bp": 50000.0,
+              "dominant_aligned_bp": 149830,
+              "dominant_weighted_bp": 149830.0,
+              "end0": 400000,
+              "merged_block_count": 3,
+              "opposing_block_ids": [
+                "alignment:3bfecf94d3df54ed820a69c6"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.5,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 200000,
+              "supporting_block_ids": [
+                "alignment:11def0f51f32569ba78a94e4",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "total_weighted_bp": 199830.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 50000.0,
+          "rank": 1,
+          "total": 150000.0
+        },
+        "opposing_block_ids": [
+          "alignment:3bfecf94d3df54ed820a69c6",
+          "alignment:678e5ca16aae090861fa181b"
+        ],
+        "overlapping_block_ids": [],
+        "positions": [
+          200000
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [200000]; objective 150000, delta 170 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1",
+          "CS_D::Chr1"
+        ],
+        "start0": 200000,
+        "supporting_block_ids": [
+          "alignment:11def0f51f32569ba78a94e4",
+          "alignment:1c58a4da281a95b537df771a",
+          "alignment:5e0664d798448ce00953e55b",
+          "alignment:a89b388d0fb2bd5ca96ccba8"
+        ],
+        "target": "c001"
+      },
+      "end": 200000,
+      "event_id": "inspection:399bd8335bda0b12485f069e",
+      "kind": "alternative_segmentation",
+      "positions": [
+        200000
+      ],
+      "queue": true,
+      "shape": "point",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; Alternative segmentation at native boundaries [200000]; objective 150000, delta 170 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 200000
+    },
+    {
+      "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 100000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 100001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 100000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 100000,
+              "read_sample": ".",
+              "spanning_molecules": 17,
+              "spanning_read_ids": "read0000005;read0000088;read0000097;read0000105;read0000112;read0000151;read0000153;read0000184;read0000187;read0000238;read0000270;read0000333;read0000376;read0000378;read0000399;read0000447;read0000461"
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 300000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 300001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 300000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 300000,
+              "read_sample": ".",
+              "spanning_molecules": 12,
+              "spanning_read_ids": "read0000084;read0000089;read0000115;read0000126;read0000145;read0000177;read0000242;read0000289;read0000296;read0000380;read0000392;read0000472"
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 300000,
+        "event_id": "inspection:0723edbd74aba57ae3560db8",
+        "figures": [
+          {
+            "path": "figures/inspection_0723edbd74aba57ae3560db8",
+            "position": 100000
+          },
+          {
+            "path": "figures/inspection_0723edbd74aba57ae3560db8_end",
+            "position": 300000
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition"
+        ],
+        "objective": {
+          "breakpoints": 2,
+          "delta_to_best_partition": 49837.0,
+          "discordant_bp": 99667.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "discordant_bp": 49837.0,
+              "dominant_aligned_bp": 50000,
+              "dominant_weighted_bp": 50000.0,
+              "end0": 100000,
+              "merged_block_count": 2,
+              "opposing_block_ids": [
+                "alignment:1c58a4da281a95b537df771a"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "total_weighted_bp": 99837.0
+            },
+            {
+              "block_ids": [
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:5e0664d798448ce00953e55b",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "discordant_bp": 49830.0,
+              "dominant_aligned_bp": 150000,
+              "dominant_weighted_bp": 150000.0,
+              "end0": 300000,
+              "merged_block_count": 3,
+              "opposing_block_ids": [
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.5,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 100000,
+              "supporting_block_ids": [
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:5e0664d798448ce00953e55b"
+              ],
+              "total_weighted_bp": 199830.0
+            },
+            {
+              "block_ids": [
+                "alignment:11def0f51f32569ba78a94e4"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 100000,
+              "dominant_weighted_bp": 100000.0,
+              "end0": 400000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 300000,
+              "supporting_block_ids": [
+                "alignment:11def0f51f32569ba78a94e4"
+              ],
+              "total_weighted_bp": 100000.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 100000.0,
+          "rank": 2,
+          "total": 199667.0
+        },
+        "opposing_block_ids": [
+          "alignment:1c58a4da281a95b537df771a",
+          "alignment:a89b388d0fb2bd5ca96ccba8"
+        ],
+        "overlapping_block_ids": [],
+        "positions": [
+          100000,
+          300000
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [100000, 300000]; objective 199667, delta 49837 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1",
+          "CS_D::Chr1"
+        ],
+        "start0": 100000,
+        "supporting_block_ids": [
+          "alignment:11def0f51f32569ba78a94e4",
+          "alignment:3bfecf94d3df54ed820a69c6",
+          "alignment:5e0664d798448ce00953e55b",
+          "alignment:678e5ca16aae090861fa181b"
+        ],
+        "target": "c001"
+      },
+      "end": 300000,
+      "event_id": "inspection:0723edbd74aba57ae3560db8",
+      "kind": "alternative_segmentation",
+      "positions": [
+        100000,
+        300000
+      ],
+      "queue": true,
+      "shape": "plan",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; Alternative segmentation at native boundaries [100000, 300000]; objective 199667, delta 49837 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 100000
+    },
+    {
+      "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 249915,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 249916,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 249915,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 249915,
+              "read_sample": ".",
+              "spanning_molecules": 9,
+              "spanning_read_ids": "read0000009;read0000021;read0000078;read0000080;read0000113;read0000194;read0000224;read0000273;read0000281"
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 249915,
+        "event_id": "inspection:4ecec76b27e273c9f9e44abf",
+        "figures": [
+          {
+            "path": "figures/inspection_4ecec76b27e273c9f9e44abf",
+            "position": 249915
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition"
+        ],
+        "objective": {
+          "breakpoints": 1,
+          "delta_to_best_partition": 50000.0,
+          "discordant_bp": 149830.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:5e0664d798448ce00953e55b",
+                "alignment:678e5ca16aae090861fa181b",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "discordant_bp": 99830.0,
+              "dominant_aligned_bp": 149837,
+              "dominant_weighted_bp": 149837.0,
+              "end0": 249830,
+              "merged_block_count": 4,
+              "opposing_block_ids": [
+                "alignment:678e5ca16aae090861fa181b",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.624575,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:5e0664d798448ce00953e55b"
+              ],
+              "total_weighted_bp": 249667.0
+            },
+            {
+              "block_ids": [
+                "alignment:11def0f51f32569ba78a94e4",
+                "alignment:3bfecf94d3df54ed820a69c6"
+              ],
+              "discordant_bp": 50000.0,
+              "dominant_aligned_bp": 100000,
+              "dominant_weighted_bp": 100000.0,
+              "end0": 400000,
+              "merged_block_count": 2,
+              "opposing_block_ids": [
+                "alignment:3bfecf94d3df54ed820a69c6"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.375,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 250000,
+              "supporting_block_ids": [
+                "alignment:11def0f51f32569ba78a94e4"
+              ],
+              "total_weighted_bp": 150000.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 50000.0,
+          "rank": 3,
+          "total": 199830.0
+        },
+        "opposing_block_ids": [
+          "alignment:3bfecf94d3df54ed820a69c6",
+          "alignment:678e5ca16aae090861fa181b",
+          "alignment:a89b388d0fb2bd5ca96ccba8"
+        ],
+        "overlapping_block_ids": [],
+        "positions": [
+          249915
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [249915]; objective 199830, delta 50000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1",
+          "CS_D::Chr1"
+        ],
+        "start0": 249915,
+        "supporting_block_ids": [
+          "alignment:11def0f51f32569ba78a94e4",
+          "alignment:1c58a4da281a95b537df771a",
+          "alignment:5e0664d798448ce00953e55b"
+        ],
+        "target": "c001"
+      },
+      "end": 249915,
+      "event_id": "inspection:4ecec76b27e273c9f9e44abf",
+      "kind": "alternative_segmentation",
+      "positions": [
+        249915
+      ],
+      "queue": true,
+      "shape": "point",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; Alternative segmentation at native boundaries [249915]; objective 199830, delta 50000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 249915
+    },
+    {
+      "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 49918,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 49919,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 49918,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 49918,
+              "read_sample": ".",
+              "spanning_molecules": 9,
+              "spanning_read_ids": "read0000071;read0000081;read0000147;read0000277;read0000330;read0000334;read0000381;read0000394;read0000453"
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 100000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 100001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 100000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 100000,
+              "read_sample": ".",
+              "spanning_molecules": 17,
+              "spanning_read_ids": "read0000005;read0000088;read0000097;read0000105;read0000112;read0000151;read0000153;read0000184;read0000187;read0000238;read0000270;read0000333;read0000376;read0000378;read0000399;read0000447;read0000461"
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 300000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 300001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 300000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 300000,
+              "read_sample": ".",
+              "spanning_molecules": 12,
+              "spanning_read_ids": "read0000084;read0000089;read0000115;read0000126;read0000145;read0000177;read0000242;read0000289;read0000296;read0000380;read0000392;read0000472"
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 300000,
+        "event_id": "inspection:232baf1663ef8c0b190a8392",
+        "figures": [
+          {
+            "path": "figures/inspection_232baf1663ef8c0b190a8392",
+            "position": 49918
+          },
+          {
+            "path": "figures/inspection_232baf1663ef8c0b190a8392_end",
+            "position": 100000
+          },
+          {
+            "path": "figures/inspection_232baf1663ef8c0b190a8392_boundary3",
+            "position": 300000
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition",
+          "fails_group_support"
+        ],
+        "objective": {
+          "breakpoints": 3,
+          "delta_to_best_partition": 50000.0,
+          "discordant_bp": 49830.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:1c58a4da281a95b537df771a"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 49837,
+              "dominant_weighted_bp": 49837.0,
+              "end0": 49837,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": false,
+              "query_span_fraction": 0.1245925,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:1c58a4da281a95b537df771a"
+              ],
+              "total_weighted_bp": 49837.0
+            },
+            {
+              "block_ids": [
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 50000,
+              "dominant_weighted_bp": 50000.0,
+              "end0": 100000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.125,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 50000,
+              "supporting_block_ids": [
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "total_weighted_bp": 50000.0
+            },
+            {
+              "block_ids": [
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:5e0664d798448ce00953e55b",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "discordant_bp": 49830.0,
+              "dominant_aligned_bp": 150000,
+              "dominant_weighted_bp": 150000.0,
+              "end0": 300000,
+              "merged_block_count": 3,
+              "opposing_block_ids": [
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.5,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 100000,
+              "supporting_block_ids": [
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:5e0664d798448ce00953e55b"
+              ],
+              "total_weighted_bp": 199830.0
+            },
+            {
+              "block_ids": [
+                "alignment:11def0f51f32569ba78a94e4"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 100000,
+              "dominant_weighted_bp": 100000.0,
+              "end0": 400000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 300000,
+              "supporting_block_ids": [
+                "alignment:11def0f51f32569ba78a94e4"
+              ],
+              "total_weighted_bp": 100000.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 150000.0,
+          "rank": 4,
+          "total": 199830.0
+        },
+        "opposing_block_ids": [
+          "alignment:a89b388d0fb2bd5ca96ccba8"
+        ],
+        "overlapping_block_ids": [],
+        "positions": [
+          49918,
+          100000,
+          300000
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [49918, 100000, 300000]; objective 199830, delta 50000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1",
+          "CS_D::Chr1"
+        ],
+        "start0": 49918,
+        "supporting_block_ids": [
+          "alignment:11def0f51f32569ba78a94e4",
+          "alignment:1c58a4da281a95b537df771a",
+          "alignment:3bfecf94d3df54ed820a69c6",
+          "alignment:5e0664d798448ce00953e55b",
+          "alignment:678e5ca16aae090861fa181b"
+        ],
+        "target": "c001"
+      },
+      "end": 300000,
+      "event_id": "inspection:232baf1663ef8c0b190a8392",
+      "kind": "alternative_segmentation",
+      "positions": [
+        49918,
+        100000,
+        300000
+      ],
+      "queue": true,
+      "shape": "plan",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; fails_group_support; Alternative segmentation at native boundaries [49918, 100000, 300000]; objective 199830, delta 50000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 49918
+    },
+    {
+      "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 100000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 100001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 100000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 100000,
+              "read_sample": ".",
+              "spanning_molecules": 17,
+              "spanning_read_ids": "read0000005;read0000088;read0000097;read0000105;read0000112;read0000151;read0000153;read0000184;read0000187;read0000238;read0000270;read0000333;read0000376;read0000378;read0000399;read0000447;read0000461"
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 200000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 200001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 200000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 200000,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 200000,
+        "event_id": "inspection:d79a4e6573fd53b74583a943",
+        "figures": [
+          {
+            "path": "figures/inspection_d79a4e6573fd53b74583a943",
+            "position": 100000
+          },
+          {
+            "path": "figures/inspection_d79a4e6573fd53b74583a943_end",
+            "position": 200000
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition"
+        ],
+        "objective": {
+          "breakpoints": 2,
+          "delta_to_best_partition": 50007.0,
+          "discordant_bp": 99837.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "discordant_bp": 49837.0,
+              "dominant_aligned_bp": 50000,
+              "dominant_weighted_bp": 50000.0,
+              "end0": 100000,
+              "merged_block_count": 2,
+              "opposing_block_ids": [
+                "alignment:1c58a4da281a95b537df771a"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:678e5ca16aae090861fa181b"
+              ],
+              "total_weighted_bp": 99837.0
+            },
+            {
+              "block_ids": [
+                "alignment:5e0664d798448ce00953e55b"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 100000,
+              "dominant_weighted_bp": 100000.0,
+              "end0": 200000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 100000,
+              "supporting_block_ids": [
+                "alignment:5e0664d798448ce00953e55b"
+              ],
+              "total_weighted_bp": 100000.0
+            },
+            {
+              "block_ids": [
+                "alignment:11def0f51f32569ba78a94e4",
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "discordant_bp": 50000.0,
+              "dominant_aligned_bp": 149830,
+              "dominant_weighted_bp": 149830.0,
+              "end0": 400000,
+              "merged_block_count": 3,
+              "opposing_block_ids": [
+                "alignment:3bfecf94d3df54ed820a69c6"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.5,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 200000,
+              "supporting_block_ids": [
+                "alignment:11def0f51f32569ba78a94e4",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "total_weighted_bp": 199830.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 100000.0,
+          "rank": 5,
+          "total": 199837.0
+        },
+        "opposing_block_ids": [
+          "alignment:1c58a4da281a95b537df771a",
+          "alignment:3bfecf94d3df54ed820a69c6"
+        ],
+        "overlapping_block_ids": [],
+        "positions": [
+          100000,
+          200000
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [100000, 200000]; objective 199837, delta 50007 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1",
+          "CS_D::Chr1"
+        ],
+        "start0": 100000,
+        "supporting_block_ids": [
+          "alignment:11def0f51f32569ba78a94e4",
+          "alignment:5e0664d798448ce00953e55b",
+          "alignment:678e5ca16aae090861fa181b",
+          "alignment:a89b388d0fb2bd5ca96ccba8"
+        ],
+        "target": "c001"
+      },
+      "end": 200000,
+      "event_id": "inspection:d79a4e6573fd53b74583a943",
+      "kind": "alternative_segmentation",
+      "positions": [
+        100000,
+        200000
+      ],
+      "queue": true,
+      "shape": "plan",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; Alternative segmentation at native boundaries [100000, 200000]; objective 199837, delta 50007 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 100000
+    }
+  ],
+  "manifest_sha256": "c7970eb46e835788a93bf4f41eff7749e6760bf9c8b629f938ce0073a28aad61",
+  "normalization": "One row per scan decision ID; structured details supply geometry, never duplicated as extra events. Whole plan counts once. Paths converted to portable labels; original artifact hashes retained.",
+  "producer_context": {
+    "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+    "blocks": [
+      {
+        "aligned_query_bp": 49837,
+        "backbone": true,
+        "block_id": "alignment:1c58a4da281a95b537df771a",
+        "correction_eligible": true,
+        "end0": 49837,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "0612c5633c9ca625553ec77da71b4206909130361251c44131bc6ec79cafdc1c",
+          "subgenome": "A"
+        },
+        "reference_end0": 49837,
+        "reference_start0": 0,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "0612c5633c9ca625553ec77da71b4206909130361251c44131bc6ec79cafdc1c",
+            "sha256": "56974648e30e5cecb7e325228e07f37ddd0402766036f8a46d510afab4e02d6e"
+          }
+        ],
+        "start0": 0,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 50000,
+        "backbone": true,
+        "block_id": "alignment:678e5ca16aae090861fa181b",
+        "correction_eligible": true,
+        "end0": 100000,
+        "frame": "CS_D::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1D",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_D",
+          "reference_id": "CS_D",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "992d222e8559c4eb485a5d810d6977210e7702d9f54f7b265eacec1e9deff3ac",
+          "subgenome": "D"
+        },
+        "reference_end0": 100000,
+        "reference_start0": 50000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+            "dependency_group": "reference_CS_D",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_D",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_D",
+            "reference_sha256": "992d222e8559c4eb485a5d810d6977210e7702d9f54f7b265eacec1e9deff3ac",
+            "sha256": "c848dae9c085d984bec416e504bf0de36fc4dfd9c61d34f5a2484ad78038be10"
+          }
+        ],
+        "start0": 50000,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 100000,
+        "backbone": true,
+        "block_id": "alignment:5e0664d798448ce00953e55b",
+        "correction_eligible": true,
+        "end0": 200000,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "0612c5633c9ca625553ec77da71b4206909130361251c44131bc6ec79cafdc1c",
+          "subgenome": "A"
+        },
+        "reference_end0": 200000,
+        "reference_start0": 100000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "0612c5633c9ca625553ec77da71b4206909130361251c44131bc6ec79cafdc1c",
+            "sha256": "56974648e30e5cecb7e325228e07f37ddd0402766036f8a46d510afab4e02d6e"
+          }
+        ],
+        "start0": 100000,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 49830,
+        "backbone": true,
+        "block_id": "alignment:a89b388d0fb2bd5ca96ccba8",
+        "correction_eligible": true,
+        "end0": 249830,
+        "frame": "CS_D::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1D",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_D",
+          "reference_id": "CS_D",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "992d222e8559c4eb485a5d810d6977210e7702d9f54f7b265eacec1e9deff3ac",
+          "subgenome": "D"
+        },
+        "reference_end0": 49830,
+        "reference_start0": 0,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+            "dependency_group": "reference_CS_D",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_D",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_D",
+            "reference_sha256": "992d222e8559c4eb485a5d810d6977210e7702d9f54f7b265eacec1e9deff3ac",
+            "sha256": "c848dae9c085d984bec416e504bf0de36fc4dfd9c61d34f5a2484ad78038be10"
+          }
+        ],
+        "start0": 200000,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 50000,
+        "backbone": true,
+        "block_id": "alignment:3bfecf94d3df54ed820a69c6",
+        "correction_eligible": true,
+        "end0": 300000,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "0612c5633c9ca625553ec77da71b4206909130361251c44131bc6ec79cafdc1c",
+          "subgenome": "A"
+        },
+        "reference_end0": 100000,
+        "reference_start0": 50000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "0612c5633c9ca625553ec77da71b4206909130361251c44131bc6ec79cafdc1c",
+            "sha256": "56974648e30e5cecb7e325228e07f37ddd0402766036f8a46d510afab4e02d6e"
+          }
+        ],
+        "start0": 250000,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 100000,
+        "backbone": true,
+        "block_id": "alignment:11def0f51f32569ba78a94e4",
+        "correction_eligible": true,
+        "end0": 400000,
+        "frame": "CS_D::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1D",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_D",
+          "reference_id": "CS_D",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "992d222e8559c4eb485a5d810d6977210e7702d9f54f7b265eacec1e9deff3ac",
+          "subgenome": "D"
+        },
+        "reference_end0": 200000,
+        "reference_start0": 100000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef",
+            "dependency_group": "reference_CS_D",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_D",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_D",
+            "reference_sha256": "992d222e8559c4eb485a5d810d6977210e7702d9f54f7b265eacec1e9deff3ac",
+            "sha256": "c848dae9c085d984bec416e504bf0de36fc4dfd9c61d34f5a2484ad78038be10"
+          }
+        ],
+        "start0": 300000,
+        "target": "c001"
+      }
+    ],
+    "contigs": [
+      {
+        "alternatives": {
+          "emitted": 5,
+          "invalid_native_partitions": 0,
+          "paths_per_prefix": 24,
+          "raw_paths_examined": 24,
+          "status": "evaluated",
+          "unique_alternatives": 12
+        },
+        "automatic_positions": [
+          300000
+        ],
+        "automatic_scan_proposals": [
+          {
+            "action": "cut",
+            "position": 300000,
+            "reason": "2 smoothed pieces inferred from 6 alignment blocks after smoothing 4 weak transition(s) with breakpoint penalty 50000.0; planner_score=50000.0. Automatic contig plan requires review: read continuity at a proposed boundary; this boundary has 12 spanning molecules."
+          }
+        ],
+        "canonical_alignment_blocks": 6,
+        "merged_correction_blocks": 6,
+        "orientation": {
+          "eligible_events": 0,
+          "frame_intervals_below_review_floor": 0,
+          "frames": [
+            {
+              "anchor_orientation": "+",
+              "frame": "CS_A::Chr1",
+              "mapped_end0": 300000,
+              "mapped_start0": 0,
+              "status": "uniform_forward_orientation"
+            },
+            {
+              "anchor_orientation": "+",
+              "frame": "CS_D::Chr1",
+              "mapped_end0": 400000,
+              "mapped_start0": 50000,
+              "status": "uniform_forward_orientation"
+            }
+          ],
+          "omitted_by_event_cap": 0,
+          "status": "evaluated"
+        },
+        "target": "c001",
+        "trace": {
+          "after_terminal_merge": [
+            {
+              "block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:5e0664d798448ce00953e55b",
+                "alignment:678e5ca16aae090861fa181b",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "discordant_bp": 99830.0,
+              "dominant_aligned_bp": 199837,
+              "dominant_weighted_bp": 199837.0,
+              "end0": 300000,
+              "merged_block_count": 5,
+              "opposing_block_ids": [
+                "alignment:678e5ca16aae090861fa181b",
+                "alignment:a89b388d0fb2bd5ca96ccba8"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.75,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:1c58a4da281a95b537df771a",
+                "alignment:3bfecf94d3df54ed820a69c6",
+                "alignment:5e0664d798448ce00953e55b"
+              ],
+              "total_weighted_bp": 299667.0
+            },
+            {
+              "block_ids": [
+                "alignment:11def0f51f32569ba78a94e4"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 100000,
+              "dominant_weighted_bp": 100000.0,
+              "end0": 400000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_D::Chr1",
+                "+"
+              ],
+              "start0": 300000,
+              "supporting_block_ids": [
+                "alignment:11def0f51f32569ba78a94e4"
+              ],
+              "total_weighted_bp": 100000.0
+            }
+          ],
+          "best_partition": {
+            "breakpoints": 1,
+            "discordant_bp": 99830.0,
+            "groups": [
+              {
+                "block_ids": [
+                  "alignment:1c58a4da281a95b537df771a",
+                  "alignment:3bfecf94d3df54ed820a69c6",
+                  "alignment:5e0664d798448ce00953e55b",
+                  "alignment:678e5ca16aae090861fa181b",
+                  "alignment:a89b388d0fb2bd5ca96ccba8"
+                ],
+                "discordant_bp": 99830.0,
+                "dominant_aligned_bp": 199837,
+                "dominant_weighted_bp": 199837.0,
+                "end0": 300000,
+                "merged_block_count": 5,
+                "opposing_block_ids": [
+                  "alignment:678e5ca16aae090861fa181b",
+                  "alignment:a89b388d0fb2bd5ca96ccba8"
+                ],
+                "passes_group_support": true,
+                "query_span_fraction": 0.75,
+                "signature": [
+                  "CS_A::Chr1",
+                  "+"
+                ],
+                "start0": 0,
+                "supporting_block_ids": [
+                  "alignment:1c58a4da281a95b537df771a",
+                  "alignment:3bfecf94d3df54ed820a69c6",
+                  "alignment:5e0664d798448ce00953e55b"
+                ],
+                "total_weighted_bp": 299667.0
+              },
+              {
+                "block_ids": [
+                  "alignment:11def0f51f32569ba78a94e4"
+                ],
+                "discordant_bp": 0.0,
+                "dominant_aligned_bp": 100000,
+                "dominant_weighted_bp": 100000.0,
+                "end0": 400000,
+                "merged_block_count": 1,
+                "opposing_block_ids": [],
+                "passes_group_support": true,
+                "query_span_fraction": 0.25,
+                "signature": [
+                  "CS_D::Chr1",
+                  "+"
+                ],
+                "start0": 300000,
+                "supporting_block_ids": [
+                  "alignment:11def0f51f32569ba78a94e4"
+                ],
+                "total_weighted_bp": 100000.0
+              }
+            ],
+            "penalty_bp": 50000.0,
+            "total": 149830.0
+          },
+          "comparison_note": "Objective precedes terminal merging, support and breakpoint guards, and read continuity.",
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "terminal_groups_merged": false
+        }
+      }
+    ],
+    "graph_projection_warnings": [],
+    "inputs": [
+      {
+        "bytes": 3709,
+        "path": "CASE/manifest.json",
+        "sha256": "c7970eb46e835788a93bf4f41eff7749e6760bf9c8b629f938ce0073a28aad61"
+      },
+      {
+        "bytes": 405006,
+        "path": "CASE/inputs/assembly.fa",
+        "sha256": "9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef"
+      },
+      {
+        "bytes": 202506,
+        "path": "CASE/inputs/ref_CS_A.fa",
+        "sha256": "0612c5633c9ca625553ec77da71b4206909130361251c44131bc6ec79cafdc1c"
+      },
+      {
+        "bytes": 202506,
+        "path": "CASE/inputs/ref_CS_D.fa",
+        "sha256": "992d222e8559c4eb485a5d810d6977210e7702d9f54f7b265eacec1e9deff3ac"
+      },
+      {
+        "bytes": 307,
+        "path": "CASE/inputs/references.tsv",
+        "sha256": "21736722beca2870cf3f5981d269e7401124c488712f5bc1706a619b90d9fbb5"
+      },
+      {
+        "bytes": 153,
+        "path": "CASE/inputs/reference_sequences.tsv",
+        "sha256": "0ae177be032b9e925f600495b3c2f1cfede33cb7abc9c5fad5a130c2ad4b5e4d"
+      },
+      {
+        "bytes": 514,
+        "path": "CASE/evidence/CS_A.assembly.paf",
+        "sha256": "56974648e30e5cecb7e325228e07f37ddd0402766036f8a46d510afab4e02d6e"
+      },
+      {
+        "bytes": 517,
+        "path": "CASE/evidence/CS_D.assembly.paf",
+        "sha256": "c848dae9c085d984bec416e504bf0de36fc4dfd9c61d34f5a2484ad78038be10"
+      },
+      {
+        "bytes": 81056,
+        "path": "CASE/evidence/reads.assembly.paf",
+        "sha256": "2f0b0ff94e78d5f7dc161d17025accb64661b72f714496d163d273528f07c53e"
+      }
+    ],
+    "limits": {
+      "max_blocks": 128,
+      "orientation_events_per_contig": 25,
+      "policy": "Skip an inspection path above its block cap; orientation events sorted by native start/end. No automatic inputs are truncated."
+    },
+    "manifest_sha256": "c7970eb46e835788a93bf4f41eff7749e6760bf9c8b629f938ce0073a28aad61",
+    "objective_definition": {
+      "breakpoint_penalty_bp": 50000.0,
+      "calibrated_confidence": false,
+      "discordance": "sum signature weights minus maximum signature weight within each group",
+      "signature": "reference frame, plus orientation when enabled by mode",
+      "total": "sum group discordance + breakpoint_penalty_bp * (group_count - 1)",
+      "weight": "identity_percent * aligned_query_bp / 100; additive, including redundant overlaps"
+    },
+    "parameters": {
+      "alternative_plans": 5,
+      "inspect_min_orientation_bp": 1000,
+      "inspect_orientation": true,
+      "min_mapq": 20,
+      "min_segment_bp": 10000,
+      "mode": "comprehensive",
+      "review_max_blocks": 128
+    },
+    "schema": "chromosort-review-proposals-v1"
+  },
+  "scan_sha256": "6755b00c4c13d08bea407e6270f54e186b65f7abefd7c7866c2d4d955d282e9e",
+  "schema": "cycle3-normalized-review-events-v1",
+  "structured_proposals_sha256": "775499e9ce6a3b698a6e01c8102f8cc8fb019a347bfd8e81263d544fa48bd9af"
+}

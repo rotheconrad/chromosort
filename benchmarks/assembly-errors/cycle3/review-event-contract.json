@@ -1,0 +1,41 @@
+{
+  "artifact": "review_proposals.json alongside scan.json and decisions.tsv",
+  "bounded_rules": "128 canonical alignment blocks/orientation and128 merged correction blocks/alternativeDP; bounded-out contigs reported, orientation25events/contig with omitted count; alternative k-best4*(N+1) paths/prefix, unique cutsets excluding automatic emitted set, at most5requested plans; objective is additive discordance plus fixed cut penalty, no confidence threshold",
+  "event_fields": [
+    "event_id",
+    "kind",
+    "target",
+    "start0",
+    "end0",
+    "positions",
+    "decision",
+    "action",
+    "assembly_sha256",
+    "supporting_block_ids",
+    "opposing_block_ids",
+    "overlapping_block_ids",
+    "reference_frames",
+    "reasons",
+    "loss_stages",
+    "coordinate_evidence",
+    "objective",
+    "implicit_edits"
+  ],
+  "kinds": [
+    "orientation_discrepancy",
+    "alternative_segmentation"
+  ],
+  "producer_schema": "chromosort-review-proposals-v1",
+  "schema": "cycle3-accepted-event-contract-v1",
+  "semantics": "Both kinds are pending inspect events; acceptance acknowledges only; explicit workflow edit required for sequence changes. Event IDs also in decisions.tsv.",
+  "source": "Software-task pre-output contract",
+  "top_level": [
+    "assembly_sha256",
+    "manifest_sha256",
+    "inputs",
+    "parameters",
+    "blocks",
+    "contigs",
+    "events"
+  ]
+}

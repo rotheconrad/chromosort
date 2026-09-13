@@ -1,0 +1,2 @@
+schema	event_id	target	action	proposed_position	position	decision	reason	reviewer	notes	assembly_sha256
+chromosort-decision-v1	decision:e37f75d8d6a73225cf933444	c001	keep	0	0	pending	Breakpoint smoothing retained one piece: discordant support (15000.0 identity-weighted bp) did not overcome the breakpoint penalty (50000.0).			3f73d24f7bd00fef8342484fa25bab734c940d4f2b442cbdea1b18c22646cfd2

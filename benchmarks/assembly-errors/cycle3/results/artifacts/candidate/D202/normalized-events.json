@@ -1,0 +1,1805 @@
+{
+  "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+  "case_id": "D202",
+  "events": [
+    {
+      "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": null,
+      "end": 0,
+      "event_id": "decision:4f952308616be9135fc6933b",
+      "kind": "keep_acknowledgment",
+      "positions": [],
+      "queue": false,
+      "shape": "point",
+      "stage_explanation": "Breakpoint smoothing retained one piece: discordant support (40000.0 identity-weighted bp) did not overcome the breakpoint penalty (50000.0).",
+      "start": 0
+    },
+    {
+      "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+        "automatic_positions": [],
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 110000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 110001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 110000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 110000,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 135000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 135001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 135000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 135000,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 135000,
+        "event_id": "inspection:e614598aa6cf4229af5cb402",
+        "figures": [
+          {
+            "path": "figures/inspection_e614598aa6cf4229af5cb402",
+            "position": 110000
+          },
+          {
+            "path": "figures/inspection_e614598aa6cf4229af5cb402_end",
+            "position": 135000
+          }
+        ],
+        "frame_contexts": [
+          {
+            "anchor_orientation": "+",
+            "frame": "CS_A::Chr1",
+            "interval_orientation": "-",
+            "left_flank_block_ids": [
+              "alignment:a88a5f204eabc8e137c5a9fb"
+            ],
+            "mapped_end0": 300000,
+            "mapped_start0": 0,
+            "opposing_overlap_bp": 0,
+            "right_flank_block_ids": [
+              "alignment:6457a3afe7bbdb328f7c290f",
+              "alignment:a34c6140ad3e95766d561883"
+            ],
+            "status": "internal_orientation_context",
+            "supporting_additive_bp": 25000,
+            "supporting_block_ids": [
+              "alignment:3a4df99ab3ef185bb03481fd"
+            ],
+            "supporting_row_count": 1,
+            "supporting_union_bp": 25000
+          }
+        ],
+        "implicit_edits": false,
+        "kind": "orientation_discrepancy",
+        "loss_stages": [
+          "smoothed_by_objective",
+          "not_represented_at_both_automatic_boundaries"
+        ],
+        "objective": null,
+        "opposing_block_ids": [
+          "alignment:6457a3afe7bbdb328f7c290f",
+          "alignment:a34c6140ad3e95766d561883",
+          "alignment:a88a5f204eabc8e137c5a9fb"
+        ],
+        "overlapping_block_ids": [
+          "alignment:3a4df99ab3ef185bb03481fd"
+        ],
+        "positions": [
+          110000,
+          135000
+        ],
+        "reasons": [
+          "Aligned internal orientation discrepancy [110000, 135000) in 1 reference frame(s); inspect both native edges. Biological variation and alignment ambiguity remain unresolved.",
+          "Mapped evidence is covered by the alignment union, so this is distinct from unaligned-gap inspection."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1"
+        ],
+        "start0": 110000,
+        "supporting_block_ids": [
+          "alignment:3a4df99ab3ef185bb03481fd"
+        ],
+        "target": "c001"
+      },
+      "end": 135000,
+      "event_id": "inspection:e614598aa6cf4229af5cb402",
+      "kind": "orientation_discrepancy",
+      "positions": [
+        110000,
+        135000
+      ],
+      "queue": true,
+      "shape": "interval",
+      "stage_explanation": "smoothed_by_objective; not_represented_at_both_automatic_boundaries; Aligned internal orientation discrepancy [110000, 135000) in 1 reference frame(s); inspect both native edges. Biological variation and alignment ambiguity remain unresolved.; Mapped evidence is covered by the alignment union, so this is distinct from unaligned-gap inspection.",
+      "start": 110000
+    },
+    {
+      "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+        "automatic_positions": [],
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 210000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 210001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 210000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 210000,
+              "read_sample": ".",
+              "spanning_molecules": 7,
+              "spanning_read_ids": "read0000005;read0000050;read0000186;read0000257;read0000299;read0000307;read0000328"
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 225000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 225001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 225000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 225000,
+              "read_sample": ".",
+              "spanning_molecules": 9,
+              "spanning_read_ids": "read0000018;read0000028;read0000076;read0000080;read0000095;read0000190;read0000269;read0000278;read0000325"
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 225000,
+        "event_id": "inspection:92a0fa136d273ac5e770dd7b",
+        "figures": [
+          {
+            "path": "figures/inspection_92a0fa136d273ac5e770dd7b",
+            "position": 210000
+          },
+          {
+            "path": "figures/inspection_92a0fa136d273ac5e770dd7b_end",
+            "position": 225000
+          }
+        ],
+        "frame_contexts": [
+          {
+            "anchor_orientation": "+",
+            "frame": "CS_A::Chr1",
+            "interval_orientation": "-",
+            "left_flank_block_ids": [
+              "alignment:a34c6140ad3e95766d561883",
+              "alignment:a88a5f204eabc8e137c5a9fb"
+            ],
+            "mapped_end0": 300000,
+            "mapped_start0": 0,
+            "opposing_overlap_bp": 0,
+            "right_flank_block_ids": [
+              "alignment:6457a3afe7bbdb328f7c290f"
+            ],
+            "status": "internal_orientation_context",
+            "supporting_additive_bp": 15000,
+            "supporting_block_ids": [
+              "alignment:63b55b1eed4b112b755f83ec"
+            ],
+            "supporting_row_count": 1,
+            "supporting_union_bp": 15000
+          }
+        ],
+        "implicit_edits": false,
+        "kind": "orientation_discrepancy",
+        "loss_stages": [
+          "smoothed_by_objective",
+          "not_represented_at_both_automatic_boundaries"
+        ],
+        "objective": null,
+        "opposing_block_ids": [
+          "alignment:6457a3afe7bbdb328f7c290f",
+          "alignment:a34c6140ad3e95766d561883",
+          "alignment:a88a5f204eabc8e137c5a9fb"
+        ],
+        "overlapping_block_ids": [
+          "alignment:63b55b1eed4b112b755f83ec"
+        ],
+        "positions": [
+          210000,
+          225000
+        ],
+        "reasons": [
+          "Aligned internal orientation discrepancy [210000, 225000) in 1 reference frame(s); inspect both native edges. Biological variation and alignment ambiguity remain unresolved.",
+          "Mapped evidence is covered by the alignment union, so this is distinct from unaligned-gap inspection."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1"
+        ],
+        "start0": 210000,
+        "supporting_block_ids": [
+          "alignment:63b55b1eed4b112b755f83ec"
+        ],
+        "target": "c001"
+      },
+      "end": 225000,
+      "event_id": "inspection:92a0fa136d273ac5e770dd7b",
+      "kind": "orientation_discrepancy",
+      "positions": [
+        210000,
+        225000
+      ],
+      "queue": true,
+      "shape": "interval",
+      "stage_explanation": "smoothed_by_objective; not_represented_at_both_automatic_boundaries; Aligned internal orientation discrepancy [210000, 225000) in 1 reference frame(s); inspect both native edges. Biological variation and alignment ambiguity remain unresolved.; Mapped evidence is covered by the alignment union, so this is distinct from unaligned-gap inspection.",
+      "start": 210000
+    },
+    {
+      "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 109989,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 109990,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 109989,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 109989,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 135000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 135001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 135000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 135000,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 135000,
+        "event_id": "inspection:f90dd2f4771ee5162fdb5497",
+        "figures": [
+          {
+            "path": "figures/inspection_f90dd2f4771ee5162fdb5497",
+            "position": 109989
+          },
+          {
+            "path": "figures/inspection_f90dd2f4771ee5162fdb5497_end",
+            "position": 135000
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition",
+          "fails_group_support"
+        ],
+        "objective": {
+          "breakpoints": 2,
+          "delta_to_best_partition": 75000.0,
+          "discordant_bp": 15000.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 109979,
+              "dominant_weighted_bp": 109979.0,
+              "end0": 109979,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.3665966666666667,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "total_weighted_bp": 109979.0
+            },
+            {
+              "block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 25000,
+              "dominant_weighted_bp": 25000.0,
+              "end0": 135000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": false,
+              "query_span_fraction": 0.08333333333333333,
+              "signature": [
+                "CS_A::Chr1",
+                "-"
+              ],
+              "start0": 110000,
+              "supporting_block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd"
+              ],
+              "total_weighted_bp": 25000.0
+            },
+            {
+              "block_ids": [
+                "alignment:63b55b1eed4b112b755f83ec",
+                "alignment:6457a3afe7bbdb328f7c290f",
+                "alignment:a34c6140ad3e95766d561883"
+              ],
+              "discordant_bp": 15000.0,
+              "dominant_aligned_bp": 149857,
+              "dominant_weighted_bp": 149857.0,
+              "end0": 300000,
+              "merged_block_count": 3,
+              "opposing_block_ids": [
+                "alignment:63b55b1eed4b112b755f83ec"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.55,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 135000,
+              "supporting_block_ids": [
+                "alignment:6457a3afe7bbdb328f7c290f",
+                "alignment:a34c6140ad3e95766d561883"
+              ],
+              "total_weighted_bp": 164857.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 100000.0,
+          "rank": 1,
+          "total": 115000.0
+        },
+        "opposing_block_ids": [
+          "alignment:63b55b1eed4b112b755f83ec"
+        ],
+        "overlapping_block_ids": [],
+        "positions": [
+          109989,
+          135000
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [109989, 135000]; objective 115000, delta 75000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1"
+        ],
+        "start0": 109989,
+        "supporting_block_ids": [
+          "alignment:3a4df99ab3ef185bb03481fd",
+          "alignment:6457a3afe7bbdb328f7c290f",
+          "alignment:a34c6140ad3e95766d561883",
+          "alignment:a88a5f204eabc8e137c5a9fb"
+        ],
+        "target": "c001"
+      },
+      "end": 135000,
+      "event_id": "inspection:f90dd2f4771ee5162fdb5497",
+      "kind": "alternative_segmentation",
+      "positions": [
+        109989,
+        135000
+      ],
+      "queue": true,
+      "shape": "plan",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; fails_group_support; Alternative segmentation at native boundaries [109989, 135000]; objective 115000, delta 75000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 109989
+    },
+    {
+      "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 209928,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 209929,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 209928,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 209928,
+              "read_sample": ".",
+              "spanning_molecules": 7,
+              "spanning_read_ids": "read0000005;read0000050;read0000186;read0000257;read0000299;read0000307;read0000328"
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 225000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 225001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 225000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 225000,
+              "read_sample": ".",
+              "spanning_molecules": 9,
+              "spanning_read_ids": "read0000018;read0000028;read0000076;read0000080;read0000095;read0000190;read0000269;read0000278;read0000325"
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 225000,
+        "event_id": "inspection:803a0924bc3666eab5bf6308",
+        "figures": [
+          {
+            "path": "figures/inspection_803a0924bc3666eab5bf6308",
+            "position": 209928
+          },
+          {
+            "path": "figures/inspection_803a0924bc3666eab5bf6308_end",
+            "position": 225000
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition",
+          "fails_group_support"
+        ],
+        "objective": {
+          "breakpoints": 2,
+          "delta_to_best_partition": 85000.0,
+          "discordant_bp": 25000.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd",
+                "alignment:a34c6140ad3e95766d561883",
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "discordant_bp": 25000.0,
+              "dominant_aligned_bp": 184836,
+              "dominant_weighted_bp": 184836.0,
+              "end0": 209857,
+              "merged_block_count": 3,
+              "opposing_block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 0.6995233333333334,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:a34c6140ad3e95766d561883",
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "total_weighted_bp": 209836.0
+            },
+            {
+              "block_ids": [
+                "alignment:63b55b1eed4b112b755f83ec"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 15000,
+              "dominant_weighted_bp": 15000.0,
+              "end0": 225000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": false,
+              "query_span_fraction": 0.05,
+              "signature": [
+                "CS_A::Chr1",
+                "-"
+              ],
+              "start0": 210000,
+              "supporting_block_ids": [
+                "alignment:63b55b1eed4b112b755f83ec"
+              ],
+              "total_weighted_bp": 15000.0
+            },
+            {
+              "block_ids": [
+                "alignment:6457a3afe7bbdb328f7c290f"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 75000,
+              "dominant_weighted_bp": 75000.0,
+              "end0": 300000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 225000,
+              "supporting_block_ids": [
+                "alignment:6457a3afe7bbdb328f7c290f"
+              ],
+              "total_weighted_bp": 75000.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 100000.0,
+          "rank": 2,
+          "total": 125000.0
+        },
+        "opposing_block_ids": [
+          "alignment:3a4df99ab3ef185bb03481fd"
+        ],
+        "overlapping_block_ids": [],
+        "positions": [
+          209928,
+          225000
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [209928, 225000]; objective 125000, delta 85000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1"
+        ],
+        "start0": 209928,
+        "supporting_block_ids": [
+          "alignment:63b55b1eed4b112b755f83ec",
+          "alignment:6457a3afe7bbdb328f7c290f",
+          "alignment:a34c6140ad3e95766d561883",
+          "alignment:a88a5f204eabc8e137c5a9fb"
+        ],
+        "target": "c001"
+      },
+      "end": 225000,
+      "event_id": "inspection:803a0924bc3666eab5bf6308",
+      "kind": "alternative_segmentation",
+      "positions": [
+        209928,
+        225000
+      ],
+      "queue": true,
+      "shape": "plan",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; fails_group_support; Alternative segmentation at native boundaries [209928, 225000]; objective 125000, delta 85000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 209928
+    },
+    {
+      "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 109989,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 109990,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 109989,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 109989,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 135000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 135001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 135000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 135000,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 209928,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 209929,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 209928,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 209928,
+              "read_sample": ".",
+              "spanning_molecules": 7,
+              "spanning_read_ids": "read0000005;read0000050;read0000186;read0000257;read0000299;read0000307;read0000328"
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 225000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 225001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 225000,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "review_read_continuity",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 225000,
+              "read_sample": ".",
+              "spanning_molecules": 9,
+              "spanning_read_ids": "read0000018;read0000028;read0000076;read0000080;read0000095;read0000190;read0000269;read0000278;read0000325"
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 225000,
+        "event_id": "inspection:0fdc2b09d86f45669d87f938",
+        "figures": [
+          {
+            "path": "figures/inspection_0fdc2b09d86f45669d87f938",
+            "position": 109989
+          },
+          {
+            "path": "figures/inspection_0fdc2b09d86f45669d87f938_end",
+            "position": 135000
+          },
+          {
+            "path": "figures/inspection_0fdc2b09d86f45669d87f938_boundary3",
+            "position": 209928
+          },
+          {
+            "path": "figures/inspection_0fdc2b09d86f45669d87f938_boundary4",
+            "position": 225000
+          }
+        ],
+        "frame_contexts": [],
+        "implicit_edits": false,
+        "kind": "alternative_segmentation",
+        "loss_stages": [
+          "alternative_partition_for_review",
+          "higher_objective_than_best_partition",
+          "fails_group_support"
+        ],
+        "objective": {
+          "breakpoints": 4,
+          "delta_to_best_partition": 160000.0,
+          "discordant_bp": 0.0,
+          "groups": [
+            {
+              "block_ids": [
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 109979,
+              "dominant_weighted_bp": 109979.0,
+              "end0": 109979,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.3665966666666667,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "total_weighted_bp": 109979.0
+            },
+            {
+              "block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 25000,
+              "dominant_weighted_bp": 25000.0,
+              "end0": 135000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": false,
+              "query_span_fraction": 0.08333333333333333,
+              "signature": [
+                "CS_A::Chr1",
+                "-"
+              ],
+              "start0": 110000,
+              "supporting_block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd"
+              ],
+              "total_weighted_bp": 25000.0
+            },
+            {
+              "block_ids": [
+                "alignment:a34c6140ad3e95766d561883"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 74857,
+              "dominant_weighted_bp": 74857.0,
+              "end0": 209857,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.24952333333333335,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 135000,
+              "supporting_block_ids": [
+                "alignment:a34c6140ad3e95766d561883"
+              ],
+              "total_weighted_bp": 74857.0
+            },
+            {
+              "block_ids": [
+                "alignment:63b55b1eed4b112b755f83ec"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 15000,
+              "dominant_weighted_bp": 15000.0,
+              "end0": 225000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": false,
+              "query_span_fraction": 0.05,
+              "signature": [
+                "CS_A::Chr1",
+                "-"
+              ],
+              "start0": 210000,
+              "supporting_block_ids": [
+                "alignment:63b55b1eed4b112b755f83ec"
+              ],
+              "total_weighted_bp": 15000.0
+            },
+            {
+              "block_ids": [
+                "alignment:6457a3afe7bbdb328f7c290f"
+              ],
+              "discordant_bp": 0.0,
+              "dominant_aligned_bp": 75000,
+              "dominant_weighted_bp": 75000.0,
+              "end0": 300000,
+              "merged_block_count": 1,
+              "opposing_block_ids": [],
+              "passes_group_support": true,
+              "query_span_fraction": 0.25,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 225000,
+              "supporting_block_ids": [
+                "alignment:6457a3afe7bbdb328f7c290f"
+              ],
+              "total_weighted_bp": 75000.0
+            }
+          ],
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "penalty_bp": 200000.0,
+          "rank": 3,
+          "total": 200000.0
+        },
+        "opposing_block_ids": [],
+        "overlapping_block_ids": [],
+        "positions": [
+          109989,
+          135000,
+          209928,
+          225000
+        ],
+        "reasons": [
+          "Alternative segmentation at native boundaries [109989, 135000, 209928, 225000]; objective 200000, delta 160000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.",
+          "Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1"
+        ],
+        "start0": 109989,
+        "supporting_block_ids": [
+          "alignment:3a4df99ab3ef185bb03481fd",
+          "alignment:63b55b1eed4b112b755f83ec",
+          "alignment:6457a3afe7bbdb328f7c290f",
+          "alignment:a34c6140ad3e95766d561883",
+          "alignment:a88a5f204eabc8e137c5a9fb"
+        ],
+        "target": "c001"
+      },
+      "end": 225000,
+      "event_id": "inspection:0fdc2b09d86f45669d87f938",
+      "kind": "alternative_segmentation",
+      "positions": [
+        109989,
+        135000,
+        209928,
+        225000
+      ],
+      "queue": true,
+      "shape": "plan",
+      "stage_explanation": "alternative_partition_for_review; higher_objective_than_best_partition; fails_group_support; Alternative segmentation at native boundaries [109989, 135000, 209928, 225000]; objective 200000, delta 160000 to the best pre-guard partition. These units are identity-weighted aligned bases, not confidence.; Bounded search precedes terminal merging and automatic guards. Select each desired cut explicitly; acknowledging this event makes no edit.",
+      "start": 109989
+    }
+  ],
+  "manifest_sha256": "0392bc7c40d2e514c12714624afd01fe86791d4c61fdf9b898fe7ca04a1a00f9",
+  "normalization": "One row per scan decision ID; structured details supply geometry, never duplicated as extra events. Whole plan counts once. Paths converted to portable labels; original artifact hashes retained.",
+  "producer_context": {
+    "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+    "blocks": [
+      {
+        "aligned_query_bp": 109979,
+        "backbone": true,
+        "block_id": "alignment:a88a5f204eabc8e137c5a9fb",
+        "correction_eligible": true,
+        "end0": 109979,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+          "subgenome": "A"
+        },
+        "reference_end0": 109979,
+        "reference_start0": 0,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+            "sha256": "d5efb74e118e36a98c9eaed935f9753cf21679c5b0d8ee6f9b74cb61a51f9b63"
+          }
+        ],
+        "start0": 0,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 25000,
+        "backbone": true,
+        "block_id": "alignment:3a4df99ab3ef185bb03481fd",
+        "correction_eligible": true,
+        "end0": 135000,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "-",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+          "subgenome": "A"
+        },
+        "reference_end0": 135000,
+        "reference_start0": 110000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+            "sha256": "d5efb74e118e36a98c9eaed935f9753cf21679c5b0d8ee6f9b74cb61a51f9b63"
+          }
+        ],
+        "start0": 110000,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 74857,
+        "backbone": true,
+        "block_id": "alignment:a34c6140ad3e95766d561883",
+        "correction_eligible": true,
+        "end0": 209857,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+          "subgenome": "A"
+        },
+        "reference_end0": 209857,
+        "reference_start0": 135000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+            "sha256": "d5efb74e118e36a98c9eaed935f9753cf21679c5b0d8ee6f9b74cb61a51f9b63"
+          }
+        ],
+        "start0": 135000,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 15000,
+        "backbone": true,
+        "block_id": "alignment:63b55b1eed4b112b755f83ec",
+        "correction_eligible": true,
+        "end0": 225000,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "-",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+          "subgenome": "A"
+        },
+        "reference_end0": 225000,
+        "reference_start0": 210000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+            "sha256": "d5efb74e118e36a98c9eaed935f9753cf21679c5b0d8ee6f9b74cb61a51f9b63"
+          }
+        ],
+        "start0": 210000,
+        "target": "c001"
+      },
+      {
+        "aligned_query_bp": 75000,
+        "backbone": true,
+        "block_id": "alignment:6457a3afe7bbdb328f7c290f",
+        "correction_eligible": true,
+        "end0": 300000,
+        "frame": "CS_A::Chr1",
+        "identity_percent": 100.0,
+        "loss_stages": [],
+        "mapq": 60,
+        "orientation": "+",
+        "reference": {
+          "backbone": true,
+          "chromosome": "1A",
+          "copy_label": "",
+          "homoeolog_group": "",
+          "output_group": "wheat_A",
+          "reference_id": "CS_A",
+          "role": "backbone",
+          "sequence_id": "Chr1",
+          "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+          "subgenome": "A"
+        },
+        "reference_end0": 300000,
+        "reference_start0": 225000,
+        "row_count": 1,
+        "sources": [
+          {
+            "assembly_sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54",
+            "dependency_group": "reference_CS_A",
+            "evidence_class": "mapped_assembly",
+            "evidence_id": "asm_CS_A",
+            "kind": "assembly_paf",
+            "origin_id": null,
+            "reference_id": "CS_A",
+            "reference_sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32",
+            "sha256": "d5efb74e118e36a98c9eaed935f9753cf21679c5b0d8ee6f9b74cb61a51f9b63"
+          }
+        ],
+        "start0": 225000,
+        "target": "c001"
+      }
+    ],
+    "contigs": [
+      {
+        "alternatives": {
+          "emitted": 3,
+          "invalid_native_partitions": 0,
+          "paths_per_prefix": 24,
+          "raw_paths_examined": 16,
+          "status": "evaluated",
+          "unique_alternatives": 3
+        },
+        "automatic_positions": [],
+        "automatic_scan_proposals": [
+          {
+            "action": "keep",
+            "position": 0,
+            "reason": "Breakpoint smoothing retained one piece: discordant support (40000.0 identity-weighted bp) did not overcome the breakpoint penalty (50000.0)."
+          }
+        ],
+        "canonical_alignment_blocks": 5,
+        "merged_correction_blocks": 5,
+        "orientation": {
+          "eligible_events": 2,
+          "frame_intervals_below_review_floor": 0,
+          "frames": [
+            {
+              "anchor_orientation": "+",
+              "frame": "CS_A::Chr1",
+              "mapped_end0": 300000,
+              "mapped_start0": 0,
+              "status": "internal_orientation_context"
+            }
+          ],
+          "omitted_by_event_cap": 0,
+          "status": "evaluated"
+        },
+        "target": "c001",
+        "trace": {
+          "after_terminal_merge": [
+            {
+              "block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd",
+                "alignment:63b55b1eed4b112b755f83ec",
+                "alignment:6457a3afe7bbdb328f7c290f",
+                "alignment:a34c6140ad3e95766d561883",
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "discordant_bp": 40000.0,
+              "dominant_aligned_bp": 259836,
+              "dominant_weighted_bp": 259836.0,
+              "end0": 300000,
+              "merged_block_count": 5,
+              "opposing_block_ids": [
+                "alignment:3a4df99ab3ef185bb03481fd",
+                "alignment:63b55b1eed4b112b755f83ec"
+              ],
+              "passes_group_support": true,
+              "query_span_fraction": 1.0,
+              "signature": [
+                "CS_A::Chr1",
+                "+"
+              ],
+              "start0": 0,
+              "supporting_block_ids": [
+                "alignment:6457a3afe7bbdb328f7c290f",
+                "alignment:a34c6140ad3e95766d561883",
+                "alignment:a88a5f204eabc8e137c5a9fb"
+              ],
+              "total_weighted_bp": 299836.0
+            }
+          ],
+          "best_partition": {
+            "breakpoints": 0,
+            "discordant_bp": 40000.0,
+            "groups": [
+              {
+                "block_ids": [
+                  "alignment:3a4df99ab3ef185bb03481fd",
+                  "alignment:63b55b1eed4b112b755f83ec",
+                  "alignment:6457a3afe7bbdb328f7c290f",
+                  "alignment:a34c6140ad3e95766d561883",
+                  "alignment:a88a5f204eabc8e137c5a9fb"
+                ],
+                "discordant_bp": 40000.0,
+                "dominant_aligned_bp": 259836,
+                "dominant_weighted_bp": 259836.0,
+                "end0": 300000,
+                "merged_block_count": 5,
+                "opposing_block_ids": [
+                  "alignment:3a4df99ab3ef185bb03481fd",
+                  "alignment:63b55b1eed4b112b755f83ec"
+                ],
+                "passes_group_support": true,
+                "query_span_fraction": 1.0,
+                "signature": [
+                  "CS_A::Chr1",
+                  "+"
+                ],
+                "start0": 0,
+                "supporting_block_ids": [
+                  "alignment:6457a3afe7bbdb328f7c290f",
+                  "alignment:a34c6140ad3e95766d561883",
+                  "alignment:a88a5f204eabc8e137c5a9fb"
+                ],
+                "total_weighted_bp": 299836.0
+              }
+            ],
+            "penalty_bp": 0.0,
+            "total": 40000.0
+          },
+          "comparison_note": "Objective precedes terminal merging, support and breakpoint guards, and read continuity.",
+          "include_orientation": true,
+          "objective_comparable_to_automatic": true,
+          "terminal_groups_merged": false
+        }
+      }
+    ],
+    "graph_projection_warnings": [],
+    "inputs": [
+      {
+        "bytes": 2884,
+        "path": "CASE/manifest.json",
+        "sha256": "0392bc7c40d2e514c12714624afd01fe86791d4c61fdf9b898fe7ca04a1a00f9"
+      },
+      {
+        "bytes": 303756,
+        "path": "CASE/inputs/assembly.fa",
+        "sha256": "515bb8242b3eea01f4fd0619cecada1098c18da033a9faf6945d110659f08a54"
+      },
+      {
+        "bytes": 303756,
+        "path": "CASE/inputs/ref_CS_A.fa",
+        "sha256": "afdb463e944723ee7376e98053161ccdd8060ac9bdec9ab058debf29f5022d32"
+      },
+      {
+        "bytes": 185,
+        "path": "CASE/inputs/references.tsv",
+        "sha256": "83370739cb21b2b20ff7d181874f400efda6052aa4618a6a95358cf9e9299347"
+      },
+      {
+        "bytes": 124,
+        "path": "CASE/inputs/reference_sequences.tsv",
+        "sha256": "82386128261962f42612cd4b7175d2bc1c9319e65d432754b74808feda270af3"
+      },
+      {
+        "bytes": 860,
+        "path": "CASE/evidence/CS_A.assembly.paf",
+        "sha256": "d5efb74e118e36a98c9eaed935f9753cf21679c5b0d8ee6f9b74cb61a51f9b63"
+      },
+      {
+        "bytes": 65791,
+        "path": "CASE/evidence/reads.assembly.paf",
+        "sha256": "36cfb0aa20ad976e3b2bcb679a3f14a7829c6bda9b1988781145d71b9a474eef"
+      }
+    ],
+    "limits": {
+      "max_blocks": 128,
+      "orientation_events_per_contig": 25,
+      "policy": "Skip an inspection path above its block cap; orientation events sorted by native start/end. No automatic inputs are truncated."
+    },
+    "manifest_sha256": "0392bc7c40d2e514c12714624afd01fe86791d4c61fdf9b898fe7ca04a1a00f9",
+    "objective_definition": {
+      "breakpoint_penalty_bp": 50000.0,
+      "calibrated_confidence": false,
+      "discordance": "sum signature weights minus maximum signature weight within each group",
+      "signature": "reference frame, plus orientation when enabled by mode",
+      "total": "sum group discordance + breakpoint_penalty_bp * (group_count - 1)",
+      "weight": "identity_percent * aligned_query_bp / 100; additive, including redundant overlaps"
+    },
+    "parameters": {
+      "alternative_plans": 5,
+      "inspect_min_orientation_bp": 1000,
+      "inspect_orientation": true,
+      "min_mapq": 20,
+      "min_segment_bp": 10000,
+      "mode": "comprehensive",
+      "review_max_blocks": 128
+    },
+    "schema": "chromosort-review-proposals-v1"
+  },
+  "scan_sha256": "ba1f9cd87d09ea1d63211aa231b43af53a2c1200d566620c58ac6b30b4ce54c4",
+  "schema": "cycle3-normalized-review-events-v1",
+  "structured_proposals_sha256": "411f41326de631079dc15afc2cdb114d4dce97c6d6c2bfbe2100b23524239938"
+}

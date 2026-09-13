@@ -1,0 +1,17 @@
+{
+  "amendments": [
+    {
+      "case_id": "D206",
+      "change": "Accept a single exact reverse mapping that covers the fixed nested interval 70500..77500 with equal query/reference native coordinates; derive the same7kb nested row. Error, nested coordinates, sequences and read model unchanged.",
+      "failed_attempt": "Preserved in ignored work/cycle3/panel; fresh complete generation uses work/cycle3/panel-v1",
+      "id": "A001",
+      "new_cases_sha256": "379194bbd169db23b00cad43a3b7c23fa6774b369f42857738170348f5bfb516",
+      "not_a_candidate_change": "No curation software output or evaluator score existed when this source-mapping construction amendment was made",
+      "observation": "The fixed 70000..78000 inverted sequence maps as 70001..77999 with cg:7998M, trimming one identical edge base at each side. The original construction guard demanded an exact8000M row and stopped.",
+      "old_cases_sha256": "3e37d2c26bd8ca334c1e7cbb63033b4e86e4e3fa5029d010cc77e77e5285221c",
+      "old_generator_sha256": "e7fd14509d54437d6dd17229693116641bbeb9e408435326840a135c0fc7f528",
+      "phase": "Before protocol freeze, before any baseline or candidate ChromoSort outputs"
+    }
+  ],
+  "schema": "cycle3-construction-amendments-v1"
+}

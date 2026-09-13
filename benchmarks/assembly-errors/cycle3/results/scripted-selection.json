@@ -1,0 +1,341 @@
+[
+  {
+    "case_id": "D201",
+    "classification": "Oracle event selection against frozen error interval, using emitted endpoints without refinement; not blinded judgment or automatic discovery",
+    "replay_identical": null,
+    "role": "baseline",
+    "run_sha256": "cb43550fce2d351262c5399166c460d01071ee2a3dc071cf52f3aefd6c35f899",
+    "selected_event": null,
+    "status": "unavailable_no_matching_interval",
+    "validation_state": null
+  },
+  {
+    "case_id": "D201",
+    "classification": "Oracle event selection against frozen error interval, using emitted endpoints without refinement; not blinded judgment or automatic discovery",
+    "replay_identical": true,
+    "role": "candidate",
+    "run_sha256": "c106f36f9c4b31e427fedbb456a3b033d827a146ed1174dfda08986de4444d6a",
+    "score": {
+      "case_id": "D201",
+      "complete_structure": false,
+      "complete_target_count": 0,
+      "frozen_score": {
+        "assignments": {
+          "ambiguous_required_bp": null,
+          "assigned_bp": null,
+          "correct_assigned_bp": null,
+          "status": "not_supplied"
+        },
+        "breakpoint_localization_error_bp": [
+          1,
+          1
+        ],
+        "case_id": "D201",
+        "cut_precision": 1.0,
+        "cut_recall": 1.0,
+        "events": [
+          {
+            "all_expected_breakpoints_localized": true,
+            "break_recall": 1.0,
+            "event_id": "E001",
+            "expected_breakpoints": 2,
+            "kind": "orientation",
+            "matched_breakpoints": 2
+          }
+        ],
+        "expected_error_breakpoints": 2,
+        "false_breakpoints": 0,
+        "false_breakpoints_per_callable_mb": 0.0,
+        "input_bp": 300000,
+        "input_duplicated_bp": 0,
+        "input_retained_bp": 300000,
+        "input_unaccounted_bp": 0,
+        "interpretation": "Cut localization is not full repair. Read retention, copy counts, structural discrepancies and control continuity jointly. Missing/discarded input needs an external policy ledger before claiming accounted retain-all.",
+        "ledger_sha256": "40b17768a9c9098436bfd1f83f20238b947e79b294305e8530ee85dd87cda546",
+        "matched_error_breakpoints": 2,
+        "new_breakpoints": 2,
+        "output_gap_bp": 0,
+        "output_sha256": "9b1dee7b73ebb39bd017173540e61ad4089c6a52a9c0aaa88041d5198c0efe75",
+        "preservation_controls": [
+          {
+            "callable_bp": 19000,
+            "continuous": true,
+            "interval_bp": 19000,
+            "kind": "simulated_biological_inversion",
+            "retained_bp": 19000,
+            "variant_id": "V001"
+          }
+        ],
+        "retain_all_exact": true,
+        "schema": "benchmark-score-v1",
+        "sequence_provenance_valid": true,
+        "target_callable_bp": 300000,
+        "target_extra_copy_callable_bp": 0,
+        "target_masked_bp": 0,
+        "target_missing_callable_bp": 0,
+        "target_relation_discrepancies": [
+          {
+            "gap_error_bp": null,
+            "kind": "orientation_or_interchromosomal",
+            "output_gap": 0,
+            "output_id": "c001",
+            "output_position": 70000,
+            "target_gap": null
+          },
+          {
+            "gap_error_bp": null,
+            "kind": "orientation_or_interchromosomal",
+            "output_gap": 0,
+            "output_id": "c001",
+            "output_position": 70001,
+            "target_gap": null
+          },
+          {
+            "gap_error_bp": null,
+            "kind": "orientation_or_interchromosomal",
+            "output_gap": 0,
+            "output_id": "c001",
+            "output_position": 77999,
+            "target_gap": null
+          },
+          {
+            "gap_error_bp": null,
+            "kind": "orientation_or_interchromosomal",
+            "output_gap": 0,
+            "output_id": "c001",
+            "output_position": 78000,
+            "target_gap": null
+          }
+        ],
+        "target_relation_discrepancy_count": 4,
+        "target_retained_callable_bp": 300000,
+        "target_retention": 1.0,
+        "truth_sha256": "2f7c53f0cb0c9f330ca8233ae1080bbf9945756ffe90bbd2eb130eddcf3bffb3"
+      },
+      "interpretation": "Exact full target paths by provenance, including masked bases; fragmentation is incomplete. Whole-record reverse complement and output record order are free. This is stricter than cut localization.",
+      "outputs": [
+        {
+          "complete_target_id": null,
+          "complete_target_path": false,
+          "output_id": "c001"
+        }
+      ],
+      "schema": "benchmark-complete-structure-v1",
+      "target_count": 1,
+      "targets": {
+        "t01": false
+      }
+    },
+    "selected_event": {
+      "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": {
+        "action": "inspect",
+        "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+        "automatic_positions": [],
+        "coordinate_evidence": [
+          {
+            "graph": {
+              "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 70001,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 70002,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 70001,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "e7540eb758d75909cdf1e291955b9368f507cd1254d91ae1c1b7fd1fed6630ed",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 70001,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          },
+          {
+            "graph": {
+              "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+              "evidence_id": null,
+              "evidence_sha256": null,
+              "interpretation": "Graph coordinate context does not establish error or continuity.",
+              "sides": {
+                "left_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 77999,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                },
+                "right_base": {
+                  "containing_unitig": ".",
+                  "contig": "c001",
+                  "distance_to_nearest_unitig_boundary": null,
+                  "graph_in_degree": null,
+                  "graph_out_degree": null,
+                  "near_path_step_boundary": null,
+                  "nearest_graph_junction": ".",
+                  "path_step_boundary_distance": null,
+                  "position_1": 78000,
+                  "status": "no_projection",
+                  "unitig_offset_0": null,
+                  "unitig_orientation": "."
+                }
+              },
+              "status": "unavailable_no_graph"
+            },
+            "position": 77999,
+            "reads": {
+              "alignments_without_cigar": 0,
+              "anchor_bp": 1000,
+              "assembly_sha256": "82190e003148c6ed91caca9f07969d353210202fdaded7ccd4e1df7076ee9dd2",
+              "automatic_action": "unchanged",
+              "contig": "c001",
+              "continuity_status": "no_spanning_conflict",
+              "dependency_group": "sim01",
+              "evidence_id": "reads_sim01",
+              "evidence_kind": "read_paf",
+              "evidence_sha256": "e7540eb758d75909cdf1e291955b9368f507cd1254d91ae1c1b7fd1fed6630ed",
+              "min_mapq": 20,
+              "min_spanning": 2,
+              "policy": "report",
+              "position": 77999,
+              "read_sample": ".",
+              "spanning_molecules": 0,
+              "spanning_read_ids": "."
+            }
+          }
+        ],
+        "decision": "pending",
+        "end0": 77999,
+        "event_id": "inspection:96f4818486dbb668e872cfd4",
+        "figures": [
+          {
+            "path": "figures/inspection_96f4818486dbb668e872cfd4",
+            "position": 70001
+          },
+          {
+            "path": "figures/inspection_96f4818486dbb668e872cfd4_end",
+            "position": 77999
+          }
+        ],
+        "frame_contexts": [
+          {
+            "anchor_orientation": "+",
+            "frame": "CS_A::Chr1",
+            "interval_orientation": "-",
+            "left_flank_block_ids": [
+              "alignment:e1b1d063bc6bd940b03f4b91"
+            ],
+            "mapped_end0": 300000,
+            "mapped_start0": 0,
+            "opposing_overlap_bp": 0,
+            "right_flank_block_ids": [
+              "alignment:6412e51e6ff6ead4880ef217",
+              "alignment:81a15edd474be58ed102adaa"
+            ],
+            "status": "internal_orientation_context",
+            "supporting_additive_bp": 7998,
+            "supporting_block_ids": [
+              "alignment:901ea884ae416b3de75eb8fb"
+            ],
+            "supporting_row_count": 1,
+            "supporting_union_bp": 7998
+          }
+        ],
+        "implicit_edits": false,
+        "kind": "orientation_discrepancy",
+        "loss_stages": [
+          "below_correction_segment_floor",
+          "not_represented_at_both_automatic_boundaries"
+        ],
+        "objective": null,
+        "opposing_block_ids": [
+          "alignment:6412e51e6ff6ead4880ef217",
+          "alignment:81a15edd474be58ed102adaa",
+          "alignment:e1b1d063bc6bd940b03f4b91"
+        ],
+        "overlapping_block_ids": [
+          "alignment:901ea884ae416b3de75eb8fb"
+        ],
+        "positions": [
+          70001,
+          77999
+        ],
+        "reasons": [
+          "Aligned internal orientation discrepancy [70001, 77999) in 1 reference frame(s); inspect both native edges. Biological variation and alignment ambiguity remain unresolved.",
+          "Mapped evidence is covered by the alignment union, so this is distinct from unaligned-gap inspection."
+        ],
+        "reference_frames": [
+          "CS_A::Chr1"
+        ],
+        "start0": 70001,
+        "supporting_block_ids": [
+          "alignment:901ea884ae416b3de75eb8fb"
+        ],
+        "target": "c001"
+      },
+      "end": 77999,
+      "event_id": "inspection:96f4818486dbb668e872cfd4",
+      "kind": "orientation_discrepancy",
+      "positions": [
+        70001,
+        77999
+      ],
+      "queue": true,
+      "shape": "interval",
+      "stage_explanation": "below_correction_segment_floor; not_represented_at_both_automatic_boundaries; Aligned internal orientation discrepancy [70001, 77999) in 1 reference frame(s); inspect both native edges. Biological variation and alignment ambiguity remain unresolved.; Mapped evidence is covered by the alignment union, so this is distinct from unaligned-gap inspection.",
+      "start": 70001
+    },
+    "status": "complete",
+    "validation_state": "identity_and_component_reconstruction_validated"
+  }
+]

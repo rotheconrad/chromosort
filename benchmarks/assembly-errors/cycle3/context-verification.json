@@ -1,0 +1,10 @@
+{
+  "cases": 10,
+  "coordinate_evidence_records": 60,
+  "input_records": 74,
+  "interpretation": "Exact stage and evidence byte identities checked against regenerated public inputs; no biological correctness inferred from explanatory labels.",
+  "mapping_blocks": 42,
+  "schema": "cycle3-public-context-verification-v1",
+  "status": "pass",
+  "structured_events": 29
+}

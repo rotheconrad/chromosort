@@ -1,0 +1,33 @@
+cohort	case_id	event_id	kind	shape	positions	matched_error_ids	biological_burden	clean_burden	loss_stages	objective_rank	objective_total	objective_delta	structured_coordinate_count
+primary	D201	inspection:96f4818486dbb668e872cfd4	orientation_discrepancy	interval	70001,77999	E001	False	False	below_correction_segment_floor;not_represented_at_both_automatic_boundaries				2
+primary	D201	inspection:6ffa025545685cd3bc4331dc	orientation_discrepancy	interval	210000,225000		True	False	smoothed_by_objective;not_represented_at_both_automatic_boundaries				2
+primary	D201	inspection:c198495aece302cfa82aecab	alternative_segmentation	plan	209928,225000		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	1	100000.0	85000.0	2
+primary	D202	inspection:e614598aa6cf4229af5cb402	orientation_discrepancy	interval	110000,135000	E001	False	False	smoothed_by_objective;not_represented_at_both_automatic_boundaries				2
+primary	D202	inspection:92a0fa136d273ac5e770dd7b	orientation_discrepancy	interval	210000,225000		True	False	smoothed_by_objective;not_represented_at_both_automatic_boundaries				2
+primary	D202	inspection:f90dd2f4771ee5162fdb5497	alternative_segmentation	plan	109989,135000		False	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	1	115000.0	75000.0	2
+primary	D202	inspection:803a0924bc3666eab5bf6308	alternative_segmentation	plan	209928,225000		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	2	125000.0	85000.0	2
+primary	D202	inspection:0fdc2b09d86f45669d87f938	alternative_segmentation	plan	109989,135000,209928,225000		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	3	200000.0	160000.0	4
+primary	D203	inspection:f39016df28325df13e41617c	orientation_discrepancy	interval	210000,225000		True	False	smoothed_by_objective;not_represented_at_both_automatic_boundaries				2
+primary	D203	inspection:44785cbaa3148bd8f0687ab9	alternative_segmentation	plan	209928,225000		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	1	100000.0	85000.0	2
+primary	D206	inspection:96f4818486dbb668e872cfd4	orientation_discrepancy	interval	70001,77999	E001	False	False	below_correction_segment_floor;not_represented_at_both_automatic_boundaries				2
+primary	D206	inspection:6ffa025545685cd3bc4331dc	orientation_discrepancy	interval	210000,225000		True	False	smoothed_by_objective;not_represented_at_both_automatic_boundaries				2
+primary	D206	inspection:c198495aece302cfa82aecab	alternative_segmentation	plan	209928,225000		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	1	100000.0	55000.0	2
+primary	D207	decision:34cbc45c9edacc40b5607972	automatic_cut_proposal	point	300000		True	False					0
+primary	D207	inspection:399bd8335bda0b12485f069e	alternative_segmentation	point	200000	E001	False	False	alternative_partition_for_review;higher_objective_than_best_partition	1	150000.0	170.0	1
+primary	D207	inspection:0723edbd74aba57ae3560db8	alternative_segmentation	plan	100000,300000		True	False	alternative_partition_for_review;higher_objective_than_best_partition	2	199667.0	49837.0	2
+primary	D207	inspection:4ecec76b27e273c9f9e44abf	alternative_segmentation	point	249915		True	False	alternative_partition_for_review;higher_objective_than_best_partition	3	199830.0	50000.0	1
+primary	D207	inspection:232baf1663ef8c0b190a8392	alternative_segmentation	plan	49918,100000,300000		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	4	199830.0	50000.0	3
+primary	D207	inspection:d79a4e6573fd53b74583a943	alternative_segmentation	plan	100000,200000		True	False	alternative_partition_for_review;higher_objective_than_best_partition	5	199837.0	50007.0	2
+known	D101	decision:8811fdd847079c5cb8045dcd	automatic_cut_proposal	point	320010		True	False					0
+known	D101	inspection:28d27331e1e0e3b0a86b16cd	alternative_segmentation	point	200000	E001	False	False	alternative_partition_for_review;higher_objective_than_best_partition	1	170002.0	95.0	1
+known	D101	inspection:f03be16b424ff7529aa2d310	alternative_segmentation	point	59958		True	False	alternative_partition_for_review;higher_objective_than_best_partition	2	189990.0	20083.0	1
+known	D101	inspection:d7fb8a2c790c8f3700a296e8	alternative_segmentation	plan	59958,120006,320010		True	False	alternative_partition_for_review;higher_objective_than_best_partition	3	209906.0	39999.0	3
+known	D101	inspection:d960d68f8eb080dc810eb32b	alternative_segmentation	plan	59958,120006,200000		True	False	alternative_partition_for_review;higher_objective_than_best_partition	4	210001.0	40094.0	3
+known	D101	inspection:55b08ce21ef1ea398b47ce45	alternative_segmentation	plan	200000,259953,320010		True	False	alternative_partition_for_review;higher_objective_than_best_partition	5	210001.0	40094.0	3
+known	D012	decision:38174d8d01028c63db66fae3	unaligned_gap	interval	189826,205000		True	False					0
+known	D012	inspection:bc4a27a5e0a68e467fb0bb43	orientation_discrepancy	interval	151000,176000	E001	False	False	overlapping_opposite_orientation_evidence;smoothed_by_objective;not_represented_at_both_automatic_boundaries				2
+known	D012	inspection:7cf6d51c4e28433aa8d50613	alternative_segmentation	plan	155618,175252		False	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	1	100000.0	75058.0	2
+known	D012	inspection:a227bb710fe2953424489bcc	alternative_segmentation	plan	155618,197413		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	2	110133.40743952137	85191.40743952137	2
+known	D108	inspection:ea2613c44de1c9d32b48ba77	orientation_discrepancy	interval	151000,159000	E001	False	False	below_correction_segment_floor;not_represented_at_both_automatic_boundaries				2
+known	D108	inspection:a3073151ca15207aac4c79a8	orientation_discrepancy	interval	190000,205000		True	False	smoothed_by_objective;not_represented_at_both_automatic_boundaries				2
+known	D108	inspection:77ba697c056dfbec8568c6d4	alternative_segmentation	plan	189913,205000		True	False	alternative_partition_for_review;higher_objective_than_best_partition;fails_group_support	1	100000.0	85000.0	2

@@ -1,0 +1,28 @@
+{
+  "assembly_sha256": "3fa71ebe9142b157084cb2abc4b9624fd00ca5bacb7baa4864857abfe8fe9bb6",
+  "case_id": "D101",
+  "events": [
+    {
+      "assembly_sha256": "3fa71ebe9142b157084cb2abc4b9624fd00ca5bacb7baa4864857abfe8fe9bb6",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": null,
+      "end": 320010,
+      "event_id": "decision:8811fdd847079c5cb8045dcd",
+      "kind": "automatic_cut_proposal",
+      "positions": [
+        320010
+      ],
+      "queue": true,
+      "shape": "point",
+      "stage_explanation": "2 smoothed pieces inferred from 6 alignment blocks after smoothing 4 weak transition(s) with breakpoint penalty 50000.0; planner_score=29980.0. Automatic contig plan requires review: read continuity at a proposed boundary; this boundary has 11 spanning molecules.",
+      "start": 320010
+    }
+  ],
+  "manifest_sha256": "567f2d1a5bc93b9dbe2cdc5aadafd2a78e688b2b14aa80e4d006fde60e1de474",
+  "normalization": "One row per scan decision ID; structured details supply geometry, never duplicated as extra events. Whole plan counts once. Paths converted to portable labels; original artifact hashes retained.",
+  "producer_context": null,
+  "scan_sha256": "7c1c3dbd1b71cfa30a50580d17cf73641f3e77133e3ce38edde42f6e0251b5b4",
+  "schema": "cycle3-normalized-review-events-v1",
+  "structured_proposals_sha256": null
+}

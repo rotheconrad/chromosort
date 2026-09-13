@@ -1,0 +1,11 @@
+cohort	case_id	contig	canonical_blocks	merged_correction_blocks	orientation_status	orientation_events	orientation_omitted	alternative_status	alternative_paths_examined	unique_alternatives	emitted_alternatives	frame_contexts
+primary	D201	c001	5	4	evaluated	2	0	evaluated	8	1	1	CS_A::Chr1:internal_orientation_context
+primary	D202	c001	5	5	evaluated	2	0	evaluated	16	3	3	CS_A::Chr1:internal_orientation_context
+primary	D203	c001	3	3	evaluated	1	0	evaluated	4	1	1	CS_A::Chr1:internal_orientation_context
+primary	D204	c001	1	1	evaluated	0	0	evaluated	1	0	0	CS_A::Chr1:uniform_forward_orientation
+primary	D205	c001	1	1	evaluated	0	0	evaluated	1	0	0	CS_A::Chr1:whole_record_orientation
+primary	D206	c001	6	4	evaluated	2	0	evaluated	8	1	1	CS_A::Chr1:internal_orientation_context
+primary	D207	c001	6	6	evaluated	0	0	evaluated	24	12	5	CS_A::Chr1:uniform_forward_orientation;CS_D::Chr1:uniform_forward_orientation
+known	D101	c001	6	6	evaluated	0	0	evaluated	24	13	5	CS_A::Chr1:uniform_forward_orientation;CS_D::Chr1:uniform_forward_orientation
+known	D012	c001	4	4	evaluated	1	0	evaluated	8	2	2	Mla_BAC::Chr1:internal_orientation_context
+known	D108	c001	5	4	evaluated	2	0	evaluated	8	1	1	CS_A::Chr1:internal_orientation_context

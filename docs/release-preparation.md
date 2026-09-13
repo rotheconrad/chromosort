@@ -4,7 +4,7 @@ title: Publication release preparation
 
 # Publication release preparation
 
-The new interfaces are staged as **0.4.0rc3**. This candidate identifier keeps
+The new interfaces are staged as **0.4.0rc4**. This candidate identifier keeps
 development validation distinct from the later stable public release. No
 registry upload, Git tag, DOI deposit or preprint submission is performed by
 the preparation commands.
@@ -56,3 +56,5 @@ The rc3 candidate adds explicit interval-edit preparation, review and replay.
 It has a distinct version and separate build output directory. Its unattended
 correction policy matches the published rc2 checkpoint; reviewed repair
 capability is evaluated separately from automatic error localization.
+
+The rc4 candidate adds optional [orientation and alternative-plan inspection]({{ "/review-proposals/" | relative_url }}). Its automatic correction defaults remain fixed. Freeze and evaluate its distinct artifacts once; report proposal coverage and review burden separately from automatic cuts or scripted repair. Preserve the frozen rc3 packages. Browser interaction QA remains an open release check.

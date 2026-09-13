@@ -1,0 +1,2 @@
+schema	event_id	target	action	proposed_position	position	decision	reason	reviewer	notes	assembly_sha256
+chromosort-decision-v1	decision:34cbc45c9edacc40b5607972	c001	cut	300000	300000	pending	2 smoothed pieces inferred from 6 alignment blocks after smoothing 4 weak transition(s) with breakpoint penalty 50000.0; planner_score=50000.0. Automatic contig plan requires review: read continuity at a proposed boundary; this boundary has 12 spanning molecules.			9fa0175448812dcdfc96860d6fb37216dfedfc1d62b0f5af1458259caa674cef

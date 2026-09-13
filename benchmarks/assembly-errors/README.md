@@ -5,7 +5,9 @@ sequence preservation and review evidence. **Three runnable fixtures** are
 included; their public intervals can regenerate **all 14 first-cohort cases
 offline**. The [second development panel](cycle2/README.md) adds eight cases
 from new wheat loci and a separate paired evaluation. Mapping needs minimap2.
-The independent scorers and nineteen analytic tests use the Python standard library.
+The [third development panel](cycle3/README.md) evaluates review-proposal
+coverage and burden with automatic correction held fixed. The independent
+scorers and thirty-one analytic tests use the Python standard library.
 
 This is a repository dataset, separate from the installable ChromoSort package.
 It contains no private project sequence, held-out inputs/truth, evaluator key,
@@ -96,6 +98,18 @@ paired arms, with no complete automatic repair in eight new cases. Both the
 baseline manual API and rc3's explicit reviewed workflow complete eight new
 cases plus D003/D012 using supplied edit coordinates. Those scripted repairs
 measure replay feasibility, separately from discovery or human review accuracy.
+
+The [third-panel paired report](cycle3/results.md) records one frozen rc4
+evaluation. Both versions admitted seven of eight primary cases. Review
+proposal coverage increased from 0/4 to 4/4 evaluable errors, with queue size
+increasing from 1 to 19 and biological-control inspection burden from 1 to 14
+events. All fourteen successful primary automatic FASTA/ledger pairs remain
+identical; none of the four evaluable error cases was completely repaired.
+The emitted-coordinate D201 replay validates and restores the exact target DNA
+sequence, but fails the frozen complete-target provenance test at its two
+equivalent edge bases. This sequence comparison is a labeled post-score
+diagnostic. Three known diagnostics are reported separately, and the frozen
+D208 manifest-admission failure remains explicit.
 
 The [scoring protocol](docs/scoring.md) keeps input accounting, target copies,
 cut localization and preserved continuity distinct. The current scorer covers

@@ -1,0 +1,10 @@
+{
+  "automatic_scores_reproduced": 40,
+  "exact_small_artifacts": 165,
+  "note": "Public event geometries reproduce proposal metrics; input-provenance ledgers reproduce sequence metrics. Original FASTA header/wrapping byte hashes remain recorded separately.",
+  "proposal_scores_reproduced": 20,
+  "schema": "cycle3-portable-metric-verification-v1",
+  "scripted_scores_reproduced": 1,
+  "unavailable_automatic": 4,
+  "unavailable_reviews": 2
+}

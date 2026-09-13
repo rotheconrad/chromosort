@@ -1,0 +1,4 @@
+output_id	output_start	output_end	input_id	input_start	input_end	strand
+c001	0	70001	c001	0	70001	+
+c001	70001	77999	c001	70001	77999	-
+c001	77999	300000	c001	77999	300000	+

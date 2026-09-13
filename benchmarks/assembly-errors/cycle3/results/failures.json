@@ -1,0 +1,112 @@
+[
+  {
+    "case_id": "D208",
+    "exit_status_note": "Captured scan exit code",
+    "logs": {
+      "scan.log": {
+        "capture": "combined stdout/stderr",
+        "content": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 98, in <module>\n    main()\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 92, in main\n    workflow.main(remaining, prog=\"chromo workflow\")\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/workflow.py\", line 460, in main\n    return {\"scan\": scan, \"edit\": propose_edit, \"apply\": apply, \"align\": align, \"validate\": validate}[args.task](args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/workflow.py\", line 112, in scan\n    bundle = InputBundle(args.manifest)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 122, in __init__\n    raise ValueError(f\"Multiple coordinate backbones for {seq.output_id}\")\nValueError: Multiple coordinate backbones for wheat_A::1A::A::.\n",
+        "original_sha256": "d907b830095922ace5e5ae8884d44cb47c053e734bf73885b89329d1efbf2e8b"
+      }
+    },
+    "operation": "review_scan",
+    "returncode": 1,
+    "role": "baseline",
+    "status": "failed"
+  },
+  {
+    "case_id": "D208",
+    "exit_status_note": "Legacy automatic runner records failed status and separate stdout/stderr, but not the numeric subcommand exit code",
+    "logs": {
+      "stderr.log": {
+        "capture": "stderr.log",
+        "content": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 98, in <module>\n    main()\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 74, in main\n    fix_contigs.main(remaining, prog=\"chromo fix\")\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/fix_contigs.py\", line 1667, in main\n    bundle = resolve_manifest_args(args)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 226, in resolve_manifest_args\n    bundle = InputBundle(args.manifest, getattr(args, \"assembly_fasta\", None))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 122, in __init__\n    raise ValueError(f\"Multiple coordinate backbones for {seq.output_id}\")\nValueError: Multiple coordinate backbones for wheat_A::1A::A::.\n",
+        "original_sha256": "fe3bd5cbdd2a9f4bb3a10ea4d1fc6aaaf9d0d6d9f6e38fde84b3c8238e62cb7c"
+      },
+      "stdout.log": {
+        "capture": "stdout.log",
+        "content": "",
+        "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "operation": "automatic_report",
+    "returncode": null,
+    "role": "baseline",
+    "status": "failed"
+  },
+  {
+    "case_id": "D208",
+    "exit_status_note": "Legacy automatic runner records failed status and separate stdout/stderr, but not the numeric subcommand exit code",
+    "logs": {
+      "stderr.log": {
+        "capture": "stderr.log",
+        "content": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 98, in <module>\n    main()\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 74, in main\n    fix_contigs.main(remaining, prog=\"chromo fix\")\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/fix_contigs.py\", line 1667, in main\n    bundle = resolve_manifest_args(args)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 226, in resolve_manifest_args\n    bundle = InputBundle(args.manifest, getattr(args, \"assembly_fasta\", None))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/baseline-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 122, in __init__\n    raise ValueError(f\"Multiple coordinate backbones for {seq.output_id}\")\nValueError: Multiple coordinate backbones for wheat_A::1A::A::.\n",
+        "original_sha256": "fe3bd5cbdd2a9f4bb3a10ea4d1fc6aaaf9d0d6d9f6e38fde84b3c8238e62cb7c"
+      },
+      "stdout.log": {
+        "capture": "stdout.log",
+        "content": "",
+        "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "operation": "automatic_review",
+    "returncode": null,
+    "role": "baseline",
+    "status": "failed"
+  },
+  {
+    "case_id": "D208",
+    "exit_status_note": "Captured scan exit code",
+    "logs": {
+      "scan.log": {
+        "capture": "combined stdout/stderr",
+        "content": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 98, in <module>\n    main()\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 92, in main\n    workflow.main(remaining, prog=\"chromo workflow\")\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/workflow.py\", line 495, in main\n    return {\"scan\": scan, \"edit\": propose_edit, \"apply\": apply, \"align\": align, \"validate\": validate}[args.task](args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/workflow.py\", line 114, in scan\n    bundle = InputBundle(args.manifest)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 122, in __init__\n    raise ValueError(f\"Multiple coordinate backbones for {seq.output_id}\")\nValueError: Multiple coordinate backbones for wheat_A::1A::A::.\n",
+        "original_sha256": "5c7dd9932819c161569daef654d6a4db796019ffe462e35a53d58725a9d81d6f"
+      }
+    },
+    "operation": "review_scan",
+    "returncode": 1,
+    "role": "candidate",
+    "status": "failed"
+  },
+  {
+    "case_id": "D208",
+    "exit_status_note": "Legacy automatic runner records failed status and separate stdout/stderr, but not the numeric subcommand exit code",
+    "logs": {
+      "stderr.log": {
+        "capture": "stderr.log",
+        "content": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 98, in <module>\n    main()\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 74, in main\n    fix_contigs.main(remaining, prog=\"chromo fix\")\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/fix_contigs.py\", line 1667, in main\n    bundle = resolve_manifest_args(args)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 227, in resolve_manifest_args\n    bundle = InputBundle(args.manifest, getattr(args, \"assembly_fasta\", None))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 122, in __init__\n    raise ValueError(f\"Multiple coordinate backbones for {seq.output_id}\")\nValueError: Multiple coordinate backbones for wheat_A::1A::A::.\n",
+        "original_sha256": "b98dfe4a410cf56cb9696e4a53f4b11fb5900d151f4ab45c43f10de3cf6eaf11"
+      },
+      "stdout.log": {
+        "capture": "stdout.log",
+        "content": "",
+        "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "operation": "automatic_report",
+    "returncode": null,
+    "role": "candidate",
+    "status": "failed"
+  },
+  {
+    "case_id": "D208",
+    "exit_status_note": "Legacy automatic runner records failed status and separate stdout/stderr, but not the numeric subcommand exit code",
+    "logs": {
+      "stderr.log": {
+        "capture": "stderr.log",
+        "content": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 98, in <module>\n    main()\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/cli.py\", line 74, in main\n    fix_contigs.main(remaining, prog=\"chromo fix\")\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/fix_contigs.py\", line 1667, in main\n    bundle = resolve_manifest_args(args)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 227, in resolve_manifest_args\n    bundle = InputBundle(args.manifest, getattr(args, \"assembly_fasta\", None))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"BENCHMARK/work/cycle3/candidate-venv/lib/python3.12/site-packages/chromosort/manifest.py\", line 122, in __init__\n    raise ValueError(f\"Multiple coordinate backbones for {seq.output_id}\")\nValueError: Multiple coordinate backbones for wheat_A::1A::A::.\n",
+        "original_sha256": "b98dfe4a410cf56cb9696e4a53f4b11fb5900d151f4ab45c43f10de3cf6eaf11"
+      },
+      "stdout.log": {
+        "capture": "stdout.log",
+        "content": "",
+        "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "operation": "automatic_review",
+    "returncode": null,
+    "role": "candidate",
+    "status": "failed"
+  }
+]

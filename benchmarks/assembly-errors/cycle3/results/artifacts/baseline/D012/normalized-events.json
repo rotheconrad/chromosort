@@ -1,0 +1,43 @@
+{
+  "assembly_sha256": "404d8ee7a9328ad41e82cbe7ecd0993e6bda70b7eb075bb0252d04c1ac87714c",
+  "case_id": "D012",
+  "events": [
+    {
+      "assembly_sha256": "404d8ee7a9328ad41e82cbe7ecd0993e6bda70b7eb075bb0252d04c1ac87714c",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": null,
+      "end": 0,
+      "event_id": "decision:fdc13c64d783d0ccb9d65453",
+      "kind": "keep_acknowledgment",
+      "positions": [],
+      "queue": false,
+      "shape": "point",
+      "stage_explanation": "Breakpoint smoothing retained one piece: discordant support (24942.0 identity-weighted bp) did not overcome the breakpoint penalty (50000.0).",
+      "start": 0
+    },
+    {
+      "assembly_sha256": "404d8ee7a9328ad41e82cbe7ecd0993e6bda70b7eb075bb0252d04c1ac87714c",
+      "contig": "c001",
+      "decision": "pending",
+      "detail": null,
+      "end": 205000,
+      "event_id": "decision:38174d8d01028c63db66fae3",
+      "kind": "unaligned_gap",
+      "positions": [
+        189826,
+        205000
+      ],
+      "queue": true,
+      "shape": "interval",
+      "stage_explanation": "No passing backbone alignment covers internal interval [189826, 205000); inspect both interval edges. Interior read continuity does not establish continuity across the boundaries. No cut is proposed.",
+      "start": 189826
+    }
+  ],
+  "manifest_sha256": "1f12dd084a448c15cada75624f366c501667e39fbe2b5e8a5080ee6b23ab035e",
+  "normalization": "One row per scan decision ID; structured details supply geometry, never duplicated as extra events. Whole plan counts once. Paths converted to portable labels; original artifact hashes retained.",
+  "producer_context": null,
+  "scan_sha256": "3ada4b36dd95122ad7792177edf229d94108f8175e74aff567657d7b817662b2",
+  "schema": "cycle3-normalized-review-events-v1",
+  "structured_proposals_sha256": null
+}

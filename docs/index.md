@@ -17,6 +17,7 @@ before they are used as inputs to another alignment-dependent command.
 
 ## Publication candidate
 
+- [Aligned orientation and competing-plan review]({{ '/review-proposals/' | relative_url }})
 - [Read continuity and gap inspection]({{ '/review-refinement/' | relative_url }})
 
 - [Labeled references and subgenomes]({{ '/labeled-references/' | relative_url }})

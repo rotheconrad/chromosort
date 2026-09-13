@@ -1,0 +1,81 @@
+{
+  "admission_failure": {
+    "case_id": "D208",
+    "message": "Multiple coordinate backbones for wheat_A::1A::A::.",
+    "scope": "Construction/admission failure, not biological proposal miss or zero burden",
+    "stage": "InputBundle coordinate-backbone validation",
+    "treatment": "Frozen input remains unchanged. Numeric proposal/burden aggregates exclude unavailable values; completion and automatic pair denominators explicit."
+  },
+  "baseline_commit": "c7f1a9fd11f1ea79e0b86d695984f70b63c2a8f7",
+  "outputs_commitment_sha256": "6d11724e4b11de2906ee5515914f3429de9a48b9fc2ade149639eea0bf4a8d09",
+  "review_status": [
+    {
+      "case_id": "D201",
+      "cohort": "primary",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D202",
+      "cohort": "primary",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D203",
+      "cohort": "primary",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D204",
+      "cohort": "primary",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D205",
+      "cohort": "primary",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D206",
+      "cohort": "primary",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D207",
+      "cohort": "primary",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D208",
+      "cohort": "primary",
+      "returncode": 1,
+      "status": "failed"
+    },
+    {
+      "case_id": "D101",
+      "cohort": "known",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D012",
+      "cohort": "known",
+      "returncode": 0,
+      "status": "complete"
+    },
+    {
+      "case_id": "D108",
+      "cohort": "known",
+      "returncode": 0,
+      "status": "complete"
+    }
+  ],
+  "schema": "cycle3-baseline-output-status-v1",
+  "stage": "No independent proposal scores opened"
+}
